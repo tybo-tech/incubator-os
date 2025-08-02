@@ -9,25 +9,25 @@ import { Constants } from './service';
 @Injectable({
   providedIn: 'root',
 })
-export class NodeService {
+export class NodeService<T = any> {
   private apiUrl = `${Constants.ApiBase}/api-nodes/node`;
 
   constructor(private http: HttpClient) {}
 
   // Get all nodes
-  getAllNodes(): Observable<INode[]> {
+  getAllNodes(): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/get-all-nodes.php`;
-    return this.http.get<INode[]>(url);
+    return this.http.get<INode<T>[]>(url);
   }
 
   // Get a specific node by ID with hydrated relationships
-  getNodeById(nodeId: number): Observable<INode> {
+  getNodeById(nodeId: number): Observable<INode<T>> {
     const url = `${this.apiUrl}/get-node.php?nodeId=${nodeId}`;
-    return this.http.get<INode>(url);
+    return this.http.get<INode<T>>(url);
   }
 
   // Get nodes with optional filters and hydrated relationships
-  getNodes(type?: string, parentId?: number): Observable<INode[]> {
+  getNodes(type?: string, parentId?: number): Observable<INode<T>[]> {
     let url = `${this.apiUrl}/get-nodes.php`;
     const params: string[] = [];
 
@@ -42,32 +42,32 @@ export class NodeService {
       url += `?${params.join('&')}`;
     }
 
-    return this.http.get<INode[]>(url);
+    return this.http.get<INode<T>[]>(url);
   }
 
   // Get nodes by type with hydrated relationships
-  getNodesByType(type: string): Observable<INode[]> {
+  getNodesByType(type: string): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/get-nodes-by-type.php?type=${encodeURIComponent(type)}`;
-    return this.http.get<INode[]>(url);
+    return this.http.get<INode<T>[]>(url);
   }
 
   // Add a new node
-  addNode(node:INode): Observable<INode> {
+  addNode(node:INode<T>): Observable<INode<T>> {
     const url = `${this.apiUrl}/add-node.php`;
     const cleanNode = this.cleanDataForSave(node);
-    return this.http.post<INode>(url, cleanNode);
+    return this.http.post<INode<T>>(url, cleanNode);
   }
 
   // Update an existing node
-  updateNode(node: INode): Observable<INode> {
+  updateNode(node: INode<T>): Observable<INode<T>> {
     const url = `${this.apiUrl}/update-node.php`;
     const cleanNode = this.cleanDataForSave(node);
-    return this.http.put<INode>(url, cleanNode);
+    return this.http.put<INode<T>>(url, cleanNode);
   }
 
   // Save helper (auto decides add/update)
-  saveNode(node: INode |INode): Observable<INode> {
-    return node.id ? this.updateNode(node as INode) : this.addNode(node);
+  saveNode(node: INode<T>): Observable<INode<T>> {
+    return node.id ? this.updateNode(node) : this.addNode(node);
   }
 
   // Delete a node by ID
@@ -77,17 +77,17 @@ export class NodeService {
   }
 
   // Batch add multiple nodes
-  addNodesBatch(nodes: INode[]): Observable<INode[]> {
+  addNodesBatch(nodes: INode<T>[]): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/add-nodes-batch.php`;
     const cleanNodes = nodes.map(node => this.cleanDataForSave(node));
-    return this.http.post<INode[]>(url, { items: cleanNodes });
+    return this.http.post<INode<T>[]>(url, { items: cleanNodes });
   }
 
   // Batch update multiple nodes
-  updateNodesBatch(nodes: INode[]): Observable<INode[]> {
+  updateNodesBatch(nodes: INode<T>[]): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/update-nodes-batch.php`;
     const cleanNodes = nodes.map(node => this.cleanDataForSave(node));
-    return this.http.put<INode[]>(url, { items: cleanNodes });
+    return this.http.put<INode<T>[]>(url, { items: cleanNodes });
   }
 
   // Clean hydrated fields before saving (removes __ prefixed fields and ensures proper array formatting)

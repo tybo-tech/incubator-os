@@ -18,6 +18,24 @@ export interface Company {
   temporary_employees?: number;
   description?: string;
 
+  // Import-specific fields (can be normalized later)
+  trading_name?: string;
+  director_id_number?: string;
+  contact_number?: string;
+  email_address?: string;
+  contact_person?: string;
+  tax_pin_expiry_date?: string;
+  tax_valid_status?: string;
+  bbbee_valid_status?: string;
+  black_ownership?: string;
+  black_women_ownership?: string;
+  youth_owned?: string;
+  company_turnover_raw?: string; // Raw turnover string from import
+  business_location?: string;
+  service_offering?: string;
+  cipc_status?: string;
+  locations?: string;
+
   // Composite blocks
   compliance?: Compliance;
 }
@@ -82,6 +100,25 @@ export function initCompany(): Company {
     permanent_employees: 0,
     temporary_employees: 0,
     description: '',
+
+    // Import fields
+    trading_name: '',
+    director_id_number: '',
+    contact_number: '',
+    email_address: '',
+    contact_person: '',
+    tax_pin_expiry_date: '',
+    tax_valid_status: '',
+    bbbee_valid_status: '',
+    black_ownership: '',
+    black_women_ownership: '',
+    youth_owned: '',
+    company_turnover_raw: '',
+    business_location: '',
+    service_offering: '',
+    cipc_status: '',
+    locations: '',
+
     compliance: {
       is_sars_registered: false,
       has_tax_clearance: false,

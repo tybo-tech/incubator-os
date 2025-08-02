@@ -991,11 +991,62 @@ export interface CompanyImport {
 }
 
 
-export function getCompanyImports():INode<Company>[]{
-  return companyImports.map((company) => ({
-    data: company,
-    id: company.No,
-    label: company['Company Name'],
-  }));
-}
+export function getCompanyImports(): INode<Company>[] {
+  return COMPANIES.map((companyImport) => {
+    // Map all imported data to the extended Company interface
+    const company: Company = {
+      // Core company fields
+      name: companyImport['Company Name'],
+      registration_no: companyImport['Company Registration No.'],
+      industry: companyImport['Business Sector'] || '',
+      city: companyImport['Business Location'] || '',
+      bbbee_level: companyImport['Current size (EME?QSE)'] || '',
+      bbbee_expiry_date: companyImport['BBBEE Expirey Date'] || '',
+      turnover_estimated: parseFloat(companyImport[' Company Turn-over '].replace(/[R\s,]/g, '')) || 0,
+      description: companyImport['Service offering or Goods'] || '',
 
+      // Import-specific fields (preserve all data)
+      trading_name: companyImport['Trading Name'],
+      director_id_number: companyImport['Director ID Number'],
+      contact_number: companyImport['Contact Number'],
+      email_address: companyImport['Email Address'],
+      contact_person: companyImport['Contact Person'],
+      tax_pin_expiry_date: companyImport['Tax pin Expirey Date'],
+      tax_valid_status: companyImport['Valid Status'],
+      bbbee_valid_status: companyImport['Valid Status2'],
+      black_ownership: companyImport['Black ownership'],
+      black_women_ownership: companyImport['Black Women ownership'],
+      youth_owned: companyImport['Youth'],
+      company_turnover_raw: companyImport[' Company Turn-over '],
+      business_location: companyImport['Business Location'],
+      service_offering: companyImport['Service offering or Goods'],
+      cipc_status: companyImport['CIPC Status'],
+      locations: companyImport['Locations'],
+
+      // Fields not in import (set defaults)
+      vat_number: '',
+      address: '',
+      suburb: '',
+      postal_code: '',
+      turnover_actual: 0,
+      permanent_employees: 0,
+      temporary_employees: 0,
+
+      // Compliance information (derived from import data)
+      compliance: {
+        is_sars_registered: companyImport['Valid Status'] === 'Valid',
+        has_tax_clearance: companyImport['Valid Status'] === 'Valid',
+        has_cipc_registration: companyImport['CIPC Status'] === 'IN BUSINESS',
+        has_valid_bbbbee: companyImport['Valid Status2'] === 'Valid',
+        notes: `CIPC: ${companyImport['CIPC Status']}, Tax: ${companyImport['Valid Status']}, BBBEE: ${companyImport['Valid Status2']}`
+      }
+    };
+
+    return {
+      type: 'company',
+      data: company,
+      id: parseInt(companyImport.No) || undefined,
+      label: company.name,
+    };
+  }).filter(node => node.id); // Filter out entries without valid IDs
+}

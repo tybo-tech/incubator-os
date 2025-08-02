@@ -19,7 +19,7 @@ class MetaValueSyncService
 
         // 3. Insert all meta values
         $stmt = $this->conn->prepare("
-            INSERT INTO meta_values (node_id, company_id, collection_id, key, value, path, entity_type)
+            INSERT INTO meta_values (node_id, company_id, collection_id, `key`, value, path, entity_type)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
 
