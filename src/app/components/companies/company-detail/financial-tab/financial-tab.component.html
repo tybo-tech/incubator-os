@@ -1,7 +1,7 @@
 <div class="space-y-8">
   <div class="bg-white rounded-lg shadow-sm p-6">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
-    
+
     <!-- Company Financial Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       <div class="bg-gray-50 rounded-lg p-4">
@@ -27,7 +27,7 @@
     <!-- Bank Statements Section -->
     <div class="border-t pt-6">
       <h4 class="text-md font-medium text-gray-900 mb-4">Bank Statements</h4>
-      
+
       <!-- Loading State -->
       <div *ngIf="loadingStatements" class="text-center py-8">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -40,11 +40,11 @@
       </div>
 
       <!-- No Data State -->
-      <div *ngIf="!loadingStatements && !statementsError && bankStatements.length === 0" 
+      <div *ngIf="!loadingStatements && !statementsError && bankStatements.length === 0"
            class="bg-gray-50 rounded-lg p-6 text-center">
         <div class="text-gray-400 mb-2">
           <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
             </path>
           </svg>
@@ -55,7 +55,7 @@
 
       <!-- Bank Statements Data -->
       <div *ngIf="!loadingStatements && !statementsError && bankStatements.length > 0">
-        
+
         <!-- Year Summary -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" *ngFor="let year of getAvailableYears()">
           <div class="bg-blue-50 rounded-lg p-4">
@@ -75,7 +75,7 @@
 
         <!-- Quarterly View -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']" 
+          <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']"
                class="bg-gray-50 rounded-lg p-4">
             <h6 class="font-medium text-gray-900 mb-2">{{ quarter }}</h6>
             <div class="space-y-1 text-sm">

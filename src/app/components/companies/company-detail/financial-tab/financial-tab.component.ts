@@ -12,7 +12,7 @@ import { NodeService } from '../../../../../services';
 })
 export class FinancialTabComponent implements OnInit {
   @Input() company!: INode<Company>;
-  
+
   bankStatements: INode<BankStatement>[] = [];
   loadingStatements = false;
   statementsError: string | null = null;
@@ -77,7 +77,7 @@ export class FinancialTabComponent implements OnInit {
     const statements = this.getQuarterStatements(quarter);
     if (field === 'closing_balance') {
       // For closing balance, get the latest month's balance in the quarter
-      const latest = statements.reduce((prev, curr) => 
+      const latest = statements.reduce((prev, curr) =>
         prev.data.month > curr.data.month ? prev : curr
       );
       return latest?.data.closing_balance || 0;
