@@ -26,7 +26,16 @@
 
     <!-- Bank Statements Section -->
     <div class="border-t pt-6">
-      <h4 class="text-md font-medium text-gray-900 mb-4">Bank Statements</h4>
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-md font-medium text-gray-900">Bank Statements</h4>
+        <button (click)="openCreateModal()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Add Statement
+        </button>
+      </div>
 
       <!-- Loading State -->
       <div *ngIf="loadingStatements" class="text-center py-8">
@@ -110,6 +119,7 @@
                   <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Income</th>
                   <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
                   <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Balance</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
@@ -132,6 +142,24 @@
                   <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">
                     {{ formatCurrency(statement.data.closing_balance || 0) }}
                   </td>
+                  <td class="px-4 py-3 text-sm text-right">
+                    <button (click)="openEditModal(statement)"
+                            class="text-blue-600 hover:text-blue-800 mr-3 transition-colors"
+                            title="Edit Statement">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <button (click)="deleteStatement(statement)"
+                            class="text-red-600 hover:text-red-800 transition-colors"
+                            title="Delete Statement">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -141,3 +169,149 @@
     </div>
   </div>
 </div>
+
+<!-- Bank Statement Modal Form -->
+<div *ngIf="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-medium text-gray-900">
+          {{ isEditMode ? 'Edit Bank Statement' : 'Add New Bank Statement' }}
+        </h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form [formGroup]="statementForm" (ngSubmit)="saveStatement()" class="space-y-6">
+
+        <!-- Period Information -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <input type="number"
+                   formControlName="year"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="2024">
+            <div *ngIf="getFieldError('year')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('year') }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+            <select formControlName="month"
+                    (change)="onMonthChange()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">Select Month</option>
+              <option *ngFor="let month of getMonthOptions()" [value]="month.value">
+                {{ month.label }}
+              </option>
+            </select>
+            <div *ngIf="getFieldError('month')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('month') }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
+            <select formControlName="quarter"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">Select Quarter</option>
+              <option *ngFor="let quarter of getQuarterOptions()" [value]="quarter.value">
+                {{ quarter.label }}
+              </option>
+            </select>
+            <div *ngIf="getFieldError('quarter')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('quarter') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Opening Balance (ZAR)</label>
+            <input type="number"
+                   step="0.01"
+                   formControlName="opening_balance"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="0.00">
+            <div *ngIf="getFieldError('opening_balance')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('opening_balance') }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Closing Balance (ZAR)</label>
+            <input type="number"
+                   step="0.01"
+                   formControlName="closing_balance"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="0.00">
+            <div *ngIf="getFieldError('closing_balance')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('closing_balance') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Total Income (ZAR)</label>
+            <input type="number"
+                   step="0.01"
+                   formControlName="total_income"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="0.00">
+            <div *ngIf="getFieldError('total_income')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('total_income') }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Total Expenses (ZAR)</label>
+            <input type="number"
+                   step="0.01"
+                   formControlName="total_expense"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   placeholder="0.00">
+            <div *ngIf="getFieldError('total_expense')" class="text-red-500 text-xs mt-1">
+              {{ getFieldError('total_expense') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Account Name (Optional)</label>
+          <input type="text"
+                 formControlName="account_name"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                 placeholder="Business Account">
+          <div *ngIf="getFieldError('account_name')" class="text-red-500 text-xs mt-1">
+            {{ getFieldError('account_name') }}
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button"
+                  (click)="closeModal()"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            Cancel
+          </button>
+          <button type="submit"
+                  [disabled]="savingStatement || statementForm.invalid"
+                  class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span *ngIf="savingStatement" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+            {{ isEditMode ? 'Update Statement' : 'Create Statement' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>>

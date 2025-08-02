@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { INode } from '../../../../../models/schema';
 import { Company, BankStatement } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
@@ -7,7 +8,7 @@ import { NodeService } from '../../../../../services';
 @Component({
   selector: 'app-financial-tab',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './financial-tab.component.html'
 })
 export class FinancialTabComponent implements OnInit {
@@ -17,7 +18,19 @@ export class FinancialTabComponent implements OnInit {
   loadingStatements = false;
   statementsError: string | null = null;
 
-  constructor(private nodeService: NodeService<BankStatement>) {}
+  // Modal and form properties
+  showModal = false;
+  isEditMode = false;
+  editingStatement: INode<BankStatement> | null = null;
+  savingStatement = false;
+  statementForm: FormGroup;
+
+  constructor(
+    private nodeService: NodeService<BankStatement>,
+    private fb: FormBuilder
+  ) {
+    this.statementForm = this.createForm();
+  }
 
   ngOnInit() {
     if (this.company?.id) {
@@ -100,5 +113,176 @@ export class FinancialTabComponent implements OnInit {
 
   getTotalExpenseForYear(year: number): number {
     return this.getStatementsForYear(year).reduce((sum, stmt) => sum + (stmt.data.total_expense || 0), 0);
+  }
+
+  // ===== MODAL AND FORM METHODS =====
+
+  createForm(): FormGroup {
+    return this.fb.group({
+      year: [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]],
+      month: [new Date().getMonth() + 1, [Validators.required, Validators.min(1), Validators.max(12)]],
+      quarter: ['', Validators.required],
+      opening_balance: [0, [Validators.required, Validators.min(0)]],
+      closing_balance: [0, [Validators.required, Validators.min(0)]],
+      total_income: [0, [Validators.required, Validators.min(0)]],
+      total_expense: [0, [Validators.required, Validators.min(0)]],
+      account_name: ['', [Validators.maxLength(100)]]
+    });
+  }
+
+  openCreateModal() {
+    this.isEditMode = false;
+    this.editingStatement = null;
+    this.statementForm = this.createForm();
+    this.setQuarterFromMonth();
+    this.showModal = true;
+  }
+
+  openEditModal(statement: INode<BankStatement>) {
+    this.isEditMode = true;
+    this.editingStatement = statement;
+
+    this.statementForm = this.fb.group({
+      year: [statement.data.year, [Validators.required, Validators.min(2000), Validators.max(2100)]],
+      month: [statement.data.month, [Validators.required, Validators.min(1), Validators.max(12)]],
+      quarter: [statement.data.quarter || '', Validators.required],
+      opening_balance: [statement.data.opening_balance, [Validators.required, Validators.min(0)]],
+      closing_balance: [statement.data.closing_balance, [Validators.required, Validators.min(0)]],
+      total_income: [statement.data.total_income, [Validators.required, Validators.min(0)]],
+      total_expense: [statement.data.total_expense, [Validators.required, Validators.min(0)]],
+      account_name: [statement.data.account_name || '', [Validators.maxLength(100)]]
+    });
+
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.isEditMode = false;
+    this.editingStatement = null;
+    this.statementForm.reset();
+  }
+
+  onMonthChange() {
+    this.setQuarterFromMonth();
+  }
+
+  setQuarterFromMonth() {
+    const month = this.statementForm.get('month')?.value;
+    if (month) {
+      let quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+      if (month <= 3) quarter = 'Q1';
+      else if (month <= 6) quarter = 'Q2';
+      else if (month <= 9) quarter = 'Q3';
+      else quarter = 'Q4';
+
+      this.statementForm.patchValue({ quarter });
+    }
+  }
+
+  saveStatement() {
+    if (this.statementForm.invalid) {
+      this.markFormGroupTouched();
+      return;
+    }
+
+    this.savingStatement = true;
+    const formData = this.statementForm.value;
+
+    if (this.isEditMode && this.editingStatement) {
+      // Update existing statement
+      const updatedStatement: INode<BankStatement> = {
+        ...this.editingStatement,
+        data: formData
+      };
+
+      this.nodeService.updateNode(updatedStatement).subscribe({
+        next: () => {
+          this.loadBankStatements();
+          this.closeModal();
+          this.savingStatement = false;
+        },
+        error: (err) => {
+          console.error('Error updating statement:', err);
+          this.savingStatement = false;
+        }
+      });
+    } else {
+      // Create new statement
+      const newStatement: Partial<INode<BankStatement>> = {
+        type: 'bank_statement',
+        company_id: this.company.id,
+        data: formData
+      };
+
+      this.nodeService.addNode(newStatement as INode<BankStatement>).subscribe({
+        next: () => {
+          this.loadBankStatements();
+          this.closeModal();
+          this.savingStatement = false;
+        },
+        error: (err) => {
+          console.error('Error creating statement:', err);
+          this.savingStatement = false;
+        }
+      });
+    }
+  }
+
+  deleteStatement(statement: INode<BankStatement>) {
+    if (confirm('Are you sure you want to delete this bank statement?')) {
+      this.nodeService.deleteNode(statement.id!).subscribe({
+        next: () => {
+          this.loadBankStatements();
+        },
+        error: (err) => {
+          console.error('Error deleting statement:', err);
+        }
+      });
+    }
+  }
+
+  markFormGroupTouched() {
+    Object.keys(this.statementForm.controls).forEach(key => {
+      const control = this.statementForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.statementForm.get(fieldName);
+    if (field?.errors && field.touched) {
+      if (field.errors['required']) return `${fieldName} is required`;
+      if (field.errors['min']) return `${fieldName} must be greater than ${field.errors['min'].min}`;
+      if (field.errors['max']) return `${fieldName} must be less than ${field.errors['max'].max}`;
+      if (field.errors['maxlength']) return `${fieldName} is too long`;
+    }
+    return '';
+  }
+
+  getQuarterOptions(): { value: string, label: string }[] {
+    return [
+      { value: 'Q1', label: 'Q1 (Jan-Mar)' },
+      { value: 'Q2', label: 'Q2 (Apr-Jun)' },
+      { value: 'Q3', label: 'Q3 (Jul-Sep)' },
+      { value: 'Q4', label: 'Q4 (Oct-Dec)' }
+    ];
+  }
+
+  getMonthOptions(): { value: number, label: string }[] {
+    return [
+      { value: 1, label: 'January' },
+      { value: 2, label: 'February' },
+      { value: 3, label: 'March' },
+      { value: 4, label: 'April' },
+      { value: 5, label: 'May' },
+      { value: 6, label: 'June' },
+      { value: 7, label: 'July' },
+      { value: 8, label: 'August' },
+      { value: 9, label: 'September' },
+      { value: 10, label: 'October' },
+      { value: 11, label: 'November' },
+      { value: 12, label: 'December' }
+    ];
   }
 }
