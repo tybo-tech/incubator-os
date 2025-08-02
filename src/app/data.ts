@@ -1,4 +1,4 @@
-import { Company } from '../models/business.models';
+import { Company, BankStatement, calculateQuarter } from '../models/business.models';
 import { INode } from '../models/schema';
 
 export const COMPANIES: INode<Company>[] = [
@@ -3508,14 +3508,6 @@ export const statements = [
   },
 ];
 
-export interface ITransactionImport {
-  id: number;
-  company_id: number;
-  amount: number;
-  date: Date;
-  status: 'pending' | 'completed' | 'failed';
-}
-
 export interface CompanyImport {
   No: string;
   'Company Name': string;
@@ -3541,65 +3533,71 @@ export interface CompanyImport {
   Locations: string;
 }
 
-export function getCompanyImports(): INode<Company>[] {
-  return COMPANIES.map((companyImport) => {
-    // Map all imported data to the extended Company interface
-    const company: Company = {
-      // Core company fields
-      name: companyImport['Company Name'],
-      registration_no: companyImport['Company Registration No.'],
-      industry: companyImport['Business Sector'] || '',
-      city: companyImport['Business Location'] || '',
-      bbbee_level: companyImport['Current size (EME?QSE)'] || '',
-      bbbee_expiry_date: companyImport['BBBEE Expirey Date'] || '',
-      turnover_estimated:
-        parseFloat(
-          companyImport[' Company Turn-over '].replace(/[R\s,]/g, '')
-        ) || 0,
-      description: companyImport['Service offering or Goods'] || '',
 
-      // Import-specific fields (preserve all data)
-      trading_name: companyImport['Trading Name'],
-      director_id_number: companyImport['Director ID Number'],
-      contact_number: companyImport['Contact Number'],
-      email_address: companyImport['Email Address'],
-      contact_person: companyImport['Contact Person'],
-      tax_pin_expiry_date: companyImport['Tax pin Expirey Date'],
-      tax_valid_status: companyImport['Valid Status'],
-      bbbee_valid_status: companyImport['Valid Status2'],
-      black_ownership: companyImport['Black ownership'],
-      black_women_ownership: companyImport['Black Women ownership'],
-      youth_owned: companyImport['Youth'],
-      company_turnover_raw: companyImport[' Company Turn-over '],
-      business_location: companyImport['Business Location'],
-      service_offering: companyImport['Service offering or Goods'],
-      cipc_status: companyImport['CIPC Status'],
-      locations: companyImport['Locations'],
 
-      // Fields not in import (set defaults)
-      vat_number: '',
-      address: '',
-      suburb: '',
-      postal_code: '',
-      turnover_actual: 0,
-      permanent_employees: 0,
-      temporary_employees: 0,
+export function getBankStatementImports(): INode<BankStatement>[] {
+  const bankStatements: INode<BankStatement>[] = [];
 
-      // Compliance information (derived from import data)
-      compliance: {
-        is_sars_registered: companyImport['Valid Status'] === 'Valid',
-        has_tax_clearance: companyImport['Valid Status'] === 'Valid',
-        has_cipc_registration: companyImport['CIPC Status'] === 'IN BUSINESS',
-        has_valid_bbbbee: companyImport['Valid Status2'] === 'Valid',
-        notes: `CIPC: ${companyImport['CIPC Status']}, Tax: ${companyImport['Valid Status']}, BBBEE: ${companyImport['Valid Status2']}`,
-      },
-    };
+  statements.forEach((statement, statementIndex) => {
+    // Find matching company by name
+    const matchingCompany = COMPANIES.find(company =>
+      company.data.name === statement.CompanyName ||
+      company.data.trading_name === statement.CompanyName
+    );
 
-    return {
-      type: 'company',
-      data: company,
-      id: parseInt(companyImport.No) || undefined,
-      label: company.name,
-    };
-  }).filter((node) => node.id); // Filter out entries without valid IDs
+    if (!matchingCompany) {
+      console.warn(`No matching company found for: ${statement.CompanyName}`);
+      return;
+    }
+
+    // Parse monthly data (excluding empty string total field)
+    const monthlyEntries = Object.entries(statement).filter(([key, value]) =>
+      key !== 'CompanyName' && key !== '' && value && value.trim() !== '-'
+    );
+
+    monthlyEntries.forEach(([monthKey, amountStr], entryIndex) => {
+      // Parse month-year from key like 'Feb-25'
+      const [monthStr, yearStr] = monthKey.split('-');
+      const month = getMonthNumber(monthStr);
+      const year = parseInt(`20${yearStr}`);
+
+      if (!month || !year) return;
+
+      // Parse amount (remove currency symbols and formatting)
+      const cleanAmount = amountStr.replace(/[R\s,]/g, '').trim();
+      const amount = parseFloat(cleanAmount) || 0;
+
+      // Calculate quarter based on custom fiscal year
+      const quarter = calculateQuarter(month);
+
+      const bankStatement: BankStatement = {
+        year,
+        month,
+        quarter,
+        opening_balance: 0, // Not available in import data
+        closing_balance: amount, // Use the monthly amount as closing balance
+        total_income: amount > 0 ? amount : 0,
+        total_expense: amount < 0 ? Math.abs(amount) : 0,
+        account_name: 'Primary Account', // Default name
+      };
+
+      bankStatements.push({
+        type: 'bank_statement',
+        data: bankStatement,
+        company_id: matchingCompany.id,
+        id: (statementIndex + 1) * 1000 + entryIndex + 1, // Generate unique ID
+      });
+    });
+  });
+
+  return bankStatements;
+}
+
+// Helper function to convert month abbreviation to number
+function getMonthNumber(monthStr: string): number | null {
+  const months: { [key: string]: number } = {
+    'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+    'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+  };
+  return months[monthStr] || null;
 }

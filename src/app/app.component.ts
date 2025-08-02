@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NodeService } from '../services';
-import { Company } from '../models/business.models';
-import { getCompanyImports } from './data';
+import { Company, BankStatement } from '../models/business.models';
+import { getBankStatementImports } from './data';
 
 @Component({
   selector: 'app-root',
@@ -12,17 +12,17 @@ import { getCompanyImports } from './data';
 })
 export class AppComponent {
   title = 'nodes';
-  constructor(private nodeService: NodeService<Company>) {
+  constructor(private nodeService: NodeService<any>) {
     // this.importData();
   }
   importData() {
-    const data = getCompanyImports();
+    const data = getBankStatementImports();
     this.nodeService.addNodesBatch(data).subscribe({
       next: (response) => {
-        console.log('Data imported successfully:', response);
+        console.log('Bank statement data imported successfully:', response);
       },
       error: (err) => {
-        console.error('Error importing data:', err);
+        console.error('Error importing bank statement data:', err);
       },
     });
   }
