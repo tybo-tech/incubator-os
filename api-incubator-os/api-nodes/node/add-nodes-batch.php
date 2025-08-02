@@ -18,9 +18,9 @@ try {
         $nodeObj = (object) [
             'type' => $item['type'],
             'data' => $item['data'],
-            'company_id' => $item['companyId'] ?? null,
-            'parent_id' => $item['parentId'] ?? null,
-            'created_by' => $item['createdBy'] ?? null
+            'company_id' => $item['company_id'] ?? null,
+            'parent_id' => $item['parent_id'] ?? null,
+            'created_by' => $item['created_by'] ?? null
         ];
         $nodeObjects[] = $nodeObj;
     }
