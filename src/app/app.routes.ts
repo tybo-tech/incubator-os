@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { CompaniesComponent } from './components/companies/companies.component';
+import { CompanyDetailComponent } from './components/companies/company-detail/company-detail.component';
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 
 export const routes: Routes = [
@@ -19,6 +20,10 @@ export const routes: Routes = [
       {
         path: 'companies',
         component: CompaniesComponent,
+      },
+      {
+        path: 'companies/:id',
+        component: CompanyDetailComponent,
       },
       {
         path: 'data',
