@@ -1,0 +1,143 @@
+<div class="space-y-8">
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
+    
+    <!-- Company Financial Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-600 mb-1">Estimated Turnover</div>
+        <div class="text-2xl font-bold text-gray-900">
+          {{ formatCurrency(company.data.turnover_estimated || 0) }}
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-600 mb-1">Actual Turnover</div>
+        <div class="text-2xl font-bold text-gray-900">
+          {{ formatCurrency(company.data.turnover_actual || 0) }}
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-600 mb-1">Raw Turnover Data</div>
+        <div class="text-sm text-gray-900">
+          {{ company.data.company_turnover_raw || 'N/A' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank Statements Section -->
+    <div class="border-t pt-6">
+      <h4 class="text-md font-medium text-gray-900 mb-4">Bank Statements</h4>
+      
+      <!-- Loading State -->
+      <div *ngIf="loadingStatements" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="text-gray-600 mt-2">Loading bank statements...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="statementsError" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        {{ statementsError }}
+      </div>
+
+      <!-- No Data State -->
+      <div *ngIf="!loadingStatements && !statementsError && bankStatements.length === 0" 
+           class="bg-gray-50 rounded-lg p-6 text-center">
+        <div class="text-gray-400 mb-2">
+          <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" 
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+            </path>
+          </svg>
+        </div>
+        <p class="text-gray-600">No bank statements found</p>
+        <p class="text-sm text-gray-500 mt-1">Bank statements will appear here once imported</p>
+      </div>
+
+      <!-- Bank Statements Data -->
+      <div *ngIf="!loadingStatements && !statementsError && bankStatements.length > 0">
+        
+        <!-- Year Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" *ngFor="let year of getAvailableYears()">
+          <div class="bg-blue-50 rounded-lg p-4">
+            <h5 class="font-medium text-blue-900 mb-3">{{ year }} Summary</h5>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-blue-700">Total Income:</span>
+                <span class="font-medium">{{ formatCurrency(getTotalIncomeForYear(year)) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-blue-700">Total Expenses:</span>
+                <span class="font-medium">{{ formatCurrency(getTotalExpenseForYear(year)) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quarterly View -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']" 
+               class="bg-gray-50 rounded-lg p-4">
+            <h6 class="font-medium text-gray-900 mb-2">{{ quarter }}</h6>
+            <div class="space-y-1 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Income:</span>
+                <span class="font-medium text-green-600">{{ formatCurrency(getQuarterTotal(quarter, 'total_income')) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Expenses:</span>
+                <span class="font-medium text-red-600">{{ formatCurrency(getQuarterTotal(quarter, 'total_expense')) }}</span>
+              </div>
+              <div class="flex justify-between border-t pt-1">
+                <span class="text-gray-600">Balance:</span>
+                <span class="font-medium">{{ formatCurrency(getQuarterTotal(quarter, 'closing_balance')) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Breakdown -->
+        <div class="bg-white border rounded-lg overflow-hidden">
+          <div class="bg-gray-50 px-4 py-3 border-b">
+            <h5 class="font-medium text-gray-900">Monthly Breakdown</h5>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quarter</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Opening Balance</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Income</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Balance</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let statement of bankStatements" class="hover:bg-gray-50">
+                  <td class="px-4 py-3 text-sm text-gray-900">
+                    {{ getMonthName(statement.data.month) }} {{ statement.data.year }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-500">
+                    {{ statement.data.quarter }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-900">
+                    {{ formatCurrency(statement.data.opening_balance || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-green-600 font-medium">
+                    {{ formatCurrency(statement.data.total_income || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-red-600 font-medium">
+                    {{ formatCurrency(statement.data.total_expense || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">
+                    {{ formatCurrency(statement.data.closing_balance || 0) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
