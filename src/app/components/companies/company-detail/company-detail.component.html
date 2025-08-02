@@ -1,462 +1,55 @@
 <!-- Loading State -->
-<div *ngIf="loading" class="min-h-screen bg-gray-50 flex items-center justify-center">
-  <div class="text-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-    <p class="mt-4 text-gray-600">Loading company details...</p>
-  </div>
-</div>
+<app-loading-state
+  *ngIf="loading"
+  message="Loading company details...">
+</app-loading-state>
 
 <!-- Error State -->
-<div *ngIf="error && !loading" class="min-h-screen bg-gray-50 flex items-center justify-center">
-  <div class="text-center">
-    <div class="text-red-500 mb-4">
-      <svg class="mx-auto h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-    </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">{{ error }}</h3>
-    <button
-      (click)="goBack()"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-      Back to Companies
-    </button>
-  </div>
-</div>
+<app-error-state
+  *ngIf="error && !loading"
+  [error]="error"
+  backButtonText="Back to Companies"
+  (goBack)="goBack()">
+</app-error-state>
 
 <!-- Main Content -->
 <div *ngIf="company && !loading" class="min-h-screen bg-gray-50">
   <!-- Header -->
-  <div class="bg-white shadow-sm border-b">
-    <div class="max-w-7xl mx-auto px-6 py-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <button
-            (click)="goBack()"
-            class="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-          </button>
-
-          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-            {{ company.data.name.charAt(0) }}
-          </div>
-
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">{{ company.data.name }}</h1>
-            <div class="flex items-center space-x-3 mt-1">
-              <span class="text-gray-600">{{ company.data.industry }}</span>
-              <span class="text-gray-400">•</span>
-              <span class="text-gray-600">{{ company.data.registration_no }}</span>
-              <span [class]="'px-2 py-1 rounded-full text-xs font-medium text-white ' + getBbbeeColor(company.data.bbbee_level || '')">
-                {{ company.data.bbbee_level || 'N/A' }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center space-x-3">
-          <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-            Export
-          </button>
-          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors">
-            Edit Company
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <app-company-header
+    [company]="company"
+    (goBack)="goBack()">
+  </app-company-header>
 
   <!-- Tabs Navigation -->
-  <div class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-6">
-      <nav class="flex space-x-8">
-        <button
-          (click)="setActiveTab('overview')"
-          [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'overview' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
-        >
-          Overview
-        </button>
-        <button
-          (click)="setActiveTab('financial')"
-          [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'financial' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
-        >
-          Financial
-        </button>
-        <button
-          (click)="setActiveTab('compliance')"
-          [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'compliance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
-        >
-          Compliance
-        </button>
-        <button
-          (click)="setActiveTab('documents')"
-          [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'documents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
-        >
-          Documents
-        </button>
-      </nav>
-    </div>
-  </div>
+  <app-tabs-navigation
+    [activeTab]="activeTab"
+    (tabChange)="setActiveTab($event)">
+  </app-tabs-navigation>
 
   <!-- Tab Content -->
   <div class="max-w-7xl mx-auto px-6 py-8">
-
     <!-- Overview Tab -->
-    <div *ngIf="activeTab === 'overview'" class="space-y-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        <!-- Company Information -->
-        <div class="lg:col-span-2 space-y-6">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Company Information</h3>
-            <div class="grid grid-cols-2 gap-6">
-              <div>
-                <label class="text-sm font-medium text-gray-500">Legal Name</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.name }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Trading Name</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.trading_name || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Registration Number</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.registration_no }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Industry</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.industry }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">VAT Number</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.vat_number || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">CIPC Status</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.cipc_status || 'N/A' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Contact Information -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
-            <div class="grid grid-cols-2 gap-6">
-              <div>
-                <label class="text-sm font-medium text-gray-500">Contact Person</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.contact_person || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Phone Number</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.contact_number || 'N/A' }}</p>
-              </div>
-              <div class="col-span-2">
-                <label class="text-sm font-medium text-gray-500">Email Address</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.email_address || 'N/A' }}</p>
-              </div>
-              <div class="col-span-2">
-                <label class="text-sm font-medium text-gray-500">Address</label>
-                <p class="text-sm text-gray-900 mt-1">
-                  {{ company.data.address || company.data.business_location || company.data.city || 'N/A' }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Business Description -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Business Description</h3>
-            <div class="space-y-4">
-              <div>
-                <label class="text-sm font-medium text-gray-500">Service Offering</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.service_offering || company.data.description || 'N/A' }}</p>
-              </div>
-              <div>
-                <label class="text-sm font-medium text-gray-500">Locations</label>
-                <p class="text-sm text-gray-900 mt-1">{{ company.data.locations || 'N/A' }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sidebar -->
-        <div class="space-y-6">
-          <!-- Quick Stats -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Stats</h3>
-            <div class="space-y-4">
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">Estimated Turnover</span>
-                <span class="text-sm font-medium text-gray-900">
-                  {{ formatCurrency(company.data.turnover_estimated || 0) }}
-                </span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">Permanent Employees</span>
-                <span class="text-sm font-medium text-gray-900">{{ company.data.permanent_employees || 0 }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm text-gray-600">Temporary Employees</span>
-                <span class="text-sm font-medium text-gray-900">{{ company.data.temporary_employees || 0 }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ownership -->
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Ownership Profile</h3>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Black Ownership</span>
-                <div class="flex items-center space-x-2">
-                  <div [class]="'w-3 h-3 rounded-full ' + (company.data.black_ownership === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-                  <span class="text-sm text-gray-900">{{ company.data.black_ownership || 'N/A' }}</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Black Women Ownership</span>
-                <div class="flex items-center space-x-2">
-                  <div [class]="'w-3 h-3 rounded-full ' + (company.data.black_women_ownership === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-                  <span class="text-sm text-gray-900">{{ company.data.black_women_ownership || 'N/A' }}</span>
-                </div>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-600">Youth Owned</span>
-                <div class="flex items-center space-x-2">
-                  <div [class]="'w-3 h-3 rounded-full ' + (company.data.youth_owned === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-                  <span class="text-sm text-gray-900">{{ company.data.youth_owned || 'N/A' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-overview-tab
+      *ngIf="activeTab === 'overview'"
+      [company]="company">
+    </app-overview-tab>
 
     <!-- Financial Tab -->
-    <div *ngIf="activeTab === 'financial'" class="space-y-8">
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Estimated Turnover</div>
-            <div class="text-2xl font-bold text-gray-900">
-              {{ formatCurrency(company.data.turnover_estimated || 0) }}
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Actual Turnover</div>
-            <div class="text-2xl font-bold text-gray-900">
-              {{ formatCurrency(company.data.turnover_actual || 0) }}
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-600 mb-1">Raw Turnover Data</div>
-            <div class="text-sm text-gray-900">
-              {{ company.data.company_turnover_raw || 'N/A' }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Bank Statements Section -->
-        <div class="mt-8">
-          <h4 class="text-md font-medium text-gray-900 mb-4">Bank Statements</h4>
-          <div class="bg-gray-50 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
-            </div>
-            <p class="text-gray-600">Bank statement integration coming soon</p>
-            <p class="text-sm text-gray-500 mt-1">We'll display quarterly financial data here</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-financial-tab
+      *ngIf="activeTab === 'financial'"
+      [company]="company">
+    </app-financial-tab>
 
     <!-- Compliance Tab -->
-    <div *ngIf="activeTab === 'compliance'" class="space-y-8">
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-6">Compliance Status</h3>
-
-        <!-- Compliance Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          <!-- SARS Registration -->
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-medium text-gray-900">SARS Registration</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.is_sars_registered || false)"></div>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.tax_valid_status || 'N/A' }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Tax Pin Expiry:</span>
-                <span class="font-medium">{{ company.data.tax_pin_expiry_date || 'N/A' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tax Clearance -->
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-medium text-gray-900">Tax Clearance</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_tax_clearance || false)"></div>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.tax_valid_status || 'N/A' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- CIPC Registration -->
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-medium text-gray-900">CIPC Registration</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_cipc_registration || false)"></div>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.cipc_status || 'N/A' }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Registration No:</span>
-                <span class="font-medium">{{ company.data.registration_no }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- BBBEE Certificate -->
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-medium text-gray-900">BBBEE Certificate</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_valid_bbbbee || false)"></div>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Level:</span>
-                <span [class]="'px-2 py-1 rounded text-xs font-medium text-white ' + getBbbeeColor(company.data.bbbee_level || '')">
-                  {{ company.data.bbbee_level || 'N/A' }}
-                </span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Expiry Date:</span>
-                <span class="font-medium">{{ company.data.bbbee_expiry_date || 'N/A' }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Valid Status:</span>
-                <span class="font-medium">{{ company.data.bbbee_valid_status || 'N/A' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Compliance Notes -->
-        <div class="mt-6 bg-gray-50 rounded-lg p-4">
-          <h4 class="font-medium text-gray-900 mb-2">Compliance Notes</h4>
-          <p class="text-sm text-gray-700">{{ company.data.compliance?.notes || 'No additional compliance notes available.' }}</p>
-        </div>
-      </div>
-    </div>
+    <app-compliance-tab
+      *ngIf="activeTab === 'compliance'"
+      [company]="company">
+    </app-compliance-tab>
 
     <!-- Documents Tab -->
-    <div *ngIf="activeTab === 'documents'" class="space-y-8">
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-lg font-medium text-gray-900">Documents & Certificates</h3>
-          <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors">
-            Upload Document
-          </button>
-        </div>
-
-        <!-- Document Categories -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          <!-- Registration Documents -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">Registration Documents</h4>
-            <p class="text-xs text-gray-500">CIPC Certificate, Company Documents</p>
-          </div>
-
-          <!-- Tax Documents -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">Tax Documents</h4>
-            <p class="text-xs text-gray-500">Tax Clearance, SARS Certificates</p>
-          </div>
-
-          <!-- BBBEE Certificates -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">BBBEE Certificates</h4>
-            <p class="text-xs text-gray-500">BBBEE Certificate, Affidavits</p>
-          </div>
-
-          <!-- Bank Statements -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">Bank Statements</h4>
-            <p class="text-xs text-gray-500">Monthly Statements, Financial Records</p>
-          </div>
-
-          <!-- Insurance Documents -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">Insurance Documents</h4>
-            <p class="text-xs text-gray-500">Liability Insurance, Coverage Certificates</p>
-          </div>
-
-          <!-- Other Documents -->
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div class="text-gray-400 mb-2">
-              <svg class="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-              </svg>
-            </div>
-            <h4 class="text-sm font-medium text-gray-900 mb-1">Other Documents</h4>
-            <p class="text-xs text-gray-500">Contracts, Agreements, References</p>
-          </div>
-        </div>
-
-        <!-- Document Upload Instructions -->
-        <div class="mt-6 bg-blue-50 rounded-lg p-4">
-          <h4 class="text-sm font-medium text-blue-900 mb-2">Upload Guidelines</h4>
-          <ul class="text-sm text-blue-700 space-y-1">
-            <li>• Supported formats: PDF, DOC, DOCX, JPG, PNG</li>
-            <li>• Maximum file size: 10MB per document</li>
-            <li>• Ensure documents are clear and legible</li>
-            <li>• Use descriptive file names for easy identification</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
+    <app-documents-tab
+      *ngIf="activeTab === 'documents'"
+      [company]="company">
+    </app-documents-tab>
   </div>
 </div>

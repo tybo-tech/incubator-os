@@ -5,16 +5,36 @@ import { NodeService } from '../../../../services';
 import { Company } from '../../../../models/business.models';
 import { INode } from '../../../../models/schema';
 
+// Import all the new sub-components
+import { LoadingStateComponent } from './loading-state/loading-state.component';
+import { ErrorStateComponent } from './error-state/error-state.component';
+import { CompanyHeaderComponent } from './company-header/company-header.component';
+import { TabsNavigationComponent, TabType } from './tabs-navigation/tabs-navigation.component';
+import { OverviewTabComponent } from './overview-tab/overview-tab.component';
+import { FinancialTabComponent } from './financial-tab/financial-tab.component';
+import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
+import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
+
 @Component({
   selector: 'app-company-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    LoadingStateComponent,
+    ErrorStateComponent,
+    CompanyHeaderComponent,
+    TabsNavigationComponent,
+    OverviewTabComponent,
+    FinancialTabComponent,
+    ComplianceTabComponent,
+    DocumentsTabComponent
+  ],
   templateUrl: './company-detail.component.html',
   styleUrl: './company-detail.component.scss'
 })
 export class CompanyDetailComponent implements OnInit {
   company: INode<Company> | null = null;
-  activeTab: 'overview' | 'financial' | 'compliance' | 'documents' = 'overview';
+  activeTab: TabType = 'overview';
   loading = true;
   error: string | null = null;
 
@@ -50,32 +70,11 @@ export class CompanyDetailComponent implements OnInit {
     });
   }
 
-  setActiveTab(tab: 'overview' | 'financial' | 'compliance' | 'documents') {
+  setActiveTab(tab: TabType) {
     this.activeTab = tab;
   }
 
   goBack() {
     this.router.navigate(['/companies']);
-  }
-
-  getComplianceColor(status: boolean): string {
-    return status ? 'bg-green-500' : 'bg-red-500';
-  }
-
-  getBbbeeColor(level: string): string {
-    switch (level?.toLowerCase()) {
-      case 'eme': return 'bg-green-500';
-      case 'qse': return 'bg-blue-500';
-      default: return 'bg-gray-500';
-    }
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
-      style: 'currency',
-      currency: 'ZAR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
   }
 }
