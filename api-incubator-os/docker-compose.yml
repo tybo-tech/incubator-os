@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  php:
+    build: .
+    container_name: incubator-os-container
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8080:80"
+    environment:
+      - ACCEPT_EULA=Y
+
+  mysql:
+    image: mysql:8.0
+    container_name: incubator-os-mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: incubator_os
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: incubator-os-phpmyadmin-container
+    environment:
+      PMA_HOST: mysql  # Use correct MySQL service name
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "8081:80"  # Changed port mapping to avoid conflict
+
+volumes:
+  mysql_data:

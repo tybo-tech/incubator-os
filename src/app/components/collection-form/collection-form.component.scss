@@ -1,0 +1,52 @@
+// Collection form styles
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+// Ensure modal appears above overlay
+:host {
+  .fixed.inset-0.z-50 {
+    z-index: 9999;
+  }
+  
+  .relative.z-50 {
+    z-index: 10000;
+  }
+}
+
+.field-builder {
+  border: 2px dashed #e5e7eb;
+  transition: all 0.2s ease-in-out;
+}
+
+.field-builder:hover {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+}
+
+.field-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.field-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+// Custom scrollbar for modal content
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

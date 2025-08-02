@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Collection Options API</title>
+</head>
+<body>
+    <h2>Test Collection Options API</h2>
+    <p>Testing the new get-collection-options.php endpoint</p>
+    
+    <div>
+        <h3>Test Results:</h3>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Test the API endpoint
+        async function testAPI() {
+            try {
+                const response = await fetch('http://localhost/ndu/apps/angular/nodes/api/api-nodes/node/get-collection-options.php?collectionId=2&labelField=name_md9v74t7_kwgzae&valueField=id');
+                const data = await response.json();
+                
+                document.getElementById('results').innerHTML = `
+                    <h4>Response Status: ${response.status}</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <h4>Error:</h4>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        // Run test when page loads
+        testAPI();
+    </script>
+</body>
+</html>
