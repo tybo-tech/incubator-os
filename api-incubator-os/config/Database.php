@@ -23,7 +23,7 @@ class Database
     public function setLocal()
     {
         $this->host = 'mysql'; // For Docker: matches service name
-        $this->db_name = 'docker';
+        $this->db_name = 'incubator_os';
         $this->username = 'docker';
         $this->password = 'docker';
     }
