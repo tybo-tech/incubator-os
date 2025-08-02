@@ -54,13 +54,7 @@ export class FinancialTabComponent implements OnInit {
         // Filter statements for this company
         this.bankStatements = statements
           .filter(stmt => stmt.company_id === this.company.id)
-          .sort((a, b) => {
-            // Sort by year desc, then month desc
-            if (a.data.year !== b.data.year) {
-              return b.data.year - a.data.year;
-            }
-            return b.data.month - a.data.month;
-          });
+          .sort((a, b) => this.sortByQuarterAndMonth(a, b));
         this.loadingStatements = false;
       },
       error: (err) => {
@@ -69,6 +63,92 @@ export class FinancialTabComponent implements OnInit {
         this.loadingStatements = false;
       }
     });
+  }
+
+  // ===== SORTING AND GROUPING METHODS =====
+
+  sortByQuarterAndMonth(a: INode<BankStatement>, b: INode<BankStatement>): number {
+    // First sort by year (descending - newest first)
+    if (a.data.year !== b.data.year) {
+      return b.data.year - a.data.year;
+    }
+
+    // Then sort by quarter (Q4, Q3, Q2, Q1)
+    const quarterOrder = { 'Q4': 4, 'Q3': 3, 'Q2': 2, 'Q1': 1 };
+    const aQuarter = quarterOrder[a.data.quarter as keyof typeof quarterOrder] || 0;
+    const bQuarter = quarterOrder[b.data.quarter as keyof typeof quarterOrder] || 0;
+
+    if (aQuarter !== bQuarter) {
+      return bQuarter - aQuarter;
+    }
+
+    // Finally sort by month within quarter (descending - newest first)
+    return b.data.month - a.data.month;
+  }
+
+  getGroupedStatements(): { [year: number]: { [quarter: string]: INode<BankStatement>[] } } {
+    const grouped: { [year: number]: { [quarter: string]: INode<BankStatement>[] } } = {};
+
+    this.bankStatements.forEach(statement => {
+      const year = statement.data.year;
+      const quarter = statement.data.quarter;
+
+      if (!quarter) return; // Skip if quarter is undefined
+
+      if (!grouped[year]) {
+        grouped[year] = {};
+      }
+
+      if (!grouped[year][quarter]) {
+        grouped[year][quarter] = [];
+      }
+
+      grouped[year][quarter].push(statement);
+    });
+
+    // Sort statements within each quarter by month (descending)
+    Object.keys(grouped).forEach(yearStr => {
+      const year = +yearStr;
+      Object.keys(grouped[year]).forEach(quarter => {
+        grouped[year][quarter].sort((a, b) => b.data.month - a.data.month);
+      });
+    });
+
+    return grouped;
+  }
+
+  getOrderedYears(): number[] {
+    return Object.keys(this.getGroupedStatements())
+      .map(year => +year)
+      .sort((a, b) => b - a);
+  }
+
+  getOrderedQuarters(year: number): string[] {
+    const groupedStatements = this.getGroupedStatements();
+    if (!groupedStatements[year]) return [];
+
+    const quarters = Object.keys(groupedStatements[year]);
+    return quarters.sort((a, b) => {
+      const quarterOrder = { 'Q4': 4, 'Q3': 3, 'Q2': 2, 'Q1': 1 };
+      const aOrder = quarterOrder[a as keyof typeof quarterOrder] || 0;
+      const bOrder = quarterOrder[b as keyof typeof quarterOrder] || 0;
+      return bOrder - aOrder;
+    });
+  }
+
+  getStatementsForQuarter(year: number, quarter: string): INode<BankStatement>[] {
+    const groupedStatements = this.getGroupedStatements();
+    return groupedStatements[year]?.[quarter] || [];
+  }
+
+  getQuarterName(quarter: string): string {
+    const quarterNames = {
+      'Q1': 'Jan-Mar',
+      'Q2': 'Apr-Jun',
+      'Q3': 'Jul-Sep',
+      'Q4': 'Oct-Dec'
+    };
+    return quarterNames[quarter as keyof typeof quarterNames] || quarter;
   }
 
   formatCurrency(amount: number): string {
@@ -369,22 +449,23 @@ export class FinancialTabComponent implements OnInit {
   }
 
   getFilteredStatements(): INode<BankStatement>[] {
+    let filtered: INode<BankStatement>[] = [];
+
     if (this.selectedReportPeriod === 'all') {
-      return this.bankStatements;
-    }
-
-    if (this.selectedReportPeriod === 'year') {
-      return this.bankStatements.filter(stmt => stmt.data.year === this.selectedYear);
-    }
-
-    if (this.selectedReportPeriod.startsWith('Q')) {
-      return this.bankStatements.filter(stmt =>
+      filtered = this.bankStatements;
+    } else if (this.selectedReportPeriod === 'year') {
+      filtered = this.bankStatements.filter(stmt => stmt.data.year === this.selectedYear);
+    } else if (this.selectedReportPeriod.startsWith('Q')) {
+      filtered = this.bankStatements.filter(stmt =>
         stmt.data.year === this.selectedYear &&
         stmt.data.quarter === this.selectedReportPeriod
       );
+    } else {
+      filtered = this.bankStatements;
     }
 
-    return this.bankStatements;
+    // Apply the same sorting to filtered results
+    return filtered.sort((a, b) => this.sortByQuarterAndMonth(a, b));
   }
 
   getReportTitle(): string {
