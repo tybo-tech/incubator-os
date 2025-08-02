@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { INode } from '../../../../../models/schema';
 import { Company, BankStatement } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
@@ -8,7 +8,7 @@ import { NodeService } from '../../../../../services';
 @Component({
   selector: 'app-financial-tab',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './financial-tab.component.html'
 })
 export class FinancialTabComponent implements OnInit {
@@ -24,6 +24,12 @@ export class FinancialTabComponent implements OnInit {
   editingStatement: INode<BankStatement> | null = null;
   savingStatement = false;
   statementForm: FormGroup;
+
+  // PDF export properties
+  showReportModal = false;
+  generatingPdf = false;
+  selectedReportPeriod = 'all';
+  selectedYear = new Date().getFullYear();
 
   constructor(
     private nodeService: NodeService<BankStatement>,
@@ -284,5 +290,148 @@ export class FinancialTabComponent implements OnInit {
       { value: 11, label: 'November' },
       { value: 12, label: 'December' }
     ];
+  }
+
+  // ===== PDF EXPORT METHODS =====
+
+  openReportModal() {
+    this.showReportModal = true;
+    this.selectedYear = new Date().getFullYear();
+    this.selectedReportPeriod = 'all';
+  }
+
+  closeReportModal() {
+    this.showReportModal = false;
+    this.generatingPdf = false;
+  }
+
+  async generatePDF() {
+    this.generatingPdf = true;
+
+    try {
+      // Dynamic import for html2pdf
+      const html2pdf = (await import('html2pdf.js')).default;
+
+      // Wait a moment for any UI updates to render
+      setTimeout(async () => {
+        const element = document.getElementById('financial-report-content');
+        if (!element) {
+          console.error('Report content element not found');
+          this.generatingPdf = false;
+          return;
+        }
+
+        const companyName = this.company.data.name || 'Company';
+        const reportDate = new Date().toLocaleDateString('en-ZA');
+        const filename = `${companyName.replace(/[^a-z0-9]/gi, '_')}_Financial_Report_${reportDate.replace(/\//g, '_')}.pdf`;
+
+        const options = {
+          margin: [0.5, 0.5, 0.5, 0.5],
+          filename: filename,
+          image: {
+            type: 'jpeg',
+            quality: 0.98
+          },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true
+          },
+          jsPDF: {
+            unit: 'in',
+            format: 'a4',
+            orientation: 'portrait'
+          }
+        };
+
+        try {
+          await html2pdf().set(options).from(element).save();
+          console.log('PDF generated successfully');
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+        } finally {
+          this.generatingPdf = false;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error in PDF generation:', error);
+      this.generatingPdf = false;
+    }
+  }
+
+  getFilteredStatements(): INode<BankStatement>[] {
+    if (this.selectedReportPeriod === 'all') {
+      return this.bankStatements;
+    }
+
+    if (this.selectedReportPeriod === 'year') {
+      return this.bankStatements.filter(stmt => stmt.data.year === this.selectedYear);
+    }
+
+    if (this.selectedReportPeriod.startsWith('Q')) {
+      return this.bankStatements.filter(stmt =>
+        stmt.data.year === this.selectedYear &&
+        stmt.data.quarter === this.selectedReportPeriod
+      );
+    }
+
+    return this.bankStatements;
+  }
+
+  getReportTitle(): string {
+    const companyName = this.company.data.name || 'Company';
+
+    if (this.selectedReportPeriod === 'all') {
+      return `${companyName} - Complete Financial Report`;
+    }
+
+    if (this.selectedReportPeriod === 'year') {
+      return `${companyName} - Financial Report ${this.selectedYear}`;
+    }
+
+    if (this.selectedReportPeriod.startsWith('Q')) {
+      return `${companyName} - Financial Report ${this.selectedReportPeriod} ${this.selectedYear}`;
+    }
+
+    return `${companyName} - Financial Report`;
+  }
+
+  getReportSummary() {
+    const statements = this.getFilteredStatements();
+
+    if (statements.length === 0) {
+      return {
+        totalIncome: 0,
+        totalExpenses: 0,
+        netIncome: 0,
+        avgClosingBalance: 0,
+        periodCount: 0
+      };
+    }
+
+    const totalIncome = statements.reduce((sum, stmt) => sum + (stmt.data.total_income || 0), 0);
+    const totalExpenses = statements.reduce((sum, stmt) => sum + (stmt.data.total_expense || 0), 0);
+    const netIncome = totalIncome - totalExpenses;
+    const avgClosingBalance = statements.reduce((sum, stmt) => sum + (stmt.data.closing_balance || 0), 0) / statements.length;
+
+    return {
+      totalIncome,
+      totalExpenses,
+      netIncome,
+      avgClosingBalance,
+      periodCount: statements.length
+    };
+  }
+
+  getAvailableYearsForReport(): number[] {
+    return this.getAvailableYears();
+  }
+
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('en-ZA');
+  }
+
+  getCurrentDateTime(): string {
+    return new Date().toLocaleString('en-ZA');
   }
 }

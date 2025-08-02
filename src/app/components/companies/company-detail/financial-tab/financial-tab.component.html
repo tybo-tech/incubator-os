@@ -28,13 +28,22 @@
     <div class="border-t pt-6">
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-md font-medium text-gray-900">Bank Statements</h4>
-        <button (click)="openCreateModal()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Add Statement
-        </button>
+        <div class="flex space-x-3">
+          <button (click)="openReportModal()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Export PDF
+          </button>
+          <button (click)="openCreateModal()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Statement
+          </button>
+        </div>
       </div>
 
       <!-- Loading State -->
@@ -312,6 +321,170 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Report Modal -->
+<div *ngIf="showReportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-7xl shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-medium text-gray-900">Financial Report Export</h3>
+        <button (click)="closeReportModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Report Options -->
+      <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h4 class="text-md font-medium text-gray-900 mb-3">Report Configuration</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Report Period</label>
+            <select [(ngModel)]="selectedReportPeriod"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="all">All Time</option>
+              <option value="year">Specific Year</option>
+              <option value="Q1">Q1 Only</option>
+              <option value="Q2">Q2 Only</option>
+              <option value="Q3">Q3 Only</option>
+              <option value="Q4">Q4 Only</option>
+            </select>
+          </div>
+
+          <div *ngIf="selectedReportPeriod !== 'all'">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <select [(ngModel)]="selectedYear"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option *ngFor="let year of getAvailableYearsForReport()" [value]="year">{{ year }}</option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button (click)="generatePDF()"
+                    [disabled]="generatingPdf"
+                    class="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span *ngIf="generatingPdf" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+              {{ generatingPdf ? 'Generating...' : 'Download PDF' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Preview Content -->
+      <div id="financial-report-content" class="bg-white">
+        <!-- Report Header -->
+        <div class="text-center mb-8 no-page-break">
+          <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ getReportTitle() }}</h1>
+          <p class="text-gray-600">Generated on {{ getCurrentDate() }}</p>
+          <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div><strong>Company:</strong> {{ company.data.name }}</div>
+              <div><strong>Registration:</strong> {{ company.data.registration_no || 'N/A' }}</div>
+              <div><strong>Industry:</strong> {{ company.data.industry || 'N/A' }}</div>
+              <div><strong>VAT Number:</strong> {{ company.data.vat_number || 'N/A' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Summary -->
+        <div class="mb-8 no-page-break">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Executive Summary</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-green-50 p-4 rounded-lg text-center">
+              <div class="text-2xl font-bold text-green-600">{{ formatCurrency(getReportSummary().totalIncome) }}</div>
+              <div class="text-sm text-green-800">Total Income</div>
+            </div>
+            <div class="bg-red-50 p-4 rounded-lg text-center">
+              <div class="text-2xl font-bold text-red-600">{{ formatCurrency(getReportSummary().totalExpenses) }}</div>
+              <div class="text-sm text-red-800">Total Expenses</div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg text-center">
+              <div class="text-2xl font-bold text-blue-600">{{ formatCurrency(getReportSummary().netIncome) }}</div>
+              <div class="text-sm text-blue-800">Net Income</div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg text-center">
+              <div class="text-2xl font-bold text-gray-600">{{ getReportSummary().periodCount }}</div>
+              <div class="text-sm text-gray-800">Periods</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quarterly Overview (if showing multiple quarters) -->
+        <div *ngIf="selectedReportPeriod === 'all' || selectedReportPeriod === 'year'" class="mb-8">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Quarterly Overview</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']" class="border rounded-lg p-4">
+              <h3 class="font-medium text-gray-900 mb-2">{{ quarter }}</h3>
+              <div class="space-y-1 text-sm">
+                <div class="flex justify-between">
+                  <span>Income:</span>
+                  <span class="text-green-600 font-medium">{{ formatCurrency(getQuarterTotal(quarter, 'total_income')) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Expenses:</span>
+                  <span class="text-red-600 font-medium">{{ formatCurrency(getQuarterTotal(quarter, 'total_expense')) }}</span>
+                </div>
+                <div class="flex justify-between border-t pt-1">
+                  <span>Balance:</span>
+                  <span class="font-medium">{{ formatCurrency(getQuarterTotal(quarter, 'closing_balance')) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Statement Table -->
+        <div class="page-break-before">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Detailed Financial Statements</h2>
+          <div class="overflow-hidden">
+            <table class="min-w-full border border-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b">Period</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase border-b">Quarter</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase border-b">Opening Balance</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase border-b">Income</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase border-b">Expenses</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase border-b">Closing Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let statement of getFilteredStatements()" class="border-b">
+                  <td class="px-4 py-3 text-sm text-gray-900">
+                    {{ getMonthName(statement.data.month) }} {{ statement.data.year }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-500">
+                    {{ statement.data.quarter }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-900">
+                    {{ formatCurrency(statement.data.opening_balance || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-green-600 font-medium">
+                    {{ formatCurrency(statement.data.total_income || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-red-600 font-medium">
+                    {{ formatCurrency(statement.data.total_expense || 0) }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">
+                    {{ formatCurrency(statement.data.closing_balance || 0) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Report Footer -->
+        <div class="mt-8 pt-4 border-t text-center text-xs text-gray-500">
+          <p>This report was generated automatically by the Incubator OS Financial Management System</p>
+          <p>Generated on {{ getCurrentDateTime() }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>>
