@@ -13,7 +13,7 @@ import { getCompanyImports } from './data';
 export class AppComponent {
   title = 'nodes';
   constructor(private nodeService: NodeService<Company>) {
-    this.importData();
+    // this.importData();
   }
   importData() {
     const data = getCompanyImports();
