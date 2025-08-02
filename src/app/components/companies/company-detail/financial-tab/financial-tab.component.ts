@@ -321,6 +321,9 @@ export class FinancialTabComponent implements OnInit {
           return;
         }
 
+        // Add CSS overrides for pdf-compatible colors
+        this.addPdfColorOverrides();
+
         const companyName = this.company.data.name || 'Company';
         const reportDate = new Date().toLocaleDateString('en-ZA');
         const filename = `${companyName.replace(/[^a-z0-9]/gi, '_')}_Financial_Report_${reportDate.replace(/\//g, '_')}.pdf`;
@@ -335,7 +338,11 @@ export class FinancialTabComponent implements OnInit {
           html2canvas: {
             scale: 2,
             useCORS: true,
-            letterRendering: true
+            letterRendering: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            allowTaint: true,
+            foreignObjectRendering: false
           },
           jsPDF: {
             unit: 'in',
@@ -350,6 +357,8 @@ export class FinancialTabComponent implements OnInit {
         } catch (error) {
           console.error('Error generating PDF:', error);
         } finally {
+          // Remove the CSS overrides
+          this.removePdfColorOverrides();
           this.generatingPdf = false;
         }
       }, 100);
@@ -433,5 +442,46 @@ export class FinancialTabComponent implements OnInit {
 
   getCurrentDateTime(): string {
     return new Date().toLocaleString('en-ZA');
+  }
+
+  // PDF color override methods to handle modern CSS functions
+  private pdfStyleElement: HTMLStyleElement | null = null;
+
+  addPdfColorOverrides() {
+    // Create a style element with PDF-compatible colors
+    this.pdfStyleElement = document.createElement('style');
+    this.pdfStyleElement.id = 'pdf-color-overrides';
+    this.pdfStyleElement.innerHTML = `
+      #financial-report-content .text-gray-900 { color: #111827 !important; }
+      #financial-report-content .text-gray-800 { color: #1f2937 !important; }
+      #financial-report-content .text-gray-700 { color: #374151 !important; }
+      #financial-report-content .text-gray-600 { color: #4b5563 !important; }
+      #financial-report-content .text-gray-500 { color: #6b7280 !important; }
+      #financial-report-content .text-blue-900 { color: #1e3a8a !important; }
+      #financial-report-content .text-blue-800 { color: #1e40af !important; }
+      #financial-report-content .text-blue-700 { color: #1d4ed8 !important; }
+      #financial-report-content .text-blue-600 { color: #2563eb !important; }
+      #financial-report-content .text-green-600 { color: #16a34a !important; }
+      #financial-report-content .text-green-800 { color: #166534 !important; }
+      #financial-report-content .text-red-600 { color: #dc2626 !important; }
+      #financial-report-content .text-red-800 { color: #991b1b !important; }
+      #financial-report-content .bg-blue-50 { background-color: #eff6ff !important; }
+      #financial-report-content .bg-green-50 { background-color: #f0fdf4 !important; }
+      #financial-report-content .bg-red-50 { background-color: #fef2f2 !important; }
+      #financial-report-content .bg-gray-50 { background-color: #f9fafb !important; }
+      #financial-report-content .bg-white { background-color: #ffffff !important; }
+      #financial-report-content .border-gray-200 { border-color: #e5e7eb !important; }
+      #financial-report-content .border-b { border-bottom: 1px solid #e5e7eb !important; }
+      #financial-report-content .border { border: 1px solid #e5e7eb !important; }
+    `;
+
+    document.head.appendChild(this.pdfStyleElement);
+  }
+
+  removePdfColorOverrides() {
+    if (this.pdfStyleElement) {
+      document.head.removeChild(this.pdfStyleElement);
+      this.pdfStyleElement = null;
+    }
   }
 }
