@@ -53,9 +53,11 @@
 
   <!-- Statement Modal Component -->
   <app-statement-modal
-    *ngIf="showModal && company"
+    *ngIf="showModal"
+    [isVisible]="showModal"
     [isEditMode]="isEditMode"
     [editingStatement]="editingStatement"
+    [company]="company"
     (closeModal)="onModalClose()"
     (statementSaved)="onStatementSaved()">
   </app-statement-modal>
