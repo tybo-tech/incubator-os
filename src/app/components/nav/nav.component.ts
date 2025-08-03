@@ -1,9 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NodeService } from '../../../services';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
+
+interface NavChildItem {
+  label: string;
+  route?: string;
+  action?: string;
+  icon?: string;
+}
+
+interface NavItem {
+  icon: string;
+  label: string;
+  route: string;
+  active: boolean;
+  badge?: string;
+  children?: NavChildItem[];
+}
 
 @Component({
   selector: 'app-nav',
@@ -12,6 +28,8 @@ import { INode } from '../../../models/schema';
   styleUrl: './nav.component.scss'
 })
 export class NavComponent implements OnInit {
+  @Output() onQuickTaskClick = new EventEmitter<void>();
+
   pendingTasksCount = 0;
 
   constructor(private nodeService: NodeService<Task>) {}
@@ -37,7 +55,15 @@ export class NavComponent implements OnInit {
     }
   }
 
-  navItems = [
+  onNavAction(action: string) {
+    switch (action) {
+      case 'quickTask':
+        this.onQuickTaskClick.emit();
+        break;
+    }
+  }
+
+  navItems: NavItem[] = [
     {
       icon: 'overview',
       label: 'Overview',
@@ -57,7 +83,14 @@ export class NavComponent implements OnInit {
       label: 'Tasks',
       route: '/tasks',
       active: false,
-      badge: undefined
+      badge: undefined,
+      children: [
+        {
+          label: 'Quick Task',
+          action: 'quickTask',
+          icon: 'bi-plus-circle'
+        }
+      ]
     },
     {
       icon: 'data',
@@ -71,8 +104,8 @@ export class NavComponent implements OnInit {
       route: '/analytics',
       active: false,
       children: [
-        { label: 'Reports', route: '/analytics/reports' },
-        { label: 'Insights', route: '/analytics/insights' }
+        { label: 'Reports', route: '/analytics/reports', icon: 'bi-graph-up' },
+        { label: 'Insights', route: '/analytics/insights', icon: 'bi-lightbulb' }
       ]
     },
     {

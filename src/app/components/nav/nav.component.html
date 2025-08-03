@@ -29,49 +29,78 @@
   <nav class="flex-1 px-4 pb-4">
     <ul class="space-y-1">
       <li *ngFor="let item of navItems">
-        <a
-          [routerLink]="item.route"
-          routerLinkActive="bg-slate-800 text-white"
-          [routerLinkActiveOptions]="{exact: false}"
-          class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group"
-        >
-          <!-- Overview Icon -->
-          <svg *ngIf="item.icon === 'overview'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-          </svg>
+        <div>
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="bg-slate-800 text-white"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group"
+          >
+            <!-- Overview Icon -->
+            <svg *ngIf="item.icon === 'overview'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+            </svg>
 
-          <!-- Companies Icon -->
-          <svg *ngIf="item.icon === 'companies'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-          </svg>
+            <!-- Companies Icon -->
+            <svg *ngIf="item.icon === 'companies'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
 
-          <!-- Data Icon -->
-          <svg *ngIf="item.icon === 'data'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-          </svg>
+            <!-- Tasks Icon -->
+            <svg *ngIf="item.icon === 'tasks'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2zM9 5a2 2 0 012 2v6a2 2 0 01-2 2M9 5a2 2 0 012 2v6a2 2 0 01-2 2m0 0h10a2 2 0 002-2V7a2 2 0 00-2-2H9m0 0V5a2 2 0 012-2h2a2 2 0 012 2v0M9 5V3a2 2 0 012-2h2a2 2 0 012 2v2M9 5v0"></path>
+            </svg>
 
-          <!-- Analytics Icon -->
-          <svg *ngIf="item.icon === 'analytics'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-          </svg>
+            <!-- Data Icon -->
+            <svg *ngIf="item.icon === 'data'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+            </svg>
 
-          <!-- Team Icon -->
-          <svg *ngIf="item.icon === 'team'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-          </svg>
+            <!-- Analytics Icon -->
+            <svg *ngIf="item.icon === 'analytics'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
 
-          <span class="flex-1">{{ item.label }}</span>
+            <!-- Team Icon -->
+            <svg *ngIf="item.icon === 'team'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+            </svg>
 
-          <!-- Badge -->
-          <span *ngIf="item.badge" class="bg-red-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-            {{ item.badge }}
-          </span>
+            <span class="flex-1">{{ item.label }}</span>
 
-          <!-- Dropdown Arrow -->
-          <svg *ngIf="item.children" class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </a>
+            <!-- Badge -->
+            <span *ngIf="item.badge" class="bg-red-600 text-white text-xs font-medium px-2 py-1 rounded-full">
+              {{ item.badge }}
+            </span>
+
+            <!-- Dropdown Arrow -->
+            <svg *ngIf="item.children" class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+
+          <!-- Children/Submenu -->
+          <ul *ngIf="item.children" class="ml-8 mt-1 space-y-1">
+            <li *ngFor="let child of item.children">
+              <a *ngIf="child.route"
+                [routerLink]="child.route"
+                routerLinkActive="bg-slate-700 text-white"
+                class="flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors text-sm"
+              >
+                <i *ngIf="child.icon" [class]="child.icon + ' text-sm'"></i>
+                <span>{{ child.label }}</span>
+              </a>
+
+              <button *ngIf="child.action"
+                (click)="onNavAction(child.action)"
+                class="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors text-sm"
+              >
+                <i *ngIf="child.icon" [class]="child.icon + ' text-sm'"></i>
+                <span>{{ child.label }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </li>
     </ul>
   </nav>
