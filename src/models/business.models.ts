@@ -165,44 +165,10 @@ export function initTask(): Task {
   };
 }
 
-// ✅ Utility function to calculate quarter based on program fiscal year
-// Q1: April, May, June (4, 5, 6)
-// Q2: July, August, September (7, 8, 9)
-// Q3: October, November, December (10, 11, 12)
-// Q4: January, February, March (1, 2, 3)
+// Utility function to calculate quarter from month
 export function calculateQuarter(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
-  if (month >= 4 && month <= 6) return 'Q1';
-  if (month >= 7 && month <= 9) return 'Q2';
-  if (month >= 10 && month <= 12) return 'Q3';
-  if (month >= 1 && month <= 3) return 'Q4';
-  throw new Error('Invalid month number. Must be between 1 and 12.');
-}
-
-// ✅ Utility function to get fiscal year based on program calendar
-// Fiscal year starts in April and ends in March
-export function getFiscalYear(month: number, year: number): number {
-  // If month is Jan-Mar, it belongs to the fiscal year that started in the previous calendar year
-  if (month >= 1 && month <= 3) {
-    return year - 1;
-  }
-  // If month is Apr-Dec, it belongs to the fiscal year that started in the current calendar year
-  return year;
-}
-
-// ✅ Enhanced init function that auto-calculates quarter
-export function initBankStatementWithQuarter(month?: number, year?: number): BankStatement {
-  const currentDate = new Date();
-  const targetMonth = month || (currentDate.getMonth() + 1);
-  const targetYear = year || currentDate.getFullYear();
-
-  return {
-    year: targetYear,
-    month: targetMonth,
-    quarter: calculateQuarter(targetMonth),
-    opening_balance: 0,
-    closing_balance: 0,
-    total_income: 0,
-    total_expense: 0,
-    account_name: '',
-  };
+  if (month >= 1 && month <= 3) return 'Q1';
+  if (month >= 4 && month <= 6) return 'Q2';
+  if (month >= 7 && month <= 9) return 'Q3';
+  return 'Q4';
 }

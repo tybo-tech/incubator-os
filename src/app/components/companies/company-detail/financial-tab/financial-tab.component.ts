@@ -9,6 +9,7 @@ import {
   StatementsTableComponent,
   StatementModalComponent
 } from './components';
+import { PdfExportModalComponent } from './components/pdf-export-modal.component';
 
 @Component({
   selector: 'app-financial-tab',
@@ -18,7 +19,8 @@ import {
     FinancialOverviewComponent,
     QuarterlyViewComponent,
     StatementsTableComponent,
-    StatementModalComponent
+    StatementModalComponent,
+    PdfExportModalComponent
   ],
   templateUrl: './financial-tab.component.html'
 })
@@ -33,6 +35,9 @@ export class FinancialTabComponent implements OnInit {
   showModal = false;
   isEditMode = false;
   editingStatement: INode<BankStatement> | null = null;
+
+  // PDF Export modal properties
+  showPdfModal = false;
 
   constructor(
     private nodeService: NodeService<BankStatement>
@@ -220,5 +225,15 @@ export class FinancialTabComponent implements OnInit {
         }
       });
     }
+  }
+
+  // ===== PDF EXPORT METHODS =====
+
+  onExportPDF() {
+    this.showPdfModal = true;
+  }
+
+  onPdfModalClose() {
+    this.showPdfModal = false;
   }
 }

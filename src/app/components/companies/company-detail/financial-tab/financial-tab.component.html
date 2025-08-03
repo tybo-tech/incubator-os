@@ -10,6 +10,11 @@
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-md font-medium text-gray-900">Bank Statements</h4>
         <div class="flex space-x-3">
+          <button (click)="onExportPDF()"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <i class="fas fa-file-pdf mr-2"></i>
+            Export PDF
+          </button>
           <button (click)="onAddStatement()"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <i class="fas fa-plus mr-2"></i>
@@ -60,4 +65,13 @@
     (closeModalEvent)="onModalClose()"
     (saveStatementEvent)="onStatementSaved($event)">
   </app-statement-modal>
+
+  <!-- PDF Export Modal Component -->
+  <app-pdf-export-modal
+    *ngIf="showPdfModal"
+    [showModal]="showPdfModal"
+    [company]="company"
+    [bankStatements]="bankStatements"
+    (closeModalEvent)="onPdfModalClose()">
+  </app-pdf-export-modal>
 </div>
