@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../../../models/schema';
-import { Company } from '../../../../../../../models/business.models';
+import { Company, BankStatement } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
 import { FinancialCheckinDetailsComponent } from './financial-checkin-details.component';
@@ -12,6 +12,9 @@ interface MonthlyStatus {
   hasCheckIn: boolean;
   netProfitMargin?: number;
   isCurrentMonth: boolean;
+  // Variance analysis with bank statements
+  turnoverVariance?: number;
+  hasVarianceAlert?: boolean;
 }
 
 interface MonthDetails {
@@ -31,6 +34,12 @@ interface LatestMetrics {
     marginImprovement: number;
     cashGrowth: number;
   };
+  // Variance analysis
+  varianceAnalysis?: {
+    turnoverVariance: number;
+    hasSignificantVariance: boolean;
+    bankDataAvailable: boolean;
+  };
 }
 
 @Component({
@@ -42,10 +51,16 @@ interface LatestMetrics {
       <!-- Header -->
       <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-lg">
         <div class="flex justify-between items-center">
-          <h3 class="text-lg font-semibold flex items-center">
-            <i class="fas fa-chart-line mr-3"></i>
-            Financial Check-ins
-          </h3>
+          <div>
+            <h3 class="text-lg font-semibold flex items-center">
+              <i class="fas fa-chart-line mr-3"></i>
+              Financial Check-ins
+            </h3>
+            <p class="text-blue-100 text-sm mt-1">
+              <i class="fas fa-shield-alt mr-1"></i>
+              Primary Source: Advisor-verified business metrics
+            </p>
+          </div>
           <div class="flex space-x-2">
             <button (click)="onViewTrends()"
                     class="bg-blue-500 hover:bg-blue-400 text-white px-3 py-1 rounded text-sm transition-colors">
@@ -100,8 +115,14 @@ interface LatestMetrics {
                    (click)="onMonthClick(status)">
 
                 <!-- Month Card -->
-                <div class="bg-gray-50 rounded-lg p-3 text-center border-2 transition-all"
+                <div class="bg-gray-50 rounded-lg p-3 text-center border-2 transition-all relative"
                      [class]="getMonthCardClass(status)">
+
+                  <!-- Variance Alert Badge -->
+                  <div *ngIf="status.hasVarianceAlert"
+                       class="absolute -top-1 -right-1 bg-yellow-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    <i class="fas fa-exclamation text-xs"></i>
+                  </div>
 
                   <!-- Month Name -->
                   <div class="text-xs font-medium text-gray-600 mb-1">
@@ -127,13 +148,19 @@ interface LatestMetrics {
                 <!-- Tooltip (on hover) -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                   <div *ngIf="status.hasCheckIn; else noCheckIn">
-                    Check-in available<br>
+                    ✅ Check-in available<br>
                     <span *ngIf="status.netProfitMargin !== undefined">
-                      NP Margin: {{ status.netProfitMargin | number:'1.1-1' }}%
+                      📊 NP Margin: {{ status.netProfitMargin | number:'1.1-1' }}%<br>
+                    </span>
+                    <span *ngIf="status.turnoverVariance !== undefined">
+                      <span [class]="Math.abs(status.turnoverVariance!) <= 15 ? 'text-green-300' : 'text-yellow-300'">
+                        📈 Variance: {{ status.turnoverVariance | number:'1.0-0' }}%
+                      </span>
                     </span>
                   </div>
                   <ng-template #noCheckIn>
-                    No check-in for {{ status.monthName }}
+                    ❌ No check-in for {{ status.monthName }}<br>
+                    <small class="text-gray-300">Primary data missing</small>
                   </ng-template>
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
                 </div>
@@ -143,10 +170,30 @@ interface LatestMetrics {
 
           <!-- Latest Metrics (if available) -->
           <div *ngIf="latestMetrics" class="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mb-6">
-            <h4 class="font-medium text-gray-900 mb-3 flex items-center">
-              <i class="fas fa-chart-pie mr-2"></i>
-              Latest Metrics ({{ latestMetrics.period }})
-            </h4>
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="font-medium text-gray-900 flex items-center">
+                <i class="fas fa-chart-pie mr-2"></i>
+                Latest Metrics ({{ latestMetrics.period }})
+              </h4>
+              <div *ngIf="latestMetrics.varianceAnalysis?.bankDataAvailable" class="text-xs text-gray-600 flex items-center">
+                <i class="fas fa-balance-scale mr-1"></i>
+                Variance tracking active
+              </div>
+            </div>
+
+            <!-- Variance Alert (if significant) -->
+            <div *ngIf="latestMetrics.varianceAnalysis?.hasSignificantVariance"
+                 class="bg-yellow-100 border border-yellow-400 rounded-lg p-3 mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                <div>
+                  <h5 class="text-sm font-medium text-yellow-800">Variance Alert</h5>
+                  <p class="text-xs text-yellow-700">
+                    {{ (latestMetrics.varianceAnalysis?.turnoverVariance || 0) | number:'1.0-0' }}% difference between check-in turnover and bank income
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Monthly Turnover -->
@@ -233,7 +280,11 @@ interface LatestMetrics {
           <div *ngIf="checkIns.length === 0" class="text-center py-12">
             <i class="fas fa-chart-line text-gray-300 text-4xl mb-4"></i>
             <h4 class="text-lg font-medium text-gray-900 mb-2">No Financial Check-ins Yet</h4>
-            <p class="text-gray-600 mb-4">Start tracking your business financial health with regular check-ins.</p>
+            <p class="text-gray-600 mb-2">Start capturing verified business metrics through advisor meetings.</p>
+            <p class="text-sm text-blue-600 mb-4">
+              <i class="fas fa-shield-alt mr-1"></i>
+              Financial Check-ins are your primary source for business reporting and analysis.
+            </p>
             <button (click)="onNewCheckIn()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
               <i class="fas fa-plus mr-2"></i>
@@ -273,6 +324,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   @Output() onEditCheckIn = new EventEmitter<INode<FinancialCheckIn>>();
 
   checkIns: INode<FinancialCheckIn>[] = [];
+  bankStatements: INode<BankStatement>[] = []; // For variance analysis
   loading = false;
   error: string | null = null;
 
@@ -286,6 +338,9 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   selectedMonthDetails: MonthDetails | null = null;
   selectedMonthCheckIns: INode<FinancialCheckIn>[] = [];
 
+  // Utility reference
+  Math = Math;
+
   months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -298,11 +353,13 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   ngOnInit() {
     this.initializeMonthlyStatus();
     this.loadCheckIns();
+    this.loadBankStatements(); // Load for variance analysis
   }
 
   // Public method to refresh data from parent component
   public refreshData() {
     this.loadCheckIns();
+    this.loadBankStatements();
   }
 
   /**
@@ -353,6 +410,30 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
   }
 
+  // Load bank statements for variance analysis
+  async loadBankStatements() {
+    if (!this.company?.id) return;
+
+    try {
+      // Get bank statements for variance analysis - use proper typing
+      const bankService = this.nodeService as any; // Type assertion for accessing different node types
+      const allStatements = await bankService.getNodes('bank_statement').toPromise();
+
+      this.bankStatements = allStatements?.filter((node: INode<BankStatement>) =>
+        node.company_id === this.company.id &&
+        node.data.year === this.currentYear
+      ) || [];
+
+      // Recalculate metrics with variance analysis
+      this.updateMonthlyStatusWithVariance();
+      this.calculateLatestMetrics();
+
+    } catch (error) {
+      console.error('❌ Error loading bank statements for variance analysis:', error);
+      // Don't show error to user - variance analysis is optional
+    }
+  }
+
   private updateMonthlyStatus() {
     this.monthlyStatus.forEach(status => {
       // Handle both string and number month values from database
@@ -361,6 +442,32 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       );
       status.hasCheckIn = !!checkIn;
       status.netProfitMargin = checkIn?.data.np_margin;
+    });
+  }
+
+  private updateMonthlyStatusWithVariance() {
+    this.monthlyStatus.forEach(status => {
+      // Handle both string and number month values from database
+      const checkIn = this.checkIns.find(ci =>
+        this.parseMonth(ci.data.month) === status.month
+      );
+
+      status.hasCheckIn = !!checkIn;
+      status.netProfitMargin = checkIn?.data.np_margin;
+
+      // Variance analysis with bank statements
+      if (checkIn) {
+        const bankStatement = this.bankStatements.find(bs => bs.data.month === status.month);
+        if (bankStatement) {
+          const checkInTurnover = checkIn.data.turnover_monthly_avg || 0;
+          const bankIncome = bankStatement.data.total_income || 0;
+
+          if (bankIncome > 0) {
+            status.turnoverVariance = ((checkInTurnover - bankIncome) / bankIncome) * 100;
+            status.hasVarianceAlert = Math.abs(status.turnoverVariance) > 15; // Alert if >15% variance
+          }
+        }
+      }
     });
   }
 
@@ -379,6 +486,37 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     const latest = sortedCheckIns[0];
     const previous = sortedCheckIns[1];
 
+    // Variance analysis with bank statements
+    let varianceAnalysis = undefined;
+    const latestMonth = this.parseMonth(latest.data.month);
+    const bankStatement = this.bankStatements.find(bs => bs.data.month === latestMonth);
+
+    if (bankStatement) {
+      const checkInTurnover = latest.data.turnover_monthly_avg || 0;
+      const bankIncome = bankStatement.data.total_income || 0;
+
+      if (bankIncome > 0) {
+        const variance = ((checkInTurnover - bankIncome) / bankIncome) * 100;
+        varianceAnalysis = {
+          turnoverVariance: variance,
+          hasSignificantVariance: Math.abs(variance) > 15,
+          bankDataAvailable: true
+        };
+      } else {
+        varianceAnalysis = {
+          turnoverVariance: 0,
+          hasSignificantVariance: false,
+          bankDataAvailable: true
+        };
+      }
+    } else {
+      varianceAnalysis = {
+        turnoverVariance: 0,
+        hasSignificantVariance: false,
+        bankDataAvailable: false
+      };
+    }
+
     this.latestMetrics = {
       turnover: latest.data.turnover_monthly_avg || 0,
       netProfitMargin: latest.data.np_margin || 0,
@@ -395,7 +533,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
           previous?.data.cash_on_hand || 0,
           latest.data.cash_on_hand || 0
         )
-      }
+      },
+      varianceAnalysis
     };
   }
 
