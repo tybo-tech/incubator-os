@@ -5,6 +5,16 @@
     <!-- Financial Overview Component -->
     <app-financial-overview [company]="company"></app-financial-overview>
 
+    <!-- Financial Check-ins Section -->
+    <div class="border-t pt-6">
+      <app-financial-checkin-overview 
+        [company]="company"
+        (onNewCheckInClick)="onNewCheckIn()"
+        (onViewTrendsClick)="onViewTrends()"
+        (onEditCheckIn)="onEditCheckIn($event)">
+      </app-financial-checkin-overview>
+    </div>
+
     <!-- Bank Statements Section -->
     <div class="border-t pt-6">
       <div class="flex justify-between items-center mb-4">
@@ -74,4 +84,14 @@
     [bankStatements]="bankStatements"
     (closeModalEvent)="onPdfModalClose()">
   </app-pdf-export-modal>
+
+  <!-- Financial Check-in Modal Component -->
+  <app-financial-checkin-modal
+    [isVisible]="showCheckInModal"
+    [company]="company"
+    [editMode]="isCheckInEditMode"
+    [checkInData]="editingCheckIn || undefined"
+    (onCloseModal)="onCheckInModalClose()"
+    (onSaveCheckIn)="onCheckInSaved($event)">
+  </app-financial-checkin-modal>
 </div>

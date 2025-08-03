@@ -2,12 +2,15 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../models/schema';
 import { Company, BankStatement } from '../../../../../models/business.models';
+import { FinancialCheckIn } from '../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../services';
 import {
   FinancialOverviewComponent,
   QuarterlyViewComponent,
   StatementsTableComponent,
-  StatementModalComponent
+  StatementModalComponent,
+  FinancialCheckinModalComponent,
+  FinancialCheckinOverviewComponent
 } from './components';
 import { PdfExportModalComponent } from './components/pdf-export-modal.component';
 
@@ -20,7 +23,9 @@ import { PdfExportModalComponent } from './components/pdf-export-modal.component
     QuarterlyViewComponent,
     StatementsTableComponent,
     StatementModalComponent,
-    PdfExportModalComponent
+    PdfExportModalComponent,
+    FinancialCheckinModalComponent,
+    FinancialCheckinOverviewComponent
   ],
   templateUrl: './financial-tab.component.html'
 })
@@ -39,8 +44,14 @@ export class FinancialTabComponent implements OnInit {
   // PDF Export modal properties
   showPdfModal = false;
 
+  // Financial Check-in modal properties
+  showCheckInModal = false;
+  isCheckInEditMode = false;
+  editingCheckIn: INode<FinancialCheckIn> | null = null;
+
   constructor(
-    private nodeService: NodeService<BankStatement>
+    private nodeService: NodeService<BankStatement>,
+    private checkInService: NodeService<FinancialCheckIn>
   ) {}
 
   ngOnInit() {
@@ -235,5 +246,67 @@ export class FinancialTabComponent implements OnInit {
 
   onPdfModalClose() {
     this.showPdfModal = false;
+  }
+
+  // ===== FINANCIAL CHECK-IN METHODS =====
+
+  onNewCheckIn() {
+    this.isCheckInEditMode = false;
+    this.editingCheckIn = null;
+    this.showCheckInModal = true;
+  }
+
+  onEditCheckIn(checkIn: INode<FinancialCheckIn>) {
+    this.isCheckInEditMode = true;
+    this.editingCheckIn = checkIn;
+    this.showCheckInModal = true;
+  }
+
+  onCheckInModalClose() {
+    this.showCheckInModal = false;
+    this.isCheckInEditMode = false;
+    this.editingCheckIn = null;
+  }
+
+  onCheckInSaved(checkInData: FinancialCheckIn) {
+    if (this.isCheckInEditMode && this.editingCheckIn) {
+      // Update existing check-in
+      const updatedCheckIn: INode<FinancialCheckIn> = {
+        ...this.editingCheckIn,
+        data: checkInData
+      };
+
+      this.checkInService.updateNode(updatedCheckIn).subscribe({
+        next: () => {
+          this.onCheckInModalClose();
+          // The overview component will refresh automatically
+        },
+        error: (err: any) => {
+          console.error('Error updating check-in:', err);
+        }
+      });
+    } else {
+      // Create new check-in
+      const newCheckIn: Partial<INode<FinancialCheckIn>> = {
+        type: 'financial_checkin',
+        company_id: this.company.id,
+        data: checkInData
+      };
+
+      this.checkInService.addNode(newCheckIn as INode<FinancialCheckIn>).subscribe({
+        next: () => {
+          this.onCheckInModalClose();
+          // The overview component will refresh automatically
+        },
+        error: (err: any) => {
+          console.error('Error creating check-in:', err);
+        }
+      });
+    }
+  }
+
+  onViewTrends() {
+    // TODO: Implement trends view - could be a separate modal or route
+    console.log('View trends clicked - TODO: Implement trends view');
   }
 }
