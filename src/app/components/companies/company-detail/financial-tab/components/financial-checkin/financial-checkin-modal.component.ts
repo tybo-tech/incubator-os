@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { INode } from '../../../../../../../models/schema';
@@ -55,16 +55,25 @@ interface ValidationResult {
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Year -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Year *</label>
-                  <select formControlName="year" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Year <span class="text-red-500">*</span>
+                  </label>
+                  <select formControlName="year"
+                          class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          [class]="checkInForm.get('year')?.invalid && checkInForm.get('year')?.touched ? 'border-red-300' : 'border-gray-300'">
+                    <option value="">Select year...</option>
                     <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
                   </select>
                 </div>
 
                 <!-- Month -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Month (Optional)</label>
-                  <select formControlName="month" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Month <span class="text-red-500">*</span>
+                  </label>
+                  <select formControlName="month"
+                          class="w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          [class]="checkInForm.get('month')?.invalid && checkInForm.get('month')?.touched ? 'border-red-300' : 'border-gray-300'">
                     <option value="">Select month...</option>
                     <option *ngFor="let month of months; let i = index" [value]="i + 1">{{ month }}</option>
                   </select>
@@ -102,13 +111,16 @@ interface ValidationResult {
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Input Fields -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Turnover</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Monthly Turnover <span class="text-red-500">*</span>
+                  </label>
                   <div class="relative">
                     <span class="absolute left-3 top-2 text-gray-500">R</span>
                     <input type="number"
                            formControlName="turnover_monthly_avg"
                            placeholder="0.00"
-                           class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full pl-8 pr-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                           [class]="checkInForm.get('turnover_monthly_avg')?.invalid && checkInForm.get('turnover_monthly_avg')?.touched ? 'border-red-300' : 'border-gray-300'">
                   </div>
                 </div>
 
@@ -311,7 +323,7 @@ interface ValidationResult {
     }
   `]
 })
-export class FinancialCheckinModalComponent implements OnInit {
+export class FinancialCheckinModalComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
   @Input() company!: INode<Company>;
   @Input() editMode = false;
@@ -348,22 +360,52 @@ export class FinancialCheckinModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.editMode && this.checkInData) {
+    this.initializeFormIfNeeded();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // When checkInData changes, populate the form
+    if (changes['checkInData'] && this.checkInData) {
+      this.initializeFormIfNeeded();
       this.populateForm(this.checkInData.data);
+    }
+
+    // When editMode changes, reset form if switching to create mode
+    if (changes['editMode'] && !this.editMode && this.checkInForm) {
+      this.checkInForm.reset({
+        year: new Date().getFullYear(),
+        month: null,
+        quarter: null,
+        is_pre_ignition: false,
+        turnover_monthly_avg: 0,
+        cost_of_sales: 0,
+        business_expenses: 0,
+        cash_on_hand: 0,
+        debtors: 0,
+        creditors: 0,
+        inventory_on_hand: 0,
+        notes: ''
+      });
+    }
+  }
+
+  private initializeFormIfNeeded() {
+    if (!this.checkInForm) {
+      this.initializeForm();
     }
     this.updateCalculationsAndValidation();
   }
 
   private initializeForm() {
     this.checkInForm = this.fb.group({
-      // Period Selection
+      // Period Selection - REQUIRED
       year: [new Date().getFullYear(), Validators.required],
-      month: [null],
+      month: [null, Validators.required],
       quarter: [null],
       is_pre_ignition: [false],
 
-      // Financial Data
-      turnover_monthly_avg: [0, [Validators.min(0)]],
+      // Financial Data - Monthly Turnover is REQUIRED
+      turnover_monthly_avg: [0, [Validators.required, Validators.min(1)]],
       cost_of_sales: [0, [Validators.min(0)]],
       business_expenses: [0, [Validators.min(0)]],
       cash_on_hand: [0, [Validators.min(0)]],
@@ -447,8 +489,25 @@ export class FinancialCheckinModalComponent implements OnInit {
     const errors: string[] = [];
     const warnings: string[] = [];
 
+    // Form validation errors
+    if (this.checkInForm.get('year')?.hasError('required')) {
+      errors.push("Year is required");
+    }
+
+    if (this.checkInForm.get('month')?.hasError('required')) {
+      errors.push("Month is required");
+    }
+
+    if (this.checkInForm.get('turnover_monthly_avg')?.hasError('required')) {
+      errors.push("Monthly turnover is required");
+    }
+
+    if (this.checkInForm.get('turnover_monthly_avg')?.hasError('min')) {
+      errors.push("Monthly turnover must be greater than 0");
+    }
+
     // Business rules
-    if (data.cost_of_sales > data.turnover_monthly_avg) {
+    if (data.cost_of_sales > data.turnover_monthly_avg && data.turnover_monthly_avg > 0) {
       errors.push("Cost of sales cannot exceed turnover");
     }
 
@@ -481,10 +540,6 @@ export class FinancialCheckinModalComponent implements OnInit {
     return 'fas fa-times-circle text-red-600';
   }
 
-  onClose() {
-    this.onCloseModal.emit();
-  }
-
   onSaveDraft() {
     if (this.saving) return;
 
@@ -503,10 +558,29 @@ export class FinancialCheckinModalComponent implements OnInit {
   onSubmit() {
     if (!this.validationResult?.isValid || this.saving) return;
 
+    // Mark all fields as touched to show validation errors
+    this.checkInForm.markAllAsTouched();
+
+    // Double-check form validity
+    if (this.checkInForm.invalid) {
+      this.updateCalculationsAndValidation();
+      return;
+    }
+
     this.saving = true;
     const checkInData = this.buildCheckInData();
 
     this.onSaveCheckIn.emit(checkInData);
+  }
+
+  onClose() {
+    this.saving = false; // Reset saving state when closing
+    this.onCloseModal.emit();
+  }
+
+  // Public method to reset saving state (can be called by parent)
+  public resetSavingState() {
+    this.saving = false;
   }
 
   private buildCheckInData(): FinancialCheckIn {

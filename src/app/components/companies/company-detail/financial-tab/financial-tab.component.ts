@@ -32,6 +32,7 @@ import { PdfExportModalComponent } from './components/pdf-export-modal.component
 export class FinancialTabComponent implements OnInit {
   @Input() company!: INode<Company>;
   @ViewChild(FinancialCheckinOverviewComponent) checkinOverview!: FinancialCheckinOverviewComponent;
+  @ViewChild(FinancialCheckinModalComponent) checkinModal!: FinancialCheckinModalComponent;
 
   bankStatements: INode<BankStatement>[] = [];
   loadingStatements = false;
@@ -267,6 +268,8 @@ export class FinancialTabComponent implements OnInit {
     this.showCheckInModal = false;
     this.isCheckInEditMode = false;
     this.editingCheckIn = null;
+    // Reset the modal's saving state
+    this.checkinModal?.resetSavingState();
   }
 
   onCheckInSaved(checkInData: FinancialCheckIn) {
