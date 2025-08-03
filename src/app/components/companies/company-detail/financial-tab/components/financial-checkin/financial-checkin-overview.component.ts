@@ -5,6 +5,7 @@ import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
 import { FINANCIAL_CHECKINS } from '../../../../../../../app/data';
+import { FinancialCheckinDetailsComponent } from './financial-checkin-details.component';
 
 interface MonthlyStatus {
   month: number;
@@ -12,6 +13,12 @@ interface MonthlyStatus {
   hasCheckIn: boolean;
   netProfitMargin?: number;
   isCurrentMonth: boolean;
+}
+
+interface MonthDetails {
+  month: number;
+  monthName: string;
+  year: number;
 }
 
 interface LatestMetrics {
@@ -30,7 +37,7 @@ interface LatestMetrics {
 @Component({
   selector: 'app-financial-checkin-overview',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FinancialCheckinDetailsComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm border">
       <!-- Header -->
@@ -237,6 +244,17 @@ interface LatestMetrics {
         </div>
       </div>
     </div>
+
+    <!-- Month Details Modal -->
+    <app-financial-checkin-details
+      [isVisible]="showDetailsModal"
+      [monthDetails]="selectedMonthDetails"
+      [monthCheckIns]="selectedMonthCheckIns"
+      (onCloseModal)="onDetailsModalClose()"
+      (onAddNewCheckIn)="onAddNewFromDetails($event)"
+      (onEditCheckIn)="onEditFromDetails($event)"
+      (onDeleteCheckIn)="onDeleteFromDetails($event)">
+    </app-financial-checkin-details>
   `,
   styles: [`
     .animate-spin {
@@ -263,6 +281,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   monthlyStatus: MonthlyStatus[] = [];
   latestMetrics: LatestMetrics | null = null;
   latestNotes: string | null = null;
+
+  // Month details modal properties
+  showDetailsModal = false;
+  selectedMonthDetails: MonthDetails | null = null;
+  selectedMonthCheckIns: INode<FinancialCheckIn>[] = [];
 
   months = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -300,19 +323,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       // Later this will be: const allCheckIns = await this.nodeService.getNodes('financial_checkin').toPromise();
       const allCheckIns = FINANCIAL_CHECKINS;
 
-      // Debug: Log what we're getting from the server
-      console.log('🔍 All financial check-ins from sample data:', allCheckIns);
-      console.log('🏢 Current company ID:', this.company.id);
-      console.log('📅 Current year:', this.currentYear);
-
       // Filter by company and current year
       this.checkIns = allCheckIns?.filter(node =>
         node.company_id === this.company.id &&
         node.data.year === this.currentYear
       ) || [];
-
-      // Debug: Log what we filtered
-      console.log('✅ Filtered check-ins for this company/year:', this.checkIns);
 
       this.updateMonthlyStatus();
       this.calculateLatestMetrics();
@@ -327,22 +342,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   private updateMonthlyStatus() {
-    console.log('🗓️ Updating monthly status with check-ins:', this.checkIns);
-
     this.monthlyStatus.forEach(status => {
       const checkIn = this.checkIns.find(ci => ci.data.month === status.month);
       status.hasCheckIn = !!checkIn;
       status.netProfitMargin = checkIn?.data.np_margin;
-
-      // Debug each month
-      if (checkIn) {
-        console.log(`✅ ${status.monthName}: Found check-in`, checkIn.data);
-      } else {
-        console.log(`❌ ${status.monthName}: No check-in found`);
-      }
     });
-
-    console.log('📊 Final monthly status:', this.monthlyStatus);
   }
 
   private calculateLatestMetrics() {
@@ -456,15 +460,45 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   onMonthClick(status: MonthlyStatus) {
-    if (status.hasCheckIn) {
-      const checkIn = this.checkIns.find(ci => ci.data.month === status.month);
-      if (checkIn) {
-        this.onEditCheckIn.emit(checkIn);
-      }
-    } else {
-      // Create new check-in for this month
-      this.onNewCheckIn();
-    }
+    // Always show details modal instead of directly editing
+    this.selectedMonthDetails = {
+      month: status.month,
+      monthName: status.monthName,
+      year: this.currentYear
+    };
+
+    // Get all check-ins for this month
+    this.selectedMonthCheckIns = this.checkIns.filter(ci => ci.data.month === status.month);
+
+    this.showDetailsModal = true;
+  }
+
+  // Details modal handlers
+  onDetailsModalClose() {
+    this.showDetailsModal = false;
+    this.selectedMonthDetails = null;
+    this.selectedMonthCheckIns = [];
+  }
+
+  onAddNewFromDetails(monthDetails: MonthDetails) {
+    // Close details modal and trigger new check-in with pre-filled month
+    this.onDetailsModalClose();
+    this.onNewCheckInClick.emit();
+    // TODO: Pass month details to the main component so it can pre-fill the modal
+  }
+
+  onEditFromDetails(checkIn: INode<FinancialCheckIn>) {
+    // Close details modal and trigger edit
+    this.onDetailsModalClose();
+    this.onEditCheckIn.emit(checkIn);
+  }
+
+  onDeleteFromDetails(checkIn: INode<FinancialCheckIn>) {
+    // TODO: Implement delete functionality
+    console.log('Delete check-in:', checkIn);
+    // For now, just close the modal and refresh
+    this.onDetailsModalClose();
+    this.loadCheckIns();
   }
 
   onNewCheckIn() {

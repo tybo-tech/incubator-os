@@ -3623,8 +3623,39 @@ export const FINANCIAL_CHECKINS: INode<FinancialCheckIn>[] = [
     },
     parent_id: null,
     created_by: null,
-    created_at: '2025-01-31T10:00:00Z',
-    updated_at: '2025-01-31T10:00:00Z'
+    created_at: '2025-01-15T10:00:00Z',
+    updated_at: '2025-01-15T10:00:00Z'
+  },
+
+  // January 2025 - Mid-month correction
+  {
+    id: 10006,
+    type: 'financial_checkin',
+    company_id: 2, // Agrimika Holdings
+    data: {
+      year: 2025,
+      month: 1,
+      quarter: 'Q1',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 78000, // Revised upward
+      cost_of_sales: 31000,
+      business_expenses: 24000,    // Lower expenses
+      gross_profit: 47000,
+      net_profit: 23000,
+      gp_margin: 60.3,
+      np_margin: 29.5,             // Improved margin
+      cash_on_hand: 42000,
+      debtors: 18000,
+      creditors: 9000,
+      inventory_on_hand: 22000,
+      net_assets: 73000,
+      working_capital_ratio: 9.11,
+      notes: 'Mid-month revision after additional contract signed. Better than initial estimate.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-01-28T14:30:00Z',
+    updated_at: '2025-01-28T14:30:00Z'
   },
 
   // March 2025 - Growth month

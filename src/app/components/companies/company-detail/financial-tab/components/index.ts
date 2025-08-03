@@ -7,5 +7,6 @@ export { PdfExportModalComponent } from './pdf-export-modal.component';
 // Financial Check-in Components
 export {
   FinancialCheckinModalComponent,
-  FinancialCheckinOverviewComponent
+  FinancialCheckinOverviewComponent,
+  FinancialCheckinDetailsComponent
 } from './financial-checkin';
