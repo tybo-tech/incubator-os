@@ -8,29 +8,29 @@ import { INode } from '../../../../../../models/schema';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-white border rounded-lg overflow-hidden">
-      <div class="bg-gray-50 px-4 py-3 border-b">
+    <div class="bg-white border rounded-lg overflow-hidden shadow-lg">
+      <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-4 py-3 border-b">
         <div class="flex items-center">
-          <i class="fas fa-table text-blue-600 mr-2"></i>
-          <h5 class="font-medium text-gray-900">Financial Statements by Quarter and Month</h5>
+          <i class="fas fa-table text-white mr-3 text-lg"></i>
+          <h5 class="font-bold text-white text-lg">Financial Statements by Quarter and Month</h5>
         </div>
       </div>
 
       <!-- Year Groups -->
       <div *ngFor="let year of getOrderedYears()" class="border-b last:border-b-0">
-        <div class="bg-blue-50 px-4 py-3 border-b">
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 border-b shadow-sm">
           <div class="flex items-center">
-            <i class="fas fa-calendar-alt text-blue-700 mr-2"></i>
-            <h6 class="font-semibold text-blue-900">{{ year }}</h6>
+            <i class="fas fa-calendar-alt text-white mr-3 text-lg"></i>
+            <h6 class="font-bold text-white text-lg tracking-wide">{{ year }}</h6>
           </div>
         </div>
 
         <!-- Quarter Groups within Year -->
         <div *ngFor="let quarter of getOrderedQuarters(year)" class="border-b last:border-b-0">
-          <div class="bg-gray-100 px-6 py-2 border-b">
+          <div class="bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2 border-b">
             <div class="flex items-center">
-              <i class="fas fa-calendar-quarter text-gray-700 mr-2"></i>
-              <h6 class="font-medium text-gray-800">{{ quarter }} ({{ getQuarterName(quarter) }})</h6>
+              <i class="fas fa-calendar-quarter text-white mr-2 text-sm"></i>
+              <h6 class="font-semibold text-white">{{ quarter }} ({{ getQuarterName(quarter) }})</h6>
             </div>
           </div>
 
@@ -103,22 +103,22 @@ import { INode } from '../../../../../../models/schema';
           </div>
 
           <!-- Quarter Summary Row -->
-          <div class="bg-gray-50 px-4 py-2 border-t">
-            <div class="flex justify-between text-sm font-medium text-gray-700">
-              <span>
-                <i class="fas fa-calculator mr-1"></i>
+          <div class="bg-gradient-to-r from-amber-400 to-orange-400 px-4 py-3 border-t">
+            <div class="flex justify-between text-sm font-semibold text-gray-800">
+              <span class="flex items-center">
+                <i class="fas fa-calculator mr-2 text-gray-700"></i>
                 {{ quarter }} Total:
               </span>
               <div class="flex space-x-6">
-                <span class="text-green-600">
+                <span class="text-green-700 font-bold">
                   <i class="fas fa-arrow-up mr-1"></i>
                   Income: {{ formatCurrency(getQuarterTotal(quarter, 'total_income')) }}
                 </span>
-                <span class="text-red-600">
+                <span class="text-red-700 font-bold">
                   <i class="fas fa-arrow-down mr-1"></i>
                   Expenses: {{ formatCurrency(getQuarterTotal(quarter, 'total_expense')) }}
                 </span>
-                <span class="text-gray-800">
+                <span class="text-gray-800 font-bold">
                   <i class="fas fa-balance-scale mr-1"></i>
                   Net: {{ formatCurrency(getQuarterTotal(quarter, 'total_income') - getQuarterTotal(quarter, 'total_expense')) }}
                 </span>

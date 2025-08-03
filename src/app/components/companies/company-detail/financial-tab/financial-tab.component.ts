@@ -1,15 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { INode } from '../../../../../models/schema';
+import { Company, BankStatement } from '../../../../../models/business.models';
+import { NodeService } from '../../../../../services';
 import {
   FinancialOverviewComponent,
   QuarterlyViewComponent,
   StatementsTableComponent,
   StatementModalComponent
 } from './components';
-import { Company, BankStatement } from '../../../../../models/business.models';
-import { INode } from '../../../../../models/schema';
-import { NodeService } from '../../../../../services';
 
 @Component({
   selector: 'app-financial-tab',
@@ -186,8 +185,40 @@ export class FinancialTabComponent implements OnInit {
     this.editingStatement = null;
   }
 
-  onStatementSaved() {
-    this.loadBankStatements();
-    this.onModalClose();
+  onStatementSaved(formData: any) {
+    if (this.isEditMode && this.editingStatement) {
+      // Update existing statement
+      const updatedStatement: INode<BankStatement> = {
+        ...this.editingStatement,
+        data: formData
+      };
+
+      this.nodeService.updateNode(updatedStatement).subscribe({
+        next: () => {
+          this.loadBankStatements();
+          this.onModalClose();
+        },
+        error: (err: any) => {
+          console.error('Error updating statement:', err);
+        }
+      });
+    } else {
+      // Create new statement
+      const newStatement: Partial<INode<BankStatement>> = {
+        type: 'bank_statement',
+        company_id: this.company.id,
+        data: formData
+      };
+
+      this.nodeService.addNode(newStatement as INode<BankStatement>).subscribe({
+        next: () => {
+          this.loadBankStatements();
+          this.onModalClose();
+        },
+        error: (err: any) => {
+          console.error('Error creating statement:', err);
+        }
+      });
+    }
   }
 }
