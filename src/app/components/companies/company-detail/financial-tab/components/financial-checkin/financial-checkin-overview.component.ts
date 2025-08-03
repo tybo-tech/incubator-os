@@ -305,6 +305,15 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     this.loadCheckIns();
   }
 
+  /**
+   * Utility function to safely parse month values from database
+   * Handles both string and number month values
+   */
+  private parseMonth(month: string | number | undefined): number {
+    if (month === undefined || month === null) return 0;
+    return typeof month === 'string' ? parseInt(month, 10) : month;
+  }
+
   private initializeMonthlyStatus() {
     const currentMonth = new Date().getMonth() + 1;
 
@@ -346,7 +355,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   private updateMonthlyStatus() {
     this.monthlyStatus.forEach(status => {
-      const checkIn = this.checkIns.find(ci => ci.data.month === status.month);
+      // Handle both string and number month values from database
+      const checkIn = this.checkIns.find(ci =>
+        this.parseMonth(ci.data.month) === status.month
+      );
       status.hasCheckIn = !!checkIn;
       status.netProfitMargin = checkIn?.data.np_margin;
     });
@@ -358,10 +370,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       return;
     }
 
-    // Sort by year, month (most recent first)
+    // Sort by year, month (most recent first) - handle string month values
     const sortedCheckIns = [...this.checkIns].sort((a, b) => {
       if (a.data.year !== b.data.year) return b.data.year - a.data.year;
-      return (b.data.month || 0) - (a.data.month || 0);
+      return this.parseMonth(b.data.month) - this.parseMonth(a.data.month);
     });
 
     const latest = sortedCheckIns[0];
@@ -394,7 +406,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   private formatPeriod(data: FinancialCheckIn): string {
     if (data.month) {
-      return `${this.months[data.month - 1]} ${data.year}`;
+      const monthNumber = this.parseMonth(data.month);
+      return `${this.months[monthNumber - 1]} ${data.year}`;
     }
     return `${data.quarter || 'Unknown'} ${data.year}`;
   }
@@ -407,7 +420,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     const sortedCheckIns = [...this.checkIns].sort((a, b) => {
       if (a.data.year !== b.data.year) return b.data.year - a.data.year;
-      return (b.data.month || 0) - (a.data.month || 0);
+      return this.parseMonth(b.data.month) - this.parseMonth(a.data.month);
     });
 
     this.latestNotes = sortedCheckIns[0]?.data.notes || null;
@@ -470,8 +483,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       year: this.currentYear
     };
 
-    // Get all check-ins for this month
-    this.selectedMonthCheckIns = this.checkIns.filter(ci => ci.data.month === status.month);
+    // Get all check-ins for this month - handle both string and number month values
+    this.selectedMonthCheckIns = this.checkIns.filter(ci =>
+      this.parseMonth(ci.data.month) === status.month
+    );
 
     this.showDetailsModal = true;
   }
