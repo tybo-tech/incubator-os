@@ -13,6 +13,7 @@ import {
   FinancialCheckinOverviewComponent
 } from './components';
 import { PdfExportModalComponent } from './components/pdf-export-modal.component';
+import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
 
 @Component({
   selector: 'app-financial-tab',
@@ -25,7 +26,8 @@ import { PdfExportModalComponent } from './components/pdf-export-modal.component
     StatementModalComponent,
     PdfExportModalComponent,
     FinancialCheckinModalComponent,
-    FinancialCheckinOverviewComponent
+    FinancialCheckinOverviewComponent,
+    FinancialCheckinQuarterlyViewComponent
   ],
   templateUrl: './financial-tab.component.html'
 })
@@ -37,6 +39,11 @@ export class FinancialTabComponent implements OnInit {
   bankStatements: INode<BankStatement>[] = [];
   loadingStatements = false;
   statementsError: string | null = null;
+
+  // Financial Check-ins data
+  financialCheckIns: INode<FinancialCheckIn>[] = [];
+  loadingCheckIns = false;
+  checkInsError: string | null = null;
 
   // Modal and form properties
   showModal = false;
@@ -59,6 +66,7 @@ export class FinancialTabComponent implements OnInit {
   ngOnInit() {
     if (this.company?.id) {
       this.loadBankStatements();
+      this.loadFinancialCheckIns();
     }
   }
 
@@ -79,6 +87,36 @@ export class FinancialTabComponent implements OnInit {
         console.error('Error loading bank statements:', err);
         this.statementsError = 'Failed to load bank statements';
         this.loadingStatements = false;
+      }
+    });
+  }
+
+  loadFinancialCheckIns() {
+    this.loadingCheckIns = true;
+    this.checkInsError = null;
+
+    // Fetch financial check-ins for this company
+    this.checkInService.getNodesByType('financial_checkin').subscribe({
+      next: (checkIns: INode<FinancialCheckIn>[]) => {
+        // Filter check-ins for this company
+        this.financialCheckIns = checkIns
+          .filter((checkIn: INode<FinancialCheckIn>) => checkIn.company_id === this.company.id)
+          .sort((a: INode<FinancialCheckIn>, b: INode<FinancialCheckIn>) => {
+            // Sort by year and month descending (newest first)
+            if (a.data.year !== b.data.year) {
+              return b.data.year - a.data.year;
+            }
+            // Handle optional month field
+            const aMonth = a.data.month || 0;
+            const bMonth = b.data.month || 0;
+            return bMonth - aMonth;
+          });
+        this.loadingCheckIns = false;
+      },
+      error: (err: any) => {
+        console.error('Error loading financial check-ins:', err);
+        this.checkInsError = 'Failed to load financial check-ins';
+        this.loadingCheckIns = false;
       }
     });
   }
