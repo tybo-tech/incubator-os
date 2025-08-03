@@ -13,9 +13,9 @@ try {
     $result = $node->add(
         $data['type'],
         $data['data'],
-        $data['companyId'] ?? null,
-        $data['parentId'] ?? null,
-        $data['createdBy'] ?? null
+        $data['company_id'] ?? null,
+        $data['parent_id'] ?? null,
+        $data['created_by'] ?? null
     );
 
     echo json_encode($result);

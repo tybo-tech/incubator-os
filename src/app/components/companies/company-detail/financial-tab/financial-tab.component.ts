@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../models/schema';
 import { Company, BankStatement } from '../../../../../models/business.models';
@@ -31,6 +31,7 @@ import { PdfExportModalComponent } from './components/pdf-export-modal.component
 })
 export class FinancialTabComponent implements OnInit {
   @Input() company!: INode<Company>;
+  @ViewChild(FinancialCheckinOverviewComponent) checkinOverview!: FinancialCheckinOverviewComponent;
 
   bankStatements: INode<BankStatement>[] = [];
   loadingStatements = false;
@@ -279,7 +280,8 @@ export class FinancialTabComponent implements OnInit {
       this.checkInService.updateNode(updatedCheckIn).subscribe({
         next: () => {
           this.onCheckInModalClose();
-          // The overview component will refresh automatically
+          // Refresh the overview component
+          this.checkinOverview?.refreshData();
         },
         error: (err: any) => {
           console.error('Error updating check-in:', err);
@@ -296,7 +298,8 @@ export class FinancialTabComponent implements OnInit {
       this.checkInService.addNode(newCheckIn as INode<FinancialCheckIn>).subscribe({
         next: () => {
           this.onCheckInModalClose();
-          // The overview component will refresh automatically
+          // Refresh the overview component
+          this.checkinOverview?.refreshData();
         },
         error: (err: any) => {
           console.error('Error creating check-in:', err);

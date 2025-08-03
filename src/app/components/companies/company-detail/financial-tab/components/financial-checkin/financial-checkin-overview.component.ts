@@ -4,7 +4,6 @@ import { INode } from '../../../../../../../models/schema';
 import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
-import { FINANCIAL_CHECKINS } from '../../../../../../../app/data';
 import { FinancialCheckinDetailsComponent } from './financial-checkin-details.component';
 
 interface MonthlyStatus {
@@ -301,6 +300,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     this.loadCheckIns();
   }
 
+  // Public method to refresh data from parent component
+  public refreshData() {
+    this.loadCheckIns();
+  }
+
   private initializeMonthlyStatus() {
     const currentMonth = new Date().getMonth() + 1;
 
@@ -319,9 +323,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     this.error = null;
 
     try {
-      // 🚀 TEMPORARY: Use sample data for testing
-      // Later this will be: const allCheckIns = await this.nodeService.getNodes('financial_checkin').toPromise();
-      const allCheckIns = FINANCIAL_CHECKINS;
+      // Get all financial check-ins from the database
+      const allCheckIns = await this.nodeService.getNodesByType('financial_checkin').toPromise();
 
       // Filter by company and current year
       this.checkIns = allCheckIns?.filter(node =>
@@ -493,12 +496,22 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     this.onEditCheckIn.emit(checkIn);
   }
 
-  onDeleteFromDetails(checkIn: INode<FinancialCheckIn>) {
-    // TODO: Implement delete functionality
-    console.log('Delete check-in:', checkIn);
-    // For now, just close the modal and refresh
-    this.onDetailsModalClose();
-    this.loadCheckIns();
+  async onDeleteFromDetails(checkIn: INode<FinancialCheckIn>) {
+    if (!confirm('Are you sure you want to delete this financial check-in? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await this.nodeService.deleteNode(checkIn.id!).toPromise();
+
+      // Close modal and refresh data
+      this.onDetailsModalClose();
+      this.loadCheckIns();
+
+    } catch (error) {
+      console.error('❌ Error deleting check-in:', error);
+      alert('Failed to delete the check-in. Please try again.');
+    }
   }
 
   onNewCheckIn() {
