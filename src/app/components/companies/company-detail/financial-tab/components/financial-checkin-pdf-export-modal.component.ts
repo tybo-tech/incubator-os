@@ -30,10 +30,10 @@ interface ExportOptions {
   imports: [CommonModule, FormsModule],
   template: `
     <div *ngIf="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white">
+      <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-screen overflow-y-auto">
         <div class="mt-3">
-          <!-- Modal Header -->
-          <div class="flex justify-between items-center mb-6">
+          <!-- Modal Header (Sticky) -->
+          <div class="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-4 border-b">
             <div class="flex items-center">
               <i class="fas fa-file-pdf text-red-600 mr-2"></i>
               <h3 class="text-lg font-medium text-gray-900">Business Financial Report Preview</h3>
@@ -69,8 +69,8 @@ interface ExportOptions {
             </div>
           </div>
 
-          <!-- PDF Preview Content -->
-          <div id="pdf-content" style="border: 1px solid #e5e7eb; background-color: white; padding: 2rem; max-height: 70vh; overflow-y: auto;">
+          <!-- PDF Preview Content (Optimized for PDF capture) -->
+          <div id="pdf-content" style="border: 1px solid #e5e7eb; background-color: white; padding: 2rem; width: 100%;">
             <!-- Company Header -->
             <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 1.5rem; margin-bottom: 2rem;">
               <div style="width: 4rem; height: 4rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 0.5rem; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;">
@@ -497,11 +497,21 @@ export class FinancialCheckinPdfExportModalComponent implements OnInit {
         throw new Error('PDF content element not found');
       }
 
+      // Enhanced PDF options for optimal capture
       const opt = {
         margin: 0.5,
         filename: `${this.company.data.name}_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          scrollX: 0,
+          scrollY: 0,
+          height: element.scrollHeight,
+          width: element.scrollWidth,
+          letterRendering: true
+        },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       };
 
