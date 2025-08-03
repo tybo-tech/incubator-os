@@ -1,14 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../models/schema';
-import { Company, BankStatement } from '../../../../models/business.models';
-import { NodeService } from '../../../../services';
+
 import {
   FinancialOverviewComponent,
   QuarterlyViewComponent,
   StatementsTableComponent,
   StatementModalComponent
 } from './components';
+import { Company, BankStatement } from '../../../../../models/business.models';
+import { INode } from '../../../../../models/schema';
+import { NodeService } from '../../../../../services';
 
 @Component({
   selector: 'app-financial-tab',
@@ -91,7 +92,7 @@ export class FinancialTabComponent implements OnInit {
 
     this.bankStatements.forEach(statement => {
       const year = statement.data.year;
-      const quarter = statement.data.quarter;
+      const quarter = statement.data.quarter as string;
 
       if (!grouped[year]) {
         grouped[year] = {};
