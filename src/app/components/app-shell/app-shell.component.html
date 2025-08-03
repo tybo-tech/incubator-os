@@ -3,9 +3,26 @@
   <app-nav class="flex-shrink-0" />
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-hidden">
+  <main class="flex-1 overflow-hidden relative">
     <div class="h-full overflow-y-auto">
       <router-outlet />
     </div>
+
+    <!-- Global Floating Task Button -->
+    <button (click)="openGlobalTaskModal()"
+            class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40">
+      <i class="fas fa-plus text-xl"></i>
+      <span class="sr-only">Create Task</span>
+    </button>
   </main>
+
+  <!-- Global Task Modal -->
+  <app-global-task-modal
+    [isVisible]="showGlobalTaskModal"
+    [editMode]="false"
+    [taskToEdit]="null"
+    [availableCompanies]="availableCompanies"
+    (onCloseModal)="closeGlobalTaskModal()"
+    (onTaskSaved)="onGlobalTaskSaved($event)">
+  </app-global-task-modal>
 </div>

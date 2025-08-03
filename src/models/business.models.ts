@@ -78,9 +78,11 @@ export interface Task {
   description?: string;
   due_date: string;
   completed: boolean;
-  assigned_to?: number; // user ID
+  assigned_to?: string; // person name/email (will map to IDs later)
   priority?: 'low' | 'medium' | 'high';
   status?: 'todo' | 'in_progress' | 'done';
+  created_date?: string;
+  company_id?: number; // link to company if task is company-specific
 }
 
 export function initCompany(): Company {
@@ -159,9 +161,11 @@ export function initTask(): Task {
     description: '',
     due_date: new Date().toISOString().split('T')[0], // Default to today
     completed: false,
-    assigned_to: undefined,
+    assigned_to: '',
     priority: 'medium',
     status: 'todo',
+    created_date: new Date().toISOString().split('T')[0],
+    company_id: undefined,
   };
 }
 
