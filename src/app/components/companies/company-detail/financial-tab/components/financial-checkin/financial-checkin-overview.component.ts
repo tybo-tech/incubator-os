@@ -40,12 +40,12 @@ interface LatestMetrics {
             Financial Check-ins
           </h3>
           <div class="flex space-x-2">
-            <button (click)="onViewTrends()" 
+            <button (click)="onViewTrends()"
                     class="bg-blue-500 hover:bg-blue-400 text-white px-3 py-1 rounded text-sm transition-colors">
               <i class="fas fa-chart-bar mr-1"></i>
               View Trends
             </button>
-            <button (click)="onNewCheckIn()" 
+            <button (click)="onNewCheckIn()"
                     class="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-sm transition-colors">
               <i class="fas fa-plus mr-1"></i>
               New Check-in
@@ -65,7 +65,7 @@ interface LatestMetrics {
         <div *ngIf="error" class="text-center py-8">
           <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
           <p class="text-red-600 mb-3">{{ error }}</p>
-          <button (click)="loadCheckIns()" 
+          <button (click)="loadCheckIns()"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
             <i class="fas fa-redo mr-2"></i>
             Retry
@@ -74,7 +74,7 @@ interface LatestMetrics {
 
         <!-- Content -->
         <div *ngIf="!loading && !error">
-          
+
           <!-- Current Year Timeline -->
           <div class="mb-6">
             <div class="flex justify-between items-center mb-3">
@@ -86,28 +86,28 @@ interface LatestMetrics {
                 {{ getCompletionPercentage() }}% Complete
               </div>
             </div>
-            
+
             <div class="grid grid-cols-6 lg:grid-cols-12 gap-2">
-              <div *ngFor="let status of monthlyStatus" 
+              <div *ngFor="let status of monthlyStatus"
                    class="relative group cursor-pointer"
                    (click)="onMonthClick(status)">
-                
+
                 <!-- Month Card -->
                 <div class="bg-gray-50 rounded-lg p-3 text-center border-2 transition-all"
                      [class]="getMonthCardClass(status)">
-                  
+
                   <!-- Month Name -->
                   <div class="text-xs font-medium text-gray-600 mb-1">
                     {{ status.monthName.substring(0, 3) }}
                   </div>
-                  
+
                   <!-- Status Icon -->
                   <div class="mb-1">
                     <i [class]="getMonthStatusIcon(status)"></i>
                   </div>
-                  
+
                   <!-- Profit Margin (if available) -->
-                  <div *ngIf="status.hasCheckIn && status.netProfitMargin !== undefined" 
+                  <div *ngIf="status.hasCheckIn && status.netProfitMargin !== undefined"
                        class="text-xs font-semibold"
                        [class]="status.netProfitMargin >= 0 ? 'text-green-600' : 'text-red-600'">
                     {{ status.netProfitMargin | number:'1.0-0' }}%
@@ -140,7 +140,7 @@ interface LatestMetrics {
               <i class="fas fa-chart-pie mr-2"></i>
               Latest Metrics ({{ latestMetrics.period }})
             </h4>
-            
+
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <!-- Monthly Turnover -->
               <div class="bg-white rounded-lg p-3 border">
@@ -153,7 +153,7 @@ interface LatestMetrics {
                 </div>
                 <div class="text-xs flex items-center mt-1"
                      [class]="latestMetrics.growthIndicators.turnoverGrowth >= 0 ? 'text-green-600' : 'text-red-600'">
-                  <i [class]="latestMetrics.growthIndicators.turnoverGrowth >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" 
+                  <i [class]="latestMetrics.growthIndicators.turnoverGrowth >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"
                      class="mr-1"></i>
                   {{ latestMetrics.growthIndicators.turnoverGrowth | number:'1.0-0' }}%
                 </div>
@@ -171,7 +171,7 @@ interface LatestMetrics {
                 </div>
                 <div class="text-xs flex items-center mt-1"
                      [class]="latestMetrics.growthIndicators.marginImprovement >= 0 ? 'text-green-600' : 'text-red-600'">
-                  <i [class]="latestMetrics.growthIndicators.marginImprovement >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" 
+                  <i [class]="latestMetrics.growthIndicators.marginImprovement >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"
                      class="mr-1"></i>
                   {{ latestMetrics.growthIndicators.marginImprovement | number:'1.1-1' }}pp
                 </div>
@@ -188,7 +188,7 @@ interface LatestMetrics {
                 </div>
                 <div class="text-xs flex items-center mt-1"
                      [class]="latestMetrics.growthIndicators.cashGrowth >= 0 ? 'text-green-600' : 'text-red-600'">
-                  <i [class]="latestMetrics.growthIndicators.cashGrowth >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'" 
+                  <i [class]="latestMetrics.growthIndicators.cashGrowth >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"
                      class="mr-1"></i>
                   {{ latestMetrics.growthIndicators.cashGrowth | number:'1.0-0' }}%
                 </div>
@@ -227,7 +227,7 @@ interface LatestMetrics {
             <i class="fas fa-chart-line text-gray-300 text-4xl mb-4"></i>
             <h4 class="text-lg font-medium text-gray-900 mb-2">No Financial Check-ins Yet</h4>
             <p class="text-gray-600 mb-4">Start tracking your business financial health with regular check-ins.</p>
-            <button (click)="onNewCheckIn()" 
+            <button (click)="onNewCheckIn()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
               <i class="fas fa-plus mr-2"></i>
               Create Your First Check-in
@@ -241,7 +241,7 @@ interface LatestMetrics {
     .animate-spin {
       animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
@@ -257,7 +257,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   checkIns: INode<FinancialCheckIn>[] = [];
   loading = false;
   error: string | null = null;
-  
+
   currentYear = new Date().getFullYear();
   monthlyStatus: MonthlyStatus[] = [];
   latestMetrics: LatestMetrics | null = null;
@@ -279,7 +279,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   private initializeMonthlyStatus() {
     const currentMonth = new Date().getMonth() + 1;
-    
+
     this.monthlyStatus = this.months.map((monthName, index) => ({
       month: index + 1,
       monthName,
@@ -297,10 +297,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     try {
       // Load all financial check-ins for this company
       const allCheckIns = await this.nodeService.getNodes('financial_checkin').toPromise();
-      
+
       // Filter by company and current year
-      this.checkIns = allCheckIns?.filter(node => 
-        node.company_id === this.company.id && 
+      this.checkIns = allCheckIns?.filter(node =>
+        node.company_id === this.company.id &&
         node.data.year === this.currentYear
       ) || [];
 
@@ -393,7 +393,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   getMonthCardClass(status: MonthlyStatus): string {
     let classes = '';
-    
+
     if (status.hasCheckIn) {
       classes += 'border-green-400 bg-green-50 ';
     } else if (status.isCurrentMonth) {
@@ -401,9 +401,9 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     } else {
       classes += 'border-gray-200 ';
     }
-    
+
     classes += 'hover:border-blue-400 hover:shadow-sm';
-    
+
     return classes;
   }
 
