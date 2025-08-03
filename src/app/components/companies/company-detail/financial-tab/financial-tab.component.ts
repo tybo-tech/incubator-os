@@ -14,6 +14,7 @@ import {
 } from './components';
 import { PdfExportModalComponent } from './components/pdf-export-modal.component';
 import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
+import { FinancialCheckinPdfExportModalComponent } from './components/financial-checkin-pdf-export-modal.component';
 
 @Component({
   selector: 'app-financial-tab',
@@ -27,7 +28,8 @@ import { FinancialCheckinQuarterlyViewComponent } from './components/financial-c
     PdfExportModalComponent,
     FinancialCheckinModalComponent,
     FinancialCheckinOverviewComponent,
-    FinancialCheckinQuarterlyViewComponent
+    FinancialCheckinQuarterlyViewComponent,
+    FinancialCheckinPdfExportModalComponent
   ],
   templateUrl: './financial-tab.component.html'
 })
@@ -52,6 +54,7 @@ export class FinancialTabComponent implements OnInit {
 
   // PDF Export modal properties
   showPdfModal = false;
+  showFinancialCheckinPdfModal = false;
 
   // Financial Check-in modal properties
   showCheckInModal = false;
@@ -281,11 +284,21 @@ export class FinancialTabComponent implements OnInit {
   // ===== PDF EXPORT METHODS =====
 
   onExportPDF() {
+    // Use Financial Check-ins PDF export as primary option
+    this.showFinancialCheckinPdfModal = true;
+  }
+
+  onExportBankStatementsPDF() {
+    // Legacy bank statements PDF export (for validation/compliance)
     this.showPdfModal = true;
   }
 
   onPdfModalClose() {
     this.showPdfModal = false;
+  }
+
+  onFinancialCheckinPdfModalClose() {
+    this.showFinancialCheckinPdfModal = false;
   }
 
   // ===== FINANCIAL CHECK-IN METHODS =====

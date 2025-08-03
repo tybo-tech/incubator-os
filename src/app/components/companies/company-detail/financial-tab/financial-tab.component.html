@@ -17,14 +17,23 @@
 
     <!-- Primary Quarterly Business Reports (from Financial Check-ins) -->
     <div class="border-t pt-6">
-      <div class="mb-4">
-        <h4 class="text-md font-medium text-gray-900 flex items-center">
-          <i class="fas fa-chart-line mr-2 text-blue-600"></i>
-          Quarterly Business Performance
-        </h4>
-        <p class="text-sm text-gray-600 mt-1">
-          Based on verified Financial Check-ins data - Primary reporting source
-        </p>
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h4 class="text-md font-medium text-gray-900 flex items-center">
+            <i class="fas fa-chart-line mr-2 text-blue-600"></i>
+            Quarterly Business Performance
+          </h4>
+          <p class="text-sm text-gray-600 mt-1">
+            Based on verified Financial Check-ins data - Primary reporting source
+          </p>
+        </div>
+        <div class="flex space-x-3">
+          <button (click)="onExportPDF()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+            <i class="fas fa-file-pdf mr-2"></i>
+            Export Business Report
+          </button>
+        </div>
       </div>
 
       <!-- Loading State for Check-ins -->
@@ -63,11 +72,23 @@
           </p>
         </div>
         <div class="flex space-x-3">
-          <button (click)="onExportPDF()"
-                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            <i class="fas fa-file-pdf mr-2"></i>
-            Export PDF
+          <!-- Export Dropdown -->
+          <div class="relative inline-block text-left">
+            <button type="button"
+                    (click)="onExportPDF()"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-file-pdf mr-2"></i>
+              Export Report
+            </button>
+          </div>
+
+          <!-- Secondary Export Option -->
+          <button (click)="onExportBankStatementsPDF()"
+                  class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
+            <i class="fas fa-university mr-1"></i>
+            Bank Only
           </button>
+
           <button (click)="onAddStatement()"
                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <i class="fas fa-plus mr-2"></i>
@@ -119,7 +140,7 @@
     (saveStatementEvent)="onStatementSaved($event)">
   </app-statement-modal>
 
-  <!-- PDF Export Modal Component -->
+  <!-- PDF Export Modal Component (Legacy Bank Statements) -->
   <app-pdf-export-modal
     *ngIf="showPdfModal"
     [showModal]="showPdfModal"
@@ -127,6 +148,16 @@
     [bankStatements]="bankStatements"
     (closeModalEvent)="onPdfModalClose()">
   </app-pdf-export-modal>
+
+  <!-- Financial Check-ins PDF Export Modal Component (Primary) -->
+  <app-financial-checkin-pdf-export-modal
+    *ngIf="showFinancialCheckinPdfModal"
+    [showModal]="showFinancialCheckinPdfModal"
+    [company]="company"
+    [financialCheckIns]="financialCheckIns"
+    [bankStatements]="bankStatements"
+    (closeModalEvent)="onFinancialCheckinPdfModalClose()">
+  </app-financial-checkin-pdf-export-modal>
 
   <!-- Financial Check-in Modal Component -->
   <app-financial-checkin-modal
