@@ -4,6 +4,7 @@ import { INode } from '../../../../../../../models/schema';
 import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
+import { FINANCIAL_CHECKINS } from '../../../../../../../app/data';
 
 interface MonthlyStatus {
   month: number;
@@ -295,8 +296,14 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     this.error = null;
 
     try {
-      // Load all financial check-ins for this company
-      const allCheckIns = await this.nodeService.getNodes('financial_checkin').toPromise();
+      // 🚀 TEMPORARY: Use sample data for testing
+      // Later this will be: const allCheckIns = await this.nodeService.getNodes('financial_checkin').toPromise();
+      const allCheckIns = FINANCIAL_CHECKINS;
+
+      // Debug: Log what we're getting from the server
+      console.log('🔍 All financial check-ins from sample data:', allCheckIns);
+      console.log('🏢 Current company ID:', this.company.id);
+      console.log('📅 Current year:', this.currentYear);
 
       // Filter by company and current year
       this.checkIns = allCheckIns?.filter(node =>
@@ -304,12 +311,15 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         node.data.year === this.currentYear
       ) || [];
 
+      // Debug: Log what we filtered
+      console.log('✅ Filtered check-ins for this company/year:', this.checkIns);
+
       this.updateMonthlyStatus();
       this.calculateLatestMetrics();
       this.extractLatestNotes();
 
     } catch (error) {
-      console.error('Error loading financial check-ins:', error);
+      console.error('❌ Error loading financial check-ins:', error);
       this.error = 'Failed to load financial check-ins. Please try again.';
     } finally {
       this.loading = false;
@@ -317,11 +327,22 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   private updateMonthlyStatus() {
+    console.log('🗓️ Updating monthly status with check-ins:', this.checkIns);
+
     this.monthlyStatus.forEach(status => {
       const checkIn = this.checkIns.find(ci => ci.data.month === status.month);
       status.hasCheckIn = !!checkIn;
       status.netProfitMargin = checkIn?.data.np_margin;
+
+      // Debug each month
+      if (checkIn) {
+        console.log(`✅ ${status.monthName}: Found check-in`, checkIn.data);
+      } else {
+        console.log(`❌ ${status.monthName}: No check-in found`);
+      }
     });
+
+    console.log('📊 Final monthly status:', this.monthlyStatus);
   }
 
   private calculateLatestMetrics() {

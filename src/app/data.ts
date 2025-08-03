@@ -1,4 +1,5 @@
 import { Company, BankStatement, calculateQuarter } from '../models/business.models';
+import { FinancialCheckIn } from '../models/busines.financial.checkin.models';
 import { INode } from '../models/schema';
 
 export const COMPANIES: INode<Company>[] = [
@@ -3592,6 +3593,164 @@ export function getBankStatementImports(): INode<BankStatement>[] {
 
   return bankStatements;
 }
+
+// Sample Financial Check-ins for testing
+export const FINANCIAL_CHECKINS: INode<FinancialCheckIn>[] = [
+  // January 2025 - Strong month
+  {
+    id: 10001,
+    type: 'financial_checkin',
+    company_id: 2, // Agrimika Holdings
+    data: {
+      year: 2025,
+      month: 1,
+      quarter: 'Q1',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 75000,
+      cost_of_sales: 30000,
+      business_expenses: 25000,
+      gross_profit: 45000, // 75000 - 30000
+      net_profit: 20000,   // 45000 - 25000
+      gp_margin: 60.0,     // (45000/75000)*100
+      np_margin: 26.7,     // (20000/75000)*100
+      cash_on_hand: 35000,
+      debtors: 15000,
+      creditors: 8000,
+      inventory_on_hand: 20000,
+      net_assets: 62000,   // (35000+15000+20000) - 8000
+      working_capital_ratio: 8.75, // (35000+15000+20000) / 8000
+      notes: 'Strong start to the year. New contracts secured and cash flow is healthy. Collection procedures working well.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-01-31T10:00:00Z',
+    updated_at: '2025-01-31T10:00:00Z'
+  },
+
+  // March 2025 - Growth month
+  {
+    id: 10002,
+    type: 'financial_checkin',
+    company_id: 2, // Agrimika Holdings
+    data: {
+      year: 2025,
+      month: 3,
+      quarter: 'Q1',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 95000,
+      cost_of_sales: 35000,
+      business_expenses: 28000,
+      gross_profit: 60000, // 95000 - 35000
+      net_profit: 32000,   // 60000 - 28000
+      gp_margin: 63.2,     // (60000/95000)*100
+      np_margin: 33.7,     // (32000/95000)*100
+      cash_on_hand: 48000,
+      debtors: 22000,
+      creditors: 12000,
+      inventory_on_hand: 25000,
+      net_assets: 83000,   // (48000+22000+25000) - 12000
+      working_capital_ratio: 7.92, // (48000+22000+25000) / 12000
+      notes: 'Excellent growth month. Revenue up 27% from January. Expanding operations and hiring additional staff.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-03-31T15:30:00Z',
+    updated_at: '2025-03-31T15:30:00Z'
+  },
+
+  // June 2025 - Seasonal dip
+  {
+    id: 10003,
+    type: 'financial_checkin',
+    company_id: 2, // Agrimika Holdings
+    data: {
+      year: 2025,
+      month: 6,
+      quarter: 'Q2',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 58000,
+      cost_of_sales: 28000,
+      business_expenses: 32000,
+      gross_profit: 30000, // 58000 - 28000
+      net_profit: -2000,   // 30000 - 32000 (loss)
+      gp_margin: 51.7,     // (30000/58000)*100
+      np_margin: -3.4,     // (-2000/58000)*100
+      cash_on_hand: 42000,
+      debtors: 35000,
+      creditors: 18000,
+      inventory_on_hand: 15000,
+      net_assets: 74000,   // (42000+35000+15000) - 18000
+      working_capital_ratio: 5.11, // (42000+35000+15000) / 18000
+      notes: 'Seasonal slowdown in construction. Higher expenses due to equipment maintenance. Expecting recovery in Q3.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-06-30T09:15:00Z',
+    updated_at: '2025-06-30T09:15:00Z'
+  },
+
+  // July 2025 - Recovery
+  {
+    id: 10004,
+    type: 'financial_checkin',
+    company_id: 2, // Agrimika Holdings
+    data: {
+      year: 2025,
+      month: 7,
+      quarter: 'Q3',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 82000,
+      cost_of_sales: 31000,
+      business_expenses: 29000,
+      gross_profit: 51000, // 82000 - 31000
+      net_profit: 22000,   // 51000 - 29000
+      gp_margin: 62.2,     // (51000/82000)*100
+      np_margin: 26.8,     // (22000/82000)*100
+      cash_on_hand: 55000,
+      debtors: 28000,
+      creditors: 14000,
+      inventory_on_hand: 18000,
+      net_assets: 87000,   // (55000+28000+18000) - 14000
+      working_capital_ratio: 7.21, // (55000+28000+18000) / 14000
+      notes: 'Recovery underway. New major project started. Cash flow improved significantly.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-07-31T16:45:00Z',
+    updated_at: '2025-07-31T16:45:00Z'
+  },
+
+  // Sample for another company - TechCorp Solutions (company_id: 3)
+  {
+    id: 10005,
+    type: 'financial_checkin',
+    company_id: 3, // Different company
+    data: {
+      year: 2025,
+      month: 1,
+      quarter: 'Q1',
+      is_pre_ignition: false,
+      turnover_monthly_avg: 120000,
+      cost_of_sales: 40000,
+      business_expenses: 35000,
+      gross_profit: 80000,
+      net_profit: 45000,
+      gp_margin: 66.7,
+      np_margin: 37.5,
+      cash_on_hand: 75000,
+      debtors: 30000,
+      creditors: 15000,
+      inventory_on_hand: 10000,
+      net_assets: 100000,
+      working_capital_ratio: 7.67,
+      notes: 'Tech company showing strong SaaS revenue growth.'
+    },
+    parent_id: null,
+    created_by: null,
+    created_at: '2025-01-31T12:00:00Z',
+    updated_at: '2025-01-31T12:00:00Z'
+  }
+];
 
 // Helper function to convert month abbreviation to number
 function getMonthNumber(monthStr: string): number | null {
