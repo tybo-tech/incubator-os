@@ -81,6 +81,30 @@ class Node
         return $results;
     }
 
+    // get by company_id
+    public function getByCompanyId($companyId, $type = null)
+    {
+        if ($type) {
+            $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE company_id = ? AND type = ?");
+            $stmt->execute([$companyId, $type]);
+        } else {
+            $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE company_id = ?");
+            $stmt->execute([$companyId]);
+        }
+
+        if ($stmt->rowCount() === 0) {
+            return [];
+        }
+
+        $results = [];
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $item['data'] = json_decode($item['data']);
+            $results[] = $item;
+        }
+
+        return $results;
+    }
+
     public function search($type = null, $parentId = null)
     {
         $query = "SELECT * FROM nodes WHERE 1=1";

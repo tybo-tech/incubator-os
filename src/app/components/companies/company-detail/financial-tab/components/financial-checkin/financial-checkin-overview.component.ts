@@ -624,7 +624,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     // Get all check-ins for this month - handle both string and number month values
     this.selectedMonthCheckIns = this.checkIns.filter(ci =>
-      this.parseMonth(ci.data.month) === status.month
+      this.parseMonth(ci.data.month || 1) === status.month
     );
 
     this.showDetailsModal = true;

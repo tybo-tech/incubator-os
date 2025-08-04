@@ -51,5 +51,11 @@
       *ngIf="activeTab === 'documents'"
       [company]="company">
     </app-documents-tab>
+
+    <!-- Tasks Tab -->
+    <app-tasks-tab
+      *ngIf="activeTab === 'tasks'"
+      [company]="company">
+    </app-tasks-tab>
   </div>
 </div>

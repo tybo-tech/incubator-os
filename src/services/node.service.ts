@@ -46,8 +46,17 @@ export class NodeService<T = any> {
   }
 
   // Get nodes by type with hydrated relationships
-  getNodesByType(type: string): Observable<INode<T>[]> {
+  getNodesByType(type: string,): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/get-nodes-by-type.php?type=${encodeURIComponent(type)}`;
+    return this.http.get<INode<T>[]>(url);
+  }
+
+  //get-nodes-by-company.php
+  getNodesByCompany(companyId: number, type?: string): Observable<INode<T>[]> {
+    let url = `${this.apiUrl}/get-nodes-by-company.php?company_id=${companyId}`;
+    if (type) {
+      url += `&type=${encodeURIComponent(type)}`;
+    }
     return this.http.get<INode<T>[]>(url);
   }
 

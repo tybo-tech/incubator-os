@@ -14,6 +14,7 @@ import { OverviewTabComponent } from './overview-tab/overview-tab.component';
 import { FinancialTabComponent } from './financial-tab/financial-tab.component';
 import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
 import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
+import { TasksTabComponent } from './tasks-tab/tasks-tab.component';
 
 @Component({
   selector: 'app-company-detail',
@@ -27,7 +28,8 @@ import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
     OverviewTabComponent,
     FinancialTabComponent,
     ComplianceTabComponent,
-    DocumentsTabComponent
+    DocumentsTabComponent,
+    TasksTabComponent
   ],
   templateUrl: './company-detail.component.html',
   styleUrl: './company-detail.component.scss'
