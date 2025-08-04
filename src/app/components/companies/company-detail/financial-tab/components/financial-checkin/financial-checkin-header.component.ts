@@ -19,24 +19,6 @@ import { CommonModule } from '@angular/common';
           </p>
         </div>
         <div class="flex space-x-2">
-          <div class="bg-blue-500 rounded-lg p-1 flex">
-            <button
-              (click)="onViewModeChange('table')"
-              [class]="viewMode === 'table' ? 'bg-white text-blue-600' : 'text-white'"
-              class="px-3 py-1 rounded text-sm transition-colors"
-            >
-              <i class="fas fa-table mr-1"></i>
-              Table
-            </button>
-            <button
-              (click)="onViewModeChange('timeline')"
-              [class]="viewMode === 'timeline' ? 'bg-white text-blue-600' : 'text-white'"
-              class="px-3 py-1 rounded text-sm transition-colors"
-            >
-              <i class="fas fa-calendar mr-1"></i>
-              Timeline
-            </button>
-          </div>
           <button
             (click)="onViewTrendsClick()"
             class="bg-blue-500 hover:bg-blue-400 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -57,15 +39,8 @@ import { CommonModule } from '@angular/common';
   `
 })
 export class FinancialCheckinHeaderComponent {
-  @Input() viewMode: 'timeline' | 'table' = 'table';
-
-  @Output() viewModeChange = new EventEmitter<'timeline' | 'table'>();
   @Output() viewTrendsClick = new EventEmitter<void>();
   @Output() newCheckInClick = new EventEmitter<void>();
-
-  onViewModeChange(mode: 'timeline' | 'table') {
-    this.viewModeChange.emit(mode);
-  }
 
   onViewTrendsClick() {
     this.viewTrendsClick.emit();
