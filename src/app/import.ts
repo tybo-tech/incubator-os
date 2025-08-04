@@ -10,67 +10,105 @@ import { INode } from '../models/schema';
 export function convertBankStatementsToFinancialCheckins(
   bankStatements: INode<BankStatement>[] = finances
 ): INode<FinancialCheckIn>[] {
-  console.log('🔄 Converting', bankStatements.length, 'bank statements to financial check-ins...');
+  console.log(
+    '🔄 Converting',
+    bankStatements.length,
+    'bank statements to financial check-ins...'
+  );
 
   const financialCheckins: INode<FinancialCheckIn>[] = [];
   let nextId = 1000; // Starting ID for new financial check-ins
 
   // Filter only bank statements with valid company_id
-  const validBankStatements = bankStatements.filter(stmt => stmt.company_id && stmt.company_id > 0);
+  const validBankStatements = bankStatements.filter(
+    (stmt) => stmt.company_id && stmt.company_id > 0
+  );
 
-  console.log('✅ Found', validBankStatements.length, 'valid bank statements with company IDs');
-  console.log('❌ Filtered out', bankStatements.length - validBankStatements.length, 'statements without company IDs');
+  console.log(
+    '✅ Found',
+    validBankStatements.length,
+    'valid bank statements with company IDs'
+  );
+  console.log(
+    '❌ Filtered out',
+    bankStatements.length - validBankStatements.length,
+    'statements without company IDs'
+  );
 
-  validBankStatements.forEach(bankStatement => {
-    const financialCheckin: INode<FinancialCheckIn> = {
-      id: nextId++,
-      type: 'financial_checkin',
-      company_id: bankStatement.company_id,
-      data: {
-        year: bankStatement.data.year,
-        month: bankStatement.data.month,
-        quarter: bankStatement.data.quarter,
-        is_pre_ignition: false,
+  validBankStatements.forEach((bankStatement) => {
+    if (
+      bankStatement.data.month &&
+      bankStatement.data.year &&
+      bankStatement.company_id
+    ) {
+      const financialCheckin: INode<FinancialCheckIn> = {
+        id: nextId++,
+        type: 'financial_checkin',
+        company_id: bankStatement.company_id,
+        data: {
+          year: bankStatement.data.year,
+          month: bankStatement.data.month,
+          quarter: bankStatement.data.quarter,
+          is_pre_ignition: false,
 
-        // 💰 Core financial metrics derived from bank statement
-        turnover_monthly_avg: bankStatement.data.total_income,
-        gross_profit: bankStatement.data.total_income, // Assuming all income is gross profit for now
-        net_profit: bankStatement.data.total_income - bankStatement.data.total_expense,
+          // 💰 Core financial metrics derived from bank statement
+          turnover_monthly_avg: bankStatement.data.total_income,
+          gross_profit: bankStatement.data.total_income, // Assuming all income is gross profit for now
+          net_profit:
+            bankStatement.data.total_income - bankStatement.data.total_expense,
 
-        // 📊 Calculate margins
-        gp_margin: bankStatement.data.total_income > 0 ?
-          ((bankStatement.data.total_income - 0) / bankStatement.data.total_income) * 100 : 0, // Assuming no COGS for simplicity
-        np_margin: bankStatement.data.total_income > 0 ?
-          ((bankStatement.data.total_income - bankStatement.data.total_expense) / bankStatement.data.total_income) * 100 : 0,
+          // 📊 Calculate margins
+          gp_margin:
+            bankStatement.data.total_income > 0
+              ? ((bankStatement.data.total_income - 0) /
+                  bankStatement.data.total_income) *
+                100
+              : 0, // Assuming no COGS for simplicity
+          np_margin:
+            bankStatement.data.total_income > 0
+              ? ((bankStatement.data.total_income -
+                  bankStatement.data.total_expense) /
+                  bankStatement.data.total_income) *
+                100
+              : 0,
 
-        // 💳 Cash and operational data
-        cash_on_hand: bankStatement.data.closing_balance,
-        cost_of_sales: 0, // Not available in bank statements, defaulting to 0
-        business_expenses: bankStatement.data.total_expense,
+          // 💳 Cash and operational data
+          cash_on_hand: bankStatement.data.closing_balance,
+          cost_of_sales: 0, // Not available in bank statements, defaulting to 0
+          business_expenses: bankStatement.data.total_expense,
 
-        // 🏦 Default values for fields not available in bank statements
-        debtors: 0,
-        creditors: 0,
-        inventory_on_hand: 0,
-        net_assets: bankStatement.data.closing_balance, // Simplified: cash as net assets
-        working_capital_ratio: 0,
+          // 🏦 Default values for fields not available in bank statements
+          debtors: 0,
+          creditors: 0,
+          inventory_on_hand: 0,
+          net_assets: bankStatement.data.closing_balance, // Simplified: cash as net assets
+          working_capital_ratio: 0,
 
-        notes: `Converted from bank statement (Account: ${bankStatement.data.account_name || 'Unknown'})`
-      },
-      parent_id: null,
-      created_by: null,
-      updated_by: null,
-      created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    };
+          notes: `Converted from bank statement (Account: ${
+            bankStatement.data.account_name || 'Unknown'
+          })`,
+        },
+        parent_id: null,
+        created_by: null,
+        updated_by: null,
+        created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        updated_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      };
 
-    financialCheckins.push(financialCheckin);
+      financialCheckins.push(financialCheckin);
+    }
   });
 
-  console.log('✅ Successfully converted', financialCheckins.length, 'financial check-ins');
+  console.log(
+    '✅ Successfully converted',
+    financialCheckins.length,
+    'financial check-ins'
+  );
 
   // Group by company for summary
-  const companiesConverted = new Set(financialCheckins.map(fc => fc.company_id));
+  const companiesConverted = new Set(
+    financialCheckins.map((fc) => fc.company_id)
+  );
   console.log('🏢 Converted data for', companiesConverted.size, 'companies');
 
   return financialCheckins;
@@ -80,14 +118,23 @@ export function convertBankStatementsToFinancialCheckins(
  * 🔍 Analyze Bank Statement Coverage
  * This function helps identify which bank statements need conversion
  */
-export function analyzeBankStatementCoverage(bankStatements: INode<BankStatement>[]) {
-  const withCompanyId = bankStatements.filter(stmt => stmt.company_id && stmt.company_id > 0);
-  const withoutCompanyId = bankStatements.filter(stmt => !stmt.company_id || stmt.company_id <= 0);
+export function analyzeBankStatementCoverage(
+  bankStatements: INode<BankStatement>[]
+) {
+  const withCompanyId = bankStatements.filter(
+    (stmt) => stmt.company_id && stmt.company_id > 0
+  );
+  const withoutCompanyId = bankStatements.filter(
+    (stmt) => !stmt.company_id || stmt.company_id <= 0
+  );
 
   console.log('📊 Bank Statement Analysis:');
   console.log('✅ With Company ID:', withCompanyId.length);
   console.log('❌ Without Company ID:', withoutCompanyId.length);
-  console.log('📈 Coverage:', Math.round((withCompanyId.length / bankStatements.length) * 100) + '%');
+  console.log(
+    '📈 Coverage:',
+    Math.round((withCompanyId.length / bankStatements.length) * 100) + '%'
+  );
 
   // Group by company
   const byCompany = withCompanyId.reduce((acc, stmt) => {
@@ -97,12 +144,21 @@ export function analyzeBankStatementCoverage(bankStatements: INode<BankStatement
     return acc;
   }, {} as Record<number, INode<BankStatement>[]>);
 
-  console.log('🏢 Companies with bank statements:', Object.keys(byCompany).length);
+  console.log(
+    '🏢 Companies with bank statements:',
+    Object.keys(byCompany).length
+  );
 
   // Show coverage per company
   Object.entries(byCompany).forEach(([companyId, statements]) => {
-    const months = statements.map(s => `${s.data.year}-${s.data.month?.toString().padStart(2, '0')}`);
-    console.log(`Company ${companyId}: ${statements.length} statements (${months.join(', ')})`);
+    const months = statements.map(
+      (s) => `${s.data.year}-${s.data.month?.toString().padStart(2, '0')}`
+    );
+    console.log(
+      `Company ${companyId}: ${statements.length} statements (${months.join(
+        ', '
+      )})`
+    );
   });
 
   return {
@@ -110,7 +166,7 @@ export function analyzeBankStatementCoverage(bankStatements: INode<BankStatement
     withCompanyId: withCompanyId.length,
     withoutCompanyId: withoutCompanyId.length,
     companies: Object.keys(byCompany).length,
-    byCompany
+    byCompany,
   };
 }
 
@@ -7477,130 +7533,129 @@ export const finances: INode<BankStatement>[] = [
   },
 ];
 
-
 const financialCheckinExample: INode<FinancialCheckIn>[] = [
-    {
-        "id": 778,
-        "type": "financial_checkin",
-        "company_id": null,
-        "data": {
-            "year": 2025,
-            "month": 1,
-            "notes": "",
-            "debtors": 50000,
-            "quarter": "Q1",
-            "creditors": 0,
-            "gp_margin": 70,
-            "np_margin": 60,
-            "net_assets": 57000,
-            "net_profit": 3000,
-            "cash_on_hand": 1500,
-            "gross_profit": 3500,
-            "cost_of_sales": 1500,
-            "is_pre_ignition": false,
-            "business_expenses": 500,
-            "inventory_on_hand": 5500,
-            "turnover_monthly_avg": 5000,
-            "working_capital_ratio": 0
-        },
-        "parent_id": null,
-        "created_by": null,
-        "updated_by": null,
-        "created_at": "2025-08-03 11:01:28",
-        "updated_at": "2025-08-03 11:01:28"
+  {
+    id: 778,
+    type: 'financial_checkin',
+    company_id: null,
+    data: {
+      year: 2025,
+      month: 1,
+      notes: '',
+      debtors: 50000,
+      quarter: 'Q1',
+      creditors: 0,
+      gp_margin: 70,
+      np_margin: 60,
+      net_assets: 57000,
+      net_profit: 3000,
+      cash_on_hand: 1500,
+      gross_profit: 3500,
+      cost_of_sales: 1500,
+      is_pre_ignition: false,
+      business_expenses: 500,
+      inventory_on_hand: 5500,
+      turnover_monthly_avg: 5000,
+      working_capital_ratio: 0,
     },
-    {
-        "id": 780,
-        "type": "financial_checkin",
-        "company_id": null,
-        "data": {
-            "year": 2025,
-            "month": 1,
-            "notes": "",
-            "debtors": 0,
-            "quarter": "Q1",
-            "creditors": 0,
-            "gp_margin": 96,
-            "np_margin": 86,
-            "net_assets": 0,
-            "net_profit": 43000,
-            "cash_on_hand": 0,
-            "gross_profit": 48000,
-            "cost_of_sales": 2000,
-            "is_pre_ignition": false,
-            "business_expenses": 5000,
-            "inventory_on_hand": 0,
-            "turnover_monthly_avg": 50000,
-            "working_capital_ratio": 0
-        },
-        "parent_id": null,
-        "created_by": null,
-        "updated_by": null,
-        "created_at": "2025-08-03 11:49:41",
-        "updated_at": "2025-08-03 11:49:41"
+    parent_id: null,
+    created_by: null,
+    updated_by: null,
+    created_at: '2025-08-03 11:01:28',
+    updated_at: '2025-08-03 11:01:28',
+  },
+  {
+    id: 780,
+    type: 'financial_checkin',
+    company_id: null,
+    data: {
+      year: 2025,
+      month: 1,
+      notes: '',
+      debtors: 0,
+      quarter: 'Q1',
+      creditors: 0,
+      gp_margin: 96,
+      np_margin: 86,
+      net_assets: 0,
+      net_profit: 43000,
+      cash_on_hand: 0,
+      gross_profit: 48000,
+      cost_of_sales: 2000,
+      is_pre_ignition: false,
+      business_expenses: 5000,
+      inventory_on_hand: 0,
+      turnover_monthly_avg: 50000,
+      working_capital_ratio: 0,
     },
-    {
-        "id": 782,
-        "type": "financial_checkin",
-        "company_id": 2,
-        "data": {
-            "year": 2025,
-            "month": 1,
-            "notes": "",
-            "debtors": 1000,
-            "quarter": "Q1",
-            "creditors": 100,
-            "gp_margin": 90,
-            "np_margin": 76,
-            "net_assets": 4900,
-            "net_profit": 3800,
-            "cash_on_hand": 2500,
-            "gross_profit": 4500,
-            "cost_of_sales": 500,
-            "is_pre_ignition": false,
-            "business_expenses": 700,
-            "inventory_on_hand": 1500,
-            "turnover_monthly_avg": 5000,
-            "working_capital_ratio": 50
-        },
-        "parent_id": null,
-        "created_by": null,
-        "updated_by": null,
-        "created_at": "2025-08-03 11:51:37",
-        "updated_at": "2025-08-03 12:07:45"
+    parent_id: null,
+    created_by: null,
+    updated_by: null,
+    created_at: '2025-08-03 11:49:41',
+    updated_at: '2025-08-03 11:49:41',
+  },
+  {
+    id: 782,
+    type: 'financial_checkin',
+    company_id: 2,
+    data: {
+      year: 2025,
+      month: 1,
+      notes: '',
+      debtors: 1000,
+      quarter: 'Q1',
+      creditors: 100,
+      gp_margin: 90,
+      np_margin: 76,
+      net_assets: 4900,
+      net_profit: 3800,
+      cash_on_hand: 2500,
+      gross_profit: 4500,
+      cost_of_sales: 500,
+      is_pre_ignition: false,
+      business_expenses: 700,
+      inventory_on_hand: 1500,
+      turnover_monthly_avg: 5000,
+      working_capital_ratio: 50,
     },
+    parent_id: null,
+    created_by: null,
+    updated_by: null,
+    created_at: '2025-08-03 11:51:37',
+    updated_at: '2025-08-03 12:07:45',
+  },
 
-    {
-        "id": 786,
-        "type": "financial_checkin",
-        "company_id": 2,
-        "data": {
-            "year": 2025,
-            "month": 2,
-            "notes": "",
-            "debtors": 7500,
-            "quarter": "Q1",
-            "creditors": 0,
-            "gp_margin": 68.75,
-            "np_margin": 60,
-            "net_assets": 14500,
-            "net_profit": 4800,
-            "cash_on_hand": 3500,
-            "gross_profit": 5500,
-            "cost_of_sales": 2500,
-            "is_pre_ignition": false,
-            "business_expenses": 700,
-            "inventory_on_hand": 3500,
-            "turnover_monthly_avg": 8000,
-            "working_capital_ratio": 0
-        },
-        "parent_id": null,
-        "created_by": null,
-        "updated_by": null,
-        "created_at": "2025-08-03 12:09:10",
-        "updated_at": "2025-08-03 12:09:10"
-    }
-]
+  {
+    id: 786,
+    type: 'financial_checkin',
+    company_id: 2,
+    data: {
+      year: 2025,
+      month: 2,
+      notes: '',
+      debtors: 7500,
+      quarter: 'Q1',
+      creditors: 0,
+      gp_margin: 68.75,
+      np_margin: 60,
+      net_assets: 14500,
+      net_profit: 4800,
+      cash_on_hand: 3500,
+      gross_profit: 5500,
+      cost_of_sales: 2500,
+      is_pre_ignition: false,
+      business_expenses: 700,
+      inventory_on_hand: 3500,
+      turnover_monthly_avg: 8000,
+      working_capital_ratio: 0,
+    },
+    parent_id: null,
+    created_by: null,
+    updated_by: null,
+    created_at: '2025-08-03 12:09:10',
+    updated_at: '2025-08-03 12:09:10',
+  },
+];
 
 /**
  * 🚀 Execute Bank Statement to Financial Check-in Conversion
@@ -7616,18 +7671,26 @@ export function executeFinancialConversion() {
   const convertedCheckins = convertBankStatementsToFinancialCheckins(finances);
 
   // Step 3: Merge with existing financial check-ins (avoid duplicates)
-  const existingCheckins = financialCheckinExample.filter(fc => fc.company_id && fc.company_id > 0);
+  const existingCheckins = financialCheckinExample.filter(
+    (fc) => fc.company_id && fc.company_id > 0
+  );
 
   console.log('📋 Summary:');
-  console.log('- Existing financial check-ins with company ID:', existingCheckins.length);
+  console.log(
+    '- Existing financial check-ins with company ID:',
+    existingCheckins.length
+  );
   console.log('- New financial check-ins converted:', convertedCheckins.length);
-  console.log('- Total financial check-ins after conversion:', existingCheckins.length + convertedCheckins.length);
+  console.log(
+    '- Total financial check-ins after conversion:',
+    existingCheckins.length + convertedCheckins.length
+  );
 
   return {
     analysis,
     convertedCheckins,
     existingCheckins,
-    allFinancialCheckins: [...existingCheckins, ...convertedCheckins]
+    allFinancialCheckins: [...existingCheckins, ...convertedCheckins],
   };
 }
 
@@ -7644,8 +7707,11 @@ export function getInsertableFinancialCheckins(): INode<FinancialCheckIn>[] {
 if (typeof window !== 'undefined') {
   // Only run in browser context
   (window as any).executeFinancialConversion = executeFinancialConversion;
-  (window as any).getInsertableFinancialCheckins = getInsertableFinancialCheckins;
-  console.log('🔧 Financial conversion functions available in browser console:');
+  (window as any).getInsertableFinancialCheckins =
+    getInsertableFinancialCheckins;
+  console.log(
+    '🔧 Financial conversion functions available in browser console:'
+  );
   console.log('- executeFinancialConversion()');
   console.log('- getInsertableFinancialCheckins()');
 }
