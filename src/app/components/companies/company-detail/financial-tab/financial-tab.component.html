@@ -58,96 +58,7 @@
         <app-financial-checkin-quarterly-view [checkIns]="financialCheckIns"></app-financial-checkin-quarterly-view>
       </div>
     </div>
-
-    <!-- Bank Statements Section (Validation Layer) -->
-    <div class="border-t pt-6">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h4 class="text-md font-medium text-gray-900 flex items-center">
-            <i class="fas fa-university mr-2 text-gray-600"></i>
-            Bank Statements - Validation Layer
-          </h4>
-          <p class="text-sm text-gray-600 mt-1">
-            Used for cross-validation with Financial Check-ins data
-          </p>
-        </div>
-        <div class="flex space-x-3">
-          <!-- Export Dropdown -->
-          <div class="relative inline-block text-left">
-            <button type="button"
-                    (click)="onExportPDF()"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
-              <i class="fas fa-file-pdf mr-2"></i>
-              Export Report
-            </button>
-          </div>
-
-          <!-- Secondary Export Option -->
-          <button (click)="onExportBankStatementsPDF()"
-                  class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors">
-            <i class="fas fa-university mr-1"></i>
-            Bank Only
-          </button>
-
-          <button (click)="onAddStatement()"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            <i class="fas fa-plus mr-2"></i>
-            Add Statement
-          </button>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="loadingStatements" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="mt-2 text-gray-600">Loading bank statements...</p>
-      </div>
-
-      <!-- Error State -->
-      <div *ngIf="statementsError" class="text-center py-8">
-        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
-        <p class="text-red-600">{{ statementsError }}</p>
-        <button (click)="loadBankStatements()"
-                class="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          <i class="fas fa-redo mr-2"></i>
-          Retry
-        </button>
-      </div>
-
-      <!-- Content -->
-      <div *ngIf="!loadingStatements && !statementsError">
-
-        <!-- Quarterly View Component -->
-        <app-quarterly-view [bankStatements]="bankStatements"></app-quarterly-view>
-
-        <!-- Statements Table Component -->
-        <app-statements-table
-          [bankStatements]="bankStatements"
-          (editStatement)="onEditStatement($event)"
-          (deleteStatement)="onDeleteStatement($event)">
-        </app-statements-table>
-      </div>
-    </div>
   </div>
-
-  <!-- Statement Modal Component -->
-  <app-statement-modal
-    *ngIf="showModal"
-    [showModal]="showModal"
-    [isEditMode]="isEditMode"
-    [editingStatement]="editingStatement"
-    (closeModalEvent)="onModalClose()"
-    (saveStatementEvent)="onStatementSaved($event)">
-  </app-statement-modal>
-
-  <!-- PDF Export Modal Component (Legacy Bank Statements) -->
-  <app-pdf-export-modal
-    *ngIf="showPdfModal"
-    [showModal]="showPdfModal"
-    [company]="company"
-    [bankStatements]="bankStatements"
-    (closeModalEvent)="onPdfModalClose()">
-  </app-pdf-export-modal>
 
   <!-- Financial Check-ins PDF Export Modal Component (Primary) -->
   <app-financial-checkin-pdf-export-modal
@@ -155,7 +66,6 @@
     [showModal]="showFinancialCheckinPdfModal"
     [company]="company"
     [financialCheckIns]="financialCheckIns"
-    [bankStatements]="bankStatements"
     (closeModalEvent)="onFinancialCheckinPdfModalClose()">
   </app-financial-checkin-pdf-export-modal>
 
