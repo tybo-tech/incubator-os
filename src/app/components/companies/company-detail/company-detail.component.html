@@ -57,5 +57,11 @@
       *ngIf="activeTab === 'tasks'"
       [company]="company">
     </app-tasks-tab>
+
+    <!-- Growth Areas Tab -->
+    <app-growth-areas-tab
+      *ngIf="activeTab === 'growth'"
+      [company]="company">
+    </app-growth-areas-tab>
   </div>
 </div>

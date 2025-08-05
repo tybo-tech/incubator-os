@@ -169,10 +169,33 @@ export function initTask(): Task {
   };
 }
 
+export function initGrowthArea(): GrowthArea {
+  return {
+    company_id: '',
+    area: '',
+    type: 'opportunity',
+    description: '',
+    impact_area: '',
+    rating: 3,
+    mentor_notes: '',
+  };
+}
+
 // Utility function to calculate quarter from month
 export function calculateQuarter(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
   if (month >= 1 && month <= 3) return 'Q1';
   if (month >= 4 && month <= 6) return 'Q2';
   if (month >= 7 && month <= 9) return 'Q3';
   return 'Q4';
+}
+
+
+export interface GrowthArea {
+  company_id: string;
+  area: string;
+  type: 'weakness' | 'opportunity' | 'threat' | 'strength';
+  description: string;
+  impact_area: string;
+  rating: number;
+  mentor_notes?: string;
 }

@@ -15,6 +15,7 @@ import { FinancialTabComponent } from './financial-tab/financial-tab.component';
 import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
 import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
 import { TasksTabComponent } from './tasks-tab/tasks-tab.component';
+import { GrowthAreasTabComponent } from './growth-areas-tab/growth-areas-tab.component';
 
 @Component({
   selector: 'app-company-detail',
@@ -29,7 +30,8 @@ import { TasksTabComponent } from './tasks-tab/tasks-tab.component';
     FinancialTabComponent,
     ComplianceTabComponent,
     DocumentsTabComponent,
-    TasksTabComponent
+    TasksTabComponent,
+    GrowthAreasTabComponent
   ],
   templateUrl: './company-detail.component.html',
   styleUrl: './company-detail.component.scss'
