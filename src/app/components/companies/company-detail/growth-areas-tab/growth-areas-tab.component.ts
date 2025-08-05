@@ -27,250 +27,187 @@ import { NodeService } from '../../../../../services';
         </button>
       </div>
 
-      <!-- SWOT Statistics -->
+      <!-- SWOT Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-green-50 p-6 rounded-lg shadow-sm border border-green-200">
-          <div class="text-2xl font-bold text-green-600">{{ swotStats.strengths }}</div>
-          <div class="text-sm text-green-700 flex items-center">
-            <i class="fas fa-thumbs-up mr-1"></i>
-            Strengths
+        <div class="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-green-600">{{ swotStats.strengths }}</div>
+              <div class="text-xs text-green-700">Strengths</div>
+            </div>
+            <i class="fas fa-thumbs-up text-green-500 text-lg"></i>
           </div>
         </div>
-        <div class="bg-red-50 p-6 rounded-lg shadow-sm border border-red-200">
-          <div class="text-2xl font-bold text-red-600">{{ swotStats.weaknesses }}</div>
-          <div class="text-sm text-red-700 flex items-center">
-            <i class="fas fa-exclamation-triangle mr-1"></i>
-            Weaknesses
+        <div class="bg-red-50 p-4 rounded-lg shadow-sm border border-red-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-red-600">{{ swotStats.weaknesses }}</div>
+              <div class="text-xs text-red-700">Weaknesses</div>
+            </div>
+            <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
           </div>
         </div>
-        <div class="bg-blue-50 p-6 rounded-lg shadow-sm border border-blue-200">
-          <div class="text-2xl font-bold text-blue-600">{{ swotStats.opportunities }}</div>
-          <div class="text-sm text-blue-700 flex items-center">
-            <i class="fas fa-lightbulb mr-1"></i>
-            Opportunities
+        <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-blue-600">{{ swotStats.opportunities }}</div>
+              <div class="text-xs text-blue-700">Opportunities</div>
+            </div>
+            <i class="fas fa-lightbulb text-blue-500 text-lg"></i>
           </div>
         </div>
-        <div class="bg-orange-50 p-6 rounded-lg shadow-sm border border-orange-200">
-          <div class="text-2xl font-bold text-orange-600">{{ swotStats.threats }}</div>
-          <div class="text-sm text-orange-700 flex items-center">
-            <i class="fas fa-shield-alt mr-1"></i>
-            Threats
+        <div class="bg-orange-50 p-4 rounded-lg shadow-sm border border-orange-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-orange-600">{{ swotStats.threats }}</div>
+              <div class="text-xs text-orange-700">Threats</div>
+            </div>
+            <i class="fas fa-shield-alt text-orange-500 text-lg"></i>
           </div>
         </div>
       </div>
 
-      <!-- SWOT Categories -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Strengths -->
-        <div class="bg-white rounded-lg shadow-sm border">
-          <div class="bg-green-50 px-6 py-4 border-b border-green-200">
-            <h3 class="text-lg font-semibold text-green-800 flex items-center">
-              <i class="fas fa-thumbs-up mr-2"></i>
-              Strengths
-            </h3>
-          </div>
-          <div class="p-6">
-            <div *ngIf="getGrowthAreasByType('strength').length === 0" class="text-center text-gray-500 py-8">
-              <i class="fas fa-plus-circle text-3xl mb-2"></i>
-              <p>No strengths identified yet</p>
-              <button (click)="addQuickGrowthArea('strength')" class="text-green-600 hover:text-green-700 mt-2">
-                Add a strength
-              </button>
-            </div>
-            <div *ngFor="let item of getGrowthAreasByType('strength')" class="border-b border-gray-100 pb-4 mb-4 last:border-b-0 last:mb-0">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-gray-900">{{ item.data.area }}</h4>
-                  <p class="text-sm text-gray-600 mt-1">{{ item.data.description }}</p>
-                  <div class="flex items-center mt-2 space-x-4">
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Impact:</span>
-                      <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ item.data.impact_area }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Rating:</span>
-                      <div class="flex">
-                        <i *ngFor="let star of getStarArray(item.data.rating)" class="fas fa-star text-yellow-400 text-xs"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <p *ngIf="item.data.mentor_notes" class="text-xs text-blue-600 mt-2 italic">
-                    💬 {{ item.data.mentor_notes }}
-                  </p>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                  <button (click)="editGrowthArea(item)" class="text-gray-400 hover:text-blue-600">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button (click)="createTaskFromGrowthArea(item)" class="text-gray-400 hover:text-green-600" title="Create Task">
-                    <i class="fas fa-tasks"></i>
-                  </button>
-                  <button (click)="deleteGrowthArea(item)" class="text-gray-400 hover:text-red-600">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Growth Areas Table -->
+      <div class="bg-white rounded-lg shadow-sm border">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">All Growth Areas</h3>
+          <p class="text-sm text-gray-600">Complete SWOT analysis for {{ company?.data?.name || 'this company' }}</p>
         </div>
 
-        <!-- Weaknesses -->
-        <div class="bg-white rounded-lg shadow-sm border">
-          <div class="bg-red-50 px-6 py-4 border-b border-red-200">
-            <h3 class="text-lg font-semibold text-red-800 flex items-center">
-              <i class="fas fa-exclamation-triangle mr-2"></i>
-              Weaknesses
-            </h3>
-          </div>
-          <div class="p-6">
-            <div *ngIf="getGrowthAreasByType('weakness').length === 0" class="text-center text-gray-500 py-8">
-              <i class="fas fa-plus-circle text-3xl mb-2"></i>
-              <p>No weaknesses identified yet</p>
-              <button (click)="addQuickGrowthArea('weakness')" class="text-red-600 hover:text-red-700 mt-2">
-                Add a weakness
-              </button>
-            </div>
-            <div *ngFor="let item of getGrowthAreasByType('weakness')" class="border-b border-gray-100 pb-4 mb-4 last:border-b-0 last:mb-0">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-gray-900">{{ item.data.area }}</h4>
-                  <p class="text-sm text-gray-600 mt-1">{{ item.data.description }}</p>
-                  <div class="flex items-center mt-2 space-x-4">
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Impact:</span>
-                      <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ item.data.impact_area }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Priority:</span>
-                      <div class="flex">
-                        <i *ngFor="let star of getStarArray(item.data.rating)" class="fas fa-star text-yellow-400 text-xs"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <p *ngIf="item.data.mentor_notes" class="text-xs text-blue-600 mt-2 italic">
-                    💬 {{ item.data.mentor_notes }}
-                  </p>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                  <button (click)="editGrowthArea(item)" class="text-gray-400 hover:text-blue-600">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button (click)="createTaskFromGrowthArea(item)" class="text-gray-400 hover:text-green-600" title="Create Task to Address">
-                    <i class="fas fa-tasks"></i>
-                  </button>
-                  <button (click)="deleteGrowthArea(item)" class="text-gray-400 hover:text-red-600">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div *ngIf="loading" class="p-8 text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="mt-2 text-gray-600">Loading growth areas...</p>
         </div>
 
-        <!-- Opportunities -->
-        <div class="bg-white rounded-lg shadow-sm border">
-          <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
-            <h3 class="text-lg font-semibold text-blue-800 flex items-center">
-              <i class="fas fa-lightbulb mr-2"></i>
-              Opportunities
-            </h3>
-          </div>
-          <div class="p-6">
-            <div *ngIf="getGrowthAreasByType('opportunity').length === 0" class="text-center text-gray-500 py-8">
-              <i class="fas fa-plus-circle text-3xl mb-2"></i>
-              <p>No opportunities identified yet</p>
-              <button (click)="addQuickGrowthArea('opportunity')" class="text-blue-600 hover:text-blue-700 mt-2">
-                Add an opportunity
-              </button>
-            </div>
-            <div *ngFor="let item of getGrowthAreasByType('opportunity')" class="border-b border-gray-100 pb-4 mb-4 last:border-b-0 last:mb-0">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-gray-900">{{ item.data.area }}</h4>
-                  <p class="text-sm text-gray-600 mt-1">{{ item.data.description }}</p>
-                  <div class="flex items-center mt-2 space-x-4">
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Impact:</span>
-                      <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ item.data.impact_area }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Potential:</span>
-                      <div class="flex">
-                        <i *ngFor="let star of getStarArray(item.data.rating)" class="fas fa-star text-yellow-400 text-xs"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <p *ngIf="item.data.mentor_notes" class="text-xs text-blue-600 mt-2 italic">
-                    💬 {{ item.data.mentor_notes }}
-                  </p>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                  <button (click)="editGrowthArea(item)" class="text-gray-400 hover:text-blue-600">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button (click)="createTaskFromGrowthArea(item)" class="text-gray-400 hover:text-green-600" title="Create Task to Pursue">
-                    <i class="fas fa-tasks"></i>
-                  </button>
-                  <button (click)="deleteGrowthArea(item)" class="text-gray-400 hover:text-red-600">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div *ngIf="!loading && growthAreas.length === 0" class="p-8 text-center text-gray-500">
+          <i class="fas fa-chart-line text-4xl mb-4"></i>
+          <h4 class="text-lg font-medium mb-2">No Growth Areas Yet</h4>
+          <p class="mb-4">Start building your SWOT analysis by adding strengths, weaknesses, opportunities, and threats.</p>
+          <button
+            (click)="openGrowthAreaModal()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            Add First Growth Area
+          </button>
         </div>
 
-        <!-- Threats -->
-        <div class="bg-white rounded-lg shadow-sm border">
-          <div class="bg-orange-50 px-6 py-4 border-b border-orange-200">
-            <h3 class="text-lg font-semibold text-orange-800 flex items-center">
-              <i class="fas fa-shield-alt mr-2"></i>
-              Threats
-            </h3>
-          </div>
-          <div class="p-6">
-            <div *ngIf="getGrowthAreasByType('threat').length === 0" class="text-center text-gray-500 py-8">
-              <i class="fas fa-plus-circle text-3xl mb-2"></i>
-              <p>No threats identified yet</p>
-              <button (click)="addQuickGrowthArea('threat')" class="text-orange-600 hover:text-orange-700 mt-2">
-                Add a threat
-              </button>
-            </div>
-            <div *ngFor="let item of getGrowthAreasByType('threat')" class="border-b border-gray-100 pb-4 mb-4 last:border-b-0 last:mb-0">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="font-medium text-gray-900">{{ item.data.area }}</h4>
-                  <p class="text-sm text-gray-600 mt-1">{{ item.data.description }}</p>
-                  <div class="flex items-center mt-2 space-x-4">
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Impact:</span>
-                      <span class="text-xs bg-gray-100 px-2 py-1 rounded">{{ item.data.impact_area }}</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-xs text-gray-500 mr-1">Severity:</span>
-                      <div class="flex">
-                        <i *ngFor="let star of getStarArray(item.data.rating)" class="fas fa-star text-yellow-400 text-xs"></i>
-                      </div>
-                    </div>
+        <div *ngIf="!loading && growthAreas.length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impact Area</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mentor Notes</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let area of growthAreas" class="hover:bg-gray-50">
+                <!-- Type -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': area.data.type === 'strength',
+                      'bg-red-100 text-red-800': area.data.type === 'weakness',
+                      'bg-blue-100 text-blue-800': area.data.type === 'opportunity',
+                      'bg-orange-100 text-orange-800': area.data.type === 'threat'
+                    }"
+                  >
+                    <i
+                      class="mr-1"
+                      [ngClass]="{
+                        'fas fa-thumbs-up': area.data.type === 'strength',
+                        'fas fa-exclamation-triangle': area.data.type === 'weakness',
+                        'fas fa-lightbulb': area.data.type === 'opportunity',
+                        'fas fa-shield-alt': area.data.type === 'threat'
+                      }"
+                    ></i>
+                    {{ area.data.type | titlecase }}
+                  </span>
+                </td>
+
+                <!-- Area -->
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-gray-900">{{ area.data.area }}</div>
+                </td>
+
+                <!-- Description -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-600 max-w-xs">
+                    <p class="line-clamp-2">{{ area.data.description }}</p>
                   </div>
-                  <p *ngIf="item.data.mentor_notes" class="text-xs text-blue-600 mt-2 italic">
-                    💬 {{ item.data.mentor_notes }}
-                  </p>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                  <button (click)="editGrowthArea(item)" class="text-gray-400 hover:text-blue-600">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button (click)="createTaskFromGrowthArea(item)" class="text-gray-400 hover:text-green-600" title="Create Task to Mitigate">
-                    <i class="fas fa-tasks"></i>
-                  </button>
-                  <button (click)="deleteGrowthArea(item)" class="text-gray-400 hover:text-red-600">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </td>
+
+                <!-- Impact Area -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-800">
+                    {{ area.data.impact_area }}
+                  </span>
+                </td>
+
+                <!-- Rating -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex mr-2">
+                      <i
+                        *ngFor="let star of getStarArray(area.data.rating)"
+                        class="fas fa-star text-yellow-400 text-sm"
+                      ></i>
+                      <i
+                        *ngFor="let star of getStarArray(5 - area.data.rating)"
+                        class="fas fa-star text-gray-300 text-sm"
+                      ></i>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ area.data.rating }}/5</span>
+                  </div>
+                  <div class="text-xs text-gray-400 mt-1">
+                    {{ getRatingDescription(area.data.rating, area.data.type) }}
+                  </div>
+                </td>
+
+                <!-- Mentor Notes -->
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-600 max-w-xs">
+                    <p *ngIf="area.data.mentor_notes" class="line-clamp-2 italic">
+                      💬 {{ area.data.mentor_notes }}
+                    </p>
+                    <span *ngIf="!area.data.mentor_notes" class="text-gray-400">—</span>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      (click)="editGrowthArea(area)"
+                      class="text-blue-600 hover:text-blue-700"
+                      title="Edit"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      (click)="createTaskFromGrowthArea(area)"
+                      class="text-green-600 hover:text-green-700"
+                      title="Create Task"
+                    >
+                      <i class="fas fa-tasks"></i>
+                    </button>
+                    <button
+                      (click)="deleteGrowthArea(area)"
+                      class="text-red-600 hover:text-red-700"
+                      title="Delete"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -370,7 +307,7 @@ import { NodeService } from '../../../../../services';
               <!-- Rating -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ formData.type === 'strength' ? 'Strength Level' : 
+                  {{ formData.type === 'strength' ? 'Strength Level' :
                      formData.type === 'weakness' ? 'Priority Level' :
                      formData.type === 'opportunity' ? 'Potential Impact' : 'Threat Level' }}
                 </label>
@@ -429,7 +366,7 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
   @Input() company: INode<Company> | null = null;
 
   private destroy$ = new Subject<void>();
-  
+
   growthAreas: INode<GrowthArea>[] = [];
   loading = false;
   showGrowthAreaModal = false;
@@ -560,7 +497,7 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
 
   deleteGrowthArea(area: INode<GrowthArea>) {
     if (!area.id) return;
-    
+
     if (confirm('Are you sure you want to delete this growth area?')) {
       this.nodeService.deleteNode(area.id)
         .pipe(takeUntil(this.destroy$))
@@ -579,14 +516,14 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
     // This will be implemented to create a task with parent_id pointing to the growth area
     const taskTitle = this.generateTaskTitle(area.data);
     const taskDescription = this.generateTaskDescription(area.data);
-    
+
     console.log('Creating task from growth area:', {
       title: taskTitle,
       description: taskDescription,
       parent_id: area.id,
       company_id: this.company?.id
     });
-    
+
     // TODO: Implement task creation with parent_id
     alert(`Task creation will be implemented:\n\nTitle: ${taskTitle}\nDescription: ${taskDescription}`);
   }
