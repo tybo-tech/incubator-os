@@ -22,7 +22,7 @@
     [editMode]="false"
     [taskToEdit]="null"
     [availableCompanies]="availableCompanies"
-    (onCloseModal)="closeGlobalTaskModal()"
-    (onTaskSaved)="onGlobalTaskSaved($event)">
+    (close)="closeGlobalTaskModal()"
+    (taskSaved)="onGlobalTaskSaved($event)">
   </app-global-task-modal>
 </div>

@@ -185,8 +185,8 @@ import { GlobalTaskModalComponent } from './global-task-modal.component';
       [editMode]="isEditMode"
       [taskToEdit]="editingTask"
       [availableCompanies]="availableCompanies"
-      (onCloseModal)="closeTaskModal()"
-      (onTaskSaved)="onTaskSaved($event)">
+      (close)="closeTaskModal()"
+      (taskSaved)="onTaskSaved($event)">
     </app-global-task-modal>
   `,
   styles: [`

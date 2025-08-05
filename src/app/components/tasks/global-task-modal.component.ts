@@ -116,20 +116,25 @@ import { NodeService } from '../../../services';
               </div>
             </div>
 
-            <!-- Company Assignment (if available) -->
-            <div *ngIf="availableCompanies.length > 0" class="mb-6">
+            <!-- Company Assignment -->
+            <div class="mb-6">
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Link to Company (Optional)
+                Link to Company
+                <span *ngIf="defaultCompanyId" class="text-xs text-blue-600">(Auto-assigned)</span>
               </label>
               <select
                 [(ngModel)]="taskData.company_id"
                 name="company_id"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option [value]="undefined">No company link</option>
+                [disabled]="availableCompanies.length <= 1"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
+                <option [value]="undefined" *ngIf="!defaultCompanyId">No company link</option>
                 <option *ngFor="let company of availableCompanies" [value]="company.id">
                   {{ company.data.name }}
                 </option>
               </select>
+              <p *ngIf="availableCompanies.length <= 1 && defaultCompanyId" class="text-xs text-gray-500 mt-1">
+                This task will be automatically linked to {{ availableCompanies[0].data.name }}
+              </p>
             </div>
 
             <!-- Action Buttons -->
@@ -169,8 +174,9 @@ export class GlobalTaskModalComponent implements OnInit {
   @Input() editMode = false;
   @Input() taskToEdit: INode<Task> | null = null;
   @Input() availableCompanies: INode<any>[] = []; // Available companies for linking
-  @Output() onCloseModal = new EventEmitter<void>();
-  @Output() onTaskSaved = new EventEmitter<INode<Task>>();
+  @Input() defaultCompanyId: number | null = null; // For pre-selecting company
+  @Output() close = new EventEmitter<void>();
+  @Output() taskSaved = new EventEmitter<INode<Task>>();
 
   taskData: Task = initTask();
   isSaving = false;
@@ -194,6 +200,15 @@ export class GlobalTaskModalComponent implements OnInit {
     } else {
       // Create mode - fresh form
       this.taskData = initTask();
+
+      // If we have a default company ID, pre-populate it
+      if (this.defaultCompanyId) {
+        this.taskData.company_id = this.defaultCompanyId;
+      }
+      // If we only have one company available, auto-select it
+      else if (this.availableCompanies.length === 1) {
+        this.taskData.company_id = this.availableCompanies[0].id!;
+      }
     }
   }
 
@@ -226,11 +241,14 @@ export class GlobalTaskModalComponent implements OnInit {
           created_date: new Date().toISOString().split('T')[0]
         };
 
+        // Ensure company_id is set - use taskData.company_id or defaultCompanyId
+        const companyId = this.taskData.company_id || this.defaultCompanyId;
+
         const newTask: INode<Task> = {
           id: undefined,
           type: 'task',
           data: newTaskData,
-          company_id: this.taskData.company_id,
+          company_id: companyId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -238,7 +256,7 @@ export class GlobalTaskModalComponent implements OnInit {
         savedTask = await this.nodeService.addNode(newTask).toPromise() || newTask;
       }
 
-      this.onTaskSaved.emit(savedTask);
+      this.taskSaved.emit(savedTask);
       this.closeModal();
 
     } catch (error) {
@@ -250,7 +268,7 @@ export class GlobalTaskModalComponent implements OnInit {
   }
 
   closeModal() {
-    this.onCloseModal.emit();
+    this.close.emit();
     this.resetForm();
   }
 

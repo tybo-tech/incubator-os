@@ -27,46 +27,67 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
         </button>
       </div>
 
-      <!-- Task Statistics -->
+      <!-- Task Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-          <div class="text-2xl font-bold text-blue-600">{{ taskStats.total }}</div>
-          <div class="text-sm text-gray-600">Total Tasks</div>
+        <div class="bg-white p-4 rounded-lg shadow-sm border">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-gray-600">{{ taskStats.total }}</div>
+              <div class="text-xs text-gray-600">Total Tasks</div>
+            </div>
+            <i class="fas fa-tasks text-gray-500 text-lg"></i>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-          <div class="text-2xl font-bold text-orange-600">{{ taskStats.todo }}</div>
-          <div class="text-sm text-gray-600">To Do</div>
+        <div class="bg-orange-50 p-4 rounded-lg shadow-sm border border-orange-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-orange-600">{{ taskStats.todo }}</div>
+              <div class="text-xs text-orange-700">To Do</div>
+            </div>
+            <i class="fas fa-circle text-orange-500 text-lg"></i>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-          <div class="text-2xl font-bold text-blue-600">{{ taskStats.inProgress }}</div>
-          <div class="text-sm text-gray-600">In Progress</div>
+        <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-blue-600">{{ taskStats.inProgress }}</div>
+              <div class="text-xs text-blue-700">In Progress</div>
+            </div>
+            <i class="fas fa-play-circle text-blue-500 text-lg"></i>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-sm border">
-          <div class="text-2xl font-bold text-green-600">{{ taskStats.completed }}</div>
-          <div class="text-sm text-gray-600">Completed</div>
+        <div class="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xl font-bold text-green-600">{{ taskStats.completed }}</div>
+              <div class="text-xs text-green-700">Completed</div>
+            </div>
+            <i class="fas fa-check-circle text-green-500 text-lg"></i>
+          </div>
         </div>
       </div>
 
-      <!-- Tasks List -->
+      <!-- Tasks Table -->
       <div class="bg-white rounded-lg shadow-sm border">
-        <div class="p-6 border-b">
-          <h3 class="text-lg font-semibold text-gray-900">Tasks</h3>
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">All Tasks</h3>
+          <p class="text-sm text-gray-600">Manage tasks for {{ company?.data?.name || 'this company' }}</p>
         </div>
 
         <!-- Loading State -->
         <div *ngIf="loading" class="p-8 text-center">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <p class="mt-2 text-gray-600">Loading tasks...</p>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="!loading && tasks.length === 0" class="p-8 text-center">
-          <i class="fas fa-tasks text-4xl text-gray-300 mb-4"></i>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
-          <p class="text-gray-600 mb-4">Create your first task for this company to get started.</p>
+        <div *ngIf="!loading && tasks.length === 0" class="p-8 text-center text-gray-500">
+          <i class="fas fa-tasks text-4xl mb-4"></i>
+          <h4 class="text-lg font-medium mb-2">No Tasks Yet</h4>
+          <p class="mb-4">Create your first task for this company to get started.</p>
           <button
             (click)="openTaskModal()"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
           >
             Create First Task
           </button>
@@ -82,48 +103,106 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr *ngFor="let task of tasks" class="hover:bg-gray-50">
+                <!-- Task -->
                 <td class="px-6 py-4">
-                  <div>
-                    <div class="font-medium text-gray-900">{{ task.data.title }}</div>
-                    <div class="text-sm text-gray-500" *ngIf="task.data.description">
-                      {{ task.data.description | slice:0:100 }}{{ task.data.description.length > 100 ? '...' : '' }}
-                    </div>
+                  <div class="text-sm font-medium text-gray-900">{{ task.data.title }}</div>
+                  <div class="text-sm text-gray-600 max-w-xs" *ngIf="task.data.description">
+                    <p class="line-clamp-2">{{ task.data.description }}</p>
                   </div>
                 </td>
-                <td class="px-6 py-4">
-                  <span [class]="getStatusClass(task.data.status || 'todo')" class="px-2 py-1 text-xs font-medium rounded-full">
+
+                <!-- Status -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getStatusClass(task.data.status || 'todo')"
+                  >
+                    <i
+                      class="mr-1"
+                      [ngClass]="{
+                        'fas fa-circle': task.data.status === 'todo',
+                        'fas fa-play-circle': task.data.status === 'in_progress',
+                        'fas fa-check-circle': task.data.status === 'done'
+                      }"
+                    ></i>
                     {{ getStatusDisplay(task.data.status || 'todo') }}
                   </span>
                 </td>
-                <td class="px-6 py-4">
-                  <span [class]="getPriorityClass(task.data.priority || 'medium')" class="px-2 py-1 text-xs font-medium rounded-full">
+
+                <!-- Priority -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getPriorityClass(task.data.priority || 'medium')"
+                  >
+                    <i
+                      class="mr-1"
+                      [ngClass]="{
+                        'fas fa-arrow-up': task.data.priority === 'high',
+                        'fas fa-minus': task.data.priority === 'medium',
+                        'fas fa-arrow-down': task.data.priority === 'low'
+                      }"
+                    ></i>
                     {{ (task.data.priority || 'medium') | titlecase }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
-                  {{ task.data.assigned_to || 'Unassigned' }}
+
+                <!-- Assigned To -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">
+                    {{ task.data.assigned_to || 'Unassigned' }}
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
-                  {{ task.data.due_date | date:'MMM d, y' }}
+
+                <!-- Due Date -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">
+                    <span *ngIf="task.data.due_date; else noDueDate">
+                      {{ task.data.due_date | date:'MMM d, y' }}
+                    </span>
+                    <ng-template #noDueDate>
+                      <span class="text-gray-400">No due date</span>
+                    </ng-template>
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-sm">
-                  <button
-                    (click)="editTask(task)"
-                    class="text-blue-600 hover:text-blue-900 mr-3"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    (click)="deleteTask(task.id!)"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+
+                <!-- Parent (Growth Area or other source) -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-600">
+                    <span *ngIf="task.parent_id; else noParent" class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-blue-100 text-blue-800">
+                      <i class="fas fa-link mr-1"></i>
+                      Growth Area
+                    </span>
+                    <ng-template #noParent>
+                      <span class="text-gray-400">—</span>
+                    </ng-template>
+                  </div>
+                </td>
+
+                <!-- Actions -->
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      (click)="editTask(task)"
+                      class="text-blue-600 hover:text-blue-700"
+                      title="Edit Task"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      (click)="deleteTask(task.id!)"
+                      class="text-red-600 hover:text-red-700"
+                      title="Delete Task"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -138,6 +217,7 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
       [editMode]="!!selectedTask"
       [taskToEdit]="selectedTask"
       [availableCompanies]="company ? [company] : []"
+      [defaultCompanyId]="company?.id || null"
       (close)="closeTaskModal()"
       (taskSaved)="onTaskSaved()">
     </app-global-task-modal>
@@ -173,21 +253,23 @@ export class TasksTabComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  async loadCompanyTasks() {
-    if (!this.company) return;
+  loadCompanyTasks() {
+    if (!this.company?.id) return;
 
     this.loading = true;
-    try {
-      // Get all tasks and filter by company_id
-      const allTasks = await this.nodeService.getNodesByCompany(this.company?.id || 0, 'task').toPromise();
-      this.tasks = allTasks?.filter(task => task.data.company_id === this.company!.id) || [];
-
-      this.calculateStats();
-    } catch (error) {
-      console.error('❌ Error loading company tasks:', error);
-    } finally {
-      this.loading = false;
-    }
+    this.nodeService.getNodesByCompany(this.company.id, 'task')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tasks) => {
+          this.tasks = tasks as INode<Task>[];
+          this.calculateStats();
+          this.loading = false;
+        },
+        error: (error: any) => {
+          console.error('Error loading tasks:', error);
+          this.loading = false;
+        }
+      });
   }
 
   calculateStats() {
@@ -214,14 +296,20 @@ export class TasksTabComponent implements OnInit, OnDestroy {
     this.isTaskModalOpen = true;
   }
 
-  async deleteTask(taskId: number) {
-    if (!confirm('Are you sure you want to delete this task?')) return;
+  deleteTask(taskId: number) {
+    if (!taskId) return;
 
-    try {
-      await this.nodeService.deleteNode(taskId).toPromise();
-      await this.loadCompanyTasks(); // Refresh the list
-    } catch (error) {
-      console.error('❌ Error deleting task:', error);
+    if (confirm('Are you sure you want to delete this task?')) {
+      this.nodeService.deleteNode(taskId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.loadCompanyTasks();
+          },
+          error: (error: any) => {
+            console.error('Error deleting task:', error);
+          }
+        });
     }
   }
 
