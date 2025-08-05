@@ -104,6 +104,14 @@ interface QuarterlyMetrics {
               <h1 style="font-size: 1.5rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">{{ company.data.name }}</h1>
               <p style="color: #4b5563;">Financial Report</p>
               <p style="font-size: 0.875rem; color: #6b7280;">Generated on {{ currentDate | date:'fullDate' }}</p>
+
+              <!-- Debug Info -->
+              <div style="background: #fef3c7; border: 1px solid #f59e0b; padding: 0.5rem; margin-top: 1rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                Check-ins loaded: {{ financialCheckIns.length }} |
+                Show Company: {{ showCompanyInfo }} |
+                Show Summary: {{ showQuarterlySummary }} |
+                Show Details: {{ showDetailedTables }}
+              </div>
             </div>
 
             <!-- Company Information -->
@@ -140,8 +148,52 @@ interface QuarterlyMetrics {
             </div>
 
             <!-- Financial Summary -->
-            <div *ngIf="showQuarterlySummary" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
-              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Financial Summary</h2>
+            <div *ngIf="showQuarterlySummary && financialCheckIns.length > 0" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
+              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">📊 Executive Summary</h2>
+
+              <!-- Key Metrics Cards -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                  <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">💰 Revenue Performance</div>
+                  <div style="font-size: 1.5rem; font-weight: bold; color: #059669;">{{ formatCurrency(getLatestMetric('turnover_monthly_avg')) }}</div>
+                  <div style="color: #6b7280; font-size: 0.875rem;">Latest Monthly Average</div>
+                </div>
+
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                  <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">📈 Gross Profit</div>
+                  <div style="font-size: 1.5rem; font-weight: bold; color: #059669;">{{ formatCurrency(getLatestMetric('gross_profit')) }}</div>
+                  <div style="color: #6b7280; font-size: 0.875rem;">Latest Period</div>
+                </div>
+
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                  <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">💵 Net Profit</div>
+                  <div style="font-size: 1.5rem; font-weight: bold;" [style.color]="getLatestMetric('net_profit') >= 0 ? '#059669' : '#dc2626'">{{ formatCurrency(getLatestMetric('net_profit')) }}</div>
+                  <div style="color: #6b7280; font-size: 0.875rem;">Latest Period</div>
+                </div>
+
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                  <div style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">💳 Cash Position</div>
+                  <div style="font-size: 1.5rem; font-weight: bold; color: #1d4ed8;">{{ formatCurrency(getLatestMetric('cash_on_hand')) }}</div>
+                  <div style="color: #6b7280; font-size: 0.875rem;">Current Balance</div>
+                </div>
+              </div>
+
+              <!-- Margin Analysis -->
+              <div style="background: #fafafa; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.75rem 0; font-weight: 600; color: #374151;">📊 Profitability Margins</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="text-align: center;">
+                    <div style="font-size: 1.25rem; font-weight: bold; color: #059669;">{{ formatPercentage(getLatestMetric('gp_margin')) }}</div>
+                    <div style="color: #6b7280; font-size: 0.875rem;">Gross Profit Margin</div>
+                  </div>
+                  <div style="text-align: center;">
+                    <div style="font-size: 1.25rem; font-weight: bold;" [style.color]="getLatestMetric('np_margin') >= 0 ? '#059669' : '#dc2626'">{{ formatPercentage(getLatestMetric('np_margin')) }}</div>
+                    <div style="color: #6b7280; font-size: 0.875rem;">Net Profit Margin</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quarterly Overview -->
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                 <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']" style="background-color: #f9fafb; padding: 1rem; border-radius: 0.5rem; text-align: center;">
                   <h3 style="font-weight: 500; color: #111827; margin-bottom: 0.5rem;">{{ quarter }}</h3>
@@ -164,8 +216,8 @@ interface QuarterlyMetrics {
             </div>
 
             <!-- Financial Check-ins Table -->
-            <div *ngIf="showDetailedTables" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
-              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Financial Check-ins Detail</h2>
+            <div *ngIf="showDetailedTables && financialCheckIns.length > 0" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
+              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">📋 Detailed Financial Check-ins</h2>
 
               <div *ngFor="let group of getGroupedStatements()" style="margin-bottom: 1.5rem;">
                 <h3 style="font-size: 1rem; font-weight: 500; color: #374151; margin-bottom: 0.75rem; background-color: #f3f4f6; padding: 0.5rem; border-radius: 0.25rem;">
@@ -251,6 +303,8 @@ export class PdfExportPageComponent implements OnInit {
 
       // Load financial check-ins
       this.financialCheckIns = await firstValueFrom(this.nodeService.getNodesByCompany(companyIdNumber, 'financial_checkin')) as INode<FinancialCheckIn>[];
+
+      console.log('Loaded financial check-ins:', this.financialCheckIns.length, this.financialCheckIns);
 
       this.isLoading = false;
     } catch (error) {
