@@ -60,15 +60,6 @@
     </div>
   </div>
 
-  <!-- Financial Check-ins PDF Export Modal Component (Primary) -->
-  <app-financial-checkin-pdf-export-modal
-    *ngIf="showFinancialCheckinPdfModal"
-    [showModal]="showFinancialCheckinPdfModal"
-    [company]="company"
-    [financialCheckIns]="financialCheckIns"
-    (closeModalEvent)="onFinancialCheckinPdfModalClose()">
-  </app-financial-checkin-pdf-export-modal>
-
   <!-- Financial Check-in Modal Component -->
   <app-financial-checkin-modal
     [isVisible]="showCheckInModal"

@@ -5,7 +5,7 @@ import { INode } from '../../../../../../models/schema';
 import { Company, BankStatement } from '../../../../../../models/business.models';
 
 @Component({
-  selector: 'app-pdf-export-modal',
+  selector: 'app-pdf-export-modal-new',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -49,7 +49,7 @@ import { Company, BankStatement } from '../../../../../../models/business.models
     </div>
   `
 })
-export class PdfExportModalComponent implements OnInit {
+export class PdfExportModalNewComponent implements OnInit {
   @Input() showModal = false;
   @Input() company!: INode<Company>;
   @Input() bankStatements: INode<BankStatement>[] = [];

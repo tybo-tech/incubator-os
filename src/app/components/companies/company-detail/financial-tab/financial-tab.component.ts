@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../models/busines.financial.checkin.models';
@@ -10,7 +11,6 @@ import {
   FinancialCheckinOverviewComponent
 } from './components';
 import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
-import { FinancialCheckinPdfExportModalComponent } from './components/financial-checkin-pdf-export-modal.component';
 
 @Component({
   selector: 'app-financial-tab',
@@ -20,8 +20,7 @@ import { FinancialCheckinPdfExportModalComponent } from './components/financial-
     FinancialOverviewComponent,
     FinancialCheckinModalComponent,
     FinancialCheckinOverviewComponent,
-    FinancialCheckinQuarterlyViewComponent,
-    FinancialCheckinPdfExportModalComponent
+    FinancialCheckinQuarterlyViewComponent
   ],
   templateUrl: './financial-tab.component.html'
 })
@@ -35,16 +34,14 @@ export class FinancialTabComponent implements OnInit {
   loadingCheckIns = false;
   checkInsError: string | null = null;
 
-  // PDF Export modal properties
-  showFinancialCheckinPdfModal = false;
-
   // Financial Check-in modal properties
   showCheckInModal = false;
   isCheckInEditMode = false;
   editingCheckIn: INode<FinancialCheckIn> | null = null;
 
   constructor(
-    private checkInService: NodeService<FinancialCheckIn>
+    private checkInService: NodeService<FinancialCheckIn>,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -85,12 +82,11 @@ export class FinancialTabComponent implements OnInit {
   // ===== PDF EXPORT METHODS =====
 
   onExportPDF() {
-    // Use Financial Check-ins PDF export as primary option
-    this.showFinancialCheckinPdfModal = true;
-  }
-
-  onFinancialCheckinPdfModalClose() {
-    this.showFinancialCheckinPdfModal = false;
+    // Navigate to the dedicated PDF export page in a new tab
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/companies', this.company.id, 'pdf-export'])
+    );
+    window.open(url, '_blank');
   }
 
   // ===== FINANCIAL CHECK-IN METHODS =====
