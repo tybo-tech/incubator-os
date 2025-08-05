@@ -1,22 +1,36 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
-import { Company, BankStatement } from '../../../../../../models/business.models';
+import { Company } from '../../../../../../models/business.models';
+import { FinancialCheckIn } from '../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../services/node.service';
 import html2pdf from 'html2pdf.js';
 import { firstValueFrom } from 'rxjs';
 
-interface GroupedStatement {
+interface GroupedCheckIn {
   year: number;
   quarter: string;
-  statements: INode<BankStatement>[];
+  checkIns: INode<FinancialCheckIn>[];
+}
+
+interface QuarterlyMetrics {
+  quarter: string;
+  year: number;
+  turnover: number;
+  grossProfit: number;
+  netProfit: number;
+  averageMargin: number;
+  cashPosition: number;
+  checkInsCount: number;
+  hasData: boolean;
 }
 
 @Component({
   selector: 'app-pdf-export-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-gray-50 py-8">
       <!-- Loading State -->
@@ -51,6 +65,22 @@ interface GroupedStatement {
                 <h1 class="text-xl font-semibold text-gray-900">PDF Export - {{ company?.data?.name || 'Loading...' }}</h1>
               </div>
               <div class="flex space-x-3">
+                <!-- Toggle Controls -->
+                <div class="flex items-center space-x-4 mr-4">
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" [(ngModel)]="showCompanyInfo" class="mr-2">
+                    Company Info
+                  </label>
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" [(ngModel)]="showQuarterlySummary" class="mr-2">
+                    Summary
+                  </label>
+                  <label class="flex items-center text-sm">
+                    <input type="checkbox" [(ngModel)]="showDetailedTables" class="mr-2">
+                    Details
+                  </label>
+                </div>
+
                 <button (click)="generatePDF()"
                         [disabled]="isGenerating"
                         class="px-6 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors disabled:opacity-50">
@@ -77,7 +107,7 @@ interface GroupedStatement {
             </div>
 
             <!-- Company Information -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
+            <div *ngIf="showCompanyInfo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
               <div>
                 <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.75rem;">Company Information</h2>
                 <div style="font-size: 0.875rem;">
@@ -110,7 +140,7 @@ interface GroupedStatement {
             </div>
 
             <!-- Financial Summary -->
-            <div style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
+            <div *ngIf="showQuarterlySummary" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
               <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Financial Summary</h2>
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                 <div *ngFor="let quarter of ['Q1', 'Q2', 'Q3', 'Q4']" style="background-color: #f9fafb; padding: 1rem; border-radius: 0.5rem; text-align: center;">
@@ -118,24 +148,24 @@ interface GroupedStatement {
                   <div style="font-size: 0.875rem;">
                     <div style="color: #059669; margin-bottom: 0.25rem;">
                       <i class="fas fa-arrow-up" style="margin-right: 0.25rem;"></i>
-                      Income: {{ formatCurrency(getQuarterTotal(quarter, 'total_income')) }}
+                      Revenue: {{ formatCurrency(getQuarterTotal(quarter, 'turnover_monthly_avg')) }}
                     </div>
                     <div style="color: #dc2626; margin-bottom: 0.25rem;">
                       <i class="fas fa-arrow-down" style="margin-right: 0.25rem;"></i>
-                      Expenses: {{ formatCurrency(getQuarterTotal(quarter, 'total_expense')) }}
+                      Expenses: {{ formatCurrency(getQuarterTotal(quarter, 'business_expenses')) }}
                     </div>
                     <div style="color: #2563eb; font-weight: 500; border-top: 1px solid #e5e7eb; padding-top: 0.25rem;">
                       <i class="fas fa-wallet" style="margin-right: 0.25rem;"></i>
-                      Balance: {{ formatCurrency(getQuarterTotal(quarter, 'closing_balance')) }}
+                      Net Profit: {{ formatCurrency(getQuarterTotal(quarter, 'net_profit')) }}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Bank Statements Table -->
-            <div style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
-              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Bank Statements Detail</h2>
+            <!-- Financial Check-ins Table -->
+            <div *ngIf="showDetailedTables" style="margin-bottom: 1.5rem; page-break-inside: avoid;" class="page-break-before">
+              <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 1rem;">Financial Check-ins Detail</h2>
 
               <div *ngFor="let group of getGroupedStatements()" style="margin-bottom: 1.5rem;">
                 <h3 style="font-size: 1rem; font-weight: 500; color: #374151; margin-bottom: 0.75rem; background-color: #f3f4f6; padding: 0.5rem; border-radius: 0.25rem;">
@@ -145,29 +175,29 @@ interface GroupedStatement {
                 <table style="width: 100%; max-width: 100%; font-size: 0.8rem; border-collapse: collapse; border: 1px solid #d1d5db; margin-bottom: 1rem; page-break-inside: avoid; table-layout: fixed;">
                   <thead>
                     <tr style="background-color: #f9fafb;">
-                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; width: 20%;">Month</th>
-                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Opening Balance</th>
-                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Income</th>
+                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; width: 20%;">Period</th>
+                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Cash</th>
+                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Revenue</th>
                       <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Expenses</th>
-                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Closing Balance</th>
+                      <th style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">Net Profit</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let statement of group.statements">
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; width: 20%;">{{ getMonthName(statement.data.month) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(statement.data.opening_balance) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(statement.data.total_income) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(statement.data.total_expense) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; font-weight: 500; width: 20%;">{{ formatCurrency(statement.data.closing_balance) }}</td>
+                    <tr *ngFor="let checkIn of group.checkIns">
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; width: 20%;">{{ getMonthName(checkIn.data.month || 1) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(checkIn.data.cash_on_hand || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(checkIn.data.turnover_monthly_avg || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(checkIn.data.business_expenses || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; font-weight: 500; width: 20%;">{{ formatCurrency(checkIn.data.net_profit || 0) }}</td>
                     </tr>
                   </tbody>
                   <tfoot>
                     <tr style="background-color: #f3f4f6; font-weight: 500;">
                       <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; width: 20%;">Total</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(getGroupTotal(group.statements, 'opening_balance')) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(getGroupTotal(group.statements, 'total_income')) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(getGroupTotal(group.statements, 'total_expense')) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(getGroupTotal(group.statements, 'closing_balance')) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(getGroupTotal(group.checkIns, 'cash_on_hand')) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(getGroupTotal(group.checkIns, 'turnover_monthly_avg')) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(getGroupTotal(group.checkIns, 'business_expenses')) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(getGroupTotal(group.checkIns, 'net_profit')) }}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -177,7 +207,7 @@ interface GroupedStatement {
             <!-- Footer -->
             <div style="text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
               <p>This report was generated on {{ currentDate | date:'medium' }}</p>
-              <p>Financial data is based on bank statements provided by {{ company.data.name }}</p>
+              <p>Financial data is based on financial check-ins provided by {{ company.data.name }}</p>
             </div>
           </div>
         </div>
@@ -187,11 +217,16 @@ interface GroupedStatement {
 })
 export class PdfExportPageComponent implements OnInit {
   company: INode<Company> | null = null;
-  bankStatements: INode<BankStatement>[] = [];
+  financialCheckIns: INode<FinancialCheckIn>[] = [];
   currentDate = new Date();
   isGenerating = false;
   isLoading = true;
   error: string | null = null;
+
+  // Toggle options for PDF content
+  showDetailedTables = true;
+  showQuarterlySummary = true;
+  showCompanyInfo = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -215,7 +250,7 @@ export class PdfExportPageComponent implements OnInit {
       this.company = await firstValueFrom(this.nodeService.getNodeById(companyIdNumber)) as INode<Company>;
 
       // Load financial check-ins
-      this.bankStatements = await firstValueFrom(this.nodeService.getNodesByCompany(companyIdNumber, 'financial_checkin')) as INode<BankStatement>[];
+      this.financialCheckIns = await firstValueFrom(this.nodeService.getNodesByCompany(companyIdNumber, 'financial_checkin')) as INode<FinancialCheckIn>[];
 
       this.isLoading = false;
     } catch (error) {
@@ -292,7 +327,7 @@ export class PdfExportPageComponent implements OnInit {
     return months[monthNumber - 1] || '';
   }
 
-  getQuarterTotal(quarter: string, field: keyof BankStatement): number {
+  getQuarterTotal(quarter: string, field: keyof FinancialCheckIn): number {
     const quarterMonths = {
       'Q1': [1, 2, 3],
       'Q2': [4, 5, 6],
@@ -301,32 +336,50 @@ export class PdfExportPageComponent implements OnInit {
     };
 
     const months = quarterMonths[quarter as keyof typeof quarterMonths] || [];
-    return this.bankStatements
-      .filter(statement => months.includes(statement.data.month))
-      .reduce((sum, statement) => sum + (statement.data[field] as number || 0), 0);
+    return this.financialCheckIns
+      .filter((checkIn: INode<FinancialCheckIn>) => months.includes(checkIn.data.month || 0))
+      .reduce((sum: number, checkIn: INode<FinancialCheckIn>) => sum + (checkIn.data[field] as number || 0), 0);
   }
 
-  getGroupedStatements(): GroupedStatement[] {
-    const grouped = this.bankStatements.reduce((groups: { [key: string]: GroupedStatement }, statement) => {
-      const key = `${statement.data.year}-${statement.data.quarter}`;
+  getGroupedStatements(): GroupedCheckIn[] {
+    const grouped = this.financialCheckIns.reduce((groups: { [key: string]: GroupedCheckIn }, checkIn: INode<FinancialCheckIn>) => {
+      const key = `${checkIn.data.year}-${checkIn.data.quarter}`;
       if (!groups[key]) {
         groups[key] = {
-          year: statement.data.year,
-          quarter: statement.data.quarter || 'Q1',
-          statements: []
+          year: checkIn.data.year,
+          quarter: checkIn.data.quarter || 'Q1',
+          checkIns: []
         };
       }
-      groups[key].statements.push(statement);
+      groups[key].checkIns.push(checkIn);
       return groups;
     }, {});
 
-    return Object.values(grouped).sort((a: GroupedStatement, b: GroupedStatement) => {
+    return Object.values(grouped).sort((a: GroupedCheckIn, b: GroupedCheckIn) => {
       if (a.year !== b.year) return b.year - a.year;
       return b.quarter.localeCompare(a.quarter);
     });
   }
 
-  getGroupTotal(statements: INode<BankStatement>[], field: keyof BankStatement): number {
-    return statements.reduce((sum, statement) => sum + (statement.data[field] as number || 0), 0);
+  getGroupTotal(checkIns: INode<FinancialCheckIn>[], field: keyof FinancialCheckIn): number {
+    return checkIns.reduce((sum: number, checkIn: INode<FinancialCheckIn>) => sum + (checkIn.data[field] as number || 0), 0);
+  }
+
+  getLatestMetric(field: keyof FinancialCheckIn): number {
+    if (this.financialCheckIns.length === 0) return 0;
+
+    // Sort by year and month to get the latest entry
+    const latest = this.financialCheckIns
+      .sort((a, b) => {
+        if (a.data.year !== b.data.year) return b.data.year - a.data.year;
+        return (b.data.month || 0) - (a.data.month || 0);
+      })[0];
+
+    return latest?.data[field] as number || 0;
+  }
+
+  formatPercentage(value: number | undefined): string {
+    if (value === undefined || value === null) return '0%';
+    return `${(value || 0).toFixed(1)}%`;
   }
 }
