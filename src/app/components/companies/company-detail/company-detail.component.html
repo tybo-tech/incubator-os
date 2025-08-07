@@ -34,6 +34,12 @@
       [company]="company">
     </app-overview-tab>
 
+    <!-- Strategy Tab -->
+    <app-strategy-tab
+      *ngIf="activeTab === 'strategy'"
+      [company]="company">
+    </app-strategy-tab>
+
     <!-- Financial Tab -->
     <app-financial-tab
       *ngIf="activeTab === 'financial'"

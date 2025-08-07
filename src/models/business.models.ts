@@ -181,6 +181,63 @@ export function initGrowthArea(): GrowthArea {
   };
 }
 
+export function initCompanyVision(): CompanyVision {
+  return {
+    company_id: '',
+    vision_statement: '',
+    mission_statement: '',
+    core_values: [],
+    value_proposition: '',
+    target_market: '',
+    competitive_advantage: '',
+    long_term_goals: '',
+    success_metrics: [],
+    last_updated: new Date().toISOString().split('T')[0],
+    mentor_notes: '',
+  };
+}
+
+export function initProductService(): ProductService {
+  return {
+    company_id: '',
+    name: '',
+    type: 'product',
+    category: '',
+    description: '',
+    target_customers: '',
+    pricing_model: '',
+    current_status: 'concept',
+    revenue_contribution: 0,
+    launch_date: '',
+    end_date: '',
+    features: [],
+    challenges: [],
+    opportunities: [],
+    mentor_notes: '',
+  };
+}
+
+export function initStrategicGoal(): StrategicGoal {
+  return {
+    company_id: '',
+    title: '',
+    description: '',
+    category: 'growth',
+    priority: 'medium',
+    timeline: '6_months',
+    target_date: new Date().toISOString().split('T')[0],
+    current_status: 'not_started',
+    progress_percentage: 0,
+    success_criteria: [],
+    key_milestones: [],
+    dependencies: [],
+    responsible_person: '',
+    budget_required: 0,
+    expected_outcome: '',
+    mentor_notes: '',
+  };
+}
+
 // Utility function to calculate quarter from month
 export function calculateQuarter(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
   if (month >= 1 && month <= 3) return 'Q1';
@@ -197,5 +254,61 @@ export interface GrowthArea {
   description: string;
   impact_area: string;
   rating: number;
+  mentor_notes?: string;
+}
+
+// ✅ Phase 1: Vision & Strategy Models
+
+// 🎯 Company Vision - Core purpose and direction
+export interface CompanyVision {
+  company_id: string;
+  vision_statement: string;
+  mission_statement: string;
+  core_values: string[];
+  value_proposition: string;
+  target_market: string;
+  competitive_advantage: string;
+  long_term_goals: string;
+  success_metrics: string[];
+  last_updated: string;
+  mentor_notes?: string;
+}
+
+// 🛍️ Products & Services - Offering catalog
+export interface ProductService {
+  company_id: string;
+  name: string;
+  type: 'product' | 'service';
+  category: string;
+  description: string;
+  target_customers: string;
+  pricing_model: string;
+  current_status: 'concept' | 'development' | 'testing' | 'launched' | 'discontinued';
+  revenue_contribution?: number; // Percentage of total revenue
+  launch_date?: string;
+  end_date?: string;
+  features: string[];
+  challenges: string[];
+  opportunities: string[];
+  mentor_notes?: string;
+}
+
+// 🎯 Strategic Goals - Long-term objectives
+export interface StrategicGoal {
+  company_id: string;
+  title: string;
+  description: string;
+  category: 'growth' | 'financial' | 'operational' | 'market' | 'product' | 'team';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  timeline: '3_months' | '6_months' | '1_year' | '2_years' | '5_years';
+  target_date: string;
+  current_status: 'not_started' | 'in_progress' | 'on_track' | 'at_risk' | 'completed' | 'cancelled';
+  progress_percentage: number;
+  success_criteria: string[];
+  key_milestones: string[];
+  dependencies: string[];
+  responsible_person?: string;
+  budget_required?: number;
+  expected_outcome: string;
   mentor_notes?: string;
 }
