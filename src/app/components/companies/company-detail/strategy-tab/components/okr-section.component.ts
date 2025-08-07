@@ -72,10 +72,11 @@ import { Objective, KeyResult, OKRTask } from '../../../../../../models/business
                 <div class="flex items-center space-x-2">
                   <button
                     (click)="editObjective.emit(objective)"
-                    class="text-gray-400 hover:text-gray-600 p-2"
+                    class="bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 px-3 py-1 rounded-md text-sm flex items-center space-x-1"
                     title="Edit objective"
                   >
                     <i class="fas fa-edit"></i>
+                    <span>Edit</span>
                   </button>
                   <button
                     (click)="deleteObjective.emit(objective)"

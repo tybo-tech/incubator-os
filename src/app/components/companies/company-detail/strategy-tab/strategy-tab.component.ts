@@ -32,7 +32,7 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
     KeyResultModalComponent
   ],
   template: `
-    <div class="space-y-8">
+    <div class="space-y-12">
       <!-- Header -->
       <div class="flex justify-between items-center">
         <div>
