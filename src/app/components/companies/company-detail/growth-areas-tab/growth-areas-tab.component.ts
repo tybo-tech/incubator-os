@@ -6,13 +6,14 @@ import { INode } from '../../../../../models/schema';
 import { Company, GrowthArea, OKRTask, initGrowthArea, initOKRTask } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
-// Import the reusable task modal component
+// Import the reusable task modal component and new section component
 import { ObjectiveTaskModalComponent } from '../strategy-tab/components/objective-task-modal.component';
+import { GrowthAreasSectionComponent } from './components/growth-areas-section.component';
 
 @Component({
   selector: 'app-growth-areas-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ObjectiveTaskModalComponent],
+  imports: [CommonModule, FormsModule, ObjectiveTaskModalComponent, GrowthAreasSectionComponent],
   template: `
     <div class="space-y-6">
       <!-- Header with Actions -->
@@ -70,256 +71,18 @@ import { ObjectiveTaskModalComponent } from '../strategy-tab/components/objectiv
         </div>
       </div>
 
-      <!-- Growth Areas Table -->
-      <div class="bg-white rounded-lg shadow-sm border">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">All Growth Areas</h3>
-          <p class="text-sm text-gray-600">Complete SWOT analysis for {{ company?.data?.name || 'this company' }}</p>
-        </div>
-
-        <div *ngIf="loading" class="p-8 text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p class="mt-2 text-gray-600">Loading growth areas...</p>
-        </div>
-
-        <div *ngIf="!loading && growthAreas.length === 0" class="p-8 text-center text-gray-500">
-          <i class="fas fa-chart-line text-4xl mb-4"></i>
-          <h4 class="text-lg font-medium mb-2">No Growth Areas Yet</h4>
-          <p class="mb-4">Start building your SWOT analysis by adding strengths, weaknesses, opportunities, and threats.</p>
-          <button
-            (click)="openGrowthAreaModal()"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-          >
-            Add First Growth Area
-          </button>
-        </div>
-
-        <div *ngIf="!loading && growthAreas.length > 0" class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Impact Area</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mentor Notes</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <ng-container *ngFor="let area of growthAreas">
-                <!-- Main Growth Area Row -->
-                <tr class="hover:bg-gray-50">
-                <!-- Type -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    [ngClass]="{
-                      'bg-green-100 text-green-800': area.data.type === 'strength',
-                      'bg-red-100 text-red-800': area.data.type === 'weakness',
-                      'bg-blue-100 text-blue-800': area.data.type === 'opportunity',
-                      'bg-orange-100 text-orange-800': area.data.type === 'threat'
-                    }"
-                  >
-                    <i
-                      class="mr-1"
-                      [ngClass]="{
-                        'fas fa-thumbs-up': area.data.type === 'strength',
-                        'fas fa-exclamation-triangle': area.data.type === 'weakness',
-                        'fas fa-lightbulb': area.data.type === 'opportunity',
-                        'fas fa-shield-alt': area.data.type === 'threat'
-                      }"
-                    ></i>
-                    {{ area.data.type | titlecase }}
-                  </span>
-                </td>
-
-                <!-- Area -->
-                <td class="px-6 py-4">
-                  <div class="text-sm font-medium text-gray-900">{{ area.data.area }}</div>
-                </td>
-
-                <!-- Description -->
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-600 max-w-xs">
-                    <p class="line-clamp-2">{{ area.data.description }}</p>
-                  </div>
-                </td>
-
-                <!-- Impact Area -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-800">
-                    {{ area.data.impact_area }}
-                  </span>
-                </td>
-
-                <!-- Rating -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex mr-2">
-                      <i
-                        *ngFor="let star of getStarArray(area.data.rating)"
-                        class="fas fa-star text-yellow-400 text-sm"
-                      ></i>
-                      <i
-                        *ngFor="let star of getStarArray(5 - area.data.rating)"
-                        class="fas fa-star text-gray-300 text-sm"
-                      ></i>
-                    </div>
-                    <span class="text-xs text-gray-500">{{ area.data.rating }}/5</span>
-                  </div>
-                  <div class="text-xs text-gray-400 mt-1">
-                    {{ getRatingDescription(area.data.rating, area.data.type) }}
-                  </div>
-                </td>
-
-                <!-- Mentor Notes -->
-                <td class="px-6 py-4">
-                  <div class="text-sm text-gray-600 max-w-xs">
-                    <p *ngIf="area.data.mentor_notes" class="line-clamp-2 italic">
-                      💬 {{ area.data.mentor_notes }}
-                    </p>
-                    <span *ngIf="!area.data.mentor_notes" class="text-gray-400">—</span>
-                  </div>
-                </td>
-
-                <!-- Actions -->
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div class="flex justify-end space-x-2">
-                    <button
-                      (click)="toggleGrowthAreaExpansion(area.id!)"
-                      class="text-purple-600 hover:text-purple-700 px-2 py-1"
-                      title="Toggle Tasks"
-                    >
-                      <i class="fas" [ngClass]="isGrowthAreaExpanded(area.id!) ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                      <span class="ml-1 text-xs">{{ getTasksForGrowthArea(area.id!).length }}</span>
-                    </button>
-                    <button
-                      (click)="createTaskFromGrowthArea(area)"
-                      class="text-green-600 hover:text-green-700 px-2 py-1 bg-green-50 rounded border border-green-200"
-                      title="Add Task"
-                    >
-                      <i class="fas fa-plus mr-1"></i>Task
-                    </button>
-                    <button
-                      (click)="editGrowthArea(area)"
-                      class="text-blue-600 hover:text-blue-700 px-2 py-1"
-                      title="Edit"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button
-                      (click)="deleteGrowthArea(area)"
-                      class="text-red-600 hover:text-red-700 px-2 py-1"
-                      title="Delete"
-                    >
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Inline Tasks Row -->
-              <tr *ngIf="isGrowthAreaExpanded(area.id!)" class="bg-gray-50">
-                <td colspan="7" class="px-6 py-4">
-                  <div class="space-y-3">
-                    <div class="flex items-center justify-between mb-3">
-                      <h4 class="text-sm font-medium text-gray-900">
-                        Action Tasks ({{ getTasksForGrowthArea(area.id!).length }})
-                      </h4>
-                      <button
-                        (click)="createTaskFromGrowthArea(area)"
-                        class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
-                      >
-                        <i class="fas fa-plus mr-1"></i>Add Task
-                      </button>
-                    </div>
-
-                    <!-- Tasks List -->
-                    <div *ngIf="getTasksForGrowthArea(area.id!).length === 0" class="text-center py-4">
-                      <p class="text-sm text-gray-500">No tasks yet. Create your first action task!</p>
-                    </div>
-
-                    <div *ngFor="let task of getTasksForGrowthArea(area.id!)"
-                         class="border rounded-lg p-3 transition-all duration-200"
-                         [ngClass]="getTaskBackgroundClass(task.data)">
-                      <div class="flex items-start justify-between">
-                        <!-- Task Content -->
-                        <div class="flex-1">
-                          <div class="flex items-center space-x-2 mb-2">
-                            <!-- Status checkbox -->
-                            <button
-                              (click)="toggleTaskStatus(task)"
-                              class="flex-shrink-0"
-                            >
-                              <i class="fas"
-                                 [ngClass]="task.data.status === 'completed' ? 'fa-check-circle text-green-600' : 'fa-circle text-gray-400'">
-                              </i>
-                            </button>
-
-                            <!-- Task title -->
-                            <h5 class="font-medium text-sm text-gray-900"
-                                [ngClass]="task.data.status === 'completed' ? 'line-through text-gray-500' : ''">
-                              {{ task.data.title }}
-                            </h5>
-
-                            <!-- Priority badge -->
-                            <span class="px-2 py-1 text-xs rounded-full"
-                                  [ngClass]="{
-                                    'bg-red-100 text-red-800': task.data.priority === 'critical',
-                                    'bg-orange-100 text-orange-800': task.data.priority === 'high',
-                                    'bg-yellow-100 text-yellow-800': task.data.priority === 'medium',
-                                    'bg-green-100 text-green-800': task.data.priority === 'low'
-                                  }">
-                              {{ task.data.priority }}
-                            </span>
-                          </div>
-
-                          <!-- Task details -->
-                          <div class="text-xs text-gray-600 space-y-1">
-                            <p *ngIf="task.data.description" class="line-clamp-2">{{ task.data.description }}</p>
-                            <div class="flex items-center space-x-4">
-                              <span *ngIf="task.data.assigned_to">
-                                <i class="fas fa-user mr-1"></i>{{ task.data.assigned_to }}
-                              </span>
-                              <span>
-                                <i class="fas fa-calendar mr-1"></i>{{ task.data.due_date | date:'shortDate' }}
-                              </span>
-                              <span *ngIf="task.data.impact_weight">
-                                <i class="fas fa-weight-hanging mr-1"></i>Impact: {{ task.data.impact_weight }}/10
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Task Actions -->
-                        <div class="flex items-center space-x-1 ml-3">
-                          <button
-                            (click)="editTask(task)"
-                            class="text-blue-600 hover:text-blue-700 p-1"
-                            title="Edit Task"
-                          >
-                            <i class="fas fa-edit text-xs"></i>
-                          </button>
-                          <button
-                            (click)="deleteTask(task)"
-                            class="text-red-600 hover:text-red-700 p-1"
-                            title="Delete Task"
-                          >
-                            <i class="fas fa-trash text-xs"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <!-- Growth Areas Section -->
+      <app-growth-areas-section
+        [growthAreas]="growthAreas"
+        [tasks]="growthAreaTasks"
+        (addGrowthArea)="openGrowthAreaModal()"
+        (editGrowthArea)="editGrowthArea($event)"
+        (deleteGrowthArea)="deleteGrowthArea($event)"
+        (addTask)="createTaskFromGrowthArea($event)"
+        (editTask)="editTask($event)"
+        (deleteTask)="deleteTask($event)"
+        (updateTaskStatus)="updateTaskStatusFromDropdown($event)">
+      </app-growth-areas-section>
 
       <!-- Growth Area Modal -->
       <div *ngIf="showGrowthAreaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -494,7 +257,6 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
   editingGrowthArea: INode<GrowthArea> | null = null;
   selectedGrowthAreaId: string | null = null; // For task creation
   selectedTask: INode<OKRTask> | null = null; // For task editing
-  expandedGrowthAreaId: string | null = null; // To track which growth area is expanded
   formData: GrowthArea = initGrowthArea();
   saving = false;
 
@@ -547,11 +309,9 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tasks) => {
-          console.log('🔍 All OKR tasks loaded:', tasks);
           // Filter tasks that belong to growth areas
           this.growthAreaTasks = (tasks as INode<OKRTask>[])
             .filter(task => task.data.task_type === 'growth_area');
-          console.log('🎯 Growth area tasks filtered:', this.growthAreaTasks);
         },
         error: (error: any) => {
           console.error('Error loading growth area tasks:', error);
@@ -666,23 +426,35 @@ export class GrowthAreasTabComponent implements OnInit, OnDestroy {
 
   // Helper methods for tasks
   getTasksForGrowthArea(growthAreaId: number): INode<OKRTask>[] {
-    const tasks = this.growthAreaTasks.filter(task =>
+    return this.growthAreaTasks.filter(task =>
       task.data.growth_area_id === String(growthAreaId)
     );
-    console.log(`📋 Tasks for growth area ${growthAreaId}:`, tasks);
-    return tasks;
   }
 
-  toggleGrowthAreaExpansion(growthAreaId: number) {
-    console.log(`🔄 Toggling growth area ${growthAreaId}, currently expanded: ${this.expandedGrowthAreaId}`);
-    this.expandedGrowthAreaId = this.expandedGrowthAreaId === String(growthAreaId)
-      ? null
-      : String(growthAreaId);
-    console.log(`✅ New expanded ID: ${this.expandedGrowthAreaId}`);
-  }
+  updateTaskStatusFromDropdown(event: {task: INode<OKRTask>, status: string}) {
+    const updatedTask: INode<OKRTask> = {
+      ...event.task,
+      data: {
+        ...event.task.data,
+        status: event.status as any,
+        completed_date: event.status === 'completed' ? new Date().toISOString().split('T')[0] : undefined
+      }
+    };
 
-  isGrowthAreaExpanded(growthAreaId: number): boolean {
-    return this.expandedGrowthAreaId === String(growthAreaId);
+    const taskService = this.nodeService as NodeService<any>;
+    taskService.updateNode(updatedTask)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          const index = this.growthAreaTasks.findIndex(t => t.id === event.task.id);
+          if (index >= 0) {
+            this.growthAreaTasks[index] = result;
+          }
+        },
+        error: (error: any) => {
+          console.error('Error updating task status:', error);
+        }
+      });
   }
 
   editTask(task: INode<OKRTask>) {
