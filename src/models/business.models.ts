@@ -169,6 +169,28 @@ export function initTask(): Task {
   };
 }
 
+// New OKR initialization functions
+export function initOKRTask(): OKRTask {
+  return {
+    company_id: '',
+    key_result_id: '',
+    title: '',
+    description: '',
+    assigned_to: '',
+    due_date: new Date().toISOString().split('T')[0],
+    priority: 'medium',
+    status: 'not_started',
+    estimated_hours: 0,
+    actual_hours: 0,
+    dependencies: [],
+    tags: [],
+    impact_weight: 5,
+    created_date: new Date().toISOString().split('T')[0],
+    completed_date: '',
+    notes: '',
+  };
+}
+
 export function initGrowthArea(): GrowthArea {
   return {
     company_id: '',
@@ -245,36 +267,33 @@ export function initObjective(): Objective {
     description: '',
     category: 'growth',
     priority: 'medium',
-    timeline: '6_months',
-    target_date: new Date().toISOString().split('T')[0],
+    quarter: 'Q1',
+    year: new Date().getFullYear(),
     current_status: 'not_started',
-    progress_percentage: 0,
-    success_criteria: [],
-    expected_outcome: '',
     responsible_person: '',
     created_date: new Date().toISOString().split('T')[0],
     mentor_notes: '',
   };
 }
 
-export function initObjectiveTask(): ObjectiveTask {
+export function initKeyResult(): KeyResult {
   return {
     company_id: '',
     objective_id: '',
     title: '',
     description: '',
-    assigned_to: '',
-    due_date: new Date().toISOString().split('T')[0],
-    priority: 'medium',
-    status: 'todo',
+    metric_type: 'number',
+    baseline_value: 0,
+    target_value: 100,
+    current_value: 0,
+    unit: '',
+    confidence_level: 3,
+    status: 'not_started',
     progress_percentage: 0,
-    estimated_hours: 0,
-    actual_hours: 0,
-    dependencies: [],
-    tags: [],
+    responsible_person: '',
     created_date: new Date().toISOString().split('T')[0],
-    completed_date: '',
-    notes: '',
+    target_date: new Date().toISOString().split('T')[0],
+    mentor_notes: '',
   };
 }
 
@@ -353,39 +372,56 @@ export interface StrategicGoal {
   mentor_notes?: string;
 }
 
-// 🎯 Objective - High-level business objective (OKR style)
+// 🎯 Objective - High-level qualitative goal (OKR style)
 export interface Objective {
   company_id: string;
   title: string;
   description: string;
   category: 'growth' | 'financial' | 'operational' | 'market' | 'product' | 'team';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  timeline: '3_months' | '6_months' | '1_year' | '2_years' | '5_years';
-  target_date: string;
+  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+  year: number;
   current_status: 'not_started' | 'in_progress' | 'on_track' | 'at_risk' | 'completed' | 'cancelled';
-  progress_percentage: number;
-  success_criteria: string[];
-  expected_outcome: string;
   responsible_person?: string;
   created_date: string;
   mentor_notes?: string;
 }
 
-// 📋 Objective Task - Specific tasks under an objective
-export interface ObjectiveTask {
+// 📊 Key Result - Measurable outcome that tracks objective progress
+export interface KeyResult {
   company_id: string;
   objective_id: string; // Links to the parent objective
   title: string;
   description?: string;
+  metric_type: 'number' | 'percentage' | 'currency' | 'boolean';
+  baseline_value: number;
+  target_value: number;
+  current_value: number;
+  unit?: string; // e.g., "followers", "users", "$", "%"
+  confidence_level: 1 | 2 | 3 | 4 | 5; // How confident are we we'll hit this?
+  status: 'not_started' | 'in_progress' | 'on_track' | 'at_risk' | 'completed' | 'cancelled';
+  progress_percentage: number; // Auto-calculated from current vs target
+  responsible_person?: string;
+  created_date: string;
+  target_date: string;
+  mentor_notes?: string;
+}
+
+// 📋 OKRTask - Specific actionable items under a Key Result (renamed to avoid conflict)
+export interface OKRTask {
+  company_id: string;
+  key_result_id: string; // Links to the parent key result
+  title: string;
+  description?: string;
   assigned_to?: string;
   due_date: string;
-  priority: 'low' | 'medium' | 'high';
-  status: 'todo' | 'in_progress' | 'completed' | 'cancelled';
-  progress_percentage: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'cancelled';
   estimated_hours?: number;
   actual_hours?: number;
-  dependencies: string[];
-  tags: string[];
+  dependencies?: string[];
+  tags?: string[];
+  impact_weight?: number; // How much this task contributes to KR completion (1-10)
   created_date: string;
   completed_date?: string;
   notes?: string;

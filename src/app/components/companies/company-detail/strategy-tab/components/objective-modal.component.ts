@@ -92,35 +92,36 @@ import { Objective, initObjective } from '../../../../../../models/business.mode
               </div>
             </div>
 
-            <!-- Timeline and Target Date -->
+            <!-- Quarter and Year -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Timeline <span class="text-red-500">*</span>
+                  Quarter <span class="text-red-500">*</span>
                 </label>
                 <select
-                  [(ngModel)]="formData.timeline"
-                  name="timeline"
+                  [(ngModel)]="formData.quarter"
+                  name="quarter"
                   required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 >
-                  <option value="3_months">3 Months</option>
-                  <option value="6_months">6 Months</option>
-                  <option value="1_year">1 Year</option>
-                  <option value="2_years">2 Years</option>
-                  <option value="5_years">5 Years</option>
+                  <option value="Q1">Q1</option>
+                  <option value="Q2">Q2</option>
+                  <option value="Q3">Q3</option>
+                  <option value="Q4">Q4</option>
                 </select>
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Target Date <span class="text-red-500">*</span>
+                  Year <span class="text-red-500">*</span>
                 </label>
                 <input
-                  [(ngModel)]="formData.target_date"
-                  name="target_date"
-                  type="date"
+                  [(ngModel)]="formData.year"
+                  name="year"
+                  type="number"
                   required
+                  min="2024"
+                  max="2030"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 />
               </div>
@@ -159,55 +160,6 @@ import { Objective, initObjective } from '../../../../../../models/business.mode
               </div>
             </div>
 
-            <!-- Expected Outcome -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Expected Outcome <span class="text-red-500">*</span>
-              </label>
-              <textarea
-                [(ngModel)]="formData.expected_outcome"
-                name="expected_outcome"
-                required
-                rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                placeholder="What do you expect to achieve?"
-              ></textarea>
-            </div>
-
-            <!-- Success Criteria -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Success Criteria
-              </label>
-              <div class="space-y-2 mb-3">
-                <div *ngFor="let criteria of formData.success_criteria; let i = index"
-                     class="flex items-center space-x-2">
-                  <input
-                    [(ngModel)]="formData.success_criteria[i]"
-                    [name]="'criteria-' + i"
-                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="Enter success criteria..."
-                  />
-                  <button
-                    type="button"
-                    (click)="removeCriteria(i)"
-                    class="text-red-600 hover:text-red-700 p-2"
-                    title="Remove criteria"
-                  >
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                (click)="addCriteria()"
-                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center space-x-2"
-              >
-                <i class="fas fa-plus"></i>
-                <span>Add Success Criteria</span>
-              </button>
-            </div>
-
             <!-- Mentor Notes -->
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -235,7 +187,7 @@ import { Objective, initObjective } from '../../../../../../models/business.mode
           </button>
           <button
             (click)="saveObjective()"
-            [disabled]="!formData.title || !formData.description || !formData.expected_outcome"
+            [disabled]="!formData.title || !formData.description"
             class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-lg"
           >
             {{ objectiveData ? 'Update' : 'Create' }} Objective
@@ -266,18 +218,10 @@ export class ObjectiveModalComponent implements OnInit {
   }
 
   saveObjective() {
-    if (!this.formData.title || !this.formData.description || !this.formData.expected_outcome) {
+    if (!this.formData.title || !this.formData.description) {
       return;
     }
 
     this.save.emit(this.formData);
-  }
-
-  addCriteria() {
-    this.formData.success_criteria.push('');
-  }
-
-  removeCriteria(index: number) {
-    this.formData.success_criteria.splice(index, 1);
   }
 }

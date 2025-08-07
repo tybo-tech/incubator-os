@@ -3,18 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, CompanyVision, ProductService, StrategicGoal, Objective, ObjectiveTask, initCompanyVision, initProductService, initStrategicGoal, initObjective, initObjectiveTask } from '../../../../../models/business.models';
+import { Company, CompanyVision, ProductService, StrategicGoal, Objective, KeyResult, OKRTask, initCompanyVision, initProductService, initStrategicGoal, initObjective, initKeyResult, initOKRTask } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
 // Import our new sub-components
-import { StrategyProgressOverviewComponent } from './components/strategy-progress-overview.component';
-import { VisionMissionSectionComponent } from './components/vision-mission-section.component';
 import { ProductsServicesSectionComponent } from './components/products-services-section.component';
-import { ObjectivesSectionComponent } from './components/objectives-section.component';
-import { VisionModalComponent } from './components/vision-modal.component';
+import { OKRSectionComponent } from './components/okr-section.component';
 import { ProductServiceModalComponent } from './components/product-service-modal.component';
 import { ObjectiveModalComponent } from './components/objective-modal.component';
 import { ObjectiveTaskModalComponent } from './components/objective-task-modal.component';
+import { KeyResultModalComponent } from './components/key-result-modal.component';
 
 @Component({
   selector: 'app-strategy-tab',
@@ -22,14 +20,12 @@ import { ObjectiveTaskModalComponent } from './components/objective-task-modal.c
   imports: [
     CommonModule,
     FormsModule,
-    StrategyProgressOverviewComponent,
-    VisionMissionSectionComponent,
     ProductsServicesSectionComponent,
-    ObjectivesSectionComponent,
-    VisionModalComponent,
+    OKRSectionComponent,
     ProductServiceModalComponent,
     ObjectiveModalComponent,
-    ObjectiveTaskModalComponent
+    ObjectiveTaskModalComponent,
+    KeyResultModalComponent
   ],
   template: `
     <div class="space-y-8">
@@ -165,18 +161,22 @@ import { ObjectiveTaskModalComponent } from './components/objective-task-modal.c
         (deleteProduct)="deleteProduct($event)"
       ></app-products-services-section>
 
-      <!-- Objectives Section -->
-      <app-objectives-section
+      <!-- OKR Section -->
+      <app-okr-section
         [objectives]="objectives"
-        [objectiveTasks]="objectiveTasks"
+        [keyResults]="keyResults"
+        [tasks]="objectiveTasks"
         (addObjective)="openObjectiveModal()"
         (editObjective)="editObjective($event)"
         (deleteObjective)="deleteObjective($event)"
-        (addTask)="openTaskModalForObjective($event)"
+        (addKeyResult)="openKeyResultModal($event)"
+        (editKeyResult)="editKeyResult($event)"
+        (deleteKeyResult)="deleteKeyResult($event)"
+        (addTask)="openTaskModalForKeyResult($event)"
         (editTask)="editTask($event)"
         (deleteTask)="deleteTask($event)"
-        (updateTaskStatus)="updateTaskStatus($event)"
-      ></app-objectives-section>
+        (toggleTaskStatus)="toggleTaskStatus($event)"
+      ></app-okr-section>
 
       <!-- Vision Modal -->
       <div *ngIf="showVisionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -326,6 +326,15 @@ import { ObjectiveTaskModalComponent } from './components/objective-task-modal.c
         (save)="saveObjective($event)"
       ></app-objective-modal>
 
+      <!-- Key Result Modal -->
+      <app-key-result-modal
+        [isOpen]="showKeyResultModal"
+        [keyResultData]="selectedKeyResult"
+        [objectiveId]="selectedObjectiveId"
+        (close)="closeKeyResultModal()"
+        (save)="saveKeyResult($event)"
+      ></app-key-result-modal>
+
       <!-- Objective Task Modal -->
       <app-objective-task-modal
         [isOpen]="showTaskModal"
@@ -346,7 +355,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   visionData: INode<CompanyVision> | null = null;
   productsServices: INode<ProductService>[] = [];
   objectives: INode<Objective>[] = [];
-  objectiveTasks: INode<ObjectiveTask>[] = [];
+  objectiveTasks: INode<OKRTask>[] = [];
+  keyResults: INode<KeyResult>[] = [];
 
   // Loading states
   loading = false;
@@ -357,13 +367,15 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   showProductModal = false;
   showObjectiveModal = false;
   showTaskModal = false;
+  showKeyResultModal = false;
 
   // Edit states
   editingVision: INode<CompanyVision> | null = null;
   editingProduct: INode<ProductService> | null = null;
   selectedProduct: INode<ProductService> | null = null;
   selectedObjective: INode<Objective> | null = null;
-  selectedTask: INode<ObjectiveTask> | null = null;
+  selectedTask: INode<OKRTask> | null = null;
+  selectedKeyResult: INode<KeyResult> | null = null;
   selectedObjectiveId: string | null = null;
 
   // Form data
@@ -426,15 +438,25 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
       });
 
     // Load objective tasks
-    this.nodeService.getNodesByCompany(this.company.id, 'objective_task')
+    this.nodeService.getNodesByCompany(this.company.id, 'okr_task')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tasks) => {
-          this.objectiveTasks = tasks as INode<ObjectiveTask>[];
+          this.objectiveTasks = tasks as INode<OKRTask>[];
+        },
+        error: (error: any) => console.error('Error loading OKR tasks:', error)
+      });
+
+    // Load key results
+    this.nodeService.getNodesByCompany(this.company.id, 'key_result')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (keyResults) => {
+          this.keyResults = keyResults as INode<KeyResult>[];
           this.loading = false;
         },
         error: (error: any) => {
-          console.error('Error loading objective tasks:', error);
+          console.error('Error loading key results:', error);
           this.loading = false;
         }
       });
@@ -634,24 +656,102 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Key Result methods
+  openKeyResultModal(objective: INode<Objective>) {
+    this.selectedKeyResult = null;
+    this.selectedObjectiveId = String(objective.id || '');
+    this.showKeyResultModal = true;
+  }
+
+  editKeyResult(keyResult: INode<KeyResult>) {
+    this.selectedKeyResult = keyResult;
+    this.selectedObjectiveId = keyResult.data.objective_id;
+    this.showKeyResultModal = true;
+  }
+
+  closeKeyResultModal() {
+    this.showKeyResultModal = false;
+    this.selectedKeyResult = null;
+    this.selectedObjectiveId = null;
+  }
+
+  saveKeyResult(keyResultData: KeyResult) {
+    this.saving = true;
+    const isEditing = !!this.selectedKeyResult;
+
+    if (isEditing && this.selectedKeyResult) {
+      // Update existing key result
+      this.nodeService.updateNode({ ...this.selectedKeyResult, data: keyResultData })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeKeyResultModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error updating key result:', error);
+            this.saving = false;
+          }
+        });
+    } else {
+      // Create new key result
+      keyResultData.objective_id = this.selectedObjectiveId || '';
+      this.nodeService.addNode({
+        company_id: this.company?.id || 0,
+        type: 'key_result',
+        data: keyResultData
+      } as INode<KeyResult>)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeKeyResultModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error creating key result:', error);
+            this.saving = false;
+          }
+        });
+    }
+  }
+
+  deleteKeyResult(keyResult: INode<KeyResult>) {
+    if (!keyResult.id) return;
+
+    if (confirm('Are you sure you want to delete this key result?')) {
+      this.nodeService.deleteNode(keyResult.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => this.loadStrategyData(),
+          error: (error: any) => console.error('Error deleting key result:', error)
+        });
+    }
+  }
+
   // Objective Task methods
   openTaskModalForObjective(objective: INode<Objective>) {
     this.openTaskModal(String(objective.id || ''));
   }
 
-  openTaskModal(objectiveId: string) {
+  openTaskModalForKeyResult(keyResult: INode<KeyResult>) {
+    this.openTaskModal(String(keyResult.id || ''));
+  }
+
+  openTaskModal(keyResultId: string) {
     this.selectedTask = null;
-    this.selectedObjectiveId = objectiveId;
+    this.selectedObjectiveId = keyResultId;
     this.showTaskModal = true;
   }
 
-  editTask(task: INode<ObjectiveTask>) {
+  editTask(task: INode<OKRTask>) {
     this.selectedTask = task;
-    this.selectedObjectiveId = task.data.objective_id;
+    this.selectedObjectiveId = task.data.key_result_id;
     this.showTaskModal = true;
   }
 
-  deleteTask(task: INode<ObjectiveTask>) {
+  deleteTask(task: INode<OKRTask>) {
     if (!task.id) return;
 
     if (confirm('Are you sure you want to delete this task?')) {
@@ -670,7 +770,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     this.selectedObjectiveId = null;
   }
 
-  saveTask(taskData: ObjectiveTask) {
+  saveTask(taskData: OKRTask) {
     this.saving = true;
     const isEditing = !!this.selectedTask;
 
@@ -691,12 +791,12 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         });
     } else {
       // Create new task
-      taskData.objective_id = this.selectedObjectiveId || '';
+      taskData.key_result_id = this.selectedObjectiveId || '';
       this.nodeService.addNode({
         company_id: this.company?.id || 0,
-        type: 'objective_task',
+        type: 'okr_task',
         data: taskData
-      } as INode<ObjectiveTask>)
+      } as INode<OKRTask>)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -712,14 +812,17 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateTaskStatus(event: {task: INode<ObjectiveTask>, status: string}) {
-    const { task, status } = event;
-    const newProgress = status === 'completed' ? 100 : task.data.progress_percentage;
+  toggleTaskStatus(task: INode<OKRTask>) {
+    const newStatus = task.data.status === 'completed' ? 'in_progress' : 'completed';
+    this.updateTaskStatus({task, status: newStatus});
+  }
 
-    const updatedTaskData: ObjectiveTask = {
+  updateTaskStatus(event: {task: INode<OKRTask>, status: string}) {
+    const { task, status } = event;
+
+    const updatedTaskData: OKRTask = {
       ...task.data,
       status: status as any,
-      progress_percentage: newProgress,
       completed_date: status === 'completed' ? new Date().toISOString() : ''
     };
 

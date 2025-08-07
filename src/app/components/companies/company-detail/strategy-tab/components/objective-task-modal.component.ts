@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
-import { ObjectiveTask, initObjectiveTask } from '../../../../../../models/business.models';
+import { OKRTask, initOKRTask } from '../../../../../../models/business.models';
 
 @Component({
   selector: 'app-objective-task-modal',
@@ -117,24 +117,36 @@ import { ObjectiveTask, initObjectiveTask } from '../../../../../../models/busin
               </div>
             </div>
 
-            <!-- Progress -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Progress ({{ formData.progress_percentage }}%)
-              </label>
-              <input
-                [(ngModel)]="formData.progress_percentage"
-                name="progress_percentage"
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <div class="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0%</span>
-                <span>50%</span>
-                <span>100%</span>
+            <!-- Effort Estimates -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Estimated Hours
+                </label>
+                <input
+                  [(ngModel)]="formData.estimated_hours"
+                  name="estimated_hours"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="How many hours will this take?"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Impact Weight (1-10)
+                </label>
+                <input
+                  [(ngModel)]="formData.impact_weight"
+                  name="impact_weight"
+                  type="number"
+                  min="1"
+                  max="10"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="How much does this impact the key result?"
+                />
               </div>
             </div>
 
@@ -191,10 +203,10 @@ import { ObjectiveTask, initObjectiveTask } from '../../../../../../models/busin
                 Tags
               </label>
               <div class="space-y-2 mb-3">
-                <div *ngFor="let tag of formData.tags; let i = index"
+                <div *ngFor="let tag of formData.tags || []; let i = index"
                      class="flex items-center space-x-2">
                   <input
-                    [(ngModel)]="formData.tags[i]"
+                    [(ngModel)]="formData.tags![i]"
                     [name]="'tag-' + i"
                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     placeholder="Enter tag..."
@@ -258,20 +270,20 @@ import { ObjectiveTask, initObjectiveTask } from '../../../../../../models/busin
 })
 export class ObjectiveTaskModalComponent implements OnInit {
   @Input() isOpen = false;
-  @Input() taskData: INode<ObjectiveTask> | null = null;
+  @Input() taskData: INode<OKRTask> | null = null;
   @Input() objectiveId: string | null = null;
   @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<ObjectiveTask>();
+  @Output() save = new EventEmitter<OKRTask>();
 
-  formData: ObjectiveTask = initObjectiveTask();
+  formData: OKRTask = initOKRTask();
 
   ngOnInit() {
     if (this.taskData) {
       this.formData = { ...this.taskData.data };
     } else {
-      this.formData = initObjectiveTask();
+      this.formData = initOKRTask();
       if (this.objectiveId) {
-        this.formData.objective_id = this.objectiveId;
+        this.formData.key_result_id = this.objectiveId;
       }
     }
   }
@@ -289,10 +301,15 @@ export class ObjectiveTaskModalComponent implements OnInit {
   }
 
   addTag() {
+    if (!this.formData.tags) {
+      this.formData.tags = [];
+    }
     this.formData.tags.push('');
   }
 
   removeTag(index: number) {
-    this.formData.tags.splice(index, 1);
+    if (this.formData.tags) {
+      this.formData.tags.splice(index, 1);
+    }
   }
 }
