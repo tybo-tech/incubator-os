@@ -8,7 +8,7 @@ import { OKRTask } from '../../../../../../models/business.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white"
+    <div class="p-4 rounded-0 border border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-white"
          [ngClass]="getTaskBackgroundClass(task.data.background_color)">
       <!-- Task Header -->
       <div class="flex items-start justify-between mb-3">

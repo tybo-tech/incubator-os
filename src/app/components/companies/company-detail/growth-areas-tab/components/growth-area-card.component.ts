@@ -15,8 +15,8 @@ import { TaskCardComponent } from './task-card.component';
     >
       <!-- Header -->
       <div
-        class="p-6 text-white"
-        [style.background]="getBackgroundGradient(growthArea.data.type)"
+        class="p-6 text-gray-800"
+        [ngClass]="getHeaderClasses(growthArea.data.type)"
       >
         <div class="flex items-start justify-between gap-4">
           <!-- Main Content -->
@@ -24,7 +24,8 @@ import { TaskCardComponent } from './task-card.component';
             <div class="flex items-start gap-4 mb-4">
               <!-- Icon -->
               <div
-                class="p-3 bg-black bg-opacity-30 rounded-xl backdrop-blur-sm shadow-md"
+                class="p-3 rounded-xl shadow-md"
+                [ngClass]="getIconContainerClasses(growthArea.data.type)"
               >
                 <i
                   [class]="
@@ -35,11 +36,12 @@ import { TaskCardComponent } from './task-card.component';
 
               <!-- Title & Type -->
               <div class="flex-1">
-                <h3 class="text-xl font-bold text-white mb-1">
+                <h3 class="text-xl font-bold text-gray-800 mb-1">
                   {{ growthArea.data.area }}
                 </h3>
                 <span
-                  class="text-xs font-medium uppercase tracking-wider bg-black bg-opacity-30 px-2 py-1 rounded-full"
+                  class="text-xs font-medium uppercase tracking-wider px-2 py-1 rounded-full"
+                  [ngClass]="getTypeBadgeClasses(growthArea.data.type)"
                 >
                   {{ growthArea.data.type | titlecase }}
                 </span>
@@ -47,7 +49,7 @@ import { TaskCardComponent } from './task-card.component';
             </div>
 
             <!-- Description -->
-            <p class="text-white text-opacity-95 mb-5 text-sm leading-relaxed">
+            <p class="text-gray-700 mb-5 text-sm leading-relaxed">
               {{ growthArea.data.description }}
             </p>
 
@@ -55,34 +57,36 @@ import { TaskCardComponent } from './task-card.component';
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <!-- Impact -->
               <div
-                class="bg-black bg-opacity-30 px-3 py-2 rounded-lg backdrop-blur-sm flex items-center gap-2"
+                class="px-3 py-2 rounded-lg flex items-center gap-2 border"
+                [ngClass]="getMetricBoxClasses(growthArea.data.type)"
               >
-                <i class="fas fa-bullseye text-white text-opacity-90"></i>
-                <span class="text-white text-opacity-90 font-medium"
+                <i class="fas fa-bullseye" [ngClass]="getTasksIconClasses(growthArea.data.type)"></i>
+                <span class="text-gray-700 font-medium"
                   >Impact: {{ growthArea.data.impact_area }}</span
                 >
               </div>
 
               <!-- Rating -->
               <div
-                class="bg-black bg-opacity-30 px-3 py-2 rounded-lg backdrop-blur-sm flex items-center gap-2"
+                class="px-3 py-2 rounded-lg flex items-center gap-2 border"
+                [ngClass]="getMetricBoxClasses(growthArea.data.type)"
               >
-                <i class="fas fa-star text-yellow-300"></i>
+                <i class="fas fa-star text-yellow-500"></i>
                 <div class="flex items-center gap-1">
-                  <span class="text-white text-opacity-90 font-medium">Rating:</span>
+                  <span class="text-gray-700 font-medium">Rating:</span>
                   <div class="flex">
                     <i
                       *ngFor="let star of getStarArray(growthArea.data.rating)"
-                      class="fas fa-star text-yellow-300 text-xs"
+                      class="fas fa-star text-yellow-500 text-xs"
                     ></i>
                     <i
                       *ngFor="
                         let star of getStarArray(5 - growthArea.data.rating)
                       "
-                      class="fas fa-star text-white text-opacity-30 text-xs"
+                      class="fas fa-star text-gray-300 text-xs"
                     ></i>
                   </div>
-                  <span class="text-white text-opacity-90"
+                  <span class="text-gray-700"
                     >{{ growthArea.data.rating }}/5</span
                   >
                 </div>
@@ -90,21 +94,23 @@ import { TaskCardComponent } from './task-card.component';
 
               <!-- Progress -->
               <div
-                class="bg-black bg-opacity-30 px-3 py-2 rounded-lg backdrop-blur-sm flex items-center justify-between"
+                class="px-3 py-2 rounded-lg flex items-center justify-between border"
+                [ngClass]="getMetricBoxClasses(growthArea.data.type)"
               >
                 <div class="flex items-center gap-2">
-                  <i class="fas fa-tasks text-white text-opacity-90"></i>
-                  <span class="text-white text-opacity-90 font-medium"
+                  <i class="fas fa-tasks" [ngClass]="getTasksIconClasses(growthArea.data.type)"></i>
+                  <span class="text-gray-700 font-medium"
                     >{{ tasks.length }} Tasks</span
                   >
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-white text-opacity-90 text-xs font-bold"
+                  <span class="text-gray-700 text-xs font-bold"
                     >{{ progress }}%</span
                   >
-                  <div class="w-16 bg-white bg-opacity-30 rounded-full h-2">
+                  <div class="w-16 bg-gray-200 rounded-full h-2">
                     <div
-                      class="bg-white h-2 rounded-full"
+                      class="h-2 rounded-full"
+                      [ngClass]="getProgressBarClasses(growthArea.data.type)"
                       [style.width.%]="progress"
                     ></div>
                   </div>
@@ -119,7 +125,8 @@ import { TaskCardComponent } from './task-card.component';
             <!-- Add Task -->
             <button
               (click)="addTask.emit(growthArea)"
-              class="p-3 bg-black bg-opacity-30 text-white hover:bg-opacity-40 rounded-xl transition-all shadow-md hover:shadow-lg group backdrop-blur-sm"
+              class="p-3 text-white rounded-xl transition-all shadow-md hover:shadow-lg group"
+              [ngClass]="getActionButtonClasses(growthArea.data.type)"
               title="Add Task"
             >
               <i class="fas fa-plus"></i>
@@ -128,19 +135,19 @@ import { TaskCardComponent } from './task-card.component';
             <!-- Edit -->
             <button
               (click)="editGrowthArea.emit(growthArea)"
-              class="p-3 bg-black bg-opacity-30 hover:bg-opacity-40 rounded-xl transition-all shadow-md hover:shadow-lg group backdrop-blur-sm"
+              class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all shadow-md hover:shadow-lg group border border-gray-300"
               title="Edit"
             >
-              <i class="fas fa-edit text-white"></i>
+              <i class="fas fa-edit text-gray-600"></i>
             </button>
 
             <!-- Delete -->
             <button
               (click)="deleteGrowthArea.emit(growthArea)"
-              class="p-3 bg-black bg-opacity-30 hover:bg-opacity-40 rounded-xl transition-all shadow-md hover:shadow-lg group backdrop-blur-sm"
+              class="p-3 bg-red-100 hover:bg-red-200 rounded-xl transition-all shadow-md hover:shadow-lg group border border-red-300"
               title="Delete"
             >
-              <i class="fas fa-trash text-red-400 group-hover:text-red-300"></i>
+              <i class="fas fa-trash text-red-600"></i>
             </button>
           </div>
         </div>
@@ -148,17 +155,17 @@ import { TaskCardComponent } from './task-card.component';
         <!-- Mentor Notes -->
         <div
           *ngIf="growthArea.data.mentor_notes"
-          class="mt-4 pt-4 border-t border-white border-opacity-30"
+          class="mt-4 pt-4 border-t border-gray-300"
         >
           <div class="flex gap-3">
-            <div class="p-2 bg-black bg-opacity-30 rounded-lg">
-              <i class="fas fa-comment-alt text-white text-opacity-90"></i>
+            <div class="p-2 rounded-lg" [ngClass]="getIconContainerClasses(growthArea.data.type)">
+              <i class="fas fa-comment-alt text-white"></i>
             </div>
             <div>
-              <h6 class="text-sm font-medium text-white text-opacity-90 mb-1">
+              <h6 class="text-sm font-medium text-gray-800 mb-1">
                 Mentor Notes
               </h6>
-              <p class="text-sm text-white text-opacity-80 italic">
+              <p class="text-sm text-gray-600 italic">
                 {{ growthArea.data.mentor_notes }}
               </p>
             </div>
@@ -306,16 +313,64 @@ export class GrowthAreaCardComponent {
     return classes[type] || 'text-purple-600 hover:text-purple-700'; // Default purple theme
   }
 
-  getBackgroundGradient(type: string): string {
-    const gradients: Record<string, string> = {
-      strength: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)', // Green gradient (matching text-green-600)
-      weakness: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', // Red gradient (matching text-red-600)
-      opportunity: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', // Blue gradient (matching text-blue-600)
-      threat: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)', // Orange gradient (matching text-orange-600)
+  getHeaderClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-50', // Light green header (matching container)
+      weakness: 'bg-red-50',   // Light red header (matching container)
+      opportunity: 'bg-blue-50', // Light blue header (matching container)
+      threat: 'bg-orange-50', // Light orange header (matching container)
     };
-    return (
-      gradients[type] || 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)'
-    ); // Default purple gradient
+    return classes[type] || 'bg-purple-50'; // Default light purple
+  }
+
+  getIconContainerClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-600', // Green icon container
+      weakness: 'bg-red-600',   // Red icon container
+      opportunity: 'bg-blue-600', // Blue icon container
+      threat: 'bg-orange-600', // Orange icon container
+    };
+    return classes[type] || 'bg-purple-600'; // Default purple
+  }
+
+  getTypeBadgeClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-600 text-white', // Green badge
+      weakness: 'bg-red-600 text-white',   // Red badge
+      opportunity: 'bg-blue-600 text-white', // Blue badge
+      threat: 'bg-orange-600 text-white', // Orange badge
+    };
+    return classes[type] || 'bg-purple-600 text-white'; // Default purple
+  }
+
+  getMetricBoxClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-100 border-green-200', // Light green metric boxes
+      weakness: 'bg-red-100 border-red-200',   // Light red metric boxes
+      opportunity: 'bg-blue-100 border-blue-200', // Light blue metric boxes
+      threat: 'bg-orange-100 border-orange-200', // Light orange metric boxes
+    };
+    return classes[type] || 'bg-purple-100 border-purple-200'; // Default purple
+  }
+
+  getProgressBarClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-500', // Green progress bar
+      weakness: 'bg-red-500',   // Red progress bar
+      opportunity: 'bg-blue-500', // Blue progress bar
+      threat: 'bg-orange-500', // Orange progress bar
+    };
+    return classes[type] || 'bg-purple-500'; // Default purple
+  }
+
+  getActionButtonClasses(type: string): string {
+    const classes: Record<string, string> = {
+      strength: 'bg-green-600 hover:bg-green-700', // Green action button
+      weakness: 'bg-red-600 hover:bg-red-700',   // Red action button
+      opportunity: 'bg-blue-600 hover:bg-blue-700', // Blue action button
+      threat: 'bg-orange-600 hover:bg-orange-700', // Orange action button
+    };
+    return classes[type] || 'bg-purple-600 hover:bg-purple-700'; // Default purple
   }
 
   getStarArray(count: number): number[] {
