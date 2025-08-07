@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
@@ -10,7 +10,7 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
   imports: [CommonModule, FormsModule],
   template: `
     <div *ngIf="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-hidden">
+      <div class="bg-white rounded-lg w-full max-w-xl max-h-[90vh] overflow-hidden">
         <!-- Header -->
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-gray-900">
@@ -33,8 +33,8 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
                 [(ngModel)]="formData.title"
                 name="title"
                 required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter the measurable outcome"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                placeholder="Enter key result title"
               />
             </div>
 
@@ -46,74 +46,14 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
               <textarea
                 [(ngModel)]="formData.description"
                 name="description"
-                rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Describe what this key result measures..."
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                placeholder="Describe this key result..."
               ></textarea>
             </div>
 
-            <!-- Metric Type and Unit -->
+            <!-- Target Value and Unit -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Metric Type <span class="text-red-500">*</span>
-                </label>
-                <select
-                  [(ngModel)]="formData.metric_type"
-                  name="metric_type"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="number">Number</option>
-                  <option value="percentage">Percentage</option>
-                  <option value="currency">Currency</option>
-                  <option value="boolean">Yes/No</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Unit
-                </label>
-                <input
-                  [(ngModel)]="formData.unit"
-                  name="unit"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g., followers, $, %"
-                />
-              </div>
-            </div>
-
-            <!-- Baseline, Current, and Target Values -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Baseline Value <span class="text-red-500">*</span>
-                </label>
-                <input
-                  [(ngModel)]="formData.baseline_value"
-                  name="baseline_value"
-                  type="number"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Starting point"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Current Value <span class="text-red-500">*</span>
-                </label>
-                <input
-                  [(ngModel)]="formData.current_value"
-                  name="current_value"
-                  type="number"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Current progress"
-                />
-              </div>
-
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Target Value <span class="text-red-500">*</span>
@@ -123,14 +63,71 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
                   name="target_value"
                   type="number"
                   required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Goal to reach"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Enter target value"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Unit
+                </label>
+                <input
+                  [(ngModel)]="formData.unit"
+                  name="unit"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., users, revenue, downloads"
                 />
               </div>
             </div>
 
-            <!-- Target Date and Confidence -->
+            <!-- Current Value and Baseline -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Current Value
+                </label>
+                <input
+                  [(ngModel)]="formData.current_value"
+                  name="current_value"
+                  type="number"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Current progress value"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Baseline Value
+                </label>
+                <input
+                  [(ngModel)]="formData.baseline_value"
+                  name="baseline_value"
+                  type="number"
+                  min="0"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Starting point value"
+                />
+              </div>
+            </div>
+
+            <!-- Date Range -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Created Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  [(ngModel)]="formData.created_date"
+                  name="created_date"
+                  type="date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Target Date <span class="text-red-500">*</span>
@@ -140,31 +137,12 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
                   name="target_date"
                   type="date"
                   required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Confidence Level ({{ formData.confidence_level }}/5)
-                </label>
-                <input
-                  [(ngModel)]="formData.confidence_level"
-                  name="confidence_level"
-                  type="range"
-                  min="1"
-                  max="5"
-                  step="1"
-                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Low</span>
-                  <span>High</span>
-                </div>
               </div>
             </div>
 
-            <!-- Status and Responsible Person -->
+            <!-- Status and Metric Type -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -173,7 +151,7 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
                 <select
                   [(ngModel)]="formData.status"
                   name="status"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 >
                   <option value="not_started">Not Started</option>
                   <option value="in_progress">In Progress</option>
@@ -186,14 +164,50 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Metric Type
+                </label>
+                <select
+                  [(ngModel)]="formData.metric_type"
+                  name="metric_type"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="number">Number</option>
+                  <option value="percentage">Percentage</option>
+                  <option value="currency">Currency</option>
+                  <option value="boolean">Boolean</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Owner and Confidence Level -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   Responsible Person
                 </label>
                 <input
                   [(ngModel)]="formData.responsible_person"
                   name="responsible_person"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="Who owns this key result?"
                 />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Confidence Level (1-5)
+                </label>
+                <select
+                  [(ngModel)]="formData.confidence_level"
+                  name="confidence_level"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="1">1 - Very Low</option>
+                  <option value="2">2 - Low</option>
+                  <option value="3">3 - Medium</option>
+                  <option value="4">4 - High</option>
+                  <option value="5">5 - Very High</option>
+                </select>
               </div>
             </div>
 
@@ -205,9 +219,9 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
               <textarea
                 [(ngModel)]="formData.mentor_notes"
                 name="mentor_notes"
-                rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Add any mentor feedback or notes..."
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                placeholder="Notes from mentor or additional context..."
               ></textarea>
             </div>
           </form>
@@ -224,8 +238,8 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
           </button>
           <button
             (click)="saveKeyResult()"
-            [disabled]="!formData.title || !formData.target_value"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg"
+            [disabled]="!formData.title || !formData.target_value || !formData.created_date || !formData.target_date"
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-lg"
           >
             {{ keyResultData ? 'Update' : 'Create' }} Key Result
           </button>
@@ -234,7 +248,7 @@ import { KeyResult, initKeyResult } from '../../../../../../models/business.mode
     </div>
   `
 })
-export class KeyResultModalComponent implements OnInit {
+export class KeyResultModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() keyResultData: INode<KeyResult> | null = null;
   @Input() objectiveId: string | null = null;
@@ -244,6 +258,16 @@ export class KeyResultModalComponent implements OnInit {
   formData: KeyResult = initKeyResult();
 
   ngOnInit() {
+    this.initializeFormData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['keyResultData'] || changes['objectiveId']) {
+      this.initializeFormData();
+    }
+  }
+
+  private initializeFormData() {
     if (this.keyResultData) {
       this.formData = { ...this.keyResultData.data };
     } else {
@@ -259,16 +283,9 @@ export class KeyResultModalComponent implements OnInit {
   }
 
   saveKeyResult() {
-    if (!this.formData.title || !this.formData.target_value) {
+    if (!this.formData.title || !this.formData.target_value || !this.formData.created_date || !this.formData.target_date) {
       return;
     }
-
-    // Calculate progress percentage
-    const progress = Math.min(100, Math.max(0,
-      ((this.formData.current_value - this.formData.baseline_value) /
-       (this.formData.target_value - this.formData.baseline_value)) * 100
-    ));
-    this.formData.progress_percentage = Math.round(progress) || 0;
 
     this.save.emit(this.formData);
   }

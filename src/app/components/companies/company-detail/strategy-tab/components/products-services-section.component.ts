@@ -8,7 +8,7 @@ import { ProductService } from '../../../../../../models/business.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-white rounded-lg shadow-sm border">
+    <div class="bg-white rounded-lg shadow-sm border my-4">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <div>
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">

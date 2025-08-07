@@ -44,7 +44,7 @@ import { KeyResultProgressModalComponent } from './components/key-result-progres
       </div>
 
       <!-- Progress Overview -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
         <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
           <div class="flex items-center justify-between">
             <div>
@@ -695,12 +695,9 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     // Find the key result
     const keyResult = this.keyResults.find(kr => kr.id === Number(keyResultId));
     if (keyResult) {
-      // Update current value based on task completion percentage
-      const newCurrentValue = Math.round((progressPercentage / 100) * keyResult.data.target_value);
-
+      // Update progress percentage directly, no need for target/current value calculation
       const updatedKeyResultData: KeyResult = {
         ...keyResult.data,
-        current_value: newCurrentValue,
         progress_percentage: progressPercentage
       };
 
