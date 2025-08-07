@@ -80,8 +80,8 @@ import { OKRTask, initOKRTask } from '../../../../../../models/business.models';
               </div>
             </div>
 
-            <!-- Priority and Status -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Priority, Status and Background Color -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Priority <span class="text-red-500">*</span>
@@ -114,6 +114,31 @@ import { OKRTask, initOKRTask } from '../../../../../../models/business.models';
                   <option value="on_hold">On Hold</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Background Color
+                </label>
+                <select
+                  [(ngModel)]="formData.background_color"
+                  name="background_color"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="white">🤍 White (Default)</option>
+                  <option value="light-orange">🟠 Light Orange</option>
+                  <option value="light-red">🔴 Light Red</option>
+                  <option value="light-green">🟢 Light Green</option>
+                  <option value="light-yellow">🟡 Light Yellow</option>
+                  <option value="light-purple">🟣 Light Purple</option>
+                  <option value="light-blue">🔵 Light Blue</option>
+                  <option value="light-pink">🩷 Light Pink</option>
+                </select>
+                <!-- Color Preview -->
+                <div class="mt-2 p-2 rounded border text-center text-sm"
+                     [ngClass]="getColorPreviewClass(formData.background_color)">
+                  Preview: This is how your task will look
+                </div>
               </div>
             </div>
 
@@ -302,6 +327,28 @@ export class ObjectiveTaskModalComponent implements OnInit, OnChanges {
   removeTag(index: number) {
     if (this.formData.tags) {
       this.formData.tags.splice(index, 1);
+    }
+  }
+
+  getColorPreviewClass(backgroundColor?: string): string {
+    switch (backgroundColor) {
+      case 'light-orange':
+        return 'bg-orange-50 border-orange-200';
+      case 'light-red':
+        return 'bg-red-50 border-red-200';
+      case 'light-green':
+        return 'bg-green-50 border-green-200';
+      case 'light-yellow':
+        return 'bg-yellow-50 border-yellow-200';
+      case 'light-purple':
+        return 'bg-purple-50 border-purple-200';
+      case 'light-blue':
+        return 'bg-blue-50 border-blue-200';
+      case 'light-pink':
+        return 'bg-pink-50 border-pink-200';
+      case 'white':
+      default:
+        return 'bg-white border-gray-200';
     }
   }
 }

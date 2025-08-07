@@ -185,6 +185,7 @@ export function initOKRTask(): OKRTask {
     dependencies: [],
     tags: [],
     impact_weight: 5,
+    background_color: 'white',
     created_date: new Date().toISOString().split('T')[0],
     completed_date: '',
     notes: '',
@@ -439,6 +440,7 @@ export interface OKRTask {
   dependencies?: string[];
   tags?: string[];
   impact_weight?: number; // How much this task contributes to KR completion (1-10)
+  background_color?: 'white' | 'light-orange' | 'light-red' | 'light-green' | 'light-yellow' | 'light-purple' | 'light-blue' | 'light-pink'; // Background color for visual distinction
   created_date: string;
   completed_date?: string;
   notes?: string;

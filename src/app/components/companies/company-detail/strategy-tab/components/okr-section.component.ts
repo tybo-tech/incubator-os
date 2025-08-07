@@ -166,7 +166,9 @@ import { Objective, KeyResult, OKRTask } from '../../../../../../models/business
                 </button>
               </div>
 
-              <div *ngFor="let task of getTasksForKeyResult(keyResult)" class="mb-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div *ngFor="let task of getTasksForKeyResult(keyResult)"
+                   class="mb-3 p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                   [ngClass]="getTaskBackgroundClass(task.data.background_color)">
                 <!-- Task Header -->
                 <div class="flex items-start justify-between mb-3">
                   <div class="flex items-start space-x-3 flex-1">
@@ -428,6 +430,28 @@ export class OKRSectionComponent {
       return `Due in ${daysDiff} days`;
     } else {
       return due.toLocaleDateString();
+    }
+  }
+
+  getTaskBackgroundClass(backgroundColor?: string): string {
+    switch (backgroundColor) {
+      case 'light-orange':
+        return 'bg-orange-50';
+      case 'light-red':
+        return 'bg-red-50';
+      case 'light-green':
+        return 'bg-green-50';
+      case 'light-yellow':
+        return 'bg-yellow-50';
+      case 'light-purple':
+        return 'bg-purple-50';
+      case 'light-blue':
+        return 'bg-blue-50';
+      case 'light-pink':
+        return 'bg-pink-50';
+      case 'white':
+      default:
+        return 'bg-white';
     }
   }
 }
