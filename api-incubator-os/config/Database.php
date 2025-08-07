@@ -31,9 +31,9 @@ class Database
     public function setServer()
     {
         $this->host = 'localhost';
-        $this->db_name = 'rbttaces_main';
-        $this->username = 'rbttaces_main';
-        $this->password = 'Harder01!Harder01!';
+        $this->db_name = 'rbttaces_api';
+        $this->username = 'rbttaces_api';
+        $this->password = 'Harder01!';
     }
 
     public function connect()
