@@ -32,7 +32,7 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
     KeyResultModalComponent
   ],
   template: `
-    <div class="space-y-12">
+    <div class="space-y-16">
       <!-- Header -->
       <div class="flex justify-between items-center">
         <div>
@@ -382,8 +382,10 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   }
 
   editObjective(objective: INode<Objective>) {
+    console.log('editObjective called with:', objective);
     this.selectedObjective = objective;
     this.showObjectiveModal = true;
+    console.log('Modal opened with selectedObjective:', this.selectedObjective);
   }
 
   deleteObjective(objective: INode<Objective>) {

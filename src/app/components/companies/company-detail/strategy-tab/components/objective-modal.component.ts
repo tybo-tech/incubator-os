@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
@@ -197,7 +197,7 @@ import { Objective, initObjective } from '../../../../../../models/business.mode
     </div>
   `
 })
-export class ObjectiveModalComponent implements OnInit {
+export class ObjectiveModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() objectiveData: INode<Objective> | null = null;
   @Output() close = new EventEmitter<void>();
@@ -206,10 +206,23 @@ export class ObjectiveModalComponent implements OnInit {
   formData: Objective = initObjective();
 
   ngOnInit() {
+    this.updateFormData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['objectiveData'] || changes['isOpen']) {
+      this.updateFormData();
+    }
+  }
+
+  updateFormData() {
+    console.log('updateFormData called with objectiveData:', this.objectiveData);
     if (this.objectiveData) {
       this.formData = { ...this.objectiveData.data };
+      console.log('Form data populated with:', this.formData);
     } else {
       this.formData = initObjective();
+      console.log('Form data initialized with new objective:', this.formData);
     }
   }
 

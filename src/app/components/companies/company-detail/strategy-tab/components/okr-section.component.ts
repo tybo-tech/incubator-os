@@ -39,7 +39,7 @@ import { Objective, KeyResult, OKRTask } from '../../../../../../models/business
           </button>
         </div>
 
-        <div *ngIf="objectives.length > 0" class="space-y-8">
+        <div *ngIf="objectives.length > 0" class="space-y-12">
           <div *ngFor="let objective of objectives" class="border border-gray-200 rounded-lg overflow-hidden">
 
             <!-- 🎯 OBJECTIVE HEADER -->
@@ -122,7 +122,7 @@ import { Objective, KeyResult, OKRTask } from '../../../../../../models/business
                 <p>No key results yet. Add measurable outcomes to track this objective.</p>
               </div>
 
-              <div *ngIf="getKeyResultsForObjective(objective).length > 0" class="space-y-4">
+              <div *ngIf="getKeyResultsForObjective(objective).length > 0" class="space-y-6">
                 <div *ngFor="let keyResult of getKeyResultsForObjective(objective)"
                      class="bg-white rounded-lg border border-gray-200 p-4">
 
