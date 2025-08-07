@@ -238,6 +238,46 @@ export function initStrategicGoal(): StrategicGoal {
   };
 }
 
+export function initObjective(): Objective {
+  return {
+    company_id: '',
+    title: '',
+    description: '',
+    category: 'growth',
+    priority: 'medium',
+    timeline: '6_months',
+    target_date: new Date().toISOString().split('T')[0],
+    current_status: 'not_started',
+    progress_percentage: 0,
+    success_criteria: [],
+    expected_outcome: '',
+    responsible_person: '',
+    created_date: new Date().toISOString().split('T')[0],
+    mentor_notes: '',
+  };
+}
+
+export function initObjectiveTask(): ObjectiveTask {
+  return {
+    company_id: '',
+    objective_id: '',
+    title: '',
+    description: '',
+    assigned_to: '',
+    due_date: new Date().toISOString().split('T')[0],
+    priority: 'medium',
+    status: 'todo',
+    progress_percentage: 0,
+    estimated_hours: 0,
+    actual_hours: 0,
+    dependencies: [],
+    tags: [],
+    created_date: new Date().toISOString().split('T')[0],
+    completed_date: '',
+    notes: '',
+  };
+}
+
 // Utility function to calculate quarter from month
 export function calculateQuarter(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
   if (month >= 1 && month <= 3) return 'Q1';
@@ -311,4 +351,42 @@ export interface StrategicGoal {
   budget_required?: number;
   expected_outcome: string;
   mentor_notes?: string;
+}
+
+// 🎯 Objective - High-level business objective (OKR style)
+export interface Objective {
+  company_id: string;
+  title: string;
+  description: string;
+  category: 'growth' | 'financial' | 'operational' | 'market' | 'product' | 'team';
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  timeline: '3_months' | '6_months' | '1_year' | '2_years' | '5_years';
+  target_date: string;
+  current_status: 'not_started' | 'in_progress' | 'on_track' | 'at_risk' | 'completed' | 'cancelled';
+  progress_percentage: number;
+  success_criteria: string[];
+  expected_outcome: string;
+  responsible_person?: string;
+  created_date: string;
+  mentor_notes?: string;
+}
+
+// 📋 Objective Task - Specific tasks under an objective
+export interface ObjectiveTask {
+  company_id: string;
+  objective_id: string; // Links to the parent objective
+  title: string;
+  description?: string;
+  assigned_to?: string;
+  due_date: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'todo' | 'in_progress' | 'completed' | 'cancelled';
+  progress_percentage: number;
+  estimated_hours?: number;
+  actual_hours?: number;
+  dependencies: string[];
+  tags: string[];
+  created_date: string;
+  completed_date?: string;
+  notes?: string;
 }

@@ -3,31 +3,33 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, CompanyVision, ProductService, StrategicGoal, initCompanyVision, initProductService, initStrategicGoal } from '../../../../../models/business.models';
+import { Company, CompanyVision, ProductService, StrategicGoal, Objective, ObjectiveTask, initCompanyVision, initProductService, initStrategicGoal, initObjective, initObjectiveTask } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
 // Import our new sub-components
 import { StrategyProgressOverviewComponent } from './components/strategy-progress-overview.component';
 import { VisionMissionSectionComponent } from './components/vision-mission-section.component';
 import { ProductsServicesSectionComponent } from './components/products-services-section.component';
-import { StrategicGoalsSectionComponent } from './components/strategic-goals-section.component';
+import { ObjectivesSectionComponent } from './components/objectives-section.component';
 import { VisionModalComponent } from './components/vision-modal.component';
 import { ProductServiceModalComponent } from './components/product-service-modal.component';
-import { StrategicGoalModalComponent } from './components/strategic-goal-modal.component';
+import { ObjectiveModalComponent } from './components/objective-modal.component';
+import { ObjectiveTaskModalComponent } from './components/objective-task-modal.component';
 
 @Component({
   selector: 'app-strategy-tab',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     StrategyProgressOverviewComponent,
     VisionMissionSectionComponent,
     ProductsServicesSectionComponent,
-    StrategicGoalsSectionComponent,
+    ObjectivesSectionComponent,
     VisionModalComponent,
     ProductServiceModalComponent,
-    StrategicGoalModalComponent
+    ObjectiveModalComponent,
+    ObjectiveTaskModalComponent
   ],
   template: `
     <div class="space-y-8">
@@ -62,7 +64,7 @@ import { StrategicGoalModalComponent } from './components/strategic-goal-modal.c
         <div class="bg-purple-50 p-4 rounded-lg shadow-sm border border-purple-200">
           <div class="flex items-center justify-between">
             <div>
-              <div class="text-xl font-bold text-purple-600">{{ strategicGoals.length }}</div>
+              <div class="text-xl font-bold text-purple-600">{{ objectives.length }}</div>
               <div class="text-xs text-purple-700">Strategic Goals</div>
             </div>
             <i class="fas fa-target text-purple-500 text-lg"></i>
@@ -163,104 +165,18 @@ import { StrategicGoalModalComponent } from './components/strategic-goal-modal.c
         (deleteProduct)="deleteProduct($event)"
       ></app-products-services-section>
 
-      <!-- Strategic Goals Section -->
-      <div class="bg-white rounded-lg shadow-sm border">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-              <i class="fas fa-target mr-2 text-purple-600"></i>
-              Strategic Goals
-            </h3>
-            <p class="text-sm text-gray-600">Define long-term objectives and track progress</p>
-          </div>
-          <button
-            (click)="openGoalModal()"
-            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          >
-            <i class="fas fa-plus"></i>
-            <span>Add Strategic Goal</span>
-          </button>
-        </div>
-
-        <div class="p-6">
-          <div *ngIf="strategicGoals.length === 0" class="text-center text-gray-500 py-8">
-            <i class="fas fa-target text-4xl mb-4"></i>
-            <h4 class="text-lg font-medium mb-2">No Strategic Goals Yet</h4>
-            <p class="mb-4">Set long-term objectives to guide your company's direction.</p>
-            <button
-              (click)="openGoalModal()"
-              class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
-            >
-              Add First Strategic Goal
-            </button>
-          </div>
-
-          <div *ngIf="strategicGoals.length > 0" class="space-y-4">
-            <div *ngFor="let goal of strategicGoals" class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div class="flex justify-between items-start mb-3">
-                <div class="flex-1">
-                  <h4 class="text-lg font-medium text-gray-900 flex items-center">
-                    {{ goal.data.title }}
-                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [ngClass]="getPriorityClass(goal.data.priority)">
-                      {{ goal.data.priority | titlecase }}
-                    </span>
-                  </h4>
-                  <p class="text-sm text-gray-600 mt-1">{{ goal.data.description }}</p>
-                </div>
-                <div class="flex space-x-2 ml-4">
-                  <button (click)="editGoal(goal)" class="text-blue-600 hover:text-blue-700" title="Edit">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button (click)="deleteGoal(goal)" class="text-red-600 hover:text-red-700" title="Delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <span class="text-xs font-medium text-gray-500">Category</span>
-                  <p class="text-sm text-gray-900">{{ goal.data.category | titlecase }}</p>
-                </div>
-                <div>
-                  <span class="text-xs font-medium text-gray-500">Timeline</span>
-                  <p class="text-sm text-gray-900">{{ getTimelineDisplay(goal.data.timeline) }}</p>
-                </div>
-                <div>
-                  <span class="text-xs font-medium text-gray-500">Target Date</span>
-                  <p class="text-sm text-gray-900">{{ goal.data.target_date | date:'MMM d, y' }}</p>
-                </div>
-              </div>
-
-              <!-- Progress Bar -->
-              <div class="mb-4">
-                <div class="flex justify-between items-center mb-1">
-                  <span class="text-xs font-medium text-gray-500">Progress</span>
-                  <span class="text-xs text-gray-500">{{ goal.data.progress_percentage }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    class="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                    [style.width.%]="goal.data.progress_percentage"
-                  ></div>
-                </div>
-              </div>
-
-              <!-- Status -->
-              <div class="flex items-center justify-between">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      [ngClass]="getGoalStatusClass(goal.data.current_status)">
-                  {{ getGoalStatusDisplay(goal.data.current_status) }}
-                </span>
-                <span *ngIf="goal.data.mentor_notes" class="text-xs text-blue-600 italic">
-                  💬 Has mentor notes
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- Objectives Section -->
+      <app-objectives-section
+        [objectives]="objectives"
+        [objectiveTasks]="objectiveTasks"
+        (addObjective)="openObjectiveModal()"
+        (editObjective)="editObjective($event)"
+        (deleteObjective)="deleteObjective($event)"
+        (addTask)="openTaskModalForObjective($event)"
+        (editTask)="editTask($event)"
+        (deleteTask)="deleteTask($event)"
+        (updateTaskStatus)="updateTaskStatus($event)"
+      ></app-objectives-section>
 
       <!-- Vision Modal -->
       <div *ngIf="showVisionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -402,8 +318,22 @@ import { StrategicGoalModalComponent } from './components/strategic-goal-modal.c
         (save)="saveProduct($event)"
       ></app-product-service-modal>
 
-      <!-- Strategic Goal Modal -->
-      <!-- Implementation will be added in subsequent parts -->
+      <!-- Objective Modal -->
+      <app-objective-modal
+        [isOpen]="showObjectiveModal"
+        [objectiveData]="selectedObjective"
+        (close)="closeObjectiveModal()"
+        (save)="saveObjective($event)"
+      ></app-objective-modal>
+
+      <!-- Objective Task Modal -->
+      <app-objective-task-modal
+        [isOpen]="showTaskModal"
+        [taskData]="selectedTask"
+        [objectiveId]="selectedObjectiveId"
+        (close)="closeTaskModal()"
+        (save)="saveTask($event)"
+      ></app-objective-task-modal>
     </div>
   `
 })
@@ -415,7 +345,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   // Data arrays
   visionData: INode<CompanyVision> | null = null;
   productsServices: INode<ProductService>[] = [];
-  strategicGoals: INode<StrategicGoal>[] = [];
+  objectives: INode<Objective>[] = [];
+  objectiveTasks: INode<ObjectiveTask>[] = [];
 
   // Loading states
   loading = false;
@@ -424,13 +355,16 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   // Modal states
   showVisionModal = false;
   showProductModal = false;
-  showGoalModal = false;
+  showObjectiveModal = false;
+  showTaskModal = false;
 
   // Edit states
   editingVision: INode<CompanyVision> | null = null;
   editingProduct: INode<ProductService> | null = null;
-  editingGoal: INode<StrategicGoal> | null = null;
   selectedProduct: INode<ProductService> | null = null;
+  selectedObjective: INode<Objective> | null = null;
+  selectedTask: INode<ObjectiveTask> | null = null;
+  selectedObjectiveId: string | null = null;
 
   // Form data
   visionFormData: CompanyVision = initCompanyVision();
@@ -481,16 +415,26 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         error: (error: any) => console.error('Error loading products:', error)
       });
 
-    // Load strategic goals
-    this.nodeService.getNodesByCompany(this.company.id, 'strategic_goal')
+    // Load objectives
+    this.nodeService.getNodesByCompany(this.company.id, 'objective')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (goals) => {
-          this.strategicGoals = goals as INode<StrategicGoal>[];
+        next: (objectives) => {
+          this.objectives = objectives as INode<Objective>[];
+        },
+        error: (error: any) => console.error('Error loading objectives:', error)
+      });
+
+    // Load objective tasks
+    this.nodeService.getNodesByCompany(this.company.id, 'objective_task')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (tasks) => {
+          this.objectiveTasks = tasks as INode<ObjectiveTask>[];
           this.loading = false;
         },
         error: (error: any) => {
-          console.error('Error loading goals:', error);
+          console.error('Error loading objective tasks:', error);
           this.loading = false;
         }
       });
@@ -620,31 +564,171 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Strategic Goal methods
-  openGoalModal() {
-    this.goalFormData = initStrategicGoal();
-    this.goalFormData.company_id = this.company?.id?.toString() || '';
-    this.editingGoal = null;
-    this.showGoalModal = true;
+  // Objective methods
+  openObjectiveModal() {
+    this.selectedObjective = null;
+    this.showObjectiveModal = true;
   }
 
-  editGoal(goal: INode<StrategicGoal>) {
-    this.goalFormData = { ...goal.data };
-    this.editingGoal = goal;
-    this.showGoalModal = true;
+  editObjective(objective: INode<Objective>) {
+    this.selectedObjective = objective;
+    this.showObjectiveModal = true;
   }
 
-  deleteGoal(goal: INode<StrategicGoal>) {
-    if (!goal.id) return;
+  deleteObjective(objective: INode<Objective>) {
+    if (!objective.id) return;
 
-    if (confirm('Are you sure you want to delete this strategic goal?')) {
-      this.nodeService.deleteNode(goal.id)
+    if (confirm('Are you sure you want to delete this objective?')) {
+      this.nodeService.deleteNode(objective.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => this.loadStrategyData(),
-          error: (error: any) => console.error('Error deleting goal:', error)
+          error: (error: any) => console.error('Error deleting objective:', error)
         });
     }
+  }
+
+  closeObjectiveModal() {
+    this.showObjectiveModal = false;
+    this.selectedObjective = null;
+  }
+
+  saveObjective(objectiveData: Objective) {
+    this.saving = true;
+    const isEditing = !!this.selectedObjective;
+
+    if (isEditing && this.selectedObjective) {
+      // Update existing objective
+      this.nodeService.updateNode({ ...this.selectedObjective, data: objectiveData })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeObjectiveModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error updating objective:', error);
+            this.saving = false;
+          }
+        });
+    } else {
+      // Create new objective
+      this.nodeService.addNode({
+        company_id: this.company?.id || 0,
+        type: 'objective',
+        data: objectiveData
+      } as INode<Objective>)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeObjectiveModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error creating objective:', error);
+            this.saving = false;
+          }
+        });
+    }
+  }
+
+  // Objective Task methods
+  openTaskModalForObjective(objective: INode<Objective>) {
+    this.openTaskModal(String(objective.id || ''));
+  }
+
+  openTaskModal(objectiveId: string) {
+    this.selectedTask = null;
+    this.selectedObjectiveId = objectiveId;
+    this.showTaskModal = true;
+  }
+
+  editTask(task: INode<ObjectiveTask>) {
+    this.selectedTask = task;
+    this.selectedObjectiveId = task.data.objective_id;
+    this.showTaskModal = true;
+  }
+
+  deleteTask(task: INode<ObjectiveTask>) {
+    if (!task.id) return;
+
+    if (confirm('Are you sure you want to delete this task?')) {
+      this.nodeService.deleteNode(task.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => this.loadStrategyData(),
+          error: (error: any) => console.error('Error deleting task:', error)
+        });
+    }
+  }
+
+  closeTaskModal() {
+    this.showTaskModal = false;
+    this.selectedTask = null;
+    this.selectedObjectiveId = null;
+  }
+
+  saveTask(taskData: ObjectiveTask) {
+    this.saving = true;
+    const isEditing = !!this.selectedTask;
+
+    if (isEditing && this.selectedTask) {
+      // Update existing task
+      this.nodeService.updateNode({ ...this.selectedTask, data: taskData })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeTaskModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error updating task:', error);
+            this.saving = false;
+          }
+        });
+    } else {
+      // Create new task
+      taskData.objective_id = this.selectedObjectiveId || '';
+      this.nodeService.addNode({
+        company_id: this.company?.id || 0,
+        type: 'objective_task',
+        data: taskData
+      } as INode<ObjectiveTask>)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeTaskModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error creating task:', error);
+            this.saving = false;
+          }
+        });
+    }
+  }
+
+  updateTaskStatus(event: {task: INode<ObjectiveTask>, status: string}) {
+    const { task, status } = event;
+    const newProgress = status === 'completed' ? 100 : task.data.progress_percentage;
+
+    const updatedTaskData: ObjectiveTask = {
+      ...task.data,
+      status: status as any,
+      progress_percentage: newProgress,
+      completed_date: status === 'completed' ? new Date().toISOString() : ''
+    };
+
+    this.nodeService.updateNode({ ...task, data: updatedTaskData })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.loadStrategyData(),
+        error: (error: any) => console.error('Error updating task status:', error)
+      });
   }
 
   // Utility methods
@@ -660,45 +744,6 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   }
 
   getStatusDisplay(status: string): string {
-    return status.replace('_', ' ').split(' ').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  }
-
-  getPriorityClass(priority: string): string {
-    switch (priority) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  getTimelineDisplay(timeline: string): string {
-    switch (timeline) {
-      case '3_months': return '3 Months';
-      case '6_months': return '6 Months';
-      case '1_year': return '1 Year';
-      case '2_years': return '2 Years';
-      case '5_years': return '5 Years';
-      default: return timeline;
-    }
-  }
-
-  getGoalStatusClass(status: string): string {
-    switch (status) {
-      case 'not_started': return 'bg-gray-100 text-gray-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'on_track': return 'bg-green-100 text-green-800';
-      case 'at_risk': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  getGoalStatusDisplay(status: string): string {
     return status.replace('_', ' ').split(' ').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
