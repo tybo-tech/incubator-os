@@ -15,6 +15,7 @@ import { ProductServiceModalComponent } from './components/product-service-modal
 import { ObjectiveModalComponent } from './components/objective-modal.component';
 import { ObjectiveTaskModalComponent } from './components/objective-task-modal.component';
 import { KeyResultModalComponent } from './components/key-result-modal.component';
+import { KeyResultProgressModalComponent } from './components/key-result-progress-modal.component';
 
 @Component({
   selector: 'app-strategy-tab',
@@ -29,7 +30,8 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
     ProductServiceModalComponent,
     ObjectiveModalComponent,
     ObjectiveTaskModalComponent,
-    KeyResultModalComponent
+    KeyResultModalComponent,
+    KeyResultProgressModalComponent
   ],
   template: `
     <div class="space-y-16">
@@ -97,10 +99,12 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
         (addKeyResult)="openKeyResultModal($event)"
         (editKeyResult)="editKeyResult($event)"
         (deleteKeyResult)="deleteKeyResult($event)"
+        (updateProgress)="openProgressModal($event)"
         (addTask)="openTaskModalForKeyResult($event)"
         (editTask)="editTask($event)"
         (deleteTask)="deleteTask($event)"
         (toggleTaskStatus)="toggleTaskStatus($event)"
+        (taskStatusChange)="onTaskStatusChange($event)"
       ></app-okr-section>
 
       <!-- Vision Modal -->
@@ -144,6 +148,14 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
         (close)="closeTaskModal()"
         (save)="saveTask($event)"
       ></app-objective-task-modal>
+
+      <!-- Key Result Progress Modal -->
+      <app-key-result-progress-modal
+        [isOpen]="showProgressModal"
+        [keyResultData]="selectedKeyResultForProgress"
+        (close)="closeProgressModal()"
+        (save)="saveProgress($event)"
+      ></app-key-result-progress-modal>
     </div>
   `
 })
@@ -169,6 +181,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   showObjectiveModal = false;
   showTaskModal = false;
   showKeyResultModal = false;
+  showProgressModal = false;
 
   // Edit states
   editingVision: INode<CompanyVision> | null = null;
@@ -177,6 +190,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   selectedObjective: INode<Objective> | null = null;
   selectedTask: INode<OKRTask> | null = null;
   selectedKeyResult: INode<KeyResult> | null = null;
+  selectedKeyResultForProgress: INode<KeyResult> | null = null;
   selectedObjectiveId: string | null = null;
 
   // Form data
@@ -620,9 +634,125 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     this.nodeService.updateNode({ ...task, data: updatedTaskData })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.loadStrategyData(),
+        next: () => {
+          this.loadStrategyData();
+          // Auto-update key result progress when task status changes
+          this.updateKeyResultProgressFromTasks(task.data.key_result_id);
+        },
         error: (error: any) => console.error('Error updating task status:', error)
       });
+  }
+
+  onTaskStatusChange(event: {task: INode<OKRTask>, status: string}) {
+    this.updateTaskStatus(event);
+  }
+
+  // Progress Modal methods
+  openProgressModal(keyResult: INode<KeyResult>) {
+    this.selectedKeyResultForProgress = keyResult;
+    this.showProgressModal = true;
+  }
+
+  closeProgressModal() {
+    this.selectedKeyResultForProgress = null;
+    this.showProgressModal = false;
+  }
+
+  saveProgress(progressData: Partial<KeyResult>) {
+    if (!this.selectedKeyResultForProgress) return;
+
+    this.saving = true;
+    const updatedKeyResult = {
+      ...this.selectedKeyResultForProgress,
+      data: { ...this.selectedKeyResultForProgress.data, ...progressData }
+    };
+
+    this.nodeService.updateNode(updatedKeyResult)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.closeProgressModal();
+          this.loadStrategyData();
+          // Auto-update objective progress based on key results
+          this.updateObjectiveProgress();
+        },
+        error: (error: any) => {
+          console.error('Error updating key result progress:', error);
+          this.saving = false;
+        }
+      });
+  }
+
+  // Auto-update key result progress based on task completion
+  updateKeyResultProgressFromTasks(keyResultId: string) {
+    const tasks = this.objectiveTasks.filter(task => task.data.key_result_id === keyResultId);
+    if (tasks.length === 0) return;
+
+    const completedTasks = tasks.filter(task => task.data.status === 'completed').length;
+    const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
+
+    // Find the key result
+    const keyResult = this.keyResults.find(kr => kr.id === Number(keyResultId));
+    if (keyResult) {
+      // Update current value based on task completion percentage
+      const newCurrentValue = Math.round((progressPercentage / 100) * keyResult.data.target_value);
+
+      const updatedKeyResultData: KeyResult = {
+        ...keyResult.data,
+        current_value: newCurrentValue,
+        progress_percentage: progressPercentage
+      };
+
+      this.nodeService.updateNode({ ...keyResult, data: updatedKeyResultData })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            // Refresh data and update objective progress
+            this.loadStrategyData();
+            this.updateObjectiveProgress();
+          },
+          error: (error: any) => console.error('Error auto-updating key result progress:', error)
+        });
+    }
+  }
+
+  // Auto-calculate objective progress based on key results
+  updateObjectiveProgress() {
+    this.objectives.forEach(objective => {
+      const keyResults = this.keyResults.filter(kr => kr.data.objective_id === String(objective.id));
+      if (keyResults.length > 0) {
+        const totalProgress = keyResults.reduce((sum, kr) => sum + kr.data.progress_percentage, 0);
+        const averageProgress = Math.round(totalProgress / keyResults.length);
+
+        // Update objective status based on progress
+        let newStatus = objective.data.current_status;
+        if (averageProgress >= 100) {
+          newStatus = 'completed';
+        } else if (averageProgress >= 70) {
+          newStatus = 'on_track';
+        } else if (averageProgress >= 30) {
+          newStatus = 'in_progress';
+        } else if (averageProgress > 0) {
+          newStatus = 'in_progress';
+        }
+
+        // Update objective if status changed
+        if (newStatus !== objective.data.current_status) {
+          const updatedObjective = {
+            ...objective,
+            data: { ...objective.data, current_status: newStatus }
+          };
+
+          this.nodeService.updateNode(updatedObjective)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => console.log('Objective status updated to:', newStatus),
+              error: (error: any) => console.error('Error updating objective status:', error)
+            });
+        }
+      }
+    });
   }
 
   // Utility methods
