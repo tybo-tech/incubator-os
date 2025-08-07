@@ -191,6 +191,23 @@ export function initOKRTask(): OKRTask {
   };
 }
 
+export function initObjectiveTask(): ObjectiveTask {
+  return {
+    company_id: '',
+    objective_id: '',
+    title: '',
+    description: '',
+    assigned_to: '',
+    due_date: new Date().toISOString().split('T')[0],
+    priority: 'medium',
+    status: 'not_started',
+    progress_percentage: 0,
+    created_date: new Date().toISOString().split('T')[0],
+    completed_date: '',
+    notes: '',
+  };
+}
+
 export function initGrowthArea(): GrowthArea {
   return {
     company_id: '',
@@ -422,6 +439,22 @@ export interface OKRTask {
   dependencies?: string[];
   tags?: string[];
   impact_weight?: number; // How much this task contributes to KR completion (1-10)
+  created_date: string;
+  completed_date?: string;
+  notes?: string;
+}
+
+// 📋 ObjectiveTask - Simple tasks directly linked to objectives (alternative to full OKR structure)
+export interface ObjectiveTask {
+  company_id: string;
+  objective_id: string; // Links to the parent objective
+  title: string;
+  description?: string;
+  assigned_to?: string;
+  due_date: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  progress_percentage: number;
   created_date: string;
   completed_date?: string;
   notes?: string;

@@ -8,7 +8,7 @@ import { Objective, ObjectiveTask } from '../../../../../../models/business.mode
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="bg-white rounded-lg shadow-sm border">
+    <div class="bg-white rounded-lg shadow-sm border mb-6">
       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <div>
           <h3 class="text-lg font-semibold text-gray-900 flex items-center">
@@ -63,12 +63,12 @@ import { Objective, ObjectiveTask } from '../../../../../../models/business.mode
                     <div class="flex-1">
                       <div class="flex justify-between text-xs text-gray-500 mb-1">
                         <span>Progress</span>
-                        <span>{{ objective.data.progress_percentage }}%</span>
+                        <span>{{ getObjectiveProgress(objective) }}%</span>
                       </div>
                       <div class="w-full bg-gray-200 rounded-full h-2">
                         <div
                           class="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                          [style.width.%]="objective.data.progress_percentage"
+                          [style.width.%]="getObjectiveProgress(objective)"
                         ></div>
                       </div>
                     </div>
@@ -115,7 +115,7 @@ import { Objective, ObjectiveTask } from '../../../../../../models/business.mode
                     <div class="flex-shrink-0">
                       <i class="fas"
                          [ngClass]="{
-                           'fa-circle text-gray-400': task.data.status === 'todo',
+                           'fa-circle text-gray-400': task.data.status === 'not_started',
                            'fa-play-circle text-blue-500': task.data.status === 'in_progress',
                            'fa-check-circle text-green-500': task.data.status === 'completed',
                            'fa-times-circle text-red-500': task.data.status === 'cancelled'
@@ -149,7 +149,7 @@ import { Objective, ObjectiveTask } from '../../../../../../models/business.mode
                   <div class="flex items-center space-x-2 ml-4">
                     <!-- Quick Status Toggle -->
                     <button
-                      *ngIf="task.data.status === 'todo'"
+                      *ngIf="task.data.status === 'not_started'"
                       (click)="updateTaskStatus.emit({task: task, status: 'in_progress'})"
                       class="text-blue-600 hover:text-blue-700 p-1"
                       title="Start Task"
@@ -230,6 +230,14 @@ export class ObjectivesSectionComponent {
 
   getCompletedTasksCount(objectiveId: number): number {
     return this.getObjectiveTasks(objectiveId).filter(task => task.data.status === 'completed').length;
+  }
+
+  getObjectiveProgress(objective: INode<Objective>): number {
+    const tasks = this.getObjectiveTasks(objective.id!);
+    if (tasks.length === 0) return 0;
+
+    const totalProgress = tasks.reduce((sum, task) => sum + task.data.progress_percentage, 0);
+    return Math.round(totalProgress / tasks.length);
   }
 
   getPriorityClass(priority: string): string {
