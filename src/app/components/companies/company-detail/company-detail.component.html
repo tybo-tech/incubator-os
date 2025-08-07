@@ -69,5 +69,17 @@
       *ngIf="activeTab === 'growth'"
       [company]="company">
     </app-growth-areas-tab>
+
+    <!-- Financial Targets Tab -->
+    <app-financial-targets-tab
+      *ngIf="activeTab === 'financial-targets'"
+      [company]="company">
+    </app-financial-targets-tab>
+
+    <!-- HR Tracking Tab -->
+    <app-hr-tracking-tab
+      *ngIf="activeTab === 'hr-tracking'"
+      [company]="company">
+    </app-hr-tracking-tab>
   </div>
 </div>

@@ -315,6 +315,45 @@ export function initKeyResult(): KeyResult {
   };
 }
 
+export function initFinancialTarget(): FinancialTarget {
+  const currentYear = new Date().getFullYear();
+  return {
+    company_id: '',
+    year: currentYear,
+    quarter: undefined,
+    target_turnover: 0,
+    target_net_profit: 0,
+    gp_margin_target: 0,
+    target_description: '',
+    milestone_notes: '',
+    created_date: new Date().toISOString().split('T')[0],
+    last_updated: new Date().toISOString().split('T')[0],
+    mentor_notes: '',
+  };
+}
+
+export function initHRSnapshot(): HRSnapshot {
+  const currentDate = new Date();
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+  return {
+    company_id: '',
+    year: currentDate.getFullYear(),
+    month: monthNames[currentDate.getMonth()] as any,
+    permanent_employees: 0,
+    temporary_employees: 0,
+    interns_volunteers: 0,
+    total_employees: 0,
+    payroll_cost: 0,
+    key_hires: '',
+    departures: '',
+    growth_notes: '',
+    recorded_date: new Date().toISOString().split('T')[0],
+    mentor_notes: '',
+  };
+}
+
 // Utility function to calculate quarter from month
 export function calculateQuarter(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
   if (month >= 1 && month <= 3) return 'Q1';
@@ -460,4 +499,37 @@ export interface ObjectiveTask {
   created_date: string;
   completed_date?: string;
   notes?: string;
+}
+
+// 💰 Financial Target - Revenue and profitability goals per period
+export interface FinancialTarget {
+  company_id: string;
+  year: number;
+  quarter?: 'Q1' | 'Q2' | 'Q3' | 'Q4'; // Optional for quarterly targets
+  target_turnover: number; // Target revenue/turnover
+  target_net_profit: number; // Target net profit
+  gp_margin_target: number; // Gross profit margin target (percentage)
+  target_description?: string; // Strategy or notes behind the numbers
+  milestone_notes?: string; // Key milestones to achieve these targets
+  created_date: string;
+  last_updated: string;
+  mentor_notes?: string;
+}
+
+// 👥 HR Snapshot - Team size and structure tracking over time
+export interface HRSnapshot {
+  company_id: string;
+  year: number;
+  month: 'January' | 'February' | 'March' | 'April' | 'May' | 'June' |
+         'July' | 'August' | 'September' | 'October' | 'November' | 'December';
+  permanent_employees: number;
+  temporary_employees: number;
+  interns_volunteers: number;
+  total_employees: number; // Auto-calculated
+  payroll_cost?: number; // Optional: total monthly payroll
+  key_hires?: string; // Notable hires this month
+  departures?: string; // Notable departures this month
+  growth_notes?: string; // HR growth strategy or notes
+  recorded_date: string;
+  mentor_notes?: string;
 }
