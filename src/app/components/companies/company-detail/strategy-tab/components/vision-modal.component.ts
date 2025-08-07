@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
@@ -203,7 +203,7 @@ import { CompanyVision, initCompanyVision } from '../../../../../../models/busin
     </div>
   `
 })
-export class VisionModalComponent implements OnInit {
+export class VisionModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() visionData: INode<CompanyVision> | null = null;
   @Output() close = new EventEmitter<void>();
@@ -212,8 +212,25 @@ export class VisionModalComponent implements OnInit {
   formData: CompanyVision = initCompanyVision();
 
   ngOnInit() {
+    this.initializeFormData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['visionData']) {
+      this.initializeFormData();
+    }
+  }
+
+  private initializeFormData() {
     if (this.visionData) {
       this.formData = { ...this.visionData.data };
+      // Ensure arrays are properly initialized
+      if (!this.formData.core_values) {
+        this.formData.core_values = [];
+      }
+      if (!this.formData.success_metrics) {
+        this.formData.success_metrics = [];
+      }
     } else {
       this.formData = initCompanyVision();
     }
