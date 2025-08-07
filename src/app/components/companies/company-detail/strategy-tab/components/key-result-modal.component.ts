@@ -262,14 +262,14 @@ export class KeyResultModalComponent implements OnInit {
     if (!this.formData.title || !this.formData.target_value) {
       return;
     }
-    
+
     // Calculate progress percentage
-    const progress = Math.min(100, Math.max(0, 
-      ((this.formData.current_value - this.formData.baseline_value) / 
+    const progress = Math.min(100, Math.max(0,
+      ((this.formData.current_value - this.formData.baseline_value) /
        (this.formData.target_value - this.formData.baseline_value)) * 100
     ));
     this.formData.progress_percentage = Math.round(progress) || 0;
-    
+
     this.save.emit(this.formData);
   }
 }

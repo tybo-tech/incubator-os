@@ -7,6 +7,8 @@ import { Company, CompanyVision, ProductService, StrategicGoal, Objective, KeyRe
 import { NodeService } from '../../../../../services';
 
 // Import our new sub-components
+import { VisionMissionSectionComponent } from './components/vision-mission-section.component';
+import { VisionModalComponent } from './components/vision-modal.component';
 import { ProductsServicesSectionComponent } from './components/products-services-section.component';
 import { OKRSectionComponent } from './components/okr-section.component';
 import { ProductServiceModalComponent } from './components/product-service-modal.component';
@@ -20,6 +22,8 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
   imports: [
     CommonModule,
     FormsModule,
+    VisionMissionSectionComponent,
+    VisionModalComponent,
     ProductsServicesSectionComponent,
     OKRSectionComponent,
     ProductServiceModalComponent,
@@ -69,89 +73,10 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
       </div>
 
       <!-- Vision & Mission Section -->
-      <div class="bg-white rounded-lg shadow-sm border">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-              <i class="fas fa-eye mr-2 text-blue-600"></i>
-              Vision & Mission
-            </h3>
-            <p class="text-sm text-gray-600">Define your company's purpose and direction</p>
-          </div>
-          <button
-            (click)="editVision()"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          >
-            <i class="fas fa-edit"></i>
-            <span>{{ visionData ? 'Edit' : 'Create' }} Vision</span>
-          </button>
-        </div>
-
-        <div class="p-6">
-          <div *ngIf="!visionData" class="text-center text-gray-500 py-8">
-            <i class="fas fa-eye text-4xl mb-4"></i>
-            <h4 class="text-lg font-medium mb-2">No Vision Statement Yet</h4>
-            <p class="mb-4">Start by defining your company's vision, mission, and core values.</p>
-            <button
-              (click)="editVision()"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Create Vision Statement
-            </button>
-          </div>
-
-          <div *ngIf="visionData" class="space-y-6">
-            <!-- Vision Statement -->
-            <div>
-              <h4 class="text-md font-semibold text-gray-900 mb-2">Vision Statement</h4>
-              <p class="text-gray-700 bg-blue-50 p-4 rounded-lg">{{ visionData.data.vision_statement }}</p>
-            </div>
-
-            <!-- Mission Statement -->
-            <div>
-              <h4 class="text-md font-semibold text-gray-900 mb-2">Mission Statement</h4>
-              <p class="text-gray-700 bg-green-50 p-4 rounded-lg">{{ visionData.data.mission_statement }}</p>
-            </div>
-
-            <!-- Core Values -->
-            <div>
-              <h4 class="text-md font-semibold text-gray-900 mb-2">Core Values</h4>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  *ngFor="let value of visionData.data.core_values"
-                  class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
-                >
-                  {{ value }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Value Proposition -->
-            <div>
-              <h4 class="text-md font-semibold text-gray-900 mb-2">Value Proposition</h4>
-              <p class="text-gray-700 bg-yellow-50 p-4 rounded-lg">{{ visionData.data.value_proposition }}</p>
-            </div>
-
-            <!-- Additional Details -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 class="text-md font-semibold text-gray-900 mb-2">Target Market</h4>
-                <p class="text-gray-700">{{ visionData.data.target_market }}</p>
-              </div>
-              <div>
-                <h4 class="text-md font-semibold text-gray-900 mb-2">Competitive Advantage</h4>
-                <p class="text-gray-700">{{ visionData.data.competitive_advantage }}</p>
-              </div>
-            </div>
-
-            <!-- Mentor Notes -->
-            <div *ngIf="visionData.data.mentor_notes">
-              <h4 class="text-md font-semibold text-gray-900 mb-2">Mentor Notes</h4>
-              <p class="text-blue-600 italic bg-blue-50 p-4 rounded-lg">💬 {{ visionData.data.mentor_notes }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <app-vision-mission-section
+        [visionData]="visionData"
+        (editVision)="editVision()"
+      ></app-vision-mission-section>
 
       <!-- Products & Services Section -->
       <app-products-services-section
@@ -179,136 +104,12 @@ import { KeyResultModalComponent } from './components/key-result-modal.component
       ></app-okr-section>
 
       <!-- Vision Modal -->
-      <div *ngIf="showVisionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-semibold text-gray-900">
-              {{ editingVision ? 'Edit' : 'Create' }} Vision & Mission
-            </h3>
-            <button (click)="closeVisionModal()" class="text-gray-400 hover:text-gray-600">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-
-          <form (ngSubmit)="saveVision()" #visionForm="ngForm">
-            <div class="space-y-6">
-              <!-- Vision Statement -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Vision Statement *</label>
-                <textarea
-                  [(ngModel)]="visionFormData.vision_statement"
-                  name="vision_statement"
-                  required
-                  rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Where do you see your company in 5-10 years?"
-                ></textarea>
-              </div>
-
-              <!-- Mission Statement -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mission Statement *</label>
-                <textarea
-                  [(ngModel)]="visionFormData.mission_statement"
-                  name="mission_statement"
-                  required
-                  rows="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="What is your company's purpose and how do you serve your customers?"
-                ></textarea>
-              </div>
-
-              <!-- Core Values -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Core Values</label>
-                <div class="space-y-2">
-                  <div *ngFor="let value of visionFormData.core_values; let i = index" class="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      [(ngModel)]="visionFormData.core_values[i]"
-                      [name]="'core_value_' + i"
-                      class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter a core value"
-                    >
-                    <button type="button" (click)="removeValue(i)" class="text-red-600 hover:text-red-700">
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </div>
-                  <button type="button" (click)="addValue()" class="text-blue-600 hover:text-blue-700 text-sm">
-                    <i class="fas fa-plus mr-1"></i> Add Value
-                  </button>
-                </div>
-              </div>
-
-              <!-- Value Proposition -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Value Proposition *</label>
-                <textarea
-                  [(ngModel)]="visionFormData.value_proposition"
-                  name="value_proposition"
-                  required
-                  rows="2"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="What unique value do you provide to your customers?"
-                ></textarea>
-              </div>
-
-              <!-- Target Market & Competitive Advantage -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Target Market</label>
-                  <textarea
-                    [(ngModel)]="visionFormData.target_market"
-                    name="target_market"
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Who are your ideal customers?"
-                  ></textarea>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Competitive Advantage</label>
-                  <textarea
-                    [(ngModel)]="visionFormData.competitive_advantage"
-                    name="competitive_advantage"
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="What sets you apart from competitors?"
-                  ></textarea>
-                </div>
-              </div>
-
-              <!-- Mentor Notes -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Mentor Notes (Optional)</label>
-                <textarea
-                  [(ngModel)]="visionFormData.mentor_notes"
-                  name="mentor_notes"
-                  rows="2"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Additional insights or recommendations..."
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                (click)="closeVisionModal()"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                [disabled]="!visionForm.form.valid || saving"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {{ saving ? 'Saving...' : (editingVision ? 'Update' : 'Save') }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <app-vision-modal
+        [isOpen]="showVisionModal"
+        [visionData]="editingVision"
+        (close)="closeVisionModal()"
+        (save)="saveVision($event)"
+      ></app-vision-modal>
 
       <!-- Product/Service Modal -->
       <app-product-service-modal
@@ -379,7 +180,6 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   selectedObjectiveId: string | null = null;
 
   // Form data
-  visionFormData: CompanyVision = initCompanyVision();
   productFormData: ProductService = initProductService();
   goalFormData: StrategicGoal = initStrategicGoal();
 
@@ -464,8 +264,6 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
   // Vision methods
   editVision() {
-    this.visionFormData = this.visionData ? { ...this.visionData.data } : initCompanyVision();
-    this.visionFormData.company_id = this.company?.id?.toString() || '';
     this.editingVision = this.visionData;
     this.showVisionModal = true;
   }
@@ -473,30 +271,21 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   closeVisionModal() {
     this.showVisionModal = false;
     this.editingVision = null;
-    this.visionFormData = initCompanyVision();
   }
 
-  addValue() {
-    this.visionFormData.core_values.push('');
-  }
-
-  removeValue(index: number) {
-    this.visionFormData.core_values.splice(index, 1);
-  }
-
-  saveVision() {
+  saveVision(visionFormData: CompanyVision) {
     if (!this.company?.id) return;
 
     this.saving = true;
-    this.visionFormData.company_id = this.company.id.toString();
-    this.visionFormData.last_updated = new Date().toISOString().split('T')[0];
+    visionFormData.company_id = this.company.id.toString();
+    visionFormData.last_updated = new Date().toISOString().split('T')[0];
 
     const operation = this.editingVision
-      ? this.nodeService.updateNode({ ...this.editingVision, data: this.visionFormData })
+      ? this.nodeService.updateNode({ ...this.editingVision, data: visionFormData })
       : this.nodeService.addNode({
           company_id: this.company.id,
           type: 'company_vision',
-          data: this.visionFormData
+          data: visionFormData
         } as INode<CompanyVision>);
 
     operation.pipe(takeUntil(this.destroy$))
