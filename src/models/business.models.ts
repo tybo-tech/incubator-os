@@ -170,10 +170,13 @@ export function initTask(): Task {
 }
 
 // New OKR initialization functions
-export function initOKRTask(): OKRTask {
+export function initOKRTask(type: 'objective' | 'key_result' | 'growth_area' = 'key_result'): OKRTask {
   return {
     company_id: '',
-    key_result_id: '',
+    key_result_id: type === 'key_result' ? '' : undefined,
+    objective_id: type === 'objective' ? '' : undefined,
+    growth_area_id: type === 'growth_area' ? '' : undefined,
+    task_type: type,
     title: '',
     description: '',
     assigned_to: '',
@@ -464,10 +467,13 @@ export interface KeyResult {
   mentor_notes?: string;
 }
 
-// 📋 OKRTask - Specific actionable items under a Key Result (renamed to avoid conflict)
+// 📋 OKRTask - Specific actionable items under a Key Result or Growth Area (unified task model)
 export interface OKRTask {
   company_id: string;
-  key_result_id: string; // Links to the parent key result
+  key_result_id?: string; // Links to the parent key result (optional for objective/growth area tasks)
+  objective_id?: string; // Links to the parent objective (optional for growth area tasks)
+  growth_area_id?: string; // Links to the parent growth area (optional for objective tasks)
+  task_type: 'objective' | 'key_result' | 'growth_area'; // Specifies the context this task belongs to
   title: string;
   description?: string;
   assigned_to?: string;
@@ -478,7 +484,7 @@ export interface OKRTask {
   actual_hours?: number;
   dependencies?: string[];
   tags?: string[];
-  impact_weight?: number; // How much this task contributes to KR completion (1-10)
+  impact_weight?: number; // How much this task contributes to completion (1-10)
   background_color?: 'white' | 'light-orange' | 'light-red' | 'light-green' | 'light-yellow' | 'light-purple' | 'light-blue' | 'light-pink'; // Background color for visual distinction
   created_date: string;
   completed_date?: string;

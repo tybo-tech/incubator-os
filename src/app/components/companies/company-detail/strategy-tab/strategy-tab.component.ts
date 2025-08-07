@@ -552,7 +552,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
   editTask(task: INode<OKRTask>) {
     this.selectedTask = task;
-    this.selectedObjectiveId = task.data.key_result_id;
+    this.selectedObjectiveId = task.data.key_result_id || null;
     this.showTaskModal = true;
   }
 
@@ -579,6 +579,12 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     this.saving = true;
     const isEditing = !!this.selectedTask;
 
+    // Set the task type based on context
+    if (this.selectedObjectiveId) {
+      taskData.task_type = 'key_result';
+      taskData.key_result_id = this.selectedObjectiveId;
+    }
+
     if (isEditing && this.selectedTask) {
       // Update existing task
       this.nodeService.updateNode({ ...this.selectedTask, data: taskData })
@@ -596,7 +602,9 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         });
     } else {
       // Create new task
-      taskData.key_result_id = this.selectedObjectiveId || '';
+      if (this.selectedObjectiveId) {
+        taskData.key_result_id = this.selectedObjectiveId;
+      }
       this.nodeService.addNode({
         company_id: this.company?.id || 0,
         type: 'okr_task',
@@ -637,7 +645,9 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         next: () => {
           this.loadStrategyData();
           // Auto-update key result progress when task status changes
-          this.updateKeyResultProgressFromTasks(task.data.key_result_id);
+          if (task.data.key_result_id) {
+            this.updateKeyResultProgressFromTasks(task.data.key_result_id);
+          }
         },
         error: (error: any) => console.error('Error updating task status:', error)
       });
