@@ -6,10 +6,29 @@ import { INode } from '../../../../../models/schema';
 import { Company, CompanyVision, ProductService, StrategicGoal, initCompanyVision, initProductService, initStrategicGoal } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
+// Import our new sub-components
+import { StrategyProgressOverviewComponent } from './components/strategy-progress-overview.component';
+import { VisionMissionSectionComponent } from './components/vision-mission-section.component';
+import { ProductsServicesSectionComponent } from './components/products-services-section.component';
+import { StrategicGoalsSectionComponent } from './components/strategic-goals-section.component';
+import { VisionModalComponent } from './components/vision-modal.component';
+import { ProductServiceModalComponent } from './components/product-service-modal.component';
+import { StrategicGoalModalComponent } from './components/strategic-goal-modal.component';
+
 @Component({
   selector: 'app-strategy-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    StrategyProgressOverviewComponent,
+    VisionMissionSectionComponent,
+    ProductsServicesSectionComponent,
+    StrategicGoalsSectionComponent,
+    VisionModalComponent,
+    ProductServiceModalComponent,
+    StrategicGoalModalComponent
+  ],
   template: `
     <div class="space-y-8">
       <!-- Header -->
@@ -137,90 +156,12 @@ import { NodeService } from '../../../../../services';
       </div>
 
       <!-- Products & Services Section -->
-      <div class="bg-white rounded-lg shadow-sm border">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-              <i class="fas fa-box mr-2 text-green-600"></i>
-              Products & Services
-            </h3>
-            <p class="text-sm text-gray-600">Catalog your current and planned offerings</p>
-          </div>
-          <button
-            (click)="openProductModal()"
-            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          >
-            <i class="fas fa-plus"></i>
-            <span>Add Product/Service</span>
-          </button>
-        </div>
-
-        <div class="p-6">
-          <div *ngIf="productsServices.length === 0" class="text-center text-gray-500 py-8">
-            <i class="fas fa-box text-4xl mb-4"></i>
-            <h4 class="text-lg font-medium mb-2">No Products or Services Yet</h4>
-            <p class="mb-4">Add your products and services to build your offering catalog.</p>
-            <button
-              (click)="openProductModal()"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-            >
-              Add First Product/Service
-            </button>
-          </div>
-
-          <div *ngIf="productsServices.length > 0" class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue %</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let item of productsServices" class="hover:bg-gray-50">
-                  <td class="px-6 py-4">
-                    <div class="text-sm font-medium text-gray-900">{{ item.data.name }}</div>
-                    <div class="text-sm text-gray-600 max-w-xs">{{ item.data.description | slice:0:100 }}{{ item.data.description.length > 100 ? '...' : '' }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [ngClass]="item.data.type === 'product' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
-                      <i [ngClass]="item.data.type === 'product' ? 'fas fa-cube' : 'fas fa-handshake'" class="mr-1"></i>
-                      {{ item.data.type | titlecase }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [ngClass]="getStatusClass(item.data.current_status)">
-                      {{ getStatusDisplay(item.data.current_status) }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="text-sm text-gray-900">{{ item.data.category }}</span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="text-sm text-gray-900">{{ item.data.revenue_contribution || 0 }}%</span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                      <button (click)="editProduct(item)" class="text-blue-600 hover:text-blue-700" title="Edit">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button (click)="deleteProduct(item)" class="text-red-600 hover:text-red-700" title="Delete">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <app-products-services-section
+        [productsServices]="productsServices"
+        (addProduct)="openProductModal()"
+        (editProduct)="editProduct($event)"
+        (deleteProduct)="deleteProduct($event)"
+      ></app-products-services-section>
 
       <!-- Strategic Goals Section -->
       <div class="bg-white rounded-lg shadow-sm border">
@@ -454,6 +395,13 @@ import { NodeService } from '../../../../../services';
       </div>
 
       <!-- Product/Service Modal -->
+      <app-product-service-modal
+        [isOpen]="showProductModal"
+        [productData]="selectedProduct"
+        (close)="closeProductModal()"
+        (save)="saveProduct($event)"
+      ></app-product-service-modal>
+
       <!-- Strategic Goal Modal -->
       <!-- Implementation will be added in subsequent parts -->
     </div>
@@ -482,6 +430,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   editingVision: INode<CompanyVision> | null = null;
   editingProduct: INode<ProductService> | null = null;
   editingGoal: INode<StrategicGoal> | null = null;
+  selectedProduct: INode<ProductService> | null = null;
 
   // Form data
   visionFormData: CompanyVision = initCompanyVision();
@@ -600,14 +549,13 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
   // Product/Service methods
   openProductModal() {
-    this.productFormData = initProductService();
-    this.productFormData.company_id = this.company?.id?.toString() || '';
+    this.selectedProduct = null;
     this.editingProduct = null;
     this.showProductModal = true;
   }
 
   editProduct(product: INode<ProductService>) {
-    this.productFormData = { ...product.data };
+    this.selectedProduct = product;
     this.editingProduct = product;
     this.showProductModal = true;
   }
@@ -621,6 +569,53 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => this.loadStrategyData(),
           error: (error: any) => console.error('Error deleting product:', error)
+        });
+    }
+  }
+
+  closeProductModal() {
+    this.showProductModal = false;
+    this.selectedProduct = null;
+    this.editingProduct = null;
+  }
+
+  saveProduct(productData: ProductService) {
+    this.saving = true;
+    const isEditing = !!this.editingProduct;
+
+    if (isEditing && this.editingProduct) {
+      // Update existing product
+      this.nodeService.updateNode({ ...this.editingProduct, data: productData })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeProductModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error updating product:', error);
+            this.saving = false;
+          }
+        });
+    } else {
+      // Create new product
+      this.nodeService.addNode({
+        company_id: this.company?.id || 0,
+        type: 'product_service',
+        data: productData
+      } as INode<ProductService>)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.closeProductModal();
+            this.loadStrategyData();
+          },
+          error: (error: any) => {
+            console.error('Error creating product:', error);
+            this.saving = false;
+          }
         });
     }
   }
