@@ -545,18 +545,18 @@ import { Company } from '../../../../../models/business.models';
             </div>
 
             <div class="space-y-3">
-              <div 
-                *ngFor="let item of getActionItems()" 
+              <div
+                *ngFor="let item of getActionItems()"
                 class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
               >
                 <div class="flex items-start justify-between">
                   <div class="flex-1">
                     <h4 class="font-medium text-gray-900">{{ item.action_required }}</h4>
                     <p class="text-sm text-gray-600 mt-1">{{ item.description }}</p>
-                    
+
                     <div class="flex items-center space-x-4 mt-2">
                       <!-- Category -->
-                      <span 
+                      <span
                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                         [ngClass]="{
                           'bg-green-100 text-green-800': item.category === 'strength',
@@ -569,7 +569,7 @@ import { Company } from '../../../../../models/business.models';
                       </span>
 
                       <!-- Priority -->
-                      <span 
+                      <span
                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                         [ngClass]="{
                           'bg-gray-100 text-gray-800': item.priority === 'low',
@@ -582,7 +582,7 @@ import { Company } from '../../../../../models/business.models';
                       </span>
 
                       <!-- Status -->
-                      <span 
+                      <span
                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                         [ngClass]="{
                           'bg-gray-100 text-gray-800': item.status === 'identified',
@@ -602,7 +602,7 @@ import { Company } from '../../../../../models/business.models';
                       </div>
 
                       <!-- Due Date -->
-                      <div *ngIf="item.target_date" class="flex items-center text-xs" 
+                      <div *ngIf="item.target_date" class="flex items-center text-xs"
                            [ngClass]="{
                              'text-red-600': isOverdue(item.target_date),
                              'text-orange-600': isDueSoon(item.target_date),
@@ -696,59 +696,59 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   private populateSampleData(): void {
     // Initialize with sample data based on your example
     this.swotData.internal.strengths = [
-      { 
-        ...initSwotItem('Existing business operational and with paying customers', 'strength'), 
+      {
+        ...initSwotItem('Existing business operational and with paying customers', 'strength'),
         action_required: 'Leverage customer base for growth',
         assigned_to: 'Sales Manager',
         target_date: this.getDatePlusWeeks(2)
       },
-      { 
-        ...initSwotItem('Do have the necessary equipment', 'strength'), 
+      {
+        ...initSwotItem('Do have the necessary equipment', 'strength'),
         action_required: 'Maintain and upgrade equipment',
         status: 'in_progress'
       },
-      { 
-        ...initSwotItem('Do have the training in place', 'strength'), 
+      {
+        ...initSwotItem('Do have the training in place', 'strength'),
         action_required: 'Continue training programs',
         assigned_to: 'HR Manager'
       },
-      { 
-        ...initSwotItem('Have sales training', 'strength'), 
+      {
+        ...initSwotItem('Have sales training', 'strength'),
         action_required: 'Expand sales training to new team members',
         priority: 'high'
       }
     ];
 
     this.swotData.internal.weaknesses = [
-      { 
-        ...initSwotItem('State of the finance is a weakness', 'weakness'), 
+      {
+        ...initSwotItem('State of the finance is a weakness', 'weakness'),
         action_required: 'Implement financial management system',
         priority: 'critical',
         assigned_to: 'CFO',
         target_date: this.getDatePlusWeeks(4)
       },
-      { 
-        ...initSwotItem('No accounting system', 'weakness'), 
+      {
+        ...initSwotItem('No accounting system', 'weakness'),
         action_required: 'Introduce accounting system',
         priority: 'high',
         assigned_to: 'Finance Team',
         target_date: this.getDatePlusWeeks(6)
       },
-      { 
-        ...initSwotItem('Marketing is very weak', 'weakness'), 
+      {
+        ...initSwotItem('Marketing is very weak', 'weakness'),
         action_required: 'Develop marketing strategy and hire marketing specialist',
         priority: 'high',
         assigned_to: 'CEO'
       },
-      { 
-        ...initSwotItem('Cash flow', 'weakness'), 
+      {
+        ...initSwotItem('Cash flow', 'weakness'),
         action_required: 'Introduce a budget',
         priority: 'critical',
         status: 'planning',
         target_date: this.getDatePlusWeeks(2)
       },
-      { 
-        ...initSwotItem('Booking system needed', 'weakness'), 
+      {
+        ...initSwotItem('Booking system needed', 'weakness'),
         action_required: 'Introduce a booking system',
         priority: 'medium',
         assigned_to: 'IT Manager',
@@ -759,8 +759,8 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     this.swotData.external.opportunities = [];
 
     this.swotData.external.threats = [
-      { 
-        ...initSwotItem('Going to change the name of the business', 'threat'), 
+      {
+        ...initSwotItem('Going to change the name of the business', 'threat'),
         action_required: 'Plan brand transition strategy',
         priority: 'medium',
         assigned_to: 'Marketing Team',
@@ -857,7 +857,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
 
   getActionItems(): SwotItem[] {
     const items: SwotItem[] = [];
-    
+
     // Collect items that have action_required defined
     if (this.swotData?.internal?.strengths) {
       items.push(...this.swotData.internal.strengths.filter(item => item.action_required));
@@ -871,7 +871,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     if (this.swotData?.external?.threats) {
       items.push(...this.swotData.external.threats.filter(item => item.action_required));
     }
-    
+
     return items;
   }
 
@@ -938,7 +938,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification  
+    // Simple alert for now - could be replaced with a toast notification
     console.log(message);
   }
 

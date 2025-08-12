@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type TabType = 'overview' | 'assessment' | 'swot' | 'strategy' | 'financial' | 'compliance' | 'documents' | 'tasks' | 'growth' | 'financial-targets' | 'hr-tracking';
+export type TabType = 'overview' | 'assessment' | 'swot' | 'gps-targets' | 'strategy' | 'financial' | 'compliance' | 'documents' | 'tasks' | 'growth' | 'financial-targets' | 'hr-tracking';
 
 @Component({
   selector: 'app-tabs-navigation',
@@ -28,6 +28,12 @@ export type TabType = 'overview' | 'assessment' | 'swot' | 'strategy' | 'financi
             [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'swot' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
           >
             SWOT Analysis
+          </button>
+          <button
+            (click)="onTabChange('gps-targets')"
+            [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'gps-targets' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
+          >
+            🎯 GPS Targets
           </button>
           <button
             (click)="onTabChange('strategy')"

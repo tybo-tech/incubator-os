@@ -21,6 +21,7 @@ import { TasksTabComponent } from './tasks-tab/tasks-tab.component';
 import { GrowthAreasTabComponent } from './growth-areas-tab/growth-areas-tab.component';
 import { FinancialTargetsTabComponent } from './financial-targets-tab/financial-targets-tab.component';
 import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.component';
+import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 
 @Component({
@@ -43,6 +44,7 @@ import { CompanyFormModalComponent } from '../company-form-modal/company-form-mo
     GrowthAreasTabComponent,
     FinancialTargetsTabComponent,
     HRTrackingTabComponent,
+    GpsTargetsTabComponent,
     CompanyFormModalComponent
   ],
   templateUrl: './company-detail.component.html',

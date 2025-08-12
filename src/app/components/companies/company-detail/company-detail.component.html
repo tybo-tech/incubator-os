@@ -47,6 +47,12 @@
       [company]="company">
     </app-swot-tab>
 
+    <!-- GPS Targets Tab -->
+    <app-gps-targets-tab
+      *ngIf="activeTab === 'gps-targets'"
+      [company]="company">
+    </app-gps-targets-tab>
+
     <!-- Strategy Tab -->
     <app-strategy-tab
       *ngIf="activeTab === 'strategy'"
