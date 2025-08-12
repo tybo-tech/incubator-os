@@ -135,6 +135,7 @@ import { Company } from '../../../../../models/business.models';
                         <input
                           *ngIf="question.type === 'text' || question.type === 'email' || question.type === 'phone' || question.type === 'url'"
                           [(ngModel)]="formData.responses[question.id]"
+                          (change)="onFormDataChange()"
                           [name]="question.id"
                           [type]="getInputType(question.type)"
                           [placeholder]="question.placeholder"
@@ -146,6 +147,7 @@ import { Company } from '../../../../../models/business.models';
                         <textarea
                           *ngIf="question.type === 'textarea'"
                           [(ngModel)]="formData.responses[question.id]"
+                          (change)="onFormDataChange()"
                           [name]="question.id"
                           [placeholder]="question.placeholder"
                           [required]="question.required"
@@ -157,6 +159,7 @@ import { Company } from '../../../../../models/business.models';
                         <input
                           *ngIf="question.type === 'number' || question.type === 'currency' || question.type === 'percentage'"
                           [(ngModel)]="formData.responses[question.id]"
+                          (change)="onFormDataChange()"
                           [name]="question.id"
                           type="number"
                           [placeholder]="question.placeholder"
@@ -170,6 +173,7 @@ import { Company } from '../../../../../models/business.models';
                         <input
                           *ngIf="question.type === 'date'"
                           [(ngModel)]="formData.responses[question.id]"
+                          (change)="onFormDataChange()"
                           [name]="question.id"
                           type="date"
                           [required]="question.required"
@@ -180,6 +184,7 @@ import { Company } from '../../../../../models/business.models';
                         <select
                           *ngIf="question.type === 'dropdown'"
                           [(ngModel)]="formData.responses[question.id]"
+                          (change)="onFormDataChange()"
                           [name]="question.id"
                           [required]="question.required"
                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -195,6 +200,7 @@ import { Company } from '../../../../../models/business.models';
                           <div *ngFor="let option of question.options" class="flex items-center">
                             <input
                               [(ngModel)]="formData.responses[question.id]"
+                              (change)="onFormDataChange()"
                               [name]="question.id"
                               [value]="option.value"
                               [required]="question.required"
@@ -227,6 +233,7 @@ import { Company } from '../../../../../models/business.models';
                           <div class="flex items-center">
                             <input
                               [(ngModel)]="formData.responses[question.id]"
+                              (change)="onFormDataChange()"
                               [name]="question.id"
                               [value]="true"
                               [required]="question.required"
@@ -238,6 +245,7 @@ import { Company } from '../../../../../models/business.models';
                           <div class="flex items-center">
                             <input
                               [(ngModel)]="formData.responses[question.id]"
+                              (change)="onFormDataChange()"
                               [name]="question.id"
                               [value]="false"
                               [required]="question.required"
@@ -327,6 +335,9 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -368,12 +379,14 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     this.sectionNavigation.forEach((nav, i) => {
       nav.current = i === index;
     });
+
+    // Load responses for this section
+    this.loadSectionResponses();
   }
 
   private loadExistingResponses(): void {
     if (!this.company?.id || !this.questionnaire?.id) return;
 
-    // TODO: Load existing responses from API/storage
     this.questionnaireService.getResponse(this.company.id.toString(), this.questionnaire.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
@@ -385,7 +398,23 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
             });
           });
           this.updateProgress();
+          this.setupNavigation(); // Refresh navigation with completion status
         }
+      });
+  }
+
+  private loadSectionResponses(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
+    this.questionnaireService.getSectionResponses(
+      this.company.id.toString(),
+      this.questionnaire.id,
+      this.currentSection.id
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe(responses => {
+        // Merge responses for current section
+        Object.assign(this.formData.responses, responses);
+        this.updateProgress();
       });
   }
 
@@ -411,14 +440,43 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   }
 
   saveProgress(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
     this.formData.is_submitting = true;
 
-    // TODO: Implement save logic
-    setTimeout(() => {
-      this.formData.is_submitting = false;
-      this.formData.is_dirty = false;
-      this.updateProgress();
-    }, 1000);
+    // Get responses for current section only
+    const sectionResponses: { [questionId: string]: any } = {};
+    this.currentSection.questions.forEach(question => {
+      const value = this.formData.responses[question.id];
+      if (value !== undefined && value !== null && value !== '') {
+        sectionResponses[question.id] = value;
+      }
+    });
+
+    // Save partial responses for current section
+    this.questionnaireService.savePartialResponse(
+      this.company.id.toString(),
+      this.questionnaire.id,
+      this.currentSection.id,
+      sectionResponses
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          this.formData.is_submitting = false;
+          this.formData.is_dirty = false;
+          if (success) {
+            this.updateProgress();
+            this.setupNavigation(); // Refresh completion status
+            // Show success message
+            this.showSuccessMessage('Progress saved successfully!');
+          }
+        },
+        error: (error) => {
+          console.error('Error saving progress:', error);
+          this.formData.is_submitting = false;
+          this.showErrorMessage('Failed to save progress. Please try again.');
+        }
+      });
   }
 
   submitAssessment(): void {
@@ -426,14 +484,83 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
 
     this.formData.is_submitting = true;
 
-    // TODO: Implement final submission
-    setTimeout(() => {
-      this.formData.is_submitting = false;
-      alert('Assessment completed successfully!');
-    }, 1500);
+    // Mark current section as complete and save
+    this.saveCurrentSectionAsComplete();
   }
 
-  private validateForm(): boolean {
+  private saveCurrentSectionAsComplete(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
+    // First save the current responses
+    const sectionResponses: { [questionId: string]: any } = {};
+    this.currentSection.questions.forEach(question => {
+      const value = this.formData.responses[question.id];
+      if (value !== undefined && value !== null && value !== '') {
+        sectionResponses[question.id] = value;
+      }
+    });
+
+    this.questionnaireService.savePartialResponse(
+      this.company.id.toString(),
+      this.questionnaire.id,
+      this.currentSection.id,
+      sectionResponses
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Mark section as complete
+          if (!this.company?.id || !this.questionnaire?.id || !this.currentSection?.id) return;
+
+          this.questionnaireService.markSectionComplete(
+            this.company.id.toString(),
+            this.questionnaire.id,
+            this.currentSection.id
+          ).pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.formData.is_submitting = false;
+                this.updateProgress();
+                this.setupNavigation();
+
+                // Check if all sections are complete
+                if (this.isAssessmentComplete()) {
+                  this.showSuccessMessage('Assessment completed successfully!');
+                } else {
+                  this.showSuccessMessage('Section completed! Continue with the next section.');
+                  // Auto-advance to next section if available
+                  if (this.currentSectionIndex < (this.questionnaire?.sections?.length || 0) - 1) {
+                    setTimeout(() => {
+                      this.nextSection();
+                    }, 1000);
+                  }
+                }
+              },
+              error: (error) => {
+                console.error('Error marking section complete:', error);
+                this.formData.is_submitting = false;
+              }
+            });
+        },
+        error: (error) => {
+          console.error('Error saving section:', error);
+          this.formData.is_submitting = false;
+        }
+      });
+  }
+
+  private isAssessmentComplete(): boolean {
+    return this.sectionNavigation.every(nav => nav.completed);
+  }
+
+  private showSuccessMessage(message: string): void {
+    // Simple alert for now - could be replaced with a toast notification
+    alert(message);
+  }
+
+  private showErrorMessage(message: string): void {
+    // Simple alert for now - could be replaced with a toast notification
+    alert(message);
+  }  private validateForm(): boolean {
     this.formData.errors = {};
     let isValid = true;
 
@@ -539,9 +666,26 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
 
   setRating(questionId: string, rating: number): void {
     this.formData.responses[questionId] = rating;
+    this.onFormDataChange();
+  }
+
+  onFormDataChange(): void {
     this.formData.is_dirty = true;
     this.updateProgress();
+
+    // Auto-save after 2 seconds of inactivity
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+
+    this.autoSaveTimeout = setTimeout(() => {
+      if (this.formData.is_dirty && !this.formData.is_submitting) {
+        this.saveProgress();
+      }
+    }, 2000);
   }
+
+  private autoSaveTimeout: any;
 
   getRatingClass(questionId: string, rating: number): string {
     const selectedRating = this.formData.responses[questionId];

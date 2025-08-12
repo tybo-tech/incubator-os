@@ -1,7 +1,7 @@
 // services/questionnaire.service.ts
 
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, forkJoin, map } from 'rxjs';
 import {
   BusinessQuestionnaire,
   QuestionnaireSection,
@@ -10,13 +10,15 @@ import {
   QuestionnaireProgress,
   QuestionType
 } from '../models/questionnaire.models';
+import { NodeService } from './node.service';
+import { INode } from '../models/schema';
 
 @Injectable({
   providedIn: 'root'
 })
 export class QuestionnaireService {
 
-  constructor() { }
+  constructor(private nodeService: NodeService<any>) { }
 
   /**
    * Get the main business assessment questionnaire
@@ -68,17 +70,232 @@ export class QuestionnaireService {
    * Save questionnaire response
    */
   saveResponse(response: QuestionnaireResponse): Observable<QuestionnaireResponse> {
-    // TODO: Implement API call or local storage
-    console.log('Saving questionnaire response:', response);
-    return of(response);
+    if (!response.company_id) {
+      throw new Error('Company ID is required');
+    }
+
+    // Save each section response as a separate node
+    const saveOperations = response.section_responses.map(sectionResponse => {
+      const nodeData = {
+        company_id: parseInt(response.company_id),
+        type: `assessment_${sectionResponse.section_id}`,
+        data: {
+          questionnaire_id: response.questionnaire_id,
+          section_id: sectionResponse.section_id,
+          question_responses: sectionResponse.question_responses,
+          is_complete: sectionResponse.is_complete,
+          completed_date: sectionResponse.completed_date,
+          response_date: response.response_date,
+          completed_by: response.completed_by
+        }
+      } as INode<any>;
+
+      return this.nodeService.addNode(nodeData);
+    });
+
+    return forkJoin(saveOperations).pipe(
+      map(() => response)
+    );
+  }
+
+  /**
+   * Update existing questionnaire response
+   */
+  updateResponse(response: QuestionnaireResponse, existingNodes: INode<any>[]): Observable<QuestionnaireResponse> {
+    const updateOperations = response.section_responses.map(sectionResponse => {
+      const existingNode = existingNodes.find(node =>
+        node.data?.section_id === sectionResponse.section_id
+      );
+
+      const nodeData = {
+        questionnaire_id: response.questionnaire_id,
+        section_id: sectionResponse.section_id,
+        question_responses: sectionResponse.question_responses,
+        is_complete: sectionResponse.is_complete,
+        completed_date: sectionResponse.completed_date,
+        response_date: response.response_date,
+        completed_by: response.completed_by
+      };
+
+      if (existingNode) {
+        // Update existing node
+        return this.nodeService.updateNode({
+          ...existingNode,
+          data: nodeData
+        });
+      } else {
+        // Create new node
+        return this.nodeService.addNode({
+          company_id: parseInt(response.company_id),
+          type: `assessment_${sectionResponse.section_id}`,
+          data: nodeData
+        } as INode<any>);
+      }
+    });
+
+    return forkJoin(updateOperations).pipe(
+      map(() => response)
+    );
   }
 
   /**
    * Get questionnaire response for a company
    */
   getResponse(companyId: string, questionnaireId: string): Observable<QuestionnaireResponse | null> {
-    // TODO: Implement API call or local storage retrieval
-    return of(null);
+    const companyIdNum = parseInt(companyId);
+
+    // Get all assessment nodes for this company
+    return this.nodeService.getNodesByCompany(companyIdNum, 'assessment_%').pipe(
+      map(nodes => {
+        if (!nodes || nodes.length === 0) {
+          return null;
+        }
+
+        // Filter nodes for this specific questionnaire
+        const questionnaireNodes = nodes.filter(node =>
+          node.data?.questionnaire_id === questionnaireId
+        );
+
+        if (questionnaireNodes.length === 0) {
+          return null;
+        }
+
+        // Group nodes by section
+        const sectionResponses = questionnaireNodes.map(node => ({
+          section_id: node.data.section_id,
+          question_responses: node.data.question_responses || [],
+          is_complete: node.data.is_complete || false,
+          completed_date: node.data.completed_date
+        }));
+
+        // Create the response object
+        const response: QuestionnaireResponse = {
+          company_id: companyId,
+          questionnaire_id: questionnaireId,
+          section_responses: sectionResponses,
+          response_date: new Date(questionnaireNodes[0].data.response_date || new Date()),
+          completed_by: questionnaireNodes[0].data.completed_by,
+          is_complete: sectionResponses.every(sr => sr.is_complete),
+          completion_percentage: this.calculateCompletionPercentage(sectionResponses)
+        };
+
+        return response;
+      })
+    );
+  }
+
+  /**
+   * Save partial responses (allows saving incomplete data)
+   */
+  savePartialResponse(companyId: string, questionnaireId: string, sectionId: string, responses: { [questionId: string]: any }): Observable<boolean> {
+    const companyIdNum = parseInt(companyId);
+
+    // First, try to get existing node for this section
+    return this.nodeService.getNodesByCompany(companyIdNum, `assessment_${sectionId}`).pipe(
+      map(nodes => {
+        const existingNode = nodes.find(node =>
+          node.data?.questionnaire_id === questionnaireId &&
+          node.data?.section_id === sectionId
+        );
+
+        const questionResponses = Object.entries(responses).map(([questionId, value]) => ({
+          question_id: questionId,
+          value: value,
+          response_date: new Date()
+        }));
+
+        const nodeData = {
+          questionnaire_id: questionnaireId,
+          section_id: sectionId,
+          question_responses: questionResponses,
+          is_complete: false, // Partial save, so not complete
+          response_date: new Date(),
+          last_updated: new Date()
+        };
+
+        if (existingNode) {
+          // Update existing node
+          this.nodeService.updateNode({
+            ...existingNode,
+            data: { ...existingNode.data, ...nodeData }
+          }).subscribe();
+        } else {
+          // Create new node
+          this.nodeService.addNode({
+            company_id: companyIdNum,
+            type: `assessment_${sectionId}`,
+            data: nodeData
+          } as INode<any>).subscribe();
+        }
+
+        return true;
+      })
+    );
+  }
+
+  /**
+   * Get responses for a specific section
+   */
+  getSectionResponses(companyId: string, questionnaireId: string, sectionId: string): Observable<{ [questionId: string]: any }> {
+    const companyIdNum = parseInt(companyId);
+
+    return this.nodeService.getNodesByCompany(companyIdNum, `assessment_${sectionId}`).pipe(
+      map(nodes => {
+        const node = nodes.find(node =>
+          node.data?.questionnaire_id === questionnaireId &&
+          node.data?.section_id === sectionId
+        );
+
+        if (!node || !node.data?.question_responses) {
+          return {};
+        }
+
+        // Convert question responses array to object
+        const responses: { [questionId: string]: any } = {};
+        node.data.question_responses.forEach((qr: any) => {
+          responses[qr.question_id] = qr.value;
+        });
+
+        return responses;
+      })
+    );
+  }
+
+  /**
+   * Mark section as complete
+   */
+  markSectionComplete(companyId: string, questionnaireId: string, sectionId: string): Observable<boolean> {
+    const companyIdNum = parseInt(companyId);
+
+    return this.nodeService.getNodesByCompany(companyIdNum, `assessment_${sectionId}`).pipe(
+      map(nodes => {
+        const existingNode = nodes.find(node =>
+          node.data?.questionnaire_id === questionnaireId &&
+          node.data?.section_id === sectionId
+        );
+
+        if (existingNode) {
+          this.nodeService.updateNode({
+            ...existingNode,
+            data: {
+              ...existingNode.data,
+              is_complete: true,
+              completed_date: new Date()
+            }
+          }).subscribe();
+          return true;
+        }
+
+        return false;
+      })
+    );
+  }
+
+  private calculateCompletionPercentage(sectionResponses: any[]): number {
+    if (sectionResponses.length === 0) return 0;
+
+    const completedSections = sectionResponses.filter(sr => sr.is_complete).length;
+    return Math.round((completedSections / sectionResponses.length) * 100);
   }
 
   /**

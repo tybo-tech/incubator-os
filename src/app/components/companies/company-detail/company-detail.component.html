@@ -41,6 +41,12 @@
       [company]="company">
     </app-assessment-tab>
 
+    <!-- SWOT Analysis Tab -->
+    <app-swot-tab
+      *ngIf="activeTab === 'swot'"
+      [company]="company">
+    </app-swot-tab>
+
     <!-- Strategy Tab -->
     <app-strategy-tab
       *ngIf="activeTab === 'strategy'"

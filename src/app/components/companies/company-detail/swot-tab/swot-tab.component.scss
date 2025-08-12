@@ -1,0 +1,119 @@
+// SWOT Tab Component Styles
+
+.swot-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.swot-item {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.swot-section {
+  border-left: 4px solid transparent;
+  transition: border-color 0.2s ease-in-out;
+
+  &.strengths {
+    border-left-color: #10b981;
+  }
+
+  &.weaknesses {
+    border-left-color: #ef4444;
+  }
+
+  &.opportunities {
+    border-left-color: #3b82f6;
+  }
+
+  &.threats {
+    border-left-color: #f59e0b;
+  }
+}
+
+.priority-badge {
+  &.low {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+
+  &.medium {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  &.high {
+    background-color: #fed7aa;
+    color: #ea580c;
+  }
+
+  &.critical {
+    background-color: #fecaca;
+    color: #dc2626;
+  }
+}
+
+.impact-badge {
+  &.low {
+    background-color: #dcfce7;
+    color: #15803d;
+  }
+
+  &.medium {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+
+  &.high {
+    background-color: #fecaca;
+    color: #dc2626;
+  }
+}
+
+.auto-save-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+
+  &.show {
+    opacity: 1;
+  }
+}
+
+.swot-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.swot-counter {
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .swot-matrix {
+    grid-template-columns: 1fr;
+  }
+
+  .swot-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
