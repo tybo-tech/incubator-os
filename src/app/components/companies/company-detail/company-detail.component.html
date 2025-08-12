@@ -17,7 +17,8 @@
   <!-- Header -->
   <app-company-header
     [company]="company"
-    (goBack)="goBack()">
+    (goBack)="goBack()"
+    (editCompany)="openEditModal()">
   </app-company-header>
 
   <!-- Tabs Navigation -->
@@ -83,3 +84,12 @@
     </app-hr-tracking-tab>
   </div>
 </div>
+
+<!-- Company Edit Modal -->
+<app-company-form-modal
+  [isOpen]="isEditModalOpen"
+  [editMode]="true"
+  [company]="company"
+  (close)="closeEditModal()"
+  (companySaved)="onCompanySaved($event)">
+</app-company-form-modal>

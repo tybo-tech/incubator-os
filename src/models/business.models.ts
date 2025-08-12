@@ -227,6 +227,7 @@ export function initGrowthArea(): GrowthArea {
 export function initCompanyVision(): CompanyVision {
   return {
     company_id: '',
+    purpose_statement: '',
     vision_statement: '',
     mission_statement: '',
     core_values: [],
@@ -381,6 +382,7 @@ export interface GrowthArea {
 // 🎯 Company Vision - Core purpose and direction
 export interface CompanyVision {
   company_id: string;
+  purpose_statement: string;
   vision_statement: string;
   mission_statement: string;
   core_values: string[];

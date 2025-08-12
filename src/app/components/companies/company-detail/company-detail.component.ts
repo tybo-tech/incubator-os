@@ -19,6 +19,7 @@ import { TasksTabComponent } from './tasks-tab/tasks-tab.component';
 import { GrowthAreasTabComponent } from './growth-areas-tab/growth-areas-tab.component';
 import { FinancialTargetsTabComponent } from './financial-targets-tab/financial-targets-tab.component';
 import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.component';
+import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 
 @Component({
   selector: 'app-company-detail',
@@ -37,7 +38,8 @@ import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.compon
     TasksTabComponent,
     GrowthAreasTabComponent,
     FinancialTargetsTabComponent,
-    HRTrackingTabComponent
+    HRTrackingTabComponent,
+    CompanyFormModalComponent
   ],
   templateUrl: './company-detail.component.html',
   styleUrl: './company-detail.component.scss'
@@ -47,6 +49,9 @@ export class CompanyDetailComponent implements OnInit {
   activeTab: TabType = 'overview';
   loading = true;
   error: string | null = null;
+
+  // Edit modal properties
+  isEditModalOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -86,5 +91,20 @@ export class CompanyDetailComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/companies']);
+  }
+
+  // Edit modal methods
+  openEditModal() {
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+  }
+
+  onCompanySaved(updatedCompany: INode<Company>) {
+    this.company = updatedCompany;
+    this.closeEditModal();
+    // Optionally show a success message
   }
 }

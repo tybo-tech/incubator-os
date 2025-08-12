@@ -41,7 +41,9 @@ import { Company } from '../../../../../models/business.models';
             <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
               Export
             </button>
-            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors">
+            <button
+              (click)="onEditCompany()"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors">
               Edit Company
             </button>
           </div>
@@ -53,9 +55,14 @@ import { Company } from '../../../../../models/business.models';
 export class CompanyHeaderComponent {
   @Input() company!: INode<Company>;
   @Output() goBack = new EventEmitter<void>();
+  @Output() editCompany = new EventEmitter<void>();
 
   onGoBack(): void {
     this.goBack.emit();
+  }
+
+  onEditCompany(): void {
+    this.editCompany.emit();
   }
 
   getBbbeeColor(level: string): string {

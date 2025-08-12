@@ -24,11 +24,36 @@ import { CompanyVision, initCompanyVision } from '../../../../../../models/busin
         <!-- Content -->
         <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           <form (ngSubmit)="saveVision()" #visionForm="ngForm">
+            <!-- Purpose Statement -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Purpose Statement
+                <span class="text-red-500">*</span>
+                <span class="text-xs text-gray-500 font-normal ml-2">
+                  (e.g., "To provide sustainable fishing solutions", "To revolutionize paper manufacturing", "To build innovative machines")
+                </span>
+              </label>
+              <textarea
+                [(ngModel)]="formData.purpose_statement"
+                name="purpose_statement"
+                required
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Why does your company exist? What problem do you solve? e.g., 'To help small fishing businesses thrive through sustainable technology'"
+              ></textarea>
+              <p class="text-sm text-gray-600 mt-1">
+                Your company's reason for being - the fundamental problem you solve for your customers.
+              </p>
+            </div>
+
             <!-- Vision Statement -->
             <div class="mb-6">
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Vision Statement
                 <span class="text-red-500">*</span>
+                <span class="text-xs text-gray-500 font-normal ml-2">
+                  (e.g., "To be the leading fishing equipment provider in Africa", "To transform the global paper industry")
+                </span>
               </label>
               <textarea
                 [(ngModel)]="formData.vision_statement"
@@ -48,6 +73,9 @@ import { CompanyVision, initCompanyVision } from '../../../../../../models/busin
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Mission Statement
                 <span class="text-red-500">*</span>
+                <span class="text-xs text-gray-500 font-normal ml-2">
+                  (e.g., "We design and manufacture high-quality fishing nets", "We produce eco-friendly paper products")
+                </span>
               </label>
               <textarea
                 [(ngModel)]="formData.mission_statement"
@@ -193,7 +221,7 @@ import { CompanyVision, initCompanyVision } from '../../../../../../models/busin
           </button>
           <button
             (click)="saveVision()"
-            [disabled]="!formData.vision_statement || !formData.mission_statement"
+            [disabled]="!formData.purpose_statement || !formData.vision_statement || !formData.mission_statement"
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg"
           >
             {{ visionData ? 'Update' : 'Save' }} Vision & Mission
@@ -241,7 +269,7 @@ export class VisionModalComponent implements OnInit, OnChanges {
   }
 
   saveVision() {
-    if (!this.formData.vision_statement || !this.formData.mission_statement) {
+    if (!this.formData.purpose_statement || !this.formData.vision_statement || !this.formData.mission_statement) {
       return;
     }
 
