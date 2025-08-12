@@ -40,15 +40,30 @@ import { CompanyVision } from '../../../../../../models/business.models';
         </div>
 
         <div *ngIf="visionData" class="space-y-6">
+          <!-- Purpose Statement -->
+          <div>
+            <h4 class="text-md font-semibold text-gray-900 mb-2 flex items-center">
+              <i class="fas fa-compass mr-2 text-indigo-600"></i>
+              Purpose Statement
+            </h4>
+            <p class="text-gray-700 bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-400">{{ visionData.data.purpose_statement }}</p>
+          </div>
+
           <!-- Vision Statement -->
           <div>
-            <h4 class="text-md font-semibold text-gray-900 mb-2">Vision Statement</h4>
+            <h4 class="text-md font-semibold text-gray-900 mb-2 flex items-center">
+              <i class="fas fa-eye mr-2 text-blue-600"></i>
+              Vision Statement
+            </h4>
             <p class="text-gray-700 bg-blue-50 p-4 rounded-lg">{{ visionData.data.vision_statement }}</p>
           </div>
 
           <!-- Mission Statement -->
           <div>
-            <h4 class="text-md font-semibold text-gray-900 mb-2">Mission Statement</h4>
+            <h4 class="text-md font-semibold text-gray-900 mb-2 flex items-center">
+              <i class="fas fa-target mr-2 text-green-600"></i>
+              Mission Statement
+            </h4>
             <p class="text-gray-700 bg-green-50 p-4 rounded-lg">{{ visionData.data.mission_statement }}</p>
           </div>
 

@@ -35,6 +35,12 @@
       [company]="company">
     </app-overview-tab>
 
+    <!-- Assessment Tab -->
+    <app-assessment-tab
+      *ngIf="activeTab === 'assessment'"
+      [company]="company">
+    </app-assessment-tab>
+
     <!-- Strategy Tab -->
     <app-strategy-tab
       *ngIf="activeTab === 'strategy'"

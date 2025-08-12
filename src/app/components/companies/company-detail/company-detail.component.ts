@@ -11,6 +11,7 @@ import { ErrorStateComponent } from './error-state/error-state.component';
 import { CompanyHeaderComponent } from './company-header/company-header.component';
 import { TabsNavigationComponent, TabType } from './tabs-navigation/tabs-navigation.component';
 import { OverviewTabComponent } from './overview-tab/overview-tab.component';
+import { AssessmentTabComponent } from './assessment-tab/assessment-tab.component';
 import { StrategyTabComponent } from './strategy-tab/strategy-tab.component';
 import { FinancialTabComponent } from './financial-tab/financial-tab.component';
 import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
@@ -31,6 +32,7 @@ import { CompanyFormModalComponent } from '../company-form-modal/company-form-mo
     CompanyHeaderComponent,
     TabsNavigationComponent,
     OverviewTabComponent,
+    AssessmentTabComponent,
     StrategyTabComponent,
     FinancialTabComponent,
     ComplianceTabComponent,

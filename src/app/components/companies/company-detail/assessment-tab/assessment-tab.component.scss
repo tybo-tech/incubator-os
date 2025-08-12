@@ -1,0 +1,120 @@
+// Assessment Tab Component Styles
+
+.assessment-progress {
+  transition: width 0.3s ease-in-out;
+}
+
+.section-nav-item {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateX(2px);
+  }
+
+  &.current {
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+  }
+
+  &.completed {
+    border-left: 3px solid #10b981;
+  }
+}
+
+.rating-button {
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.selected {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.question-container {
+  border-left: 3px solid transparent;
+  padding-left: 16px;
+  margin-left: -16px;
+  transition: border-color 0.2s ease-in-out;
+
+  &.has-error {
+    border-left-color: #ef4444;
+  }
+
+  &.completed {
+    border-left-color: #10b981;
+  }
+}
+
+.form-field {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}
+
+.progress-indicator {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.section-transition {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .rating-button {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .section-nav-item {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}

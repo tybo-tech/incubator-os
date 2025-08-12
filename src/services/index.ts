@@ -2,3 +2,4 @@
 
 export * from './service';
 export * from './node.service';
+export * from './questionnaire.service';
