@@ -537,6 +537,88 @@ import { Company } from '../../../../../models/business.models';
             ></textarea>
           </div>
 
+          <!-- Action Items Summary -->
+          <div class="bg-white rounded-lg shadow-sm border p-6 mt-6" *ngIf="getActionItems().length > 0">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900">Action Items Summary</h3>
+              <span class="text-sm text-gray-500">{{ getActionItems().length }} total actions</span>
+            </div>
+
+            <div class="space-y-3">
+              <div 
+                *ngFor="let item of getActionItems()" 
+                class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <h4 class="font-medium text-gray-900">{{ item.action_required }}</h4>
+                    <p class="text-sm text-gray-600 mt-1">{{ item.description }}</p>
+                    
+                    <div class="flex items-center space-x-4 mt-2">
+                      <!-- Category -->
+                      <span 
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="{
+                          'bg-green-100 text-green-800': item.category === 'strength',
+                          'bg-red-100 text-red-800': item.category === 'weakness',
+                          'bg-blue-100 text-blue-800': item.category === 'opportunity',
+                          'bg-yellow-100 text-yellow-800': item.category === 'threat'
+                        }"
+                      >
+                        {{ item.category | titlecase }}
+                      </span>
+
+                      <!-- Priority -->
+                      <span 
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="{
+                          'bg-gray-100 text-gray-800': item.priority === 'low',
+                          'bg-orange-100 text-orange-800': item.priority === 'medium',
+                          'bg-red-100 text-red-800': item.priority === 'high',
+                          'bg-purple-100 text-purple-800': item.priority === 'critical'
+                        }"
+                      >
+                        {{ item.priority | titlecase }}
+                      </span>
+
+                      <!-- Status -->
+                      <span 
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="{
+                          'bg-gray-100 text-gray-800': item.status === 'identified',
+                          'bg-blue-100 text-blue-800': item.status === 'planning',
+                          'bg-yellow-100 text-yellow-800': item.status === 'in_progress',
+                          'bg-green-100 text-green-800': item.status === 'completed',
+                          'bg-red-100 text-red-800': item.status === 'on_hold'
+                        }"
+                      >
+                        {{ getStatusDisplay(item.status) }}
+                      </span>
+
+                      <!-- Assigned To -->
+                      <div *ngIf="item.assigned_to" class="flex items-center text-xs text-gray-500">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ item.assigned_to }}
+                      </div>
+
+                      <!-- Due Date -->
+                      <div *ngIf="item.target_date" class="flex items-center text-xs" 
+                           [ngClass]="{
+                             'text-red-600': isOverdue(item.target_date),
+                             'text-orange-600': isDueSoon(item.target_date),
+                             'text-gray-500': !isOverdue(item.target_date) && !isDueSoon(item.target_date)
+                           }">
+                        <i class="fas fa-calendar mr-1"></i>
+                        {{ item.target_date | date:'MMM d, y' }}
+                        <span *ngIf="isOverdue(item.target_date)" class="ml-1 font-medium">(Overdue)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
             <div class="bg-green-50 p-4 rounded-lg text-center">
               <div class="text-2xl font-bold text-green-600">{{ swotData.internal.strengths.length || 0 }}</div>
@@ -773,6 +855,56 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     );
   }
 
+  getActionItems(): SwotItem[] {
+    const items: SwotItem[] = [];
+    
+    // Collect items that have action_required defined
+    if (this.swotData?.internal?.strengths) {
+      items.push(...this.swotData.internal.strengths.filter(item => item.action_required));
+    }
+    if (this.swotData?.internal?.weaknesses) {
+      items.push(...this.swotData.internal.weaknesses.filter(item => item.action_required));
+    }
+    if (this.swotData?.external?.opportunities) {
+      items.push(...this.swotData.external.opportunities.filter(item => item.action_required));
+    }
+    if (this.swotData?.external?.threats) {
+      items.push(...this.swotData.external.threats.filter(item => item.action_required));
+    }
+    
+    return items;
+  }
+
+  getStatusDisplay(status: string): string {
+    switch (status) {
+      case 'identified': return '📝 Identified';
+      case 'planning': return '📋 Planning';
+      case 'in_progress': return '⚙️ In Progress';
+      case 'completed': return '✅ Completed';
+      case 'on_hold': return '⏸️ On Hold';
+      default: return status;
+    }
+  }
+
+  isOverdue(dateString: string | undefined): boolean {
+    if (!dateString) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(dateString);
+    return dueDate < today;
+  }
+
+  isDueSoon(dateString: string | undefined): boolean {
+    if (!dateString) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(dateString);
+    const threeDaysFromNow = new Date();
+    threeDaysFromNow.setDate(today.getDate() + 3);
+    threeDaysFromNow.setHours(0, 0, 0, 0);
+    return dueDate >= today && dueDate <= threeDaysFromNow;
+  }
+
   saveSwotAnalysis(): void {
     if (!this.company?.id) return;
 
@@ -806,7 +938,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification
+    // Simple alert for now - could be replaced with a toast notification  
     console.log(message);
   }
 
