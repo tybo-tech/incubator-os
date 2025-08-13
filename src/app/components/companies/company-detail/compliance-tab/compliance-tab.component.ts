@@ -2,15 +2,17 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
+import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/compliance-questionnaire.component';
 
 @Component({
   selector: 'app-compliance-tab',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ComplianceQuestionnaireComponent],
   template: `
     <div class="space-y-8">
+      <!-- Compliance Overview -->
       <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-6">Compliance Status</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-6">Compliance Overview</h3>
 
         <!-- Compliance Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -96,6 +98,11 @@ import { Company } from '../../../../../models/business.models';
           <p class="text-sm text-gray-700">{{ company.data.compliance?.notes || 'No additional compliance notes available.' }}</p>
         </div>
       </div>
+
+      <!-- Compliance Questionnaire -->
+      <app-compliance-questionnaire
+        [company]="company">
+      </app-compliance-questionnaire>
     </div>
   `
 })
