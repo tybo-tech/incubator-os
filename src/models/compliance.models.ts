@@ -1,3 +1,4 @@
+import { AssessmentAnalysis } from './business.assessment.models';
 // Compliance Questionnaire Models
 export interface ComplianceQuestionnaire {
   id?: string;

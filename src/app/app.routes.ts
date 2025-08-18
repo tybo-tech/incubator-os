@@ -4,6 +4,7 @@ import { CompanyDetailComponent } from './components/companies/company-detail/co
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
+import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +31,10 @@ export const routes: Routes = [
       {
         path: 'companies/:id/pdf-export',
         component: PdfExportPageComponent,
+      },
+      {
+        path: 'companies/:id/executive-report',
+        component: ExecutiveReportComponent,
       },
       {
         path: 'tasks',

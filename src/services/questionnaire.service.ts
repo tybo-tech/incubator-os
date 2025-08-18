@@ -371,6 +371,17 @@ export class QuestionnaireService {
             message: 'Please explain your motivation and current state in 50-1000 characters'
           }
         },
+        // when did you register with CIPC
+        {
+          id: 'intro_registration_date',
+          question: 'When did you register your business with CIPC?',
+          type: 'date' as QuestionType,
+          order: 3,
+          required: true,
+          validation: {
+            message: 'Please provide a valid registration date'
+          }
+        },
         {
           id: 'intro_years_operation',
           question: 'How long have you been operating this business?',

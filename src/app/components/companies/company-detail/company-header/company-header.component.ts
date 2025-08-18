@@ -38,7 +38,9 @@ import { Company } from '../../../../../models/business.models';
           </div>
 
           <div class="flex items-center space-x-3">
-            <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            <button
+              (click)="exportToPDF.emit()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
               Export
             </button>
             <button
@@ -56,6 +58,7 @@ export class CompanyHeaderComponent {
   @Input() company!: INode<Company>;
   @Output() goBack = new EventEmitter<void>();
   @Output() editCompany = new EventEmitter<void>();
+  @Output() exportToPDF = new EventEmitter<void>();
 
   onGoBack(): void {
     this.goBack.emit();

@@ -19,6 +19,7 @@
     [company]="company"
     (goBack)="goBack()"
     (editCompany)="openEditModal()">
+    (exportToPDF)="exportToPDF()">
   </app-company-header>
 
   <!-- Tabs Navigation -->
@@ -100,6 +101,11 @@
       *ngIf="activeTab === 'hr-tracking'"
       [company]="company">
     </app-hr-tracking-tab>
+    <!-- Executive Report Tab -->
+    <!-- <app-executive-report
+      *ngIf="activeTab === 'executive-report'"
+      [company]="company">
+    </app-executive-report> -->
   </div>
 </div>
 

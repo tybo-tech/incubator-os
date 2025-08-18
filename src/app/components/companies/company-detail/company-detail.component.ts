@@ -23,6 +23,7 @@ import { FinancialTargetsTabComponent } from './financial-targets-tab/financial-
 import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.component';
 import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
+import { ExecutiveReportComponent } from './executive-report/executive-report.component';
 
 @Component({
   selector: 'app-company-detail',
@@ -45,12 +46,14 @@ import { CompanyFormModalComponent } from '../company-form-modal/company-form-mo
     FinancialTargetsTabComponent,
     HRTrackingTabComponent,
     GpsTargetsTabComponent,
-    CompanyFormModalComponent
+  CompanyFormModalComponent,
+  ExecutiveReportComponent
   ],
   templateUrl: './company-detail.component.html',
   styleUrl: './company-detail.component.scss'
 })
 export class CompanyDetailComponent implements OnInit {
+
   company: INode<Company> | null = null;
   activeTab: TabType = 'overview';
   loading = true;
@@ -73,7 +76,9 @@ export class CompanyDetailComponent implements OnInit {
       }
     });
   }
-
+exportToPDF() {
+this.router.navigate(['/companies', this.company?.id, 'executive-report']);
+}
   loadCompany(id: number) {
     this.loading = true;
     this.error = null;
