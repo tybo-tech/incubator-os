@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { INode } from '../models/schema';
 import { Constants } from './service';
+import { FinancialCheckIn } from '../models/busines.financial.checkin.models';
+import { Company } from '../models/business.models';
 
 @Injectable({
   providedIn: 'root',
@@ -46,8 +48,10 @@ export class NodeService<T = any> {
   }
 
   // Get nodes by type with hydrated relationships
-  getNodesByType(type: string,): Observable<INode<T>[]> {
-    const url = `${this.apiUrl}/get-nodes-by-type.php?type=${encodeURIComponent(type)}`;
+  getNodesByType(type: string): Observable<INode<T>[]> {
+    const url = `${this.apiUrl}/get-nodes-by-type.php?type=${encodeURIComponent(
+      type
+    )}`;
     return this.http.get<INode<T>[]>(url);
   }
 
@@ -61,7 +65,7 @@ export class NodeService<T = any> {
   }
 
   // Add a new node
-  addNode(node:INode<T>): Observable<INode<T>> {
+  addNode(node: INode<T>): Observable<INode<T>> {
     const url = `${this.apiUrl}/add-node.php`;
     const cleanNode = this.cleanDataForSave(node);
     return this.http.post<INode<T>>(url, cleanNode);
@@ -88,14 +92,14 @@ export class NodeService<T = any> {
   // Batch add multiple nodes
   addNodesBatch(nodes: INode<T>[]): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/add-nodes-batch.php`;
-    const cleanNodes = nodes.map(node => this.cleanDataForSave(node));
+    const cleanNodes = nodes.map((node) => this.cleanDataForSave(node));
     return this.http.post<INode<T>[]>(url, { items: cleanNodes });
   }
 
   // Batch update multiple nodes
   updateNodesBatch(nodes: INode<T>[]): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/update-nodes-batch.php`;
-    const cleanNodes = nodes.map(node => this.cleanDataForSave(node));
+    const cleanNodes = nodes.map((node) => this.cleanDataForSave(node));
     return this.http.put<INode<T>[]>(url, { items: cleanNodes });
   }
 
@@ -108,7 +112,7 @@ export class NodeService<T = any> {
     // Clean data object if it exists
     if (cleanNode.data && typeof cleanNode.data === 'object') {
       const cleanData = { ...cleanNode.data };
-      Object.keys(cleanData).forEach(key => {
+      Object.keys(cleanData).forEach((key) => {
         if (key.startsWith('__')) {
           delete cleanData[key];
         }
@@ -127,7 +131,7 @@ export class NodeService<T = any> {
 
     const cleanData = { ...data };
 
-    multiSelectFields.forEach(fieldKey => {
+    multiSelectFields.forEach((fieldKey) => {
       if (cleanData.hasOwnProperty(fieldKey)) {
         const value = cleanData[fieldKey];
         if (value !== null && value !== undefined && value !== '') {
@@ -136,8 +140,8 @@ export class NodeService<T = any> {
             cleanData[fieldKey] = [value];
           }
           // Filter out empty values from array
-          cleanData[fieldKey] = cleanData[fieldKey].filter((v: any) =>
-            v !== null && v !== undefined && v !== ''
+          cleanData[fieldKey] = cleanData[fieldKey].filter(
+            (v: any) => v !== null && v !== undefined && v !== ''
           );
         } else {
           // Set empty multi-select to empty array
@@ -150,14 +154,20 @@ export class NodeService<T = any> {
   }
 
   // Helper method to get display value for relationship fields
-  getDisplayValue(fieldKey: string, nodeData: any, labelField: string = 'name'): string {
+  getDisplayValue(
+    fieldKey: string,
+    nodeData: any,
+    labelField: string = 'name'
+  ): string {
     const hydratedKey = `__${fieldKey}`;
     const hydratedValue = nodeData[hydratedKey];
 
     if (hydratedValue) {
       if (Array.isArray(hydratedValue)) {
         // Multi-relationship
-        return hydratedValue.map(item => this.extractLabelFromItem(item, labelField)).join(', ');
+        return hydratedValue
+          .map((item) => this.extractLabelFromItem(item, labelField))
+          .join(', ');
       } else {
         // Single relationship
         return this.extractLabelFromItem(hydratedValue, labelField);
@@ -182,7 +192,7 @@ export class NodeService<T = any> {
       'title',
       'label',
       // Auto-detect name_* fields
-      ...Object.keys(item).filter(key => key.startsWith('name_'))
+      ...Object.keys(item).filter((key) => key.startsWith('name_')),
     ];
 
     for (const candidate of nameCandidates) {
@@ -204,4 +214,89 @@ export class NodeService<T = any> {
   getHydratedData(fieldKey: string, nodeData: any): any {
     return nodeData[`__${fieldKey}`];
   }
+// ===== Add these helpers in NodeService =====
+private round2(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+/** Parse " R146 086,00 " → 146086 (handles spaces, nbsp, commas, currency) */
+private parseMoneyRaw(v?: string | null): number | null {
+  if (!v) return null;
+  // normalize NBSP and trim
+  const s = String(v).replace(/\u00a0/g, ' ').trim();
+  // remove currency and spaces, keep digits, commas, dots
+  const cleaned = s.replace(/[^\d.,-]/g, '');
+  // If it looks like "146,086.00" (US) or "146.086,00" (EU/ZA), normalize to dot decimal
+  // Heuristic: last separator is decimal
+  const lastComma = cleaned.lastIndexOf(',');
+  const lastDot = cleaned.lastIndexOf('.');
+  let numeric = cleaned;
+
+  if (lastComma > lastDot) {
+    // comma as decimal → remove thousand dots/commas, keep comma as decimal then replace with dot
+    numeric = cleaned.replace(/\./g, '').replace(/,/g, '.');
+  } else {
+    // dot as decimal or integers with commas as thousand → drop commas
+    numeric = cleaned.replace(/,/g, '');
+  }
+
+  const n = Number(numeric);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** One-time fixer for company turnover */
+private fixCompanyData(data: Company & { [k: string]: any }) {
+  if ((data as any).company_fix_v1) return data; // idempotent guard
+
+  const clone: any = { ...data };
+
+  // Prefer the human-readable raw value if present and parseable
+  const rawParsed = this.parseMoneyRaw(clone.company_turnover_raw);
+
+  // Decide target numbers
+  const needsDivide = (x: any) => typeof x === 'number' && Number.isFinite(x);
+
+  if (rawParsed !== null) {
+    // Trust the raw cell — it already encodes the intended value
+    clone.turnover_estimated = this.round2(rawParsed);
+    if (needsDivide(clone.turnover_actual) && !clone.turnover_actual) {
+      // leave actual as-is if it’s legitimately zero; otherwise you can choose to set it too
+    }
+  } else {
+    // Fall back to divide-by-100 for estimated
+    if (needsDivide(clone.turnover_estimated)) {
+      clone.turnover_estimated = this.round2(clone.turnover_estimated / 100);
+    }
+    // Optionally fix actual too if it exists
+    if (needsDivide(clone.turnover_actual) && clone.turnover_actual !== 0) {
+      clone.turnover_actual = this.round2(clone.turnover_actual / 100);
+    }
+  }
+
+  // Mark as fixed
+  clone.company_fix_v1 = true;
+  return clone;
+}
+// ===== Replace your current fixCompanyTurnOver with this =====
+fixCompanyTurnOver() {
+  const url = `http://localhost:8080/api-nodes/node/get-nodes.php?type=company`;
+
+  this.http.get<INode<Company>[]>(url).subscribe({
+    next: (nodes) => {
+      if (!nodes?.length) {
+        console.log('No company nodes found.');
+        return;
+      }
+
+      const fixed = nodes.map((n) => ({ ...n, data: this.fixCompanyData(n.data as any) }));
+
+      this.updateNodesBatch(fixed).subscribe({
+        next: (resp) => console.log('✅ Company turnover fixed:', resp),
+        error: (err) => console.error('❌ Failed to update companies:', err),
+      });
+    },
+    error: (err) => console.error('❌ Failed to fetch companies:', err),
+  });
+}
+
 }

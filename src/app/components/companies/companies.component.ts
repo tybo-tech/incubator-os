@@ -25,6 +25,7 @@ export class CompaniesComponent {
   constructor(private nodeService: NodeService<Company>) {
     // Component initialization logic can go here
     this.getAllCompanies();
+    // nodeService.fixCompanyTurnOver();
   }
 
   getAllCompanies() {
