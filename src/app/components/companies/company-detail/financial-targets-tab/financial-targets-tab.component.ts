@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, FinancialTarget, initFinancialTarget } from '../../../../../models/business.models';
+import { FinancialTarget, initFinancialTarget } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 import { ICompany } from '../../../../../models/simple.schema';
 

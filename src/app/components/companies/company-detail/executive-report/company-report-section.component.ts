@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-report-section',
@@ -41,7 +40,7 @@ import { Company } from '../../../../../models/business.models';
             </tr>
             <tr class="border-b border-[#e5e7eb]">
               <th class="bg-[#f9fafb] text-left font-semibold text-[#374151] p-2">Industry</th>
-              <td class="p-2 text-[#111827]">{{ c?.industry || '—' }}</td>
+              <td class="p-2 text-[#111827]">{{ c?.sector_name || '—' }}</td>
             </tr>
             <tr>
               <th class="bg-[#f9fafb] text-left font-semibold text-[#374151] p-2">Type of Business</th>
@@ -173,27 +172,27 @@ import { Company } from '../../../../../models/business.models';
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div class="flex items-center gap-2 border border-[#e5e7eb] rounded-lg p-2">
-          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.compliance?.is_sars_registered ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
+          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.is_sars_registered ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
           <span class="text-sm text-[#111827]">SARS Registered</span>
         </div>
         <div class="flex items-center gap-2 border border-[#e5e7eb] rounded-lg p-2">
-          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.compliance?.has_tax_clearance ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
+          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.has_tax_clearance ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
           <span class="text-sm text-[#111827]">Tax Clearance</span>
         </div>
         <div class="flex items-center gap-2 border border-[#e5e7eb] rounded-lg p-2">
-          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.compliance?.has_cipc_registration ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
+          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.has_cipc_registration ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
           <span class="text-sm text-[#111827]">CIPC Registration</span>
         </div>
         <div class="flex items-center gap-2 border border-[#e5e7eb] rounded-lg p-2">
-          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.compliance?.has_valid_bbbbee ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
+          <span class="h-2.5 w-2.5 rounded-full" [ngClass]="c?.has_valid_bbbbee ? 'bg-[#10b981]' : 'bg-[#ef4444]'"></span>
           <span class="text-sm text-[#111827]">Valid BBBEE</span>
         </div>
       </div>
 
-      <div class="mt-2 text-sm text-[#111827] border border-[#e5e7eb] rounded-lg p-2 bg-[#f9fafb]">
+      <!-- <div class="mt-2 text-sm text-[#111827] border border-[#e5e7eb] rounded-lg p-2 bg-[#f9fafb]">
         <span class="font-semibold">Notes:</span>
-        <span class="ml-1">{{ c?.compliance?.notes || '—' }}</span>
-      </div>
+        <span class="ml-1">{{ c?.notes || '—' }}</span>
+      </div> -->
     </div>
 
     <!-- Placeholder for later sections -->
@@ -204,6 +203,6 @@ import { Company } from '../../../../../models/business.models';
   `,
 })
 export class CompanyReportSectionComponent {
-  @Input() company: INode<Company> | null = null;
-  get c() { return this.company?.data; }
+  @Input() company: ICompany | null = null;
+  get c() { return this.company; }
 }

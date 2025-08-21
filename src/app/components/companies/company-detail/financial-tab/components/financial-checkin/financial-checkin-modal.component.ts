@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { INode } from '../../../../../../../models/schema';
-import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
 import { ICompany } from '../../../../../../../models/simple.schema';

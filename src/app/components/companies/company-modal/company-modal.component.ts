@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Company } from '../../../../models/business.models';
-import { INode } from '../../../../models/schema';
+import { ICompany } from '../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-modal',
@@ -12,7 +11,7 @@ import { INode } from '../../../../models/schema';
   styleUrl: './company-modal.component.scss'
 })
 export class CompanyModalComponent {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<void>();
 

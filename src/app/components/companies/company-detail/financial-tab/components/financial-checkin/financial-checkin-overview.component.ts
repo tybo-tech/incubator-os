@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../../../models/schema';
-import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
 import { FinancialCheckinTableComponent } from './financial-checkin-table.component';

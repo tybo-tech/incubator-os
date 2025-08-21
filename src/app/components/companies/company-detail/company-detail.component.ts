@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NodeService } from '../../../../services';
-import { Company } from '../../../../models/business.models';
-import { INode } from '../../../../models/schema';
+
 
 // Import all the new sub-components
 import { LoadingStateComponent } from './loading-state/loading-state.component';

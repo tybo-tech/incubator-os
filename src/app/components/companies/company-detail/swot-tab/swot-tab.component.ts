@@ -5,14 +5,11 @@ import { Subject, takeUntil } from 'rxjs';
 import {
   SwotAnalysis,
   SwotItem,
-  InternalFactors,
-  ExternalFactors,
   initSwotAnalysis,
   initSwotItem
 } from '../../../../../models/swot.models';
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({

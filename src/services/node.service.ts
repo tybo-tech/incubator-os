@@ -6,7 +6,6 @@ import { Observable } from 'rxjs';
 import { INode } from '../models/schema';
 import { Constants } from './service';
 import { FinancialCheckIn } from '../models/busines.financial.checkin.models';
-import { Company } from '../models/business.models';
 
 @Injectable({
   providedIn: 'root',
@@ -244,59 +243,5 @@ private parseMoneyRaw(v?: string | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** One-time fixer for company turnover */
-private fixCompanyData(data: Company & { [k: string]: any }) {
-  if ((data as any).company_fix_v1) return data; // idempotent guard
-
-  const clone: any = { ...data };
-
-  // Prefer the human-readable raw value if present and parseable
-  const rawParsed = this.parseMoneyRaw(clone.company_turnover_raw);
-
-  // Decide target numbers
-  const needsDivide = (x: any) => typeof x === 'number' && Number.isFinite(x);
-
-  if (rawParsed !== null) {
-    // Trust the raw cell — it already encodes the intended value
-    clone.turnover_estimated = this.round2(rawParsed);
-    if (needsDivide(clone.turnover_actual) && !clone.turnover_actual) {
-      // leave actual as-is if it’s legitimately zero; otherwise you can choose to set it too
-    }
-  } else {
-    // Fall back to divide-by-100 for estimated
-    if (needsDivide(clone.turnover_estimated)) {
-      clone.turnover_estimated = this.round2(clone.turnover_estimated / 100);
-    }
-    // Optionally fix actual too if it exists
-    if (needsDivide(clone.turnover_actual) && clone.turnover_actual !== 0) {
-      clone.turnover_actual = this.round2(clone.turnover_actual / 100);
-    }
-  }
-
-  // Mark as fixed
-  clone.company_fix_v1 = true;
-  return clone;
-}
-// ===== Replace your current fixCompanyTurnOver with this =====
-fixCompanyTurnOver() {
-  const url = `http://localhost:8080/api-nodes/node/get-nodes.php?type=company`;
-
-  this.http.get<INode<Company>[]>(url).subscribe({
-    next: (nodes) => {
-      if (!nodes?.length) {
-        console.log('No company nodes found.');
-        return;
-      }
-
-      const fixed = nodes.map((n) => ({ ...n, data: this.fixCompanyData(n.data as any) }));
-
-      this.updateNodesBatch(fixed).subscribe({
-        next: (resp) => console.log('✅ Company turnover fixed:', resp),
-        error: (err) => console.error('❌ Failed to update companies:', err),
-      });
-    },
-    error: (err) => console.error('❌ Failed to fetch companies:', err),
-  });
-}
 
 }

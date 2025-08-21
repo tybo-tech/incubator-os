@@ -2,7 +2,6 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../services';
 import {

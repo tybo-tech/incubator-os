@@ -11,7 +11,6 @@ import {
 } from '../../../../../models/gps-targets.models';
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({

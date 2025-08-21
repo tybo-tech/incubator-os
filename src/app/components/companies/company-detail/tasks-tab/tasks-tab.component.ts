@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, Task } from '../../../../../models/business.models';
+import {Task } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.component';
 import { ICompany } from '../../../../../models/simple.schema';

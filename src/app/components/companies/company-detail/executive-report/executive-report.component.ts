@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 import html2pdf from 'html2pdf.js';
 import { CompanyReportSectionComponent } from './company-report-section.component';
 import { AssessmentReportSectionComponent } from './assessment-report-section.component';
+import { ICompany } from '../../../../../models/simple.schema';
+import { CompanyService } from '../../../../../services/company.service';
 
 @Component({
   selector: 'app-executive-report',
@@ -19,12 +20,12 @@ import { AssessmentReportSectionComponent } from './assessment-report-section.co
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="h-9 w-9 rounded-md bg-[#3b82f6] text-white flex items-center justify-center font-bold">
-              {{ company?.data?.name?.charAt(0) || '•' }}
+              {{ company?.name?.charAt(0) || '•' }}
             </div>
             <div>
               <div class="text-sm text-[#6b7280]">Executive Report</div>
               <div class="font-semibold text-[#111827]">
-                {{ company?.data?.name || 'Loading…' }}
+                {{ company?.name || 'Loading…' }}
               </div>
             </div>
           </div>
@@ -67,14 +68,15 @@ import { AssessmentReportSectionComponent } from './assessment-report-section.co
   `,
 })
 export class ExecutiveReportComponent implements OnInit {
-  company: INode<Company> | null = null;
+  company: ICompany | null = null;
   loading = false;
   error: string | null = null;
   isGenerating = false;
 
   constructor(
     private route: ActivatedRoute,
-    private nodeService: NodeService<Company>,
+    private nodeService: NodeService<any>,
+    private companyService: CompanyService,
   ) {}
 
   ngOnInit(): void {
@@ -84,7 +86,7 @@ export class ExecutiveReportComponent implements OnInit {
       return;
     }
     this.loading = true;
-    this.nodeService.getNodeById(id).subscribe({
+    this.companyService.getCompanyById(id).subscribe({
       next: (data) => (this.company = data),
       error: (err) => {
         console.error(err);
@@ -110,7 +112,7 @@ export class ExecutiveReportComponent implements OnInit {
       const el = document.getElementById('pdf-content');
       if (!el) throw new Error('#pdf-content not found');
 
-      const safeName = (this.company.data.name || 'Company').replace(/[^a-zA-Z0-9]/g, '_');
+      const safeName = (this.company.name || 'Company').replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `${safeName}_Executive_Report_${new Date().toISOString().split('T')[0]}.pdf`;
 
       const options = {

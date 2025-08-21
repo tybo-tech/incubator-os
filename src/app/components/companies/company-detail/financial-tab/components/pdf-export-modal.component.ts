@@ -2,7 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { INode } from '../../../../../../models/schema';
-import { Company, BankStatement } from '../../../../../../models/business.models';
+import {  BankStatement } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-pdf-export-modal',
@@ -28,7 +29,7 @@ import { Company, BankStatement } from '../../../../../../models/business.models
             <div class="mb-4">
               <i class="fas fa-file-pdf text-6xl text-red-500 mb-4"></i>
               <h4 class="text-lg font-medium text-gray-900 mb-2">Generate Financial Report</h4>
-              <p class="text-gray-600 mb-6">Create a comprehensive PDF report for {{ company.data.name }}</p>
+              <p class="text-gray-600 mb-6">Create a comprehensive PDF report for {{ company.name }}</p>
             </div>
 
             <div class="flex space-x-3 justify-center">
@@ -51,7 +52,7 @@ import { Company, BankStatement } from '../../../../../../models/business.models
 })
 export class PdfExportModalComponent implements OnInit {
   @Input() showModal = false;
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
   @Input() bankStatements: INode<BankStatement>[] = [];
   @Output() closeModalEvent = new EventEmitter<void>();
 

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
-import { Company } from '../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../services/node.service';
 import html2pdf from 'html2pdf.js';
 import { firstValueFrom } from 'rxjs';
+import { ICompany } from '../../../../../../models/simple.schema';
+import { CompanyService } from '../../../../../../services/company.service';
 
 interface GroupedCheckIn {
   year: number;
@@ -62,7 +63,7 @@ interface QuarterlyMetrics {
                 <button (click)="goBack()" class="mr-4 text-gray-600 hover:text-gray-800">
                   <i class="fas fa-arrow-left"></i>
                 </button>
-                <h1 class="text-xl font-semibold text-gray-900">PDF Export - {{ company?.data?.name || 'Loading...' }}</h1>
+                <h1 class="text-xl font-semibold text-gray-900">PDF Export - {{ company?.name || 'Loading...' }}</h1>
               </div>
               <div class="flex space-x-3">
                 <!-- Toggle Controls -->
@@ -99,9 +100,9 @@ interface QuarterlyMetrics {
             <!-- Company Header -->
             <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
               <div style="width: 4rem; height: 4rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 0.5rem; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;">
-                {{ company.data.name.charAt(0) }}
+                {{ company.name.charAt(0) }}
               </div>
-              <h1 style="font-size: 1.5rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">{{ company.data.name }}</h1>
+              <h1 style="font-size: 1.5rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">{{ company.name }}</h1>
               <p style="color: #4b5563;">Financial Report</p>
               <p style="font-size: 0.875rem; color: #6b7280;">Generated on {{ currentDate | date:'fullDate' }}</p>
 
@@ -119,11 +120,11 @@ interface QuarterlyMetrics {
               <div>
                 <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.75rem;">Company Information</h2>
                 <div style="font-size: 0.875rem;">
-                  <div style="margin-bottom: 0.5rem;"><strong>Registration No:</strong> {{ company.data.registration_no }}</div>
-                  <div style="margin-bottom: 0.5rem;"><strong>Industry:</strong> {{ company.data.industry }}</div>
-                  <div style="margin-bottom: 0.5rem;"><strong>Contact Person:</strong> {{ company.data.contact_person || 'N/A' }}</div>
-                  <div style="margin-bottom: 0.5rem;"><strong>Email:</strong> {{ company.data.email_address || 'N/A' }}</div>
-                  <div style="margin-bottom: 0.5rem;"><strong>Phone:</strong> {{ company.data.contact_number || 'N/A' }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>Registration No:</strong> {{ company.registration_no }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>Industry:</strong> {{ company.sector_name }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>Contact Person:</strong> {{ company.contact_person || 'N/A' }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>Email:</strong> {{ company.email_address || 'N/A' }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>Phone:</strong> {{ company.contact_number || 'N/A' }}</div>
                 </div>
               </div>
 
@@ -131,18 +132,18 @@ interface QuarterlyMetrics {
                 <h2 style="font-size: 1.125rem; font-weight: 600; color: #111827; margin-bottom: 0.75rem;">Compliance Status</h2>
                 <div style="font-size: 0.875rem;">
                   <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.data.compliance?.is_sars_registered ? '#10b981' : '#ef4444' }};"></div>
+                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.is_sars_registered ? '#10b981' : '#ef4444' }};"></div>
                     <span>SARS Registration</span>
                   </div>
                   <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.data.compliance?.has_tax_clearance ? '#10b981' : '#ef4444' }};"></div>
+                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.has_tax_clearance ? '#10b981' : '#ef4444' }};"></div>
                     <span>Tax Clearance</span>
                   </div>
                   <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.data.compliance?.has_cipc_registration ? '#10b981' : '#ef4444' }};"></div>
+                    <div style="width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.5rem; background-color: {{ company.has_cipc_registration ? '#10b981' : '#ef4444' }};"></div>
                     <span>CIPC Registration</span>
                   </div>
-                  <div style="margin-bottom: 0.5rem;"><strong>BBBEE Level:</strong> {{ company.data.bbbee_level || 'N/A' }}</div>
+                  <div style="margin-bottom: 0.5rem;"><strong>BBBEE Level:</strong> {{ company.bbbee_level || 'N/A' }}</div>
                 </div>
               </div>
             </div>
@@ -259,7 +260,7 @@ interface QuarterlyMetrics {
             <!-- Footer -->
             <div style="text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
               <p>This report was generated on {{ currentDate | date:'medium' }}</p>
-              <p>Financial data is based on financial check-ins provided by {{ company.data.name }}</p>
+              <p>Financial data is based on financial check-ins provided by {{ company.name }}</p>
             </div>
           </div>
         </div>
@@ -268,7 +269,7 @@ interface QuarterlyMetrics {
   `
 })
 export class PdfExportPageComponent implements OnInit {
-  company: INode<Company> | null = null;
+  company: ICompany | null = null;
   financialCheckIns: INode<FinancialCheckIn>[] = [];
   currentDate = new Date();
   isGenerating = false;
@@ -283,6 +284,7 @@ export class PdfExportPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private companyService: CompanyService,
     private nodeService: NodeService
   ) {}
 
@@ -299,7 +301,7 @@ export class PdfExportPageComponent implements OnInit {
       }
 
       // Load company data
-      this.company = await firstValueFrom(this.nodeService.getNodeById(companyIdNumber)) as INode<Company>;
+      this.company = await firstValueFrom(this.companyService.getCompanyById(companyIdNumber)) as ICompany;
 
       // Load financial check-ins
       this.financialCheckIns = await firstValueFrom(this.nodeService.getNodesByCompany(companyIdNumber, 'financial_checkin')) as INode<FinancialCheckIn>[];
@@ -327,7 +329,7 @@ export class PdfExportPageComponent implements OnInit {
         throw new Error('PDF content element not found');
       }
 
-      const filename = `${this.company?.data.name.replace(/[^a-zA-Z0-9]/g, '_')}_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `${this.company?.name.replace(/[^a-zA-Z0-9]/g, '_')}_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`;
 
       const options = {
         margin: [0.3, 0.3, 0.3, 0.3],

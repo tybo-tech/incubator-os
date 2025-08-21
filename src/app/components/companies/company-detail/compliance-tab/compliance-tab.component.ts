@@ -1,7 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/compliance-questionnaire.component';
 import { ICompany } from '../../../../../models/simple.schema';
 

@@ -3,7 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, CompanyVision, ProductService, StrategicGoal, Objective, KeyResult, OKRTask, initCompanyVision, initProductService, initStrategicGoal, initObjective, initKeyResult, initOKRTask } from '../../../../../models/business.models';
+import {
+  CompanyVision,
+  ProductService,
+  StrategicGoal,
+  Objective,
+  KeyResult,
+  OKRTask,
+  initProductService,
+  initStrategicGoal,
+} from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
 // Import our new sub-components
@@ -32,7 +41,7 @@ import { ICompany } from '../../../../../models/simple.schema';
     ObjectiveModalComponent,
     ObjectiveTaskModalComponent,
     KeyResultModalComponent,
-    KeyResultProgressModalComponent
+    KeyResultProgressModalComponent,
   ],
   template: `
     <div class="space-y-16">
@@ -40,7 +49,10 @@ import { ICompany } from '../../../../../models/simple.schema';
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-2xl font-bold text-gray-900">Vision & Strategy</h2>
-          <p class="text-gray-600">Define the strategic direction and vision for {{ company?.name || 'this company' }}</p>
+          <p class="text-gray-600">
+            Define the strategic direction and vision for
+            {{ company?.name || 'this company' }}
+          </p>
         </div>
       </div>
 
@@ -49,25 +61,35 @@ import { ICompany } from '../../../../../models/simple.schema';
         <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
           <div class="flex items-center justify-between">
             <div>
-              <div class="text-xl font-bold text-blue-600">{{ visionComplete ? '✓' : '○' }}</div>
+              <div class="text-xl font-bold text-blue-600">
+                {{ visionComplete ? '✓' : '○' }}
+              </div>
               <div class="text-xs text-blue-700">Vision & Mission</div>
             </div>
             <i class="fas fa-eye text-blue-500 text-lg"></i>
           </div>
         </div>
-        <div class="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+        <div
+          class="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200"
+        >
           <div class="flex items-center justify-between">
             <div>
-              <div class="text-xl font-bold text-green-600">{{ productsServices.length }}</div>
+              <div class="text-xl font-bold text-green-600">
+                {{ productsServices.length }}
+              </div>
               <div class="text-xs text-green-700">Products & Services</div>
             </div>
             <i class="fas fa-box text-green-500 text-lg"></i>
           </div>
         </div>
-        <div class="bg-purple-50 p-4 rounded-lg shadow-sm border border-purple-200">
+        <div
+          class="bg-purple-50 p-4 rounded-lg shadow-sm border border-purple-200"
+        >
           <div class="flex items-center justify-between">
             <div>
-              <div class="text-xl font-bold text-purple-600">{{ objectives.length }}</div>
+              <div class="text-xl font-bold text-purple-600">
+                {{ objectives.length }}
+              </div>
               <div class="text-xs text-purple-700">Strategic Goals</div>
             </div>
             <i class="fas fa-target text-purple-500 text-lg"></i>
@@ -158,7 +180,7 @@ import { ICompany } from '../../../../../models/simple.schema';
         (save)="saveProgress($event)"
       ></app-key-result-progress-modal>
     </div>
-  `
+  `,
 })
 export class StrategyTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
@@ -198,9 +220,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   productFormData: ProductService = initProductService();
   goalFormData: StrategicGoal = initStrategicGoal();
 
-  constructor(
-    private nodeService: NodeService<any>
-  ) {}
+  constructor(private nodeService: NodeService<any>) {}
 
   ngOnInit() {
     this.loadStrategyData();
@@ -213,7 +233,10 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
   // Computed properties
   get visionComplete(): boolean {
-    return !!(this.visionData?.data?.vision_statement && this.visionData?.data?.mission_statement);
+    return !!(
+      this.visionData?.data?.vision_statement &&
+      this.visionData?.data?.mission_statement
+    );
   }
 
   // Data loading
@@ -223,47 +246,54 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     // Load vision data
-    this.nodeService.getNodesByCompany(this.company.id, 'company_vision')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'company_vision')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (visions) => {
-          this.visionData = visions.length > 0 ? visions[0] as INode<CompanyVision> : null;
+          this.visionData =
+            visions.length > 0 ? (visions[0] as INode<CompanyVision>) : null;
         },
-        error: (error: any) => console.error('Error loading vision:', error)
+        error: (error: any) => console.error('Error loading vision:', error),
       });
 
     // Load products/services
-    this.nodeService.getNodesByCompany(this.company.id, 'product_service')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'product_service')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (products) => {
           this.productsServices = products as INode<ProductService>[];
         },
-        error: (error: any) => console.error('Error loading products:', error)
+        error: (error: any) => console.error('Error loading products:', error),
       });
 
     // Load objectives
-    this.nodeService.getNodesByCompany(this.company.id, 'objective')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'objective')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (objectives) => {
           this.objectives = objectives as INode<Objective>[];
         },
-        error: (error: any) => console.error('Error loading objectives:', error)
+        error: (error: any) =>
+          console.error('Error loading objectives:', error),
       });
 
     // Load objective tasks
-    this.nodeService.getNodesByCompany(this.company.id, 'okr_task')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'okr_task')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tasks) => {
           this.objectiveTasks = tasks as INode<OKRTask>[];
         },
-        error: (error: any) => console.error('Error loading OKR tasks:', error)
+        error: (error: any) => console.error('Error loading OKR tasks:', error),
       });
 
     // Load key results
-    this.nodeService.getNodesByCompany(this.company.id, 'key_result')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'key_result')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (keyResults) => {
@@ -273,7 +303,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         error: (error: any) => {
           console.error('Error loading key results:', error);
           this.loading = false;
-        }
+        },
       });
   }
 
@@ -296,25 +326,27 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     visionFormData.last_updated = new Date().toISOString().split('T')[0];
 
     const operation = this.editingVision
-      ? this.nodeService.updateNode({ ...this.editingVision, data: visionFormData })
+      ? this.nodeService.updateNode({
+          ...this.editingVision,
+          data: visionFormData,
+        })
       : this.nodeService.addNode({
           company_id: this.company.id,
           type: 'company_vision',
-          data: visionFormData
+          data: visionFormData,
         } as INode<CompanyVision>);
 
-    operation.pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeVisionModal();
-          this.loadStrategyData();
-        },
-        error: (error: any) => {
-          console.error('Error saving vision:', error);
-          this.saving = false;
-        }
-      });
+    operation.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.saving = false;
+        this.closeVisionModal();
+        this.loadStrategyData();
+      },
+      error: (error: any) => {
+        console.error('Error saving vision:', error);
+        this.saving = false;
+      },
+    });
   }
 
   // Product/Service methods
@@ -334,11 +366,13 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     if (!product.id) return;
 
     if (confirm('Are you sure you want to delete this product/service?')) {
-      this.nodeService.deleteNode(product.id)
+      this.nodeService
+        .deleteNode(product.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => this.loadStrategyData(),
-          error: (error: any) => console.error('Error deleting product:', error)
+          error: (error: any) =>
+            console.error('Error deleting product:', error),
         });
     }
   }
@@ -355,7 +389,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
     if (isEditing && this.editingProduct) {
       // Update existing product
-      this.nodeService.updateNode({ ...this.editingProduct, data: productData })
+      this.nodeService
+        .updateNode({ ...this.editingProduct, data: productData })
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -366,15 +401,16 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error updating product:', error);
             this.saving = false;
-          }
+          },
         });
     } else {
       // Create new product
-      this.nodeService.addNode({
-        company_id: this.company?.id || 0,
-        type: 'product_service',
-        data: productData
-      } as INode<ProductService>)
+      this.nodeService
+        .addNode({
+          company_id: this.company?.id || 0,
+          type: 'product_service',
+          data: productData,
+        } as INode<ProductService>)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -385,7 +421,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error creating product:', error);
             this.saving = false;
-          }
+          },
         });
     }
   }
@@ -407,11 +443,13 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     if (!objective.id) return;
 
     if (confirm('Are you sure you want to delete this objective?')) {
-      this.nodeService.deleteNode(objective.id)
+      this.nodeService
+        .deleteNode(objective.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => this.loadStrategyData(),
-          error: (error: any) => console.error('Error deleting objective:', error)
+          error: (error: any) =>
+            console.error('Error deleting objective:', error),
         });
     }
   }
@@ -427,7 +465,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
     if (isEditing && this.selectedObjective) {
       // Update existing objective
-      this.nodeService.updateNode({ ...this.selectedObjective, data: objectiveData })
+      this.nodeService
+        .updateNode({ ...this.selectedObjective, data: objectiveData })
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -438,15 +477,16 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error updating objective:', error);
             this.saving = false;
-          }
+          },
         });
     } else {
       // Create new objective
-      this.nodeService.addNode({
-        company_id: this.company?.id || 0,
-        type: 'objective',
-        data: objectiveData
-      } as INode<Objective>)
+      this.nodeService
+        .addNode({
+          company_id: this.company?.id || 0,
+          type: 'objective',
+          data: objectiveData,
+        } as INode<Objective>)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -457,7 +497,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error creating objective:', error);
             this.saving = false;
-          }
+          },
         });
     }
   }
@@ -487,7 +527,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
     if (isEditing && this.selectedKeyResult) {
       // Update existing key result
-      this.nodeService.updateNode({ ...this.selectedKeyResult, data: keyResultData })
+      this.nodeService
+        .updateNode({ ...this.selectedKeyResult, data: keyResultData })
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -498,16 +539,17 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error updating key result:', error);
             this.saving = false;
-          }
+          },
         });
     } else {
       // Create new key result
       keyResultData.objective_id = this.selectedObjectiveId || '';
-      this.nodeService.addNode({
-        company_id: this.company?.id || 0,
-        type: 'key_result',
-        data: keyResultData
-      } as INode<KeyResult>)
+      this.nodeService
+        .addNode({
+          company_id: this.company?.id || 0,
+          type: 'key_result',
+          data: keyResultData,
+        } as INode<KeyResult>)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -518,7 +560,7 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error creating key result:', error);
             this.saving = false;
-          }
+          },
         });
     }
   }
@@ -527,11 +569,13 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     if (!keyResult.id) return;
 
     if (confirm('Are you sure you want to delete this key result?')) {
-      this.nodeService.deleteNode(keyResult.id)
+      this.nodeService
+        .deleteNode(keyResult.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => this.loadStrategyData(),
-          error: (error: any) => console.error('Error deleting key result:', error)
+          error: (error: any) =>
+            console.error('Error deleting key result:', error),
         });
     }
   }
@@ -561,11 +605,12 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     if (!task.id) return;
 
     if (confirm('Are you sure you want to delete this task?')) {
-      this.nodeService.deleteNode(task.id)
+      this.nodeService
+        .deleteNode(task.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => this.loadStrategyData(),
-          error: (error: any) => console.error('Error deleting task:', error)
+          error: (error: any) => console.error('Error deleting task:', error),
         });
     }
   }
@@ -588,7 +633,8 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
 
     if (isEditing && this.selectedTask) {
       // Update existing task
-      this.nodeService.updateNode({ ...this.selectedTask, data: taskData })
+      this.nodeService
+        .updateNode({ ...this.selectedTask, data: taskData })
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -599,18 +645,19 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error updating task:', error);
             this.saving = false;
-          }
+          },
         });
     } else {
       // Create new task
       if (this.selectedObjectiveId) {
         taskData.key_result_id = this.selectedObjectiveId;
       }
-      this.nodeService.addNode({
-        company_id: this.company?.id || 0,
-        type: 'okr_task',
-        data: taskData
-      } as INode<OKRTask>)
+      this.nodeService
+        .addNode({
+          company_id: this.company?.id || 0,
+          type: 'okr_task',
+          data: taskData,
+        } as INode<OKRTask>)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -621,26 +668,28 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
           error: (error: any) => {
             console.error('Error creating task:', error);
             this.saving = false;
-          }
+          },
         });
     }
   }
 
   toggleTaskStatus(task: INode<OKRTask>) {
-    const newStatus = task.data.status === 'completed' ? 'in_progress' : 'completed';
-    this.updateTaskStatus({task, status: newStatus});
+    const newStatus =
+      task.data.status === 'completed' ? 'in_progress' : 'completed';
+    this.updateTaskStatus({ task, status: newStatus });
   }
 
-  updateTaskStatus(event: {task: INode<OKRTask>, status: string}) {
+  updateTaskStatus(event: { task: INode<OKRTask>; status: string }) {
     const { task, status } = event;
 
     const updatedTaskData: OKRTask = {
       ...task.data,
       status: status as any,
-      completed_date: status === 'completed' ? new Date().toISOString() : ''
+      completed_date: status === 'completed' ? new Date().toISOString() : '',
     };
 
-    this.nodeService.updateNode({ ...task, data: updatedTaskData })
+    this.nodeService
+      .updateNode({ ...task, data: updatedTaskData })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -650,11 +699,12 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
             this.updateKeyResultProgressFromTasks(task.data.key_result_id);
           }
         },
-        error: (error: any) => console.error('Error updating task status:', error)
+        error: (error: any) =>
+          console.error('Error updating task status:', error),
       });
   }
 
-  onTaskStatusChange(event: {task: INode<OKRTask>, status: string}) {
+  onTaskStatusChange(event: { task: INode<OKRTask>; status: string }) {
     this.updateTaskStatus(event);
   }
 
@@ -675,10 +725,11 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
     this.saving = true;
     const updatedKeyResult = {
       ...this.selectedKeyResultForProgress,
-      data: { ...this.selectedKeyResultForProgress.data, ...progressData }
+      data: { ...this.selectedKeyResultForProgress.data, ...progressData },
     };
 
-    this.nodeService.updateNode(updatedKeyResult)
+    this.nodeService
+      .updateNode(updatedKeyResult)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -691,28 +742,37 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         error: (error: any) => {
           console.error('Error updating key result progress:', error);
           this.saving = false;
-        }
+        },
       });
   }
 
   // Auto-update key result progress based on task completion
   updateKeyResultProgressFromTasks(keyResultId: string) {
-    const tasks = this.objectiveTasks.filter(task => task.data.key_result_id === keyResultId);
+    const tasks = this.objectiveTasks.filter(
+      (task) => task.data.key_result_id === keyResultId
+    );
     if (tasks.length === 0) return;
 
-    const completedTasks = tasks.filter(task => task.data.status === 'completed').length;
-    const progressPercentage = Math.round((completedTasks / tasks.length) * 100);
+    const completedTasks = tasks.filter(
+      (task) => task.data.status === 'completed'
+    ).length;
+    const progressPercentage = Math.round(
+      (completedTasks / tasks.length) * 100
+    );
 
     // Find the key result
-    const keyResult = this.keyResults.find(kr => kr.id === Number(keyResultId));
+    const keyResult = this.keyResults.find(
+      (kr) => kr.id === Number(keyResultId)
+    );
     if (keyResult) {
       // Update progress percentage directly, no need for target/current value calculation
       const updatedKeyResultData: KeyResult = {
         ...keyResult.data,
-        progress_percentage: progressPercentage
+        progress_percentage: progressPercentage,
       };
 
-      this.nodeService.updateNode({ ...keyResult, data: updatedKeyResultData })
+      this.nodeService
+        .updateNode({ ...keyResult, data: updatedKeyResultData })
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -720,17 +780,23 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
             this.loadStrategyData();
             this.updateObjectiveProgress();
           },
-          error: (error: any) => console.error('Error auto-updating key result progress:', error)
+          error: (error: any) =>
+            console.error('Error auto-updating key result progress:', error),
         });
     }
   }
 
   // Auto-calculate objective progress based on key results
   updateObjectiveProgress() {
-    this.objectives.forEach(objective => {
-      const keyResults = this.keyResults.filter(kr => kr.data.objective_id === String(objective.id));
+    this.objectives.forEach((objective) => {
+      const keyResults = this.keyResults.filter(
+        (kr) => kr.data.objective_id === String(objective.id)
+      );
       if (keyResults.length > 0) {
-        const totalProgress = keyResults.reduce((sum, kr) => sum + kr.data.progress_percentage, 0);
+        const totalProgress = keyResults.reduce(
+          (sum, kr) => sum + kr.data.progress_percentage,
+          0
+        );
         const averageProgress = Math.round(totalProgress / keyResults.length);
 
         // Update objective status based on progress
@@ -749,14 +815,17 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
         if (newStatus !== objective.data.current_status) {
           const updatedObjective = {
             ...objective,
-            data: { ...objective.data, current_status: newStatus }
+            data: { ...objective.data, current_status: newStatus },
           };
 
-          this.nodeService.updateNode(updatedObjective)
+          this.nodeService
+            .updateNode(updatedObjective)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-              next: () => console.log('Objective status updated to:', newStatus),
-              error: (error: any) => console.error('Error updating objective status:', error)
+              next: () =>
+                console.log('Objective status updated to:', newStatus),
+              error: (error: any) =>
+                console.error('Error updating objective status:', error),
             });
         }
       }
@@ -766,18 +835,26 @@ export class StrategyTabComponent implements OnInit, OnDestroy {
   // Utility methods
   getStatusClass(status: string): string {
     switch (status) {
-      case 'concept': return 'bg-gray-100 text-gray-800';
-      case 'development': return 'bg-yellow-100 text-yellow-800';
-      case 'testing': return 'bg-blue-100 text-blue-800';
-      case 'launched': return 'bg-green-100 text-green-800';
-      case 'discontinued': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'concept':
+        return 'bg-gray-100 text-gray-800';
+      case 'development':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'testing':
+        return 'bg-blue-100 text-blue-800';
+      case 'launched':
+        return 'bg-green-100 text-green-800';
+      case 'discontinued':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   }
 
   getStatusDisplay(status: string): string {
-    return status.replace('_', ' ').split(' ').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return status
+      .replace('_', ' ')
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 }

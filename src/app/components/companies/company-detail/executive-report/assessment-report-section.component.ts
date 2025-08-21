@@ -1,10 +1,9 @@
 // assessment-report-section.component.ts
 import { Component, Input, OnChanges, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
 import { AssessmentFacade } from './assessment-facade.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-assessment-report-section',
@@ -77,7 +76,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   `,
 })
 export class AssessmentReportSectionComponent implements OnChanges {
-  @Input({ required: true }) company: INode<Company> | null = null;
+  @Input({ required: true }) company: ICompany | null = null;
 
   // derived view model
   introText: string | null = null;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
-import { Company, GrowthArea, OKRTask, initGrowthArea, initOKRTask } from '../../../../../models/business.models';
+import {  GrowthArea, OKRTask, initGrowthArea, initOKRTask } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 
 // Import the reusable task modal component and new section component
