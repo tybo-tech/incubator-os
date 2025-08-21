@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NodeService } from '../../../services';
-import { Company } from '../../../models/business.models';
-import { INode } from '../../../models/schema';
 import { CompanyModalComponent } from './company-modal/company-modal.component';
 import { CompanyFormModalComponent } from './company-form-modal/company-form-modal.component';
+import { CompanyService } from '../../../services/company.service';
+import { ICompany } from '../../../models/simple.schema';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-companies',
@@ -13,23 +13,23 @@ import { CompanyFormModalComponent } from './company-form-modal/company-form-mod
   styleUrl: './companies.component.scss',
 })
 export class CompaniesComponent {
-  companies: INode<Company>[] = [];
-  selectedCompany: INode<Company> | null = null;
+  companies: ICompany[] = [];
+  selectedCompany: ICompany | null = null;
   isModalOpen = false;
 
   // Form modal properties
   isFormModalOpen = false;
   editMode = false;
-  companyToEdit: INode<Company> | null = null;
+  companyToEdit: ICompany | null = null;
 
-  constructor(private nodeService: NodeService<Company>) {
+  constructor(private nodeService: CompanyService, private router: Router) {
     // Component initialization logic can go here
     this.getAllCompanies();
     // nodeService.fixCompanyTurnOver();
   }
 
   getAllCompanies() {
-    this.nodeService.getNodesByType('company').subscribe({
+    this.nodeService.listCompanies().subscribe({
       next: (companies) => {
         console.log('Companies:', companies);
         this.companies = companies
@@ -40,9 +40,10 @@ export class CompaniesComponent {
     });
   }
 
-  openCompanyModal(company: INode<Company>) {
+  openCompanyModal(company: ICompany) {
     this.selectedCompany = company;
     this.isModalOpen = true;
+      this.router.navigate(['/companies', company.id]);
   }
 
   closeCompanyModal() {
@@ -55,12 +56,16 @@ export class CompaniesComponent {
     this.editMode = false;
     this.companyToEdit = null;
     this.isFormModalOpen = true;
+
   }
 
-  openEditCompanyModal(company: INode<Company>) {
-    this.editMode = true;
-    this.companyToEdit = company;
-    this.isFormModalOpen = true;
+  openEditCompanyModal(company: ICompany) {
+    // this.editMode = true;
+    // this.companyToEdit = company;
+    // this.isFormModalOpen = true;
+
+    //companies/1
+    this.router.navigate(['/companies', company.id]);
   }
 
   closeFormModal() {
@@ -69,7 +74,7 @@ export class CompaniesComponent {
     this.companyToEdit = null;
   }
 
-  onCompanySaved(company: INode<Company>) {
+  onCompanySaved(company: ICompany) {
     if (this.editMode) {
       // Update existing company in list
       const index = this.companies.findIndex(c => c.id === company.id);

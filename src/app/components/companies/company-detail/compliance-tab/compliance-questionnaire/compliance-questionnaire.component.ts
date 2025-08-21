@@ -17,6 +17,7 @@ import {
 import { NodeService } from '../../../../../../services/node.service';
 import { INode } from '../../../../../../models/schema';
 import { Company } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-compliance-questionnaire',
@@ -241,7 +242,7 @@ import { Company } from '../../../../../../models/business.models';
   styleUrls: ['./compliance-questionnaire.component.scss']
 })
 export class ComplianceQuestionnaireComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   complianceData: ComplianceQuestionnaire = initComplianceQuestionnaire('');
   complianceNode: INode<ComplianceQuestionnaire> | null = null;

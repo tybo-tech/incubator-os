@@ -9,6 +9,7 @@ import { NodeService } from '../../../../../services';
 // Import the reusable task modal component and new section component
 import { ObjectiveTaskModalComponent } from '../strategy-tab/components/objective-task-modal.component';
 import { GrowthAreasSectionComponent } from './components/growth-areas-section.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-growth-areas-tab',
@@ -20,7 +21,7 @@ import { GrowthAreasSectionComponent } from './components/growth-areas-section.c
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-2xl font-bold text-gray-900">Growth Areas & SWOT Analysis</h2>
-          <p class="text-gray-600">Identify strengths, weaknesses, opportunities, and threats for {{ company?.data?.name || 'this company' }}</p>
+          <p class="text-gray-600">Identify strengths, weaknesses, opportunities, and threats for {{ company?.name || 'this company' }}</p>
         </div>
         <button
           (click)="openGrowthAreaModal()"
@@ -245,7 +246,7 @@ import { GrowthAreasSectionComponent } from './components/growth-areas-section.c
   `
 })
 export class GrowthAreasTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   private destroy$ = new Subject<void>();
 

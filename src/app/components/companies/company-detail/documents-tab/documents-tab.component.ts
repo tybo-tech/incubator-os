@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-documents-tab',
@@ -102,5 +103,5 @@ import { Company } from '../../../../../models/business.models';
   `
 })
 export class DocumentsTabComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 }

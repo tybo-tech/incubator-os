@@ -4,6 +4,7 @@ import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { NodeService } from '../../../services';
 import { GlobalTaskModalComponent } from './global-task-modal.component';
+import { ICompany } from '../../../models/simple.schema';
 
 @Component({
   selector: 'app-tasks-list',
@@ -202,7 +203,7 @@ import { GlobalTaskModalComponent } from './global-task-modal.component';
 })
 export class TasksListComponent implements OnInit {
   tasks: INode<Task>[] = [];
-  availableCompanies: INode<any>[] = [];
+  availableCompanies: ICompany[] = [];
   loading = false;
   error: string | null = null;
 

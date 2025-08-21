@@ -24,6 +24,8 @@ import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.compon
 import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 import { ExecutiveReportComponent } from './executive-report/executive-report.component';
+import { CompanyService } from '../../../../services/company.service';
+import { ICompany } from '../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-detail',
@@ -54,7 +56,7 @@ import { ExecutiveReportComponent } from './executive-report/executive-report.co
 })
 export class CompanyDetailComponent implements OnInit {
 
-  company: INode<Company> | null = null;
+  company: ICompany | null = null;
   activeTab: TabType = 'overview';
   loading = true;
   error: string | null = null;
@@ -65,7 +67,7 @@ export class CompanyDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private nodeService: NodeService<Company>
+    private nodeService: CompanyService
   ) {}
 
   ngOnInit() {
@@ -83,7 +85,7 @@ this.router.navigate(['/companies', this.company?.id, 'executive-report']);
     this.loading = true;
     this.error = null;
 
-    this.nodeService.getNodeById(id).subscribe({
+    this.nodeService.getCompanyById(id).subscribe({
       next: (company) => {
         this.company = company;
         this.loading = false;
@@ -113,7 +115,7 @@ this.router.navigate(['/companies', this.company?.id, 'executive-report']);
     this.isEditModalOpen = false;
   }
 
-  onCompanySaved(updatedCompany: INode<Company>) {
+  onCompanySaved(updatedCompany: ICompany) {
     this.company = updatedCompany;
     this.closeEditModal();
     // Optionally show a success message

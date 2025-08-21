@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../../models/schema';
-import { Company } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-contact-information',
@@ -13,20 +12,20 @@ import { Company } from '../../../../../../models/business.models';
       <div class="grid grid-cols-2 gap-6">
         <div>
           <label class="text-sm font-medium text-gray-500">Contact Person</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.contact_person || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.contact_person || 'N/A' }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">Phone Number</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.contact_number || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.contact_number || 'N/A' }}</p>
         </div>
         <div class="col-span-2">
           <label class="text-sm font-medium text-gray-500">Email Address</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.email_address || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.email_address || 'N/A' }}</p>
         </div>
         <div class="col-span-2">
           <label class="text-sm font-medium text-gray-500">Address</label>
           <p class="text-sm text-gray-900 mt-1">
-            {{ company.data.address || company.data.business_location || company.data.city || 'N/A' }}
+            {{ company.address || company.business_location || company.city || 'N/A' }}
           </p>
         </div>
       </div>
@@ -34,5 +33,5 @@ import { Company } from '../../../../../../models/business.models';
   `
 })
 export class ContactInformationComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 }

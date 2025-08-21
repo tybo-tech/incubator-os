@@ -13,6 +13,7 @@ import {
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-swot-tab',
@@ -644,7 +645,7 @@ import { Company } from '../../../../../models/business.models';
   styleUrls: ['./swot-tab.component.scss']
 })
 export class SwotTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   swotData: SwotAnalysis = initSwotAnalysis('');
   swotNode: INode<SwotAnalysis> | null = null;

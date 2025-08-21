@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
 import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/compliance-questionnaire.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-compliance-tab',
@@ -21,16 +22,16 @@ import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/com
           <div class="border rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-gray-900">SARS Registration</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.is_sars_registered || false)"></div>
+              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.is_sars_registered || false)"></div>
             </div>
             <div class="space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.tax_valid_status || 'N/A' }}</span>
+                <span class="font-medium">{{ company.tax_valid_status || 'N/A' }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Tax Pin Expiry:</span>
-                <span class="font-medium">{{ company.data.tax_pin_expiry_date || 'N/A' }}</span>
+                <span class="font-medium">{{ company.tax_pin_expiry_date || 'N/A' }}</span>
               </div>
             </div>
           </div>
@@ -39,12 +40,12 @@ import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/com
           <div class="border rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-gray-900">Tax Clearance</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_tax_clearance || false)"></div>
-            </div>
+                <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.has_tax_clearance || false)"></div>
+              </div>
             <div class="space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.tax_valid_status || 'N/A' }}</span>
+                <span class="font-medium">{{ company.tax_valid_status || 'N/A' }}</span>
               </div>
             </div>
           </div>
@@ -53,16 +54,16 @@ import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/com
           <div class="border rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-gray-900">CIPC Registration</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_cipc_registration || false)"></div>
+              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.has_cipc_registration || false)"></div>
             </div>
             <div class="space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ company.data.cipc_status || 'N/A' }}</span>
+                <span class="font-medium">{{ company.cipc_status || 'N/A' }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Registration No:</span>
-                <span class="font-medium">{{ company.data.registration_no }}</span>
+                <span class="font-medium">{{ company.registration_no }}</span>
               </div>
             </div>
           </div>
@@ -71,32 +72,32 @@ import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/com
           <div class="border rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-gray-900">BBBEE Certificate</h4>
-              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.data.compliance?.has_valid_bbbbee || false)"></div>
+              <div [class]="'w-4 h-4 rounded-full ' + getComplianceColor(company.has_valid_bbbbee || false)"></div>
             </div>
             <div class="space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Level:</span>
-                <span [class]="'px-2 py-1 rounded text-xs font-medium text-white ' + getBbbeeColor(company.data.bbbee_level || '')">
-                  {{ company.data.bbbee_level || 'N/A' }}
+                <span [class]="'px-2 py-1 rounded text-xs font-medium text-white ' + getBbbeeColor(company.bbbee_level || '')">
+                  {{ company.bbbee_level || 'N/A' }}
                 </span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Expiry Date:</span>
-                <span class="font-medium">{{ company.data.bbbee_expiry_date || 'N/A' }}</span>
+                <span class="font-medium">{{ company.bbbee_expiry_date || 'N/A' }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Valid Status:</span>
-                <span class="font-medium">{{ company.data.bbbee_valid_status || 'N/A' }}</span>
+                <span class="font-medium">{{ company.bbbee_valid_status || 'N/A' }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Compliance Notes -->
-        <div class="mt-6 bg-gray-50 rounded-lg p-4">
+        <!-- <div class="mt-6 bg-gray-50 rounded-lg p-4">
           <h4 class="font-medium text-gray-900 mb-2">Compliance Notes</h4>
-          <p class="text-sm text-gray-700">{{ company.data.compliance?.notes || 'No additional compliance notes available.' }}</p>
-        </div>
+          <p class="text-sm text-gray-700">{{ company.notes || 'No additional compliance notes available.' }}</p>
+        </div> -->
       </div>
 
       <!-- Compliance Questionnaire -->
@@ -107,7 +108,7 @@ import { ComplianceQuestionnaireComponent } from './compliance-questionnaire/com
   `
 })
 export class ComplianceTabComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 
   getComplianceColor(isCompliant: boolean): string {
     return isCompliant ? 'bg-green-500' : 'bg-red-500';

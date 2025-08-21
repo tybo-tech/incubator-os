@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Company } from '../../../../../../models/business.models';
 import { INode } from '../../../../../../models/schema';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-financial-overview',
@@ -15,7 +16,7 @@ import { INode } from '../../../../../../models/schema';
           <div class="text-sm text-gray-600">Estimated Turnover</div>
         </div>
         <div class="text-2xl font-bold text-gray-900">
-          {{ formatCurrency(company.data.turnover_estimated || 0) }}
+          {{ formatCurrency(company.turnover_estimated || 0) }}
         </div>
       </div>
 
@@ -25,7 +26,7 @@ import { INode } from '../../../../../../models/schema';
           <div class="text-sm text-gray-600">Actual Turnover</div>
         </div>
         <div class="text-2xl font-bold text-gray-900">
-          {{ formatCurrency(company.data.turnover_actual || 0) }}
+          {{ formatCurrency(company.turnover_actual || 0) }}
         </div>
       </div>
 
@@ -35,14 +36,14 @@ import { INode } from '../../../../../../models/schema';
           <div class="text-sm text-gray-600">Raw Turnover Data</div>
         </div>
         <div class="text-sm text-gray-900">
-          {{ company.data.company_turnover_raw || 'N/A' }}
+          {{ company.turnover_estimated |currency:'ZAR' }}
         </div>
       </div>
     </div>
   `
 })
 export class FinancialOverviewComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {

@@ -1,12 +1,12 @@
 <?php
-// purchases_import.php
+// generate_company_updates.php
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
 include_once '../../config/Database.php';
 
-/* ------------ helpers ------------- */
+/* ---------- helpers ---------- */
 function load_json_rows(string $filename): array {
     $path = __DIR__ . DIRECTORY_SEPARATOR . $filename;
     if (!is_file($path) || !is_readable($path)) {
@@ -30,154 +30,117 @@ function canon_key(?string $s): ?string {
     return $s === '' ? null : $s;
 }
 
-function yn_int(?string $s): int {
-    $s = strtolower(trim((string)$s));
-    return (int) in_array($s, ['yes','y','true','1'], true);
-}
-
-function parse_money(?string $s): ?string {
-    if ($s === null) return null;
-    $s = preg_replace('/[R\s,   ]/u', '', trim($s)); // strip R, spaces (incl. thin), commas
-    if ($s === '' || $s === '-' || $s === '—') return null;
-    if (!str_contains($s, '.')) $s .= '.00';
-    if (!is_numeric($s)) return null;
-    return number_format((float)$s, 2, '.', '');
-}
-
 function clean_str(?string $s): ?string {
     if ($s === null) return null;
     $s = preg_replace('/\s+/u', ' ', trim($s));
     return $s === '' ? null : $s;
 }
 
-function build_company_cache(PDO $pdo): array {
-    $cache = [];
-    $stmt = $pdo->query("SELECT id, name, trading_name FROM companies");
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $id = (int)$row['id'];
-        foreach (['name','trading_name'] as $col) {
-            $ck = canon_key($row[$col] ?? null);
-            if ($ck) $cache[$ck] = $id;
-        }
-    }
-    return $cache;
-}
-
-/* ------------ main ------------- */
+/* ---------- main ---------- */
 try {
-    $file     = $_GET['file']   ?? 'purchases.json';
-    $doCommit = isset($_GET['commit']) && $_GET['commit'] === '1';
-    $allowNew = isset($_GET['allow_new_companies']) && $_GET['allow_new_companies'] === '1';
-
-    $rows = load_json_rows($file);
+    $file = $_GET['file'] ?? 'companies.json';
 
     $db = (new Database())->connect();
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $companyCache = build_company_cache($db);
+    // 1) Build DB company list (id, name, trading_name)
+    $stmt = $db->query("SELECT id, name, trading_name FROM companies");
+    $dbCompanies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $insert = $db->prepare("
-      INSERT INTO company_purchases
-        (company_id, purchase_type, service_provider, items, amount,
-         purchase_order, invoice_received, invoice_type, items_received, aligned_with_presentation, source_file)
-      VALUES
-        (:company_id, :purchase_type, :service_provider, :items, :amount,
-         :purchase_order, :invoice_received, :invoice_type, :items_received, :aligned_with_presentation, :source_file)
-    ");
+    // 2) Load JSON rows and map by canonicalized "Company Name"
+    $rows = load_json_rows($file);
+    $jsonMap = []; // canon_name -> ['sector'=>'...', 'contact'=>'...']
+    foreach ($rows as $r) {
+        $name = clean_str($r['Company Name'] ?? null);
+        if (!$name) continue;
+        $key = canon_key($name);
+        if (!$key) continue;
 
-    // optional stub creation for missing companies
-    $insertStub = $db->prepare("INSERT INTO companies (name) VALUES (:name)");
+        $sector  = clean_str($r['Business Sector'] ?? null);
+        $contact = clean_str($r['Contact Person'] ?? null);
 
-    $summary = [
-        'file' => $file,
-        'dry_run' => !$doCommit,
-        'rows_seen' => 0,
-        'inserted' => 0,
-        'skipped' => 0,
-        'missing_companies' => [],
-        'notes' => [],
-        'examples' => [],
-    ];
-
-    if ($doCommit) $db->beginTransaction();
-
-    foreach ($rows as $row) {
-        $summary['rows_seen']++;
-
-        // Skip aggregates like "Total Grant Disbursement" or blank company
-        $companyRaw = clean_str($row['Company Name'] ?? null);
-        if (!$companyRaw || stripos($companyRaw, 'total grant') !== false) {
-            $summary['skipped']++;
-            continue;
-        }
-
-        $ckey = canon_key($companyRaw);
-        $companyId = $ckey ? ($companyCache[$ckey] ?? null) : null;
-
-        if (!$companyId && $allowNew && $doCommit) {
-            // create minimal stub to attach purchases now
-            $insertStub->execute([':name' => $companyRaw]);
-            $companyId = (int)$db->lastInsertId();
-            $companyCache[$ckey] = $companyId;
-        }
-
-        if (!$companyId) {
-            $summary['skipped']++;
-            $summary['missing_companies'][] = $companyRaw;
-            continue;
-        }
-
-        // Normalize fields
-        $purchaseType   = clean_str($row['Purchase Type'] ?? null);
-        $serviceProv    = clean_str($row['Service Provider'] ?? null);
-        $items          = clean_str($row['List of items'] ?? null);
-        $amount         = parse_money($row[' Amount '] ?? null);
-        $po             = yn_int($row[' Purchase Order '] ?? null);
-        $invReceived    = yn_int($row['Invoice Received'] ?? null);
-        $invoiceType    = clean_str($row[' Type of invoice in file '] ?? null);
-        $itemsReceived  = yn_int($row[' Items Received '] ?? null);
-        // Note: the sample key is misspelled "presntation" — handle both
-        $aligned        = yn_int($row[' Quotes align to presntation '] ?? ($row['Quotes align to presentation'] ?? null));
-
-        if ($doCommit) {
-            $insert->execute([
-                ':company_id' => $companyId,
-                ':purchase_type' => $purchaseType,
-                ':service_provider' => $serviceProv,
-                ':items' => $items,
-                ':amount' => $amount,
-                ':purchase_order' => $po,
-                ':invoice_received' => $invReceived,
-                ':invoice_type' => $invoiceType,
-                ':items_received' => $itemsReceived,
-                ':aligned_with_presentation' => $aligned,
-                ':source_file' => $file,
-            ]);
-        }
-        $summary['inserted']++;
-
-        if (count($summary['examples']) < 3) {
-            $summary['examples'][] = [
-                'company_id' => $companyId,
-                'purchase_type' => $purchaseType,
-                'service_provider' => $serviceProv,
-                'amount' => $amount
+        // Prefer non-empty values; ignore fully empty lines
+        if ($sector !== null || $contact !== null) {
+            $jsonMap[$key] = [
+                'sector'  => $sector,
+                'contact' => $contact,
+                // keep raw for debugging if needed
+                '_raw_name' => $name,
             ];
         }
     }
 
-    if ($doCommit) $db->commit();
+    // 3) For each DB company, try to find a JSON match by name or trading_name
+    $updates = [];
+    $matched = 0;
+    $unmatchedDb = [];
+    $usedJsonKeys = [];
 
+    foreach ($dbCompanies as $c) {
+        $id   = (int)$c['id'];
+        $name = $c['name'] ?? null;
+        $tname= $c['trading_name'] ?? null;
+
+        $k1 = canon_key($name);
+        $k2 = canon_key($tname);
+
+        $row = null;
+        if ($k1 && isset($jsonMap[$k1])) {
+            $row = $jsonMap[$k1];
+            $usedJsonKeys[$k1] = true;
+        } elseif ($k2 && isset($jsonMap[$k2])) {
+            $row = $jsonMap[$k2];
+            $usedJsonKeys[$k2] = true;
+        }
+
+        if (!$row) {
+            $unmatchedDb[] = ['id'=>$id, 'name'=>$name, 'trading_name'=>$tname];
+            continue;
+        }
+
+        // Only generate SET clauses for non-null values
+        $sets = [];
+        if ($row['sector'] !== null) {
+            $sets[] = "sector_name=" . $db->quote($row['sector']);
+        }
+        if ($row['contact'] !== null) {
+            $sets[] = "contact_person=" . $db->quote($row['contact']);
+        }
+        if (empty($sets)) continue; // nothing to update
+
+        $updates[] = "UPDATE companies SET " . implode(', ', $sets) . " WHERE id={$id};";
+        $matched++;
+    }
+
+    // 4) JSON rows that didn’t match any DB company (helpful to review)
+    $unmatchedJson = [];
+    foreach ($jsonMap as $k => $v) {
+        if (!isset($usedJsonKeys[$k])) {
+            $unmatchedJson[] = ['company_name'=>$v['_raw_name'] ?? '(unknown)', 'sector'=>$v['sector'], 'contact'=>$v['contact']];
+        }
+    }
+
+    // 5) Output: the SQL text plus a small summary
     echo json_encode([
         'ok' => true,
-        'message' => $doCommit
-            ? 'Purchases import committed.'
-            : 'Preview only (dry-run). Add ?commit=1 to write.',
-        'summary' => $summary
+        'message' => 'Generated UPDATE statements. Copy/paste into your DB client.',
+        'file' => $file,
+        'summary' => [
+            'db_companies'     => count($dbCompanies),
+            'json_companies'   => count($jsonMap),
+            'matched'          => $matched,
+            'updates_generated'=> count($updates),
+            'unmatched_db'     => count($unmatchedDb),
+            'unmatched_json'   => count($unmatchedJson),
+        ],
+        // Raw SQL lines:
+        'sql' => $updates,
+        // Diagnostics if you need to reconcile names:
+        'unmatched_db_sample' => array_slice($unmatchedDb, 0, 10),
+        'unmatched_json_sample' => array_slice($unmatchedJson, 0, 10),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
 } catch (Throwable $e) {
-    if (isset($db) && $db instanceof PDO && $db->inTransaction()) $db->rollBack();
     http_response_code(400);
     echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
 }

@@ -11,6 +11,7 @@ import {
   FinancialCheckinOverviewComponent
 } from './components';
 import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-financial-tab',
@@ -25,7 +26,7 @@ import { FinancialCheckinQuarterlyViewComponent } from './components/financial-c
   templateUrl: './financial-tab.component.html'
 })
 export class FinancialTabComponent implements OnInit {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
   @ViewChild(FinancialCheckinOverviewComponent) checkinOverview!: FinancialCheckinOverviewComponent;
   @ViewChild(FinancialCheckinModalComponent) checkinModal!: FinancialCheckinModalComponent;
 

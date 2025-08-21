@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../../models/schema';
-import { Company } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-business-description',
@@ -13,16 +12,16 @@ import { Company } from '../../../../../../models/business.models';
       <div class="space-y-4">
         <div>
           <label class="text-sm font-medium text-gray-500">Service Offering</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.service_offering || company.data.description || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.service_offering || company.description || 'N/A' }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">Locations</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.locations || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.locations || 'N/A' }}</p>
         </div>
       </div>
     </div>
   `
 })
 export class BusinessDescriptionComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 }

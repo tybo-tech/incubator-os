@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-header',
@@ -21,17 +20,17 @@ import { Company } from '../../../../../models/business.models';
             </button>
 
             <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              {{ company.data.name.charAt(0) }}
+              {{ company.name.charAt(0) }}
             </div>
 
             <div>
-              <h1 class="text-2xl font-bold text-gray-900">{{ company.data.name }}</h1>
+              <h1 class="text-2xl font-bold text-gray-900">{{ company.name }}</h1>
               <div class="flex items-center space-x-3 mt-1">
-                <span class="text-gray-600">{{ company.data.industry }}</span>
+                <span class="text-gray-600">{{ company.sector_name }}</span>
                 <span class="text-gray-400">•</span>
-                <span class="text-gray-600">{{ company.data.registration_no }}</span>
-                <span [class]="'px-2 py-1 rounded-full text-xs font-medium text-white ' + getBbbeeColor(company.data.bbbee_level || '')">
-                  {{ company.data.bbbee_level || 'N/A' }}
+                <span class="text-gray-600">{{ company.registration_no }}</span>
+                <span [class]="'px-2 py-1 rounded-full text-xs font-medium text-white ' + getBbbeeColor(company.bbbee_level || '')">
+                  {{ company.bbbee_level || 'N/A' }}
                 </span>
               </div>
             </div>
@@ -55,7 +54,7 @@ import { Company } from '../../../../../models/business.models';
   `
 })
 export class CompanyHeaderComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
   @Output() goBack = new EventEmitter<void>();
   @Output() editCompany = new EventEmitter<void>();
   @Output() exportToPDF = new EventEmitter<void>();

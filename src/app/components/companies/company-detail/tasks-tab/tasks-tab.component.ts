@@ -5,6 +5,7 @@ import { INode } from '../../../../../models/schema';
 import { Company, Task } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
 import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-tasks-tab',
@@ -16,7 +17,7 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-2xl font-bold text-gray-900">Company Tasks</h2>
-          <p class="text-gray-600">Manage tasks associated with {{ company?.data?.name || 'this company' }}</p>
+          <p class="text-gray-600">Manage tasks associated with {{ company?.name || 'this company' }}</p>
         </div>
         <button
           (click)="openTaskModal()"
@@ -71,7 +72,7 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
       <div class="bg-white rounded-lg shadow-sm border">
         <div class="px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900">All Tasks</h3>
-          <p class="text-sm text-gray-600">Manage tasks for {{ company?.data?.name || 'this company' }}</p>
+          <p class="text-sm text-gray-600">Manage tasks for {{ company?.name || 'this company' }}</p>
         </div>
 
         <!-- Loading State -->
@@ -224,7 +225,7 @@ import { GlobalTaskModalComponent } from '../../../tasks/global-task-modal.compo
   `
 })
 export class TasksTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   tasks: INode<Task>[] = [];
   loading = false;

@@ -16,77 +16,139 @@ export interface Industry {
   children?: Industry[];
 }
 
-export type BbbeeValidStatus = 'Valid' | 'Expired' | 'No Date Captured' | string;
+export type BbbeeValidStatus =
+  | 'Valid'
+  | 'Expired'
+  | 'No Date Captured'
+  | string;
 export type TaxValidStatus = 'Valid' | 'Expired' | 'No Date Captured' | string;
 
 export interface ICompany {
   id: number;
   name: string;
+  registration_no: string | null;
+  bbbee_level: string | null;
+  cipc_status: string | null;
+  service_offering: string | null;
+  description: string | null;
+  city: string | null;
+  suburb: string | null;
+  address: string | null;
+  postal_code: string | null;
+  business_location: string | null;
+  contact_number: string | null;
+  email_address: string | null;
+  trading_name: string | null;
 
-  registrationNo?: string | null;
-  bbbeeLevel?: string | null;
-  cipcStatus?: string | null;
+  youth_owned: boolean;
+  black_ownership: boolean;
+  black_women_ownership: boolean;
 
-  serviceOffering?: string | null;
-  description?: string | null;
+  youth_owned_text: string | null;
+  black_ownership_text: string | null;
+  black_women_ownership_text: string | null;
 
-  city?: string | null;
-  suburb?: string | null;
-  address?: string | null;
-  postalCode?: string | null;
-  businessLocation?: string | null;
+  compliance_notes: string | null;
 
-  contactNumber?: string | null;
-  emailAddress?: string | null;
-  tradingName?: string | null;
+  has_valid_bbbbee: boolean;
+  has_tax_clearance: boolean;
+  is_sars_registered: boolean;
+  has_cipc_registration: boolean;
 
-  youthOwned?: boolean;
-  blackOwnership?: boolean;
-  blackWomenOwnership?: boolean;
+  bbbee_valid_status: string | null;
+  bbbee_expiry_date: string | null; // format: YYYY-MM-DD
+  tax_valid_status: string | null;
+  tax_pin_expiry_date: string | null; // format: YYYY-MM-DD
+  vat_number: string | null;
 
-  youthOwnedText?: string | null;         // e.g. "Yes"/"No"
-  blackOwnershipText?: string | null;
-  blackWomenOwnershipText?: string | null;
+  turnover_estimated: number | null;
+  turnover_actual: number | null;
 
-  complianceNotes?: string | null;
+  permanent_employees: number;
+  temporary_employees: number;
+  locations: string | null;
 
-  hasValidBbbbee?: boolean;
-  hasTaxClearance?: boolean;
-  isSarsRegistered?: boolean;
-  hasCipcRegistration?: boolean;
+  created_at: string; // format: YYYY-MM-DD HH:mm:ss
+  updated_at: string; // format: YYYY-MM-DD HH:mm:ss
+  industry_id: number | null;
 
-  bbbeeValidStatus?: BbbeeValidStatus | null;
-  bbbeeExpiryDate?: string | null;        // date (YYYY-MM-DD)
+  // temp
+  contact_person: string | null;
+  sector_name: string | null;
+}
 
-  taxValidStatus?: TaxValidStatus | null;
-  taxPinExpiryDate?: string | null;       // date (YYYY-MM-DD)
+export function initCompany(): ICompany{
+  return {
+    id: 0,
+    name: '',
+    registration_no: null,
+    bbbee_level: null,
+    cipc_status: null,
+    service_offering: null,
+    description: null,
+    city: null,
+    suburb: null,
+    address: null,
+    postal_code: null,
+    business_location: null,
+    contact_number: null,
+    email_address: null,
+    trading_name: null,
 
-  vatNumber?: string | null;
+    youth_owned: false,
+    black_ownership: false,
+    black_women_ownership: false,
 
-  turnoverEstimated: number;              // stored as rands (e.g. 281826.00)
-  turnoverActual: number;
+    youth_owned_text: null,
+    black_ownership_text: null,
+    black_women_ownership_text: null,
 
-  permanentEmployees: number;
-  temporaryEmployees: number;
+    compliance_notes: null,
 
-  locations?: string | null;
+    has_valid_bbbbee: false,
+    has_tax_clearance: false,
+    is_sars_registered: false,
+    has_cipc_registration: false,
 
-  createdAt: string;                      // datetime ISO
-  updatedAt: string;
+    bbbee_valid_status: null,
+    bbbee_expiry_date: null,
+    tax_valid_status: null,
+    tax_pin_expiry_date: null,
+    vat_number: null,
 
-  industryId?: number | null;
-  industry?: Industry | null;             // when joined
+    turnover_estimated: null,
+    turnover_actual: null,
+
+    permanent_employees: 0,
+    temporary_employees: 0,
+    locations: null,
+
+    created_at: '',
+    updated_at: '',
+    industry_id: null,
+
+    // temp
+    contact_person: null,
+    sector_name: null,
+  }
 }
 
 export type UserRole = 'Director' | 'Advisor' | 'Admin' | 'Staff' | string;
-export type Race = 'Black' | 'Coloured' | 'Indian' | 'White' | 'Other' | '' | null;
+export type Race =
+  | 'Black'
+  | 'Coloured'
+  | 'Indian'
+  | 'White'
+  | 'Other'
+  | ''
+  | null;
 export type Gender = 'Male' | 'Female' | 'Non-binary' | 'Other' | '' | null;
 export type UserStatus = 'active' | 'inactive' | 'invited' | string;
 
 export interface User {
   id: number;
 
-  idType: string;               // e.g. "RSA_ID", "Passport"
+  idType: string; // e.g. "RSA_ID", "Passport"
   idNumber: string;
 
   companyId: number;
@@ -98,7 +160,7 @@ export interface User {
   username: string;
   role: UserRole;
 
-  race?: Race;                  // per your defaults/logic
+  race?: Race; // per your defaults/logic
   gender?: Gender;
 
   status: UserStatus;
@@ -125,12 +187,12 @@ export type FieldType =
   | 'checkbox'
   | 'select'
   | 'chips'
-  | 'table'        // grid of columns (each column is a FieldDefinition)
-  | 'file';        // optional, if you allow uploads later
+  | 'table' // grid of columns (each column is a FieldDefinition)
+  | 'file'; // optional, if you allow uploads later
 
 export interface Option {
-  value: string;               // machine value
-  label: string;               // human label
+  value: string; // machine value
+  label: string; // human label
 }
 
 export interface ValidationRule {
@@ -138,11 +200,11 @@ export interface ValidationRule {
   required?: boolean;
   min?: number;
   max?: number;
-  regex?: string;              // source pattern (use with care)
+  regex?: string; // source pattern (use with care)
 }
 
 export interface FieldDefinition {
-  key: string;                 // unique within its section
+  key: string; // unique within its section
   label: string;
   type: FieldType;
 
@@ -157,7 +219,7 @@ export interface FieldDefinition {
 
   // UI hints you may use on the front-end
   order?: number;
-  width?: number;              // grid width hint (1-12, etc.)
+  width?: number; // grid width hint (1-12, etc.)
   style?: Record<string, unknown>;
 
   validations?: ValidationRule;
@@ -165,7 +227,7 @@ export interface FieldDefinition {
 }
 
 export interface SectionDefinition {
-  key: string;                 // unique within the form
+  key: string; // unique within the form
   title: string;
   description?: string;
   order?: number;
@@ -176,11 +238,11 @@ export type FormStatus = 'draft' | 'active' | 'archived';
 
 export interface FormDefinition {
   id: number;
-  key: string;                 // stable programmatic key, e.g. "onboarding_v1"
-  name: string;                // human title
+  key: string; // stable programmatic key, e.g. "onboarding_v1"
+  name: string; // human title
   description?: string;
 
-  version: number;             // bump on schema change
+  version: number; // bump on schema change
   status: FormStatus;
 
   // Entire structure is JSON in DB
@@ -209,8 +271,8 @@ export type SubmissionStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 export interface FormSubmission {
   id: number;
 
-  formId: number;              // FK → FormDefinition.id
-  companyId: number;           // which company this submission belongs to
+  formId: number; // FK → FormDefinition.id
+  companyId: number; // which company this submission belongs to
   submittedByUserId?: number | null;
 
   // Version of the form used at submission time (so later schema changes don’t break old subs)
@@ -235,6 +297,3 @@ export interface FormSubmission {
   reviewedAt?: string | null;
   notes?: string | null;
 }
-
-
-

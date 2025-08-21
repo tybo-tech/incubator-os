@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../../models/schema';
-import { Company } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-information',
@@ -13,32 +12,32 @@ import { Company } from '../../../../../../models/business.models';
       <div class="grid grid-cols-2 gap-6">
         <div>
           <label class="text-sm font-medium text-gray-500">Legal Name</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.name }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.name }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">Trading Name</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.trading_name || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.trading_name || 'N/A' }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">Registration Number</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.registration_no }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.registration_no }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">Industry</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.industry }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.sector_name }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">VAT Number</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.vat_number || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.vat_number || 'N/A' }}</p>
         </div>
         <div>
           <label class="text-sm font-medium text-gray-500">CIPC Status</label>
-          <p class="text-sm text-gray-900 mt-1">{{ company.data.cipc_status || 'N/A' }}</p>
+          <p class="text-sm text-gray-900 mt-1">{{ company.cipc_status || 'N/A' }}</p>
         </div>
       </div>
     </div>
   `
 })
 export class CompanyInformationComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Task, initTask } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { NodeService } from '../../../services';
+import { ICompany } from '../../../models/simple.schema';
 
 @Component({
   selector: 'app-global-task-modal',
@@ -129,11 +130,11 @@ import { NodeService } from '../../../services';
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100">
                 <option [value]="undefined" *ngIf="!defaultCompanyId">No company link</option>
                 <option *ngFor="let company of availableCompanies" [value]="company.id">
-                  {{ company.data.name }}
+                  {{ company.name }}
                 </option>
               </select>
               <p *ngIf="availableCompanies.length <= 1 && defaultCompanyId" class="text-xs text-gray-500 mt-1">
-                This task will be automatically linked to {{ availableCompanies[0].data.name }}
+                This task will be automatically linked to {{ availableCompanies[0].name }}
               </p>
             </div>
 
@@ -173,7 +174,7 @@ export class GlobalTaskModalComponent implements OnInit {
   @Input() isVisible = false;
   @Input() editMode = false;
   @Input() taskToEdit: INode<Task> | null = null;
-  @Input() availableCompanies: INode<any>[] = []; // Available companies for linking
+  @Input() availableCompanies: ICompany[] = []; // Available companies for linking
   @Input() defaultCompanyId: number | null = null; // For pre-selecting company
   @Output() close = new EventEmitter<void>();
   @Output() taskSaved = new EventEmitter<INode<Task>>();
@@ -229,7 +230,7 @@ export class GlobalTaskModalComponent implements OnInit {
           data: {
             ...this.taskData,
             // Preserve created_date, update other fields
-            created_date: this.taskToEdit.data.created_date
+            created_date: this.taskToEdit.created_at
           }
         };
 

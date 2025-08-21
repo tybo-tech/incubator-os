@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { INode } from '../../../../../../models/schema';
-import { Company } from '../../../../../../models/business.models';
+import { ICompany } from '../../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-sidebar',
@@ -16,16 +15,16 @@ import { Company } from '../../../../../../models/business.models';
           <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600">Estimated Turnover</span>
             <span class="text-sm font-medium text-gray-900">
-              {{ formatCurrency(company.data.turnover_estimated || 0) }}
+              {{ formatCurrency(company.turnover_estimated || 0) }}
             </span>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600">Permanent Employees</span>
-            <span class="text-sm font-medium text-gray-900">{{ company.data.permanent_employees || 0 }}</span>
+            <span class="text-sm font-medium text-gray-900">{{ company.permanent_employees || 0 }}</span>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600">Temporary Employees</span>
-            <span class="text-sm font-medium text-gray-900">{{ company.data.temporary_employees || 0 }}</span>
+            <span class="text-sm font-medium text-gray-900">{{ company.temporary_employees || 0 }}</span>
           </div>
         </div>
       </div>
@@ -37,22 +36,22 @@ import { Company } from '../../../../../../models/business.models';
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600">Black Ownership</span>
             <div class="flex items-center space-x-2">
-              <div [class]="'w-3 h-3 rounded-full ' + (company.data.black_ownership === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-              <span class="text-sm text-gray-900">{{ company.data.black_ownership || 'N/A' }}</span>
+              <div [class]="'w-3 h-3 rounded-full ' + (company.black_ownership ? 'bg-green-500' : 'bg-gray-400')"></div>
+              <span class="text-sm text-gray-900">{{ company.black_ownership || 'N/A' }}</span>
             </div>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600">Black Women Ownership</span>
             <div class="flex items-center space-x-2">
-              <div [class]="'w-3 h-3 rounded-full ' + (company.data.black_women_ownership === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-              <span class="text-sm text-gray-900">{{ company.data.black_women_ownership || 'N/A' }}</span>
+              <div [class]="'w-3 h-3 rounded-full ' + (company.black_women_ownership ? 'bg-green-500' : 'bg-gray-400')"></div>
+              <span class="text-sm text-gray-900">{{ company.black_women_ownership || 'N/A' }}</span>
             </div>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-600">Youth Owned</span>
             <div class="flex items-center space-x-2">
-              <div [class]="'w-3 h-3 rounded-full ' + (company.data.youth_owned === 'Yes' ? 'bg-green-500' : 'bg-gray-400')"></div>
-              <span class="text-sm text-gray-900">{{ company.data.youth_owned || 'N/A' }}</span>
+              <div [class]="'w-3 h-3 rounded-full ' + (company.youth_owned ? 'bg-green-500' : 'bg-gray-400')"></div>
+              <span class="text-sm text-gray-900">{{ company.youth_owned || 'N/A' }}</span>
             </div>
           </div>
         </div>
@@ -61,7 +60,7 @@ import { Company } from '../../../../../../models/business.models';
   `
 })
 export class CompanySidebarComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!:ICompany
 
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {

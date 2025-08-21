@@ -5,6 +5,8 @@ import { GlobalTaskModalComponent } from '../tasks/global-task-modal.component';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { NodeService } from '../../../services';
+import { ICompany } from '../../../models/simple.schema';
+import { CompanyService } from '../../../services/company.service';
 
 @Component({
   selector: 'app-app-shell',
@@ -14,9 +16,9 @@ import { NodeService } from '../../../services';
 })
 export class AppShellComponent implements OnInit {
   showGlobalTaskModal = false;
-  availableCompanies: INode<any>[] = [];
+  availableCompanies: ICompany[] = [];
 
-  constructor(private nodeService: NodeService<any>) {}
+  constructor(private nodeService: CompanyService) {}
 
   ngOnInit() {
     this.loadCompanies();
@@ -24,7 +26,7 @@ export class AppShellComponent implements OnInit {
 
   async loadCompanies() {
     try {
-      const companies = await this.nodeService.getNodes('company').toPromise();
+      const companies = await this.nodeService.listCompanies().toPromise();
       this.availableCompanies = companies || [];
     } catch (error) {
       console.error('❌ Error loading companies:', error);

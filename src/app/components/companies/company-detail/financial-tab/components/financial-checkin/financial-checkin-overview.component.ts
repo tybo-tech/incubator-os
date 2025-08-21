@@ -9,6 +9,7 @@ import { FinancialCheckinHeaderComponent } from './financial-checkin-header.comp
 import { FinancialCheckinMetricsComponent } from './financial-checkin-metrics.component';
 import { FinancialCheckinNotesComponent } from './financial-checkin-notes.component';
 import { FinancialCheckinLoadingComponent } from './financial-checkin-loading.component';
+import { ICompany } from '../../../../../../../models/simple.schema';
 
 interface LatestMetrics {
   turnover: number;
@@ -76,7 +77,7 @@ interface LatestMetrics {
   `,
 })
 export class FinancialCheckinOverviewComponent implements OnInit {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
   @Output() onNewCheckInClick = new EventEmitter<void>();
   @Output() onViewTrendsClick = new EventEmitter<void>();
   @Output() onEditCheckIn = new EventEmitter<INode<FinancialCheckIn>>();

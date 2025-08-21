@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { INode } from '../models/schema';
 import { Constants } from './service';
 import { ICompany } from '../models/simple.schema';
 
@@ -11,40 +10,40 @@ export class CompanyService {
 
   constructor(private http: HttpClient) {}
 
-  addCompany(data: Partial<ICompany>): Observable<INode<ICompany>> {
-    return this.http.post<INode<ICompany>>(`${this.apiUrl}/add-company.php`, data);
+  addCompany(data: Partial<ICompany>): Observable<ICompany> {
+    return this.http.post<ICompany>(`${this.apiUrl}/add-company.php`, data);
   }
 
-  updateCompany(id: number, data: Partial<ICompany>): Observable<INode<ICompany>> {
-    return this.http.post<INode<ICompany>>(`${this.apiUrl}/update-company.php`, { id, ...data });
+  updateCompany(id: number, data: Partial<ICompany>): Observable<ICompany> {
+    return this.http.post<ICompany>(`${this.apiUrl}/update-company.php`, { id, ...data });
   }
 
-  upsertCompanyByRegNo(registration_no: string, data: Partial<ICompany>): Observable<INode<ICompany>> {
-    return this.http.post<INode<ICompany>>(`${this.apiUrl}/upsert-company-by-regno.php`, { registration_no, ...data });
+  upsertCompanyByRegNo(registration_no: string, data: Partial<ICompany>): Observable<ICompany> {
+    return this.http.post<ICompany>(`${this.apiUrl}/upsert-company-by-regno.php`, { registration_no, ...data });
   }
 
-  getCompanyById(id: number): Observable<INode<ICompany>> {
-    return this.http.get<INode<ICompany>>(`${this.apiUrl}/get-company.php?id=${id}`);
+  getCompanyById(id: number): Observable<ICompany> {
+    return this.http.get<ICompany>(`${this.apiUrl}/get-company.php?id=${id}`);
   }
 
-  getCompanyByRegNo(registration_no: string): Observable<INode<ICompany>> {
-    return this.http.get<INode<ICompany>>(`${this.apiUrl}/get-company.php?registration_no=${registration_no}`);
+  getCompanyByRegNo(registration_no: string): Observable<ICompany> {
+    return this.http.get<ICompany>(`${this.apiUrl}/get-company.php?registration_no=${registration_no}`);
   }
 
-  searchCompanies(filters: any = {}, limit: number = 50, offset: number = 0): Observable<INode<ICompany>[]> {
+  searchCompanies(filters: any = {}, limit: number = 50, offset: number = 0): Observable<ICompany[]> {
     const params = new URLSearchParams({ ...filters, limit: String(limit), offset: String(offset) });
-    return this.http.get<INode<ICompany>[]>(`${this.apiUrl}/search-companies.php?${params}`);
+    return this.http.get<ICompany[]>(`${this.apiUrl}/search-companies.php?${params}`);
   }
 
-  listCompanies(limit: number = 50, offset: number = 0): Observable<INode<ICompany>[]> {
-    return this.http.get<INode<ICompany>[]>(`${this.apiUrl}/list-companies.php?limit=${limit}&offset=${offset}`);
+  listCompanies(limit: number = 50, offset: number = 0): Observable<ICompany[]> {
+    return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies.php?limit=${limit}&offset=${offset}`);
   }
 
   deleteCompany(id: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/delete-company.php`, { id });
   }
 
-  setIndustryByName(company_id: number, industry_name: string): Observable<INode<ICompany>> {
-    return this.http.post<INode<ICompany>>(`${this.apiUrl}/set-industry-by-name.php`, { company_id, industry_name });
+  setIndustryByName(company_id: number, industry_name: string): Observable<ICompany> {
+    return this.http.post<ICompany>(`${this.apiUrl}/set-industry-by-name.php`, { company_id, industry_name });
   }
 }

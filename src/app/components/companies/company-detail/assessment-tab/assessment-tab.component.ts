@@ -6,15 +6,13 @@ import {
   BusinessQuestionnaire,
   QuestionnaireSection,
   QuestionnaireQuestion,
-  QuestionnaireResponse,
   QuestionnaireProgress,
   QuestionnaireFormData,
   SectionNavigationItem,
   QuestionType
 } from '../../../../../models/questionnaire.models';
 import { QuestionnaireService } from '../../../../../services/questionnaire.service';
-import { INode } from '../../../../../models/schema';
-import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-assessment-tab',
@@ -310,7 +308,7 @@ import { Company } from '../../../../../models/business.models';
   styleUrls: ['./assessment-tab.component.scss']
 })
 export class AssessmentTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   questionnaire: BusinessQuestionnaire | null = null;
   currentSection: QuestionnaireSection | null = null;

@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { INode } from '../../../../../models/schema';
 import { Company, HRSnapshot, initHRSnapshot } from '../../../../../models/business.models';
 import { NodeService } from '../../../../../services';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-hr-tracking-tab',
@@ -368,7 +369,7 @@ import { NodeService } from '../../../../../services';
   `
 })
 export class HRTrackingTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   private destroy$ = new Subject<void>();
 

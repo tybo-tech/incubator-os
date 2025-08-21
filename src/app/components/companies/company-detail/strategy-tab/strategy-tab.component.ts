@@ -16,6 +16,7 @@ import { ObjectiveModalComponent } from './components/objective-modal.component'
 import { ObjectiveTaskModalComponent } from './components/objective-task-modal.component';
 import { KeyResultModalComponent } from './components/key-result-modal.component';
 import { KeyResultProgressModalComponent } from './components/key-result-progress-modal.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-strategy-tab',
@@ -39,7 +40,7 @@ import { KeyResultProgressModalComponent } from './components/key-result-progres
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-2xl font-bold text-gray-900">Vision & Strategy</h2>
-          <p class="text-gray-600">Define the strategic direction and vision for {{ company?.data?.name || 'this company' }}</p>
+          <p class="text-gray-600">Define the strategic direction and vision for {{ company?.name || 'this company' }}</p>
         </div>
       </div>
 
@@ -160,7 +161,7 @@ import { KeyResultProgressModalComponent } from './components/key-result-progres
   `
 })
 export class StrategyTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   private destroy$ = new Subject<void>();
 

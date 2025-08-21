@@ -12,6 +12,7 @@ import {
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { Company } from '../../../../../models/business.models';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-gps-targets-tab',
@@ -576,7 +577,7 @@ import { Company } from '../../../../../models/business.models';
   styleUrls: ['./gps-targets-tab.component.scss']
 })
 export class GpsTargetsTabComponent implements OnInit, OnDestroy {
-  @Input() company: INode<Company> | null = null;
+  @Input() company: ICompany | null = null;
 
   gpsData: GpsTargets = initGpsTargets('');
   gpsNode: INode<GpsTargets> | null = null;

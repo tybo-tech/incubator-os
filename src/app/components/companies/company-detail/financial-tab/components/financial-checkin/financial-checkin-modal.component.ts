@@ -5,6 +5,7 @@ import { INode } from '../../../../../../../models/schema';
 import { Company } from '../../../../../../../models/business.models';
 import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
+import { ICompany } from '../../../../../../../models/simple.schema';
 
 interface CalculatedMetrics {
   gross_profit: number;
@@ -325,7 +326,7 @@ interface ValidationResult {
 })
 export class FinancialCheckinModalComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
   @Input() editMode = false;
   @Input() checkInData?: INode<FinancialCheckIn>;
 

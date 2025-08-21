@@ -6,6 +6,7 @@ import { CompanyInformationComponent } from './company-information/company-infor
 import { ContactInformationComponent } from './contact-information/contact-information.component';
 import { BusinessDescriptionComponent } from './business-description/business-description.component';
 import { CompanySidebarComponent } from './company-sidebar/company-sidebar.component';
+import { ICompany } from '../../../../../models/simple.schema';
 
 @Component({
   selector: 'app-overview-tab',
@@ -34,5 +35,5 @@ import { CompanySidebarComponent } from './company-sidebar/company-sidebar.compo
   `
 })
 export class OverviewTabComponent {
-  @Input() company!: INode<Company>;
+  @Input() company!: ICompany;
 }
