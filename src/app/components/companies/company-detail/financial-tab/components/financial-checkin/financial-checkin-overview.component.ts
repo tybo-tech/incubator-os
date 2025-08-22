@@ -63,7 +63,7 @@ interface LatestMetrics {
 
           <!-- Financial Check-ins Table -->
           <app-financial-checkin-table
-            [checkIns]="allCheckIns"
+            [checkIns]="financials"
             [loading]="loading"
             (onNewCheckInClick)="onNewCheckIn()"
             (onEditCheckIn)="onEditFromTable($event)"
@@ -81,8 +81,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   @Output() onViewTrendsClick = new EventEmitter<void>();
   @Output() onEditCheckIn = new EventEmitter<ICompanyFinancials>();
 
-  checkIns: ICompanyFinancials[] = [];
-  allCheckIns: ICompanyFinancials[] = []; // All historical data for table
+  financials: ICompanyFinancials[] = []; // Single source of truth for all financial data
   loading = false;
   error: string | null = null;
 
@@ -90,7 +89,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   latestMetrics: LatestMetrics | null = null;
   latestNotes: string | null = null;
 
-  months = [
+  readonly months = [
     'January',
     'February',
     'March',
@@ -137,9 +136,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         .listAllCompanyFinancials(this.company.id)
         .toPromise();
 
-      // Store all check-ins for table view, already sorted by date descending
-      this.allCheckIns = companyCheckIns || [];
-      this.checkIns = companyCheckIns || [];
+      // Store financials data, already sorted by date descending from the API
+      this.financials = companyCheckIns || [];
 
       this.calculateLatestMetrics();
       this.extractLatestNotes();
@@ -151,35 +149,16 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
   }
 
-  // Get all check-ins (for table view) regardless of year
-  async getAllCheckIns(): Promise<ICompanyFinancials[]> {
-    if (!this.company?.id) return [];
 
-    try {
-      const companyCheckIns = await this.nodeService
-        .listAllCompanyFinancials(this.company.id)
-        .toPromise();
-      return companyCheckIns || [];
-    } catch (error) {
-      console.error('❌ Error loading all financial check-ins:', error);
-      return [];
-    }
-  }
 
   private calculateLatestMetrics() {
-    if (this.checkIns.length === 0) {
+    if (this.financials.length === 0) {
       this.latestMetrics = null;
       return;
     }
 
-    // Sort by year, month (most recent first) - handle string month values
-    const sortedCheckIns = [...this.checkIns].sort((a, b) => {
-      if (a.year !== b.year) return b.year - a.year;
-      return this.parseMonth(b.month) - this.parseMonth(a.month);
-    });
-
-    const latest = sortedCheckIns[0];
-    const previous = sortedCheckIns[1];
+    // Data is already sorted by date descending from the API
+    const [latest, previous] = this.financials;
 
     this.latestMetrics = {
       turnover: latest.turnover_monthly_avg || 0,
@@ -216,17 +195,13 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   private extractLatestNotes() {
-    if (this.checkIns.length === 0) {
+    if (this.financials.length === 0) {
       this.latestNotes = null;
       return;
     }
 
-    const sortedCheckIns = [...this.checkIns].sort((a, b) => {
-      if (a.year !== b.year) return b.year - a.year;
-      return this.parseMonth(b.month) - this.parseMonth(a.month);
-    });
-
-    // this.latestNotes = sortedCheckIns[0]?.notes || null;
+    // Data is already sorted by date descending from the API
+    this.latestNotes = this.financials[0]?.notes || null;
   }
 
   onNewCheckIn() {

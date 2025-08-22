@@ -174,11 +174,33 @@ export class FinancialCheckinQuarterlyViewComponent {
         };
       }
 
-      // Calculate averages for the quarter
-      const turnover = quarterCheckIns.reduce((sum, ci) => sum + (ci.turnover_monthly_avg || 0), 0) / quarterCheckIns.length;
-      const grossProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.gross_profit || 0), 0) / quarterCheckIns.length;
-      const netProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.net_profit || 0), 0) / quarterCheckIns.length;
-      const averageMargin = quarterCheckIns.reduce((sum, ci) => sum + (ci.np_margin || 0), 0) / quarterCheckIns.length;
+      // Calculate quarter totals and handle null/undefined values
+      const turnover = quarterCheckIns.reduce((sum, ci) => {
+        const val = parseFloat(ci.turnover_monthly_avg?.toString() || '0');
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+
+      const grossProfit = quarterCheckIns.reduce((sum, ci) => {
+        const val = parseFloat(ci.gross_profit?.toString() || '0');
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+
+      const netProfit = quarterCheckIns.reduce((sum, ci) => {
+        const val = parseFloat(ci.net_profit?.toString() || '0');
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+
+      // Calculate margin only from records that have both turnover and net profit
+      const marginsCount = quarterCheckIns.filter(ci =>
+        ci.turnover_monthly_avg != null && ci.np_margin != null &&
+        !isNaN(parseFloat(ci.turnover_monthly_avg.toString())) &&
+        !isNaN(parseFloat(ci.np_margin.toString()))
+      ).length;
+
+      const averageMargin = marginsCount > 0 ? quarterCheckIns.reduce((sum, ci) => {
+        const margin = parseFloat(ci.np_margin?.toString() || '0');
+        return sum + (isNaN(margin) ? 0 : margin);
+      }, 0) / marginsCount : 0;
 
       return {
         quarter,
@@ -248,26 +270,34 @@ export class FinancialCheckinQuarterlyViewComponent {
   }
 
   getBestQuarter(): string {
-    const bestQuarter = this.quarterlyMetrics
-      .filter(q => q.hasData)
-      .reduce((best, current) =>
-        current.netProfit > best.netProfit ? current : best,
-        { quarter: 'None', netProfit: -Infinity }
-      );
+    const validQuarters = this.quarterlyMetrics.filter(q =>
+      q.hasData && !isNaN(q.turnover) && q.turnover > 0
+    );
+
+    if (validQuarters.length === 0) return 'None';
+
+    const bestQuarter = validQuarters.reduce((best, current) =>
+      (current.turnover || 0) > (best.turnover || 0) ? current : best
+    );
 
     return bestQuarter.quarter;
   }
 
   getTotalRevenue(): number {
-    return this.quarterlyMetrics
-      .filter(q => q.hasData)
-      .reduce((sum, q) => sum + (q.turnover * q.checkInsCount), 0);
+    const total = this.quarterlyMetrics
+      .filter(q => q.hasData && !isNaN(q.turnover))
+      .reduce((sum, q) => sum + (q.turnover || 0), 0);
+    return isNaN(total) ? 0 : total;
   }
 
   getOverallMargin(): number {
-    const validQuarters = this.quarterlyMetrics.filter(q => q.hasData);
+    const validQuarters = this.quarterlyMetrics.filter(q =>
+      q.hasData && !isNaN(q.averageMargin) && q.averageMargin !== null
+    );
+
     if (validQuarters.length === 0) return 0;
 
-    return validQuarters.reduce((sum, q) => sum + q.averageMargin, 0) / validQuarters.length;
+    const total = validQuarters.reduce((sum, q) => sum + (q.averageMargin || 0), 0);
+    return isNaN(total) ? 0 : total / validQuarters.length;
   }
 }
