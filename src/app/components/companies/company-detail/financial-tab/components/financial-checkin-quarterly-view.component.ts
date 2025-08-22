@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FinancialCheckIn } from '../../../../../../models/busines.financial.checkin.models';
-import { INode } from '../../../../../../models/schema';
+import { ICompanyFinancials } from '../../../../../../services/company-financials.service';
 
 interface QuarterlyMetrics {
   quarter: string;
@@ -144,7 +143,7 @@ interface QuarterlyMetrics {
   `
 })
 export class FinancialCheckinQuarterlyViewComponent {
-  @Input() checkIns: INode<FinancialCheckIn>[] = [];
+  @Input() checkIns: ICompanyFinancials[] = [];
 
   currentYear = new Date().getFullYear();
   quarterlyMetrics: QuarterlyMetrics[] = [];
@@ -176,10 +175,10 @@ export class FinancialCheckinQuarterlyViewComponent {
       }
 
       // Calculate averages for the quarter
-      const turnover = quarterCheckIns.reduce((sum, ci) => sum + (ci.data.turnover_monthly_avg || 0), 0) / quarterCheckIns.length;
-      const grossProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.data.gross_profit || 0), 0) / quarterCheckIns.length;
-      const netProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.data.net_profit || 0), 0) / quarterCheckIns.length;
-      const averageMargin = quarterCheckIns.reduce((sum, ci) => sum + (ci.data.np_margin || 0), 0) / quarterCheckIns.length;
+      const turnover = quarterCheckIns.reduce((sum, ci) => sum + (ci.turnover_monthly_avg || 0), 0) / quarterCheckIns.length;
+      const grossProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.gross_profit || 0), 0) / quarterCheckIns.length;
+      const netProfit = quarterCheckIns.reduce((sum, ci) => sum + (ci.net_profit || 0), 0) / quarterCheckIns.length;
+      const averageMargin = quarterCheckIns.reduce((sum, ci) => sum + (ci.np_margin || 0), 0) / quarterCheckIns.length;
 
       return {
         quarter,
@@ -193,16 +192,16 @@ export class FinancialCheckinQuarterlyViewComponent {
     });
   }
 
-  private getQuarterCheckIns(quarter: string): INode<FinancialCheckIn>[] {
+  private getQuarterCheckIns(quarter: string): ICompanyFinancials[] {
     return this.checkIns.filter(checkIn => {
       // Match by quarter field or derive from month
-      if (checkIn.data.quarter === quarter) {
+      if (checkIn.quarter_label === quarter) {
         return true;
       }
 
       // Derive quarter from month if no quarter specified
-      const month = typeof checkIn.data.month === 'string' ?
-        parseInt(checkIn.data.month, 10) : (checkIn.data.month || 0);
+      const month = typeof checkIn.month === 'string' ?
+        parseInt(checkIn.month, 10) : (checkIn.month || 0);
 
       switch (quarter) {
         case 'Q1': return month >= 1 && month <= 3;

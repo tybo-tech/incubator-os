@@ -11,6 +11,7 @@ import {
 } from './components';
 import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
 import { ICompany } from '../../../../../models/simple.schema';
+import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../services/company-financials.service';
 
 @Component({
   selector: 'app-financial-tab',
@@ -30,17 +31,17 @@ export class FinancialTabComponent implements OnInit {
   @ViewChild(FinancialCheckinModalComponent) checkinModal!: FinancialCheckinModalComponent;
 
   // Financial Check-ins data
-  financialCheckIns: INode<FinancialCheckIn>[] = [];
+  financialCheckIns: ICompanyFinancials[] = [];
   loadingCheckIns = false;
   checkInsError: string | null = null;
 
   // Financial Check-in modal properties
   showCheckInModal = false;
   isCheckInEditMode = false;
-  editingCheckIn: INode<FinancialCheckIn> | null = null;
+  editingCheckIn: ICompanyFinancials | null = null;
 
   constructor(
-    private checkInService: NodeService<FinancialCheckIn>,
+    private checkInService: CompanyFinancialsService,
     private router: Router
   ) {}
 
@@ -55,19 +56,19 @@ export class FinancialTabComponent implements OnInit {
     this.checkInsError = null;
 
     // Fetch financial check-ins for this company
-    this.checkInService.getNodesByType('financial_checkin').subscribe({
-      next: (checkIns: INode<FinancialCheckIn>[]) => {
+    this.checkInService.listCompanyFinancials(this.company.id).subscribe({
+      next: (checkIns: ICompanyFinancials[]) => {
         // Filter check-ins for this company
         this.financialCheckIns = checkIns
-          .filter((checkIn: INode<FinancialCheckIn>) => checkIn.company_id === this.company.id)
-          .sort((a: INode<FinancialCheckIn>, b: INode<FinancialCheckIn>) => {
+          .filter((checkIn: ICompanyFinancials) => checkIn.company_id === this.company.id)
+          .sort((a: ICompanyFinancials, b: ICompanyFinancials) => {
             // Sort by year and month descending (newest first)
-            if (a.data.year !== b.data.year) {
-              return b.data.year - a.data.year;
+            if (a.year !== b.year) {
+              return b.year - a.year;
             }
             // Handle optional month field
-            const aMonth = a.data.month || 0;
-            const bMonth = b.data.month || 0;
+            const aMonth = a.month || 0;
+            const bMonth = b.month || 0;
             return bMonth - aMonth;
           });
         this.loadingCheckIns = false;
@@ -97,7 +98,7 @@ export class FinancialTabComponent implements OnInit {
     this.showCheckInModal = true;
   }
 
-  onEditCheckIn(checkIn: INode<FinancialCheckIn>) {
+  onEditCheckIn(checkIn: ICompanyFinancials) {
     this.isCheckInEditMode = true;
     this.editingCheckIn = checkIn;
     this.showCheckInModal = true;
@@ -111,15 +112,14 @@ export class FinancialTabComponent implements OnInit {
     this.checkinModal?.resetSavingState();
   }
 
-  onCheckInSaved(checkInData: FinancialCheckIn) {
+  onCheckInSaved(checkInData: ICompanyFinancials) {
     if (this.isCheckInEditMode && this.editingCheckIn) {
       // Update existing check-in
-      const updatedCheckIn: INode<FinancialCheckIn> = {
+      const updatedCheckIn: ICompanyFinancials = {
         ...this.editingCheckIn,
-        data: checkInData
       };
 
-      this.checkInService.updateNode(updatedCheckIn).subscribe({
+      this.checkInService.updateCompanyFinancials(updatedCheckIn.id, updatedCheckIn).subscribe({
         next: () => {
           this.onCheckInModalClose();
           // Refresh the overview component
@@ -131,13 +131,11 @@ export class FinancialTabComponent implements OnInit {
       });
     } else {
       // Create new check-in
-      const newCheckIn: Partial<INode<FinancialCheckIn>> = {
-        type: 'financial_checkin',
+      const newCheckIn: Partial<ICompanyFinancials> = {
         company_id: this.company.id,
-        data: checkInData
       };
 
-      this.checkInService.addNode(newCheckIn as INode<FinancialCheckIn>).subscribe({
+      this.checkInService.addCompanyFinancials(newCheckIn as ICompanyFinancials).subscribe({
         next: () => {
           this.onCheckInModalClose();
           // Refresh the overview component

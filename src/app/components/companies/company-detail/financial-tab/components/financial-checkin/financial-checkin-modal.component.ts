@@ -1,10 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { INode } from '../../../../../../../models/schema';
-import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../../services';
 import { ICompany } from '../../../../../../../models/simple.schema';
+import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../../services/company-financials.service';
 
 interface CalculatedMetrics {
   gross_profit: number;
@@ -327,10 +326,10 @@ export class FinancialCheckinModalComponent implements OnInit, OnChanges {
   @Input() isVisible = false;
   @Input() company!: ICompany;
   @Input() editMode = false;
-  @Input() checkInData?: INode<FinancialCheckIn>;
+  @Input() checkInData?: ICompanyFinancials;
 
   @Output() onCloseModal = new EventEmitter<void>();
-  @Output() onSaveCheckIn = new EventEmitter<FinancialCheckIn>();
+  @Output() onSaveCheckIn = new EventEmitter<ICompanyFinancials>();
 
   checkInForm!: FormGroup;
   saving = false;
@@ -353,7 +352,7 @@ export class FinancialCheckinModalComponent implements OnInit, OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private nodeService: NodeService<FinancialCheckIn>
+    private nodeService: CompanyFinancialsService
   ) {
     this.initializeForm();
     this.generateAvailableYears();
@@ -367,7 +366,7 @@ export class FinancialCheckinModalComponent implements OnInit, OnChanges {
     // When checkInData changes, populate the form
     if (changes['checkInData'] && this.checkInData) {
       this.initializeFormIfNeeded();
-      this.populateForm(this.checkInData.data);
+      this.populateForm(this.checkInData);
     }
 
     // When editMode changes, reset form if switching to create mode
@@ -422,7 +421,7 @@ export class FinancialCheckinModalComponent implements OnInit, OnChanges {
     });
   }
 
-  private populateForm(data: FinancialCheckIn) {
+  private populateForm(data: ICompanyFinancials) {
     this.checkInForm.patchValue(data);
   }
 
@@ -583,7 +582,7 @@ export class FinancialCheckinModalComponent implements OnInit, OnChanges {
     this.saving = false;
   }
 
-  private buildCheckInData(): FinancialCheckIn {
+  private buildCheckInData(): ICompanyFinancials {
     const formValues = this.checkInForm.value;
 
     return {

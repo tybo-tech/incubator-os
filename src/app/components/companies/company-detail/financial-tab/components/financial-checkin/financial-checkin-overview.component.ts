@@ -1,14 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../../../models/schema';
-import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
-import { NodeService } from '../../../../../../../services';
 import { FinancialCheckinTableComponent } from './financial-checkin-table.component';
 import { FinancialCheckinHeaderComponent } from './financial-checkin-header.component';
 import { FinancialCheckinMetricsComponent } from './financial-checkin-metrics.component';
 import { FinancialCheckinNotesComponent } from './financial-checkin-notes.component';
 import { FinancialCheckinLoadingComponent } from './financial-checkin-loading.component';
 import { ICompany } from '../../../../../../../models/simple.schema';
+import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../../services/company-financials.service';
 
 interface LatestMetrics {
   turnover: number;
@@ -39,7 +38,8 @@ interface LatestMetrics {
       <!-- Header Component -->
       <app-financial-checkin-header
         (viewTrendsClick)="onViewTrends()"
-        (newCheckInClick)="onNewCheckIn()">
+        (newCheckInClick)="onNewCheckIn()"
+      >
       </app-financial-checkin-header>
 
       <div class="p-6">
@@ -47,19 +47,18 @@ interface LatestMetrics {
         <app-financial-checkin-loading
           [loading]="loading"
           [error]="error"
-          (retryClick)="loadCheckIns()">
+          (retryClick)="loadCheckIns()"
+        >
         </app-financial-checkin-loading>
 
         <!-- Content -->
         <div *ngIf="!loading && !error">
           <!-- Latest Metrics Component -->
-          <app-financial-checkin-metrics
-            [latestMetrics]="latestMetrics">
+          <app-financial-checkin-metrics [latestMetrics]="latestMetrics">
           </app-financial-checkin-metrics>
 
           <!-- Recent Notes Component -->
-          <app-financial-checkin-notes
-            [latestNotes]="latestNotes">
+          <app-financial-checkin-notes [latestNotes]="latestNotes">
           </app-financial-checkin-notes>
 
           <!-- Financial Check-ins Table -->
@@ -68,7 +67,8 @@ interface LatestMetrics {
             [loading]="loading"
             (onNewCheckInClick)="onNewCheckIn()"
             (onEditCheckIn)="onEditFromTable($event)"
-            (onDeleteCheckIn)="onDeleteFromTable($event)">
+            (onDeleteCheckIn)="onDeleteFromTable($event)"
+          >
           </app-financial-checkin-table>
         </div>
       </div>
@@ -79,10 +79,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   @Input() company!: ICompany;
   @Output() onNewCheckInClick = new EventEmitter<void>();
   @Output() onViewTrendsClick = new EventEmitter<void>();
-  @Output() onEditCheckIn = new EventEmitter<INode<FinancialCheckIn>>();
+  @Output() onEditCheckIn = new EventEmitter<ICompanyFinancials>();
 
-  checkIns: INode<FinancialCheckIn>[] = [];
-  allCheckIns: INode<FinancialCheckIn>[] = []; // All historical data for table
+  checkIns: ICompanyFinancials[] = [];
+  allCheckIns: ICompanyFinancials[] = []; // All historical data for table
   loading = false;
   error: string | null = null;
 
@@ -91,11 +91,21 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   latestNotes: string | null = null;
 
   months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
-  constructor(private nodeService: NodeService<FinancialCheckIn>) {}
+  constructor(private nodeService: CompanyFinancialsService) {}
 
   ngOnInit() {
     this.loadCheckIns();
@@ -124,7 +134,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     try {
       // Get financial check-ins for this specific company (already filtered by company_id)
       const companyCheckIns = await this.nodeService
-        .getNodesByCompany(this.company.id, 'financial_checkin')
+        .listCompanyFinancials(this.company.id)
         .toPromise();
 
       // Store all check-ins for table view
@@ -142,12 +152,12 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   // Get all check-ins (for table view) regardless of year
-  async getAllCheckIns(): Promise<INode<FinancialCheckIn>[]> {
+  async getAllCheckIns(): Promise<ICompanyFinancials[]> {
     if (!this.company?.id) return [];
 
     try {
       const companyCheckIns = await this.nodeService
-        .getNodesByCompany(this.company.id, 'financial_checkin')
+        .listCompanyFinancials(this.company.id)
         .toPromise();
       return companyCheckIns || [];
     } catch (error) {
@@ -164,29 +174,29 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     // Sort by year, month (most recent first) - handle string month values
     const sortedCheckIns = [...this.checkIns].sort((a, b) => {
-      if (a.data.year !== b.data.year) return b.data.year - a.data.year;
-      return this.parseMonth(b.data.month) - this.parseMonth(a.data.month);
+      if (a.year !== b.year) return b.year - a.year;
+      return this.parseMonth(b.month) - this.parseMonth(a.month);
     });
 
     const latest = sortedCheckIns[0];
     const previous = sortedCheckIns[1];
 
     this.latestMetrics = {
-      turnover: latest.data.turnover_monthly_avg || 0,
-      netProfitMargin: latest.data.np_margin || 0,
-      cashPosition: latest.data.cash_on_hand || 0,
-      workingCapitalRatio: latest.data.working_capital_ratio || 0,
-      period: this.formatPeriod(latest.data),
+      turnover: latest.turnover_monthly_avg || 0,
+      netProfitMargin: latest.np_margin || 0,
+      cashPosition: latest.cash_on_hand || 0,
+      workingCapitalRatio: latest.working_capital_ratio || 0,
+      period: this.formatPeriod(latest),
       growthIndicators: {
         turnoverGrowth: this.calculateGrowth(
-          previous?.data.turnover_monthly_avg || 0,
-          latest.data.turnover_monthly_avg || 0
+          previous?.turnover_monthly_avg || 0,
+          latest.turnover_monthly_avg || 0
         ),
         marginImprovement:
-          (latest.data.np_margin || 0) - (previous?.data.np_margin || 0),
+          (latest.np_margin || 0) - (previous?.np_margin || 0),
         cashGrowth: this.calculateGrowth(
-          previous?.data.cash_on_hand || 0,
-          latest.data.cash_on_hand || 0
+          previous?.cash_on_hand || 0,
+          latest.cash_on_hand || 0
         ),
       },
     };
@@ -197,7 +207,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     return ((current - previous) / previous) * 100;
   }
 
-  private formatPeriod(data: FinancialCheckIn): string {
+  private formatPeriod(data: ICompanyFinancials): string {
     if (data.month) {
       const monthNumber = this.parseMonth(data.month);
       return `${this.months[monthNumber - 1]} ${data.year}`;
@@ -212,11 +222,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
 
     const sortedCheckIns = [...this.checkIns].sort((a, b) => {
-      if (a.data.year !== b.data.year) return b.data.year - a.data.year;
-      return this.parseMonth(b.data.month) - this.parseMonth(a.data.month);
+      if (a.year !== b.year) return b.year - a.year;
+      return this.parseMonth(b.month) - this.parseMonth(a.month);
     });
 
-    this.latestNotes = sortedCheckIns[0]?.data.notes || null;
+    // this.latestNotes = sortedCheckIns[0]?.notes || null;
   }
 
   onNewCheckIn() {
@@ -228,11 +238,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   // Table component event handlers
-  onEditFromTable(checkIn: INode<FinancialCheckIn>) {
+  onEditFromTable(checkIn:ICompanyFinancials) {
     this.onEditCheckIn.emit(checkIn);
   }
 
-  async onDeleteFromTable(checkIn: INode<FinancialCheckIn>) {
+  async onDeleteFromTable(checkIn:ICompanyFinancials) {
     if (
       !confirm(
         'Are you sure you want to delete this financial check-in? This action cannot be undone.'
@@ -242,7 +252,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
 
     try {
-      await this.nodeService.deleteNode(checkIn.id!).toPromise();
+      await this.nodeService.deleteCompanyFinancials(checkIn.id!).toPromise();
 
       // Refresh data
       this.loadCheckIns();

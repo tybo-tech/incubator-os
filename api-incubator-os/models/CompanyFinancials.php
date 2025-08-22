@@ -5,24 +5,33 @@ class CompanyFinancials
 {
     private PDO $conn;
 
-    /** Columns allowed to be written (exclude id, quarter, created_at, updated_at) */
+    /**
+     * Columns allowed to be written (exclude id, quarter, quarter_label, created_at, updated_at).
+     * Matches table `company_financials`.
+     */
     private const WRITABLE = [
         'company_id','period_date','year','month',
+        'turnover_monthly_avg',
+        'is_pre_ignition',
         'turnover','cost_of_sales','business_expenses',
         'gross_profit','net_profit',
-        'cash_in_hand','debtors_outstanding','creditors_outstanding',
-        'inventory_value','working_capital_ratio','net_assets'
+        'gp_margin','np_margin',
+        'cash_on_hand','debtors','creditors',
+        'inventory_on_hand','working_capital_ratio','net_assets',
+        'notes',
     ];
 
-    /** Integer fields */
+    /** Integer-ish fields (cast to int on read; is_pre_ignition cast to bool separately) */
     private const INTS = ['id','company_id','year','month','quarter'];
 
     /** Decimal fields (kept as strings for precision) */
     private const DECS = [
+        'turnover_monthly_avg',
         'turnover','cost_of_sales','business_expenses',
         'gross_profit','net_profit',
-        'cash_in_hand','debtors_outstanding','creditors_outstanding',
-        'inventory_value','working_capital_ratio','net_assets'
+        'gp_margin','np_margin',
+        'cash_on_hand','debtors','creditors',
+        'inventory_on_hand','working_capital_ratio','net_assets'
     ];
 
     public function __construct(PDO $db)
@@ -76,7 +85,6 @@ class CompanyFinancials
             }
         }
 
-        // Build ON DUPLICATE KEY UPDATE based on writable fields (excluding keys that should not change)
         $row = $this->sanitizeForWrite($data);
         $cols = array_keys($row);
         $vals = array_values($row);
@@ -96,7 +104,6 @@ class CompanyFinancials
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($vals);
 
-        // Fetch row back
         return $this->getByCompanyPeriod((int)$data['company_id'], (string)$data['period_date']) ?? [];
     }
 
@@ -149,14 +156,25 @@ class CompanyFinancials
         return $r ? $this->castRow($r) : null;
     }
 
+    /** Convenience: get by (company_id, year, month) unique key */
+    public function getByCompanyYearMonth(int $companyId, int $year, int $month): ?array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM company_financials WHERE company_id = ? AND year = ? AND month = ?"
+        );
+        $stmt->execute([$companyId, $year, $month]);
+        $r = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $r ? $this->castRow($r) : null;
+    }
+
     /**
      * List with filters + pagination + ordering.
      * $opts:
-     *  - company_id (int)      [optional but recommended]
-     *  - year (int), month (int)
+     *  - company_id (int)
+     *  - year (int), month (int), quarter (int 1–4), is_pre_ignition (bool|int)
      *  - from_date, to_date    (YYYY-MM-DD inclusive bounds)
-     *  - order_by: period_date|year|month|created_at|updated_at|turnover|net_profit (whitelisted)
-     *  - order_dir: ASC|DESC   (default DESC on period_date)
+     *  - order_by: period_date|year|month|created_at|updated_at|turnover|net_profit|turnover_monthly_avg|gp_margin|np_margin
+     *  - order_dir: ASC|DESC (default DESC on period_date)
      *  - limit (int, default 50), offset (int, default 0)
      */
     public function list(array $opts = []): array
@@ -175,6 +193,14 @@ class CompanyFinancials
         if (isset($opts['month'])) {
             $where[] = "month = ?";
             $params[] = (int)$opts['month'];
+        }
+        if (isset($opts['quarter'])) {
+            $where[] = "quarter = ?";
+            $params[] = (int)$opts['quarter'];
+        }
+        if (isset($opts['is_pre_ignition'])) {
+            $where[] = "is_pre_ignition = ?";
+            $params[] = (int)!!$opts['is_pre_ignition'];
         }
         if (!empty($opts['from_date'])) {
             $this->assertDateYmd($opts['from_date'], 'from_date');
@@ -226,6 +252,14 @@ class CompanyFinancials
         if (isset($opts['month'])) {
             $where[] = "month = ?";
             $params[] = (int)$opts['month'];
+        }
+        if (isset($opts['quarter'])) {
+            $where[] = "quarter = ?";
+            $params[] = (int)$opts['quarter'];
+        }
+        if (isset($opts['is_pre_ignition'])) {
+            $where[] = "is_pre_ignition = ?";
+            $params[] = (int)!!$opts['is_pre_ignition'];
         }
         if (!empty($opts['from_date'])) {
             $this->assertDateYmd($opts['from_date'], 'from_date');
@@ -280,7 +314,8 @@ class CompanyFinancials
     {
         static $allowed = [
             'period_date','year','month','created_at','updated_at',
-            'turnover','net_profit'
+            'turnover','net_profit',
+            'turnover_monthly_avg','gp_margin','np_margin'
         ];
         return in_array($col, $allowed, true) ? $col : 'period_date';
     }
@@ -331,7 +366,9 @@ class CompanyFinancials
             if (!array_key_exists($k, $data)) continue;
 
             $v = $data[$k];
-            if (in_array($k, self::INTS, true)) {
+            if ($k === 'is_pre_ignition') {
+                $out[$k] = $v === null ? null : (int)!!$v; // store as 0/1
+            } elseif (in_array($k, self::INTS, true)) {
                 $out[$k] = $v === null ? null : (int)$v;
             } elseif (in_array($k, self::DECS, true)) {
                 // Keep DECIMALs precise as strings
@@ -346,7 +383,12 @@ class CompanyFinancials
         return $out;
     }
 
-    /** Cast DB row into friendly PHP types (ints + quarters; DECIMALs remain strings). */
+    /**
+     * Cast DB row into friendly PHP types:
+     * - ints for INTS
+     * - bool for is_pre_ignition
+     * - DECIMALs remain strings for exactness
+     */
     private function castRow(array $row): array
     {
         foreach (self::INTS as $k) {
@@ -354,7 +396,9 @@ class CompanyFinancials
                 $row[$k] = (int)$row[$k];
             }
         }
-        // Leave decimals as strings for exactness
+        if (array_key_exists('is_pre_ignition', $row) && $row['is_pre_ignition'] !== null) {
+            $row['is_pre_ignition'] = (bool)$row['is_pre_ignition'];
+        }
         foreach (self::DECS as $k) {
             if (array_key_exists($k, $row) && $row[$k] !== null) {
                 $row[$k] = (string)$row[$k];

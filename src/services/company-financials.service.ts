@@ -5,23 +5,34 @@ import { Observable } from 'rxjs';
 export interface ICompanyFinancials {
   id: number;
   company_id: number;
-  period_date: string;
+  period_date: string;      // YYYY-MM-DD
   year: number;
   month: number;
-  quarter: number;
-  turnover: string | null;
-  cost_of_sales: string | null;
-  business_expenses: string | null;
-  gross_profit: string | null;
-  net_profit: string | null;
-  cash_in_hand: string | null;
-  debtors_outstanding: string | null;
-  creditors_outstanding: string | null;
-  inventory_value: string | null;
-  working_capital_ratio: string | null;
-  net_assets: string | null;
-  created_at: string;
-  updated_at: string;
+
+  quarter: number;          // 1..4 (generated in DB)
+  quarter_label: string;    // e.g. "Q1"
+
+  is_pre_ignition: boolean;
+
+  turnover_monthly_avg: number | null;
+  turnover: number | null;
+  cost_of_sales: number | null;
+  business_expenses: number | null;
+  gross_profit: number | null;
+  net_profit: number | null;
+  gp_margin: number | null;
+  np_margin: number | null;
+  cash_on_hand: number | null;
+  debtors: number | null;
+  creditors: number | null;
+  inventory_on_hand: number | null;
+  working_capital_ratio: number | null;
+  net_assets: number | null;
+
+  notes: string | null;
+
+  created_at: string;       // datetime
+  updated_at: string;       // datetime
 }
 import { Constants } from './service';
 

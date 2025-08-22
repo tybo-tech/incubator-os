@@ -4,6 +4,11 @@ include_once '../../models/CompanyFinancials.php';
 
 $data = json_decode(file_get_contents("php://input"), true) ?? [];
 
+if (!isset($data['company_id'])) {
+    echo json_encode(['error' => 'company_id is required']);
+    exit;
+}
+
 try {
     $database = new Database();
     $db = $database->connect();
