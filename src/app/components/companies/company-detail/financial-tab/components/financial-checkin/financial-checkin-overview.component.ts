@@ -134,10 +134,10 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     try {
       // Get financial check-ins for this specific company (already filtered by company_id)
       const companyCheckIns = await this.nodeService
-        .listCompanyFinancials(this.company.id)
+        .listAllCompanyFinancials(this.company.id)
         .toPromise();
 
-      // Store all check-ins for table view
+      // Store all check-ins for table view, already sorted by date descending
       this.allCheckIns = companyCheckIns || [];
       this.checkIns = companyCheckIns || [];
 
@@ -157,7 +157,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     try {
       const companyCheckIns = await this.nodeService
-        .listCompanyFinancials(this.company.id)
+        .listAllCompanyFinancials(this.company.id)
         .toPromise();
       return companyCheckIns || [];
     } catch (error) {

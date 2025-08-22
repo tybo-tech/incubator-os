@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { INode } from '../../../../../../../models/schema';
-import { FinancialCheckIn } from '../../../../../../../models/busines.financial.checkin.models';
+import { ICompanyFinancials } from '../../../../../../../services/company-financials.service';
 
 interface MonthDetails {
   month: number;
@@ -69,22 +69,22 @@ interface MonthDetails {
                         {{ formatDate(checkIn.created_at) }}
                       </div>
                       <div class="text-gray-500 text-xs">
-                        {{ checkIn.data.quarter }}{{ checkIn.data.is_pre_ignition ? ' (Pre-ignition)' : '' }}
+                        {{ checkIn.quarter }}{{ checkIn.is_pre_ignition ? ' (Pre-ignition)' : '' }}
                       </div>
                     </td>
 
                     <!-- Turnover -->
                     <td class="px-4 py-3 whitespace-nowrap text-sm">
                       <div class="text-gray-900 font-medium">
-                        R {{ checkIn.data.turnover_monthly_avg | number:'1.0-0' }}
+                        R {{ checkIn.turnover_monthly_avg | number:'1.0-0' }}
                       </div>
                     </td>
 
                     <!-- Net Profit -->
                     <td class="px-4 py-3 whitespace-nowrap text-sm">
                       <div class="font-medium"
-                           [class]="(checkIn.data.net_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
-                        R {{ checkIn.data.net_profit | number:'1.0-0' }}
+                           [class]="(checkIn.net_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
+                        R {{ checkIn.net_profit | number:'1.0-0' }}
                       </div>
                     </td>
 
@@ -92,29 +92,29 @@ interface MonthDetails {
                     <td class="px-4 py-3 whitespace-nowrap text-sm">
                       <div class="flex items-center">
                         <span class="font-medium"
-                              [class]="(checkIn.data.np_margin || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
-                          {{ checkIn.data.np_margin | number:'1.1-1' }}%
+                              [class]="(checkIn.np_margin || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
+                          {{ checkIn.np_margin | number:'1.1-1' }}%
                         </span>
                         <i class="ml-1"
-                           [class]="(checkIn.data.np_margin || 0) >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500'"></i>
+                           [class]="(checkIn.np_margin || 0) >= 0 ? 'fas fa-arrow-up text-green-500' : 'fas fa-arrow-down text-red-500'"></i>
                       </div>
                     </td>
 
                     <!-- Cash -->
                     <td class="px-4 py-3 whitespace-nowrap text-sm">
                       <div class="text-gray-900">
-                        R {{ checkIn.data.cash_on_hand | number:'1.0-0' }}
+                        R {{ checkIn.cash_on_hand | number:'1.0-0' }}
                       </div>
                       <div class="text-xs text-gray-500 flex items-center">
-                        WC: {{ checkIn.data.working_capital_ratio | number:'1.1-1' }}
-                        <i class="ml-1" [class]="getWorkingCapitalIcon(checkIn.data.working_capital_ratio || 0)"></i>
+                        WC: {{ checkIn.working_capital_ratio | number:'1.1-1' }}
+                        <i class="ml-1" [class]="getWorkingCapitalIcon(checkIn.working_capital_ratio || 0)"></i>
                       </div>
                     </td>
 
                     <!-- Notes Preview -->
                     <td class="px-4 py-3 text-sm text-gray-600 max-w-xs">
-                      <div class="truncate" [title]="checkIn.data.notes || ''">
-                        {{ checkIn.data.notes || 'No notes' }}
+                      <div class="truncate" [title]="checkIn.notes || ''">
+                        {{ checkIn.notes || 'No notes' }}
                       </div>
                     </td>
 
@@ -201,12 +201,12 @@ interface MonthDetails {
 export class FinancialCheckinDetailsComponent {
   @Input() isVisible = false;
   @Input() monthDetails: MonthDetails | null = null;
-  @Input() monthCheckIns: INode<FinancialCheckIn>[] = [];
+  @Input() monthCheckIns: ICompanyFinancials[] = [];
 
   @Output() onCloseModal = new EventEmitter<void>();
   @Output() onAddNewCheckIn = new EventEmitter<MonthDetails>();
-  @Output() onEditCheckIn = new EventEmitter<INode<FinancialCheckIn>>();
-  @Output() onDeleteCheckIn = new EventEmitter<INode<FinancialCheckIn>>();
+  @Output() onEditCheckIn = new EventEmitter<ICompanyFinancials>();
+  @Output() onDeleteCheckIn = new EventEmitter<ICompanyFinancials>();
 
   onClose() {
     this.onCloseModal.emit();
@@ -218,11 +218,11 @@ export class FinancialCheckinDetailsComponent {
     }
   }
 
-  onEdit(checkIn: INode<FinancialCheckIn>) {
+  onEdit(checkIn: ICompanyFinancials) {
     this.onEditCheckIn.emit(checkIn);
   }
 
-  onDelete(checkIn: INode<FinancialCheckIn>) {
+  onDelete(checkIn: ICompanyFinancials) {
     // TODO: Add confirmation dialog
     this.onDeleteCheckIn.emit(checkIn);
   }
@@ -251,19 +251,19 @@ export class FinancialCheckinDetailsComponent {
   // Summary calculations
   getAverageTurnover(): number {
     if (this.monthCheckIns.length === 0) return 0;
-    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.data.turnover_monthly_avg || 0), 0);
+    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.turnover_monthly_avg || 0), 0);
     return sum / this.monthCheckIns.length;
   }
 
   getAverageNetProfit(): number {
     if (this.monthCheckIns.length === 0) return 0;
-    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.data.net_profit || 0), 0);
+    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.net_profit || 0), 0);
     return sum / this.monthCheckIns.length;
   }
 
   getAverageMargin(): number {
     if (this.monthCheckIns.length === 0) return 0;
-    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.data.np_margin || 0), 0);
+    const sum = this.monthCheckIns.reduce((acc, ci) => acc + (ci.np_margin || 0), 0);
     return sum / this.monthCheckIns.length;
   }
 
@@ -273,6 +273,6 @@ export class FinancialCheckinDetailsComponent {
     const sorted = [...this.monthCheckIns].sort((a, b) =>
       new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
     );
-    return sorted[0]?.data.cash_on_hand || 0;
+    return sorted[0]?.cash_on_hand || 0;
   }
 }

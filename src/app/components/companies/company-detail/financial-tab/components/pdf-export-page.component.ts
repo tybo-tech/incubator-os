@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
-import { FinancialCheckIn } from '../../../../../../models/busines.financial.checkin.models';
 import { NodeService } from '../../../../../../services/node.service';
 import html2pdf from 'html2pdf.js';
 import { firstValueFrom } from 'rxjs';
 import { ICompany } from '../../../../../../models/simple.schema';
 import { CompanyService } from '../../../../../../services/company.service';
+import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../services/company-financials.service';
 
 interface GroupedCheckIn {
   year: number;
   quarter: string;
-  checkIns: INode<FinancialCheckIn>[];
+  checkIns: ICompanyFinancials[];
 }
 
 interface QuarterlyMetrics {
@@ -237,11 +237,11 @@ interface QuarterlyMetrics {
                   </thead>
                   <tbody>
                     <tr *ngFor="let checkIn of group.checkIns">
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; width: 20%;">{{ getMonthName(checkIn.data.month || 1) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(checkIn.data.cash_on_hand || 0) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(checkIn.data.turnover_monthly_avg || 0) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(checkIn.data.business_expenses || 0) }}</td>
-                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; font-weight: 500; width: 20%;">{{ formatCurrency(checkIn.data.net_profit || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; width: 20%;">{{ getMonthName(checkIn.month || 1) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; width: 20%;">{{ formatCurrency(checkIn.cash_on_hand || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #059669; width: 20%;">{{ formatCurrency(checkIn.turnover_monthly_avg || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; color: #dc2626; width: 20%;">{{ formatCurrency(checkIn.business_expenses || 0) }}</td>
+                      <td style="border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: right; font-weight: 500; width: 20%;">{{ formatCurrency(checkIn.net_profit || 0) }}</td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -270,7 +270,7 @@ interface QuarterlyMetrics {
 })
 export class PdfExportPageComponent implements OnInit {
   company: ICompany | null = null;
-  financialCheckIns: INode<FinancialCheckIn>[] = [];
+  financialCheckIns: ICompanyFinancials[] = [];
   currentDate = new Date();
   isGenerating = false;
   isLoading = true;
@@ -285,7 +285,7 @@ export class PdfExportPageComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private companyService: CompanyService,
-    private nodeService: NodeService
+    private nodeService: CompanyFinancialsService
   ) {}
 
   async ngOnInit() {
@@ -304,7 +304,7 @@ export class PdfExportPageComponent implements OnInit {
       this.company = await firstValueFrom(this.companyService.getCompanyById(companyIdNumber)) as ICompany;
 
       // Load financial check-ins
-      this.financialCheckIns = await firstValueFrom(this.nodeService.getNodesByCompany(companyIdNumber, 'financial_checkin')) as INode<FinancialCheckIn>[];
+      this.financialCheckIns = await firstValueFrom(this.nodeService.listAllCompanyFinancials(companyIdNumber)) as ICompanyFinancials[];
 
       console.log('Loaded financial check-ins:', this.financialCheckIns.length, this.financialCheckIns);
 
@@ -383,7 +383,7 @@ export class PdfExportPageComponent implements OnInit {
     return months[monthNumber - 1] || '';
   }
 
-  getQuarterTotal(quarter: string, field: keyof FinancialCheckIn): number {
+  getQuarterTotal(quarter: string, field: keyof ICompanyFinancials): number {
     const quarterMonths = {
       'Q1': [1, 2, 3],
       'Q2': [4, 5, 6],
@@ -393,17 +393,17 @@ export class PdfExportPageComponent implements OnInit {
 
     const months = quarterMonths[quarter as keyof typeof quarterMonths] || [];
     return this.financialCheckIns
-      .filter((checkIn: INode<FinancialCheckIn>) => months.includes(checkIn.data.month || 0))
-      .reduce((sum: number, checkIn: INode<FinancialCheckIn>) => sum + (checkIn.data[field] as number || 0), 0);
+      .filter((checkIn: ICompanyFinancials) => months.includes(checkIn.month || 0))
+      .reduce((sum: number, checkIn: ICompanyFinancials) => sum + (checkIn[field] as number || 0), 0);
   }
 
   getGroupedStatements(): GroupedCheckIn[] {
-    const grouped = this.financialCheckIns.reduce((groups: { [key: string]: GroupedCheckIn }, checkIn: INode<FinancialCheckIn>) => {
-      const key = `${checkIn.data.year}-${checkIn.data.quarter}`;
+    const grouped = this.financialCheckIns.reduce((groups: { [key: string]: GroupedCheckIn }, checkIn: ICompanyFinancials) => {
+      const key = `${checkIn.year}-${checkIn.quarter}`;
       if (!groups[key]) {
         groups[key] = {
-          year: checkIn.data.year,
-          quarter: checkIn.data.quarter || 'Q1',
+          year: checkIn.year,
+          quarter: checkIn.quarter_label || 'Q1',
           checkIns: []
         };
       }
@@ -417,21 +417,21 @@ export class PdfExportPageComponent implements OnInit {
     });
   }
 
-  getGroupTotal(checkIns: INode<FinancialCheckIn>[], field: keyof FinancialCheckIn): number {
-    return checkIns.reduce((sum: number, checkIn: INode<FinancialCheckIn>) => sum + (checkIn.data[field] as number || 0), 0);
+  getGroupTotal(checkIns: ICompanyFinancials[], field: keyof ICompanyFinancials): number {
+    return checkIns.reduce((sum: number, checkIn: ICompanyFinancials) => sum + (checkIn[field] as number || 0), 0);
   }
 
-  getLatestMetric(field: keyof FinancialCheckIn): number {
+  getLatestMetric(field: keyof ICompanyFinancials): number {
     if (this.financialCheckIns.length === 0) return 0;
 
     // Sort by year and month to get the latest entry
     const latest = this.financialCheckIns
       .sort((a, b) => {
-        if (a.data.year !== b.data.year) return b.data.year - a.data.year;
-        return (b.data.month || 0) - (a.data.month || 0);
+        if (a.year !== b.year) return b.year - a.year;
+        return (b.month || 0) - (a.month || 0);
       })[0];
 
-    return latest?.data[field] as number || 0;
+    return latest[field] as number || 0;
   }
 
   formatPercentage(value: number | undefined): string {

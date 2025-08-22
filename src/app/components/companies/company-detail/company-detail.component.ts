@@ -2,12 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
-
 // Import all the new sub-components
 import { LoadingStateComponent } from './loading-state/loading-state.component';
 import { ErrorStateComponent } from './error-state/error-state.component';
 import { CompanyHeaderComponent } from './company-header/company-header.component';
-import { TabsNavigationComponent, TabType } from './tabs-navigation/tabs-navigation.component';
+import {
+  TabsNavigationComponent,
+  TabType,
+} from './tabs-navigation/tabs-navigation.component';
 import { OverviewTabComponent } from './overview-tab/overview-tab.component';
 import { AssessmentTabComponent } from './assessment-tab/assessment-tab.component';
 import { SwotTabComponent } from './swot-tab/swot-tab.component';
@@ -21,7 +23,6 @@ import { FinancialTargetsTabComponent } from './financial-targets-tab/financial-
 import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.component';
 import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
-import { ExecutiveReportComponent } from './executive-report/executive-report.component';
 import { CompanyService } from '../../../../services/company.service';
 import { ICompany } from '../../../../models/simple.schema';
 
@@ -46,14 +47,12 @@ import { ICompany } from '../../../../models/simple.schema';
     FinancialTargetsTabComponent,
     HRTrackingTabComponent,
     GpsTargetsTabComponent,
-  CompanyFormModalComponent,
-  ExecutiveReportComponent
+    CompanyFormModalComponent,
   ],
   templateUrl: './company-detail.component.html',
-  styleUrl: './company-detail.component.scss'
+  styleUrl: './company-detail.component.scss',
 })
 export class CompanyDetailComponent implements OnInit {
-
   company: ICompany | null = null;
   activeTab: TabType = 'overview';
   loading = true;
@@ -69,16 +68,16 @@ export class CompanyDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.loadCompany(parseInt(id));
       }
     });
   }
-exportToPDF() {
-this.router.navigate(['/companies', this.company?.id, 'executive-report']);
-}
+  exportToPDF() {
+    this.router.navigate(['/companies', this.company?.id, 'executive-report']);
+  }
   loadCompany(id: number) {
     this.loading = true;
     this.error = null;
@@ -92,7 +91,7 @@ this.router.navigate(['/companies', this.company?.id, 'executive-report']);
         console.error('Error loading company:', err);
         this.error = 'Failed to load company details';
         this.loading = false;
-      }
+      },
     });
   }
 

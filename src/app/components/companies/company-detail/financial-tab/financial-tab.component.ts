@@ -1,9 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { INode } from '../../../../../models/schema';
-import { FinancialCheckIn } from '../../../../../models/busines.financial.checkin.models';
-import { NodeService } from '../../../../../services';
 import {
   FinancialOverviewComponent,
   FinancialCheckinModalComponent,
@@ -55,8 +52,8 @@ export class FinancialTabComponent implements OnInit {
     this.loadingCheckIns = true;
     this.checkInsError = null;
 
-    // Fetch financial check-ins for this company
-    this.checkInService.listCompanyFinancials(this.company.id).subscribe({
+    // Fetch all financial check-ins for this company, sorted by date
+    this.checkInService.listAllCompanyFinancials(this.company.id).subscribe({
       next: (checkIns: ICompanyFinancials[]) => {
         // Filter check-ins for this company
         this.financialCheckIns = checkIns

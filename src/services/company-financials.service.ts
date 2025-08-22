@@ -34,6 +34,21 @@ export interface ICompanyFinancials {
   created_at: string;       // datetime
   updated_at: string;       // datetime
 }
+
+export interface ICompanyFinancialsFilters {
+  company_id: number;
+  year?: number;
+  month?: number;
+  quarter?: number;
+  is_pre_ignition?: boolean;
+  from_date?: string;     // YYYY-MM-DD
+  to_date?: string;       // YYYY-MM-DD
+  order_by?: 'period_date' | 'year' | 'month' | 'created_at' | 'updated_at' |
+             'turnover' | 'net_profit' | 'turnover_monthly_avg' | 'gp_margin' | 'np_margin';
+  order_dir?: 'ASC' | 'DESC';
+  limit?: number;
+  offset?: number;
+}
 import { Constants } from './service';
 
 @Injectable({ providedIn: 'root' })
@@ -62,11 +77,73 @@ export class CompanyFinancialsService {
     return this.http.post<ICompanyFinancials>(`${this.apiUrl}/get-company-financials-by-period.php`, { company_id, period_date });
   }
 
-  listCompanyFinancials(filters: any = {}): Observable<ICompanyFinancials[]> {
+  /**
+   * List financial records for a company with optional filters
+   * @param filters Filtering and sorting options
+   */
+  listCompanyFinancials(filters: ICompanyFinancialsFilters): Observable<ICompanyFinancials[]> {
     return this.http.post<ICompanyFinancials[]>(`${this.apiUrl}/list-company-financials.php`, filters);
   }
 
-  countCompanyFinancials(filters: any = {}): Observable<{ count: number }> {
+  /**
+   * List all financial records for a company, sorted by date descending
+   * @param companyId The ID of the company
+   */
+  listAllCompanyFinancials(companyId: number): Observable<ICompanyFinancials[]> {
+    return this.listCompanyFinancials({
+      company_id: companyId,
+      order_by: 'period_date',
+      order_dir: 'DESC'
+    });
+  }
+
+  /**
+   * List financial records for a specific year
+   * @param companyId The ID of the company
+   * @param year The year to filter by
+   */
+  listFinancialsByYear(companyId: number, year: number): Observable<ICompanyFinancials[]> {
+    return this.listCompanyFinancials({
+      company_id: companyId,
+      year,
+      order_by: 'month',
+      order_dir: 'ASC'
+    });
+  }
+
+  /**
+   * List financial records for a specific quarter
+   * @param companyId The ID of the company
+   * @param year The year to filter by
+   * @param quarter The quarter (1-4) to filter by
+   */
+  listFinancialsByQuarter(companyId: number, year: number, quarter: number): Observable<ICompanyFinancials[]> {
+    return this.listCompanyFinancials({
+      company_id: companyId,
+      year,
+      quarter,
+      order_by: 'month',
+      order_dir: 'ASC'
+    });
+  }
+
+  /**
+   * List financial records for a date range
+   * @param companyId The ID of the company
+   * @param fromDate Start date (YYYY-MM-DD)
+   * @param toDate End date (YYYY-MM-DD)
+   */
+  listFinancialsByDateRange(companyId: number, fromDate: string, toDate: string): Observable<ICompanyFinancials[]> {
+    return this.listCompanyFinancials({
+      company_id: companyId,
+      from_date: fromDate,
+      to_date: toDate,
+      order_by: 'period_date',
+      order_dir: 'ASC'
+    });
+  }
+
+  countCompanyFinancials(filters: Partial<ICompanyFinancialsFilters>): Observable<{ count: number }> {
     return this.http.post<{ count: number }>(`${this.apiUrl}/count-company-financials.php`, filters);
   }
 

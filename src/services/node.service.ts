@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { INode } from '../models/schema';
 import { Constants } from './service';
-import { FinancialCheckIn } from '../models/busines.financial.checkin.models';
 
 @Injectable({
   providedIn: 'root',
