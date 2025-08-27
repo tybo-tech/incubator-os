@@ -16,6 +16,26 @@ export interface Industry {
   children?: Industry[];
 }
 
+export type CategoryType = 'client' | 'program' | 'cohort';
+
+export interface ICategory {
+  id: number;
+  name: string;
+  slug: string;
+  type: CategoryType;
+  description?: string | null;
+  image_url?: string | null;
+  parent_id?: number | null;
+  depth: number;
+
+  // Timestamps (ISO 8601, e.g. "2025-08-18T00:15:10Z")
+  created_at: string;
+  updated_at: string;
+
+  // Optional when you load hierarchies/trees
+  children?: ICategory[];
+}
+
 export type BbbeeValidStatus =
   | 'Valid'
   | 'Expired'
