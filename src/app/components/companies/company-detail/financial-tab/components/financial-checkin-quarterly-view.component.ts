@@ -174,20 +174,25 @@ export class FinancialCheckinQuarterlyViewComponent {
         };
       }
 
-      // Calculate quarter totals and handle null/undefined values
+      // Calculate quarter totals
+      // For turnover, we're using turnover field instead of monthly avg
       const turnover = quarterCheckIns.reduce((sum, ci) => {
-        const val = parseFloat(ci.turnover_monthly_avg?.toString() || '0');
-        return sum + (isNaN(val) ? 0 : val);
+        const val = ci.turnover;
+        // Handle string numbers from database
+        const numVal = typeof val === 'string' ? parseFloat(val) : (val || 0);
+        return sum + (isNaN(numVal) ? 0 : numVal);
       }, 0);
 
       const grossProfit = quarterCheckIns.reduce((sum, ci) => {
-        const val = parseFloat(ci.gross_profit?.toString() || '0');
-        return sum + (isNaN(val) ? 0 : val);
+        const val = ci.gross_profit;
+        const numVal = typeof val === 'string' ? parseFloat(val) : (val || 0);
+        return sum + (isNaN(numVal) ? 0 : numVal);
       }, 0);
 
       const netProfit = quarterCheckIns.reduce((sum, ci) => {
-        const val = parseFloat(ci.net_profit?.toString() || '0');
-        return sum + (isNaN(val) ? 0 : val);
+        const val = ci.net_profit;
+        const numVal = typeof val === 'string' ? parseFloat(val) : (val || 0);
+        return sum + (isNaN(numVal) ? 0 : numVal);
       }, 0);
 
       // Calculate margin only from records that have both turnover and net profit
@@ -197,10 +202,12 @@ export class FinancialCheckinQuarterlyViewComponent {
         !isNaN(parseFloat(ci.np_margin.toString()))
       ).length;
 
-      const averageMargin = marginsCount > 0 ? quarterCheckIns.reduce((sum, ci) => {
-        const margin = parseFloat(ci.np_margin?.toString() || '0');
-        return sum + (isNaN(margin) ? 0 : margin);
-      }, 0) / marginsCount : 0;
+      // Calculate average margin from records that have both turnover and margin
+      const averageMargin = quarterCheckIns.reduce((sum, ci) => {
+        if (!ci.turnover || !ci.np_margin) return sum;
+        const margin = typeof ci.np_margin === 'string' ? parseFloat(ci.np_margin) : ci.np_margin;
+        return isNaN(margin) ? sum : sum + margin;
+      }, 0) / (quarterCheckIns.length || 1); // Avoid division by zero
 
       return {
         quarter,
@@ -236,12 +243,15 @@ export class FinancialCheckinQuarterlyViewComponent {
   }
 
   formatCurrency(amount: number): string {
+    // Handle potential NaN values
+    const safeAmount = isNaN(amount) ? 0 : amount;
+
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount);
+    }).format(safeAmount);
   }
 
   getQuarterCardClass(quarterData: QuarterlyMetrics): string {

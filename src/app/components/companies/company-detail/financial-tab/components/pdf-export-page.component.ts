@@ -384,26 +384,30 @@ export class PdfExportPageComponent implements OnInit {
   }
 
   getQuarterTotal(quarter: string, field: keyof ICompanyFinancials): number {
-    const quarterMonths = {
-      'Q1': [1, 2, 3],
-      'Q2': [4, 5, 6],
-      'Q3': [7, 8, 9],
-      'Q4': [10, 11, 12]
-    };
+    const checkIns = this.financialCheckIns.filter(
+      (checkIn: ICompanyFinancials) => checkIn.quarter_label === quarter
+    );
 
-    const months = quarterMonths[quarter as keyof typeof quarterMonths] || [];
-    return this.financialCheckIns
-      .filter((checkIn: ICompanyFinancials) => months.includes(checkIn.month || 0))
-      .reduce((sum: number, checkIn: ICompanyFinancials) => sum + (checkIn[field] as number || 0), 0);
+    if (checkIns.length === 0) return 0;
+
+    return checkIns.reduce((sum: number, checkIn: ICompanyFinancials) => {
+      if (!checkIn[field]) return sum;
+      const value = checkIn[field];
+      const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
+      return sum + (isNaN(numValue) ? 0 : numValue);
+    }, 0);
   }
 
   getGroupedStatements(): GroupedCheckIn[] {
+    // Data comes pre-sorted by date
     const grouped = this.financialCheckIns.reduce((groups: { [key: string]: GroupedCheckIn }, checkIn: ICompanyFinancials) => {
-      const key = `${checkIn.year}-${checkIn.quarter}`;
+      if (!checkIn.quarter_label || !checkIn.year) return groups;
+
+      const key = `${checkIn.year}-${checkIn.quarter_label}`;
       if (!groups[key]) {
         groups[key] = {
           year: checkIn.year,
-          quarter: checkIn.quarter_label || 'Q1',
+          quarter: checkIn.quarter_label,
           checkIns: []
         };
       }
@@ -411,31 +415,35 @@ export class PdfExportPageComponent implements OnInit {
       return groups;
     }, {});
 
-    return Object.values(grouped).sort((a: GroupedCheckIn, b: GroupedCheckIn) => {
-      if (a.year !== b.year) return b.year - a.year;
-      return b.quarter.localeCompare(a.quarter);
-    });
+    // Sort by year and quarter (already sorted by API, but ensuring order for display)
+    return Object.values(grouped);
   }
 
   getGroupTotal(checkIns: ICompanyFinancials[], field: keyof ICompanyFinancials): number {
-    return checkIns.reduce((sum: number, checkIn: ICompanyFinancials) => sum + (checkIn[field] as number || 0), 0);
+    return checkIns.reduce((sum: number, checkIn: ICompanyFinancials) => {
+      if (!checkIn[field]) return sum;
+      const value = checkIn[field];
+      const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
+      return sum + (isNaN(numValue) ? 0 : numValue);
+    }, 0);
   }
 
   getLatestMetric(field: keyof ICompanyFinancials): number {
     if (this.financialCheckIns.length === 0) return 0;
 
-    // Sort by year and month to get the latest entry
-    const latest = this.financialCheckIns
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return (b.month || 0) - (a.month || 0);
-      })[0];
+    // Data comes pre-sorted from the API, first record is latest
+    const latest = this.financialCheckIns[0];
+    if (!latest || !latest[field]) return 0;
 
-    return latest[field] as number || 0;
+    // Handle string number values from the database
+    const value = latest[field];
+    const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
+    return isNaN(numValue) ? 0 : numValue;
   }
 
-  formatPercentage(value: number | undefined): string {
+  formatPercentage(value: number | string | null | undefined): string {
     if (value === undefined || value === null) return '0%';
-    return `${(value || 0).toFixed(1)}%`;
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(numValue) ? '0%' : `${numValue.toFixed(1)}%`;
   }
 }
