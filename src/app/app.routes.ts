@@ -5,6 +5,7 @@ import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
+import { groupingRoutes } from './admin/grouping/grouping.routes';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,10 @@ export const routes: Routes = [
       {
         path: 'team',
         component: CompaniesComponent, // Placeholder for now
+      },
+      {
+        path: 'admin/grouping',
+        children: groupingRoutes
       },
     ],
   },
