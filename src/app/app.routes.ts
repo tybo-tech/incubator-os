@@ -6,6 +6,7 @@ import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
+import { OverviewPageComponent } from './admin/overview/overview-page-new.component';
 
 export const routes: Routes = [
   {
@@ -52,6 +53,15 @@ export const routes: Routes = [
       {
         path: 'team',
         component: CompaniesComponent, // Placeholder for now
+      },
+      {
+        path: 'admin',
+        redirectTo: '/admin/overview',
+        pathMatch: 'full'
+      },
+      {
+        path: 'admin/overview',
+        component: OverviewPageComponent,
       },
       {
         path: 'admin/grouping',

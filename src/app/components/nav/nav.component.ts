@@ -113,6 +113,16 @@ export class NavComponent implements OnInit {
       label: 'Team',
       route: '/team',
       active: false
+    },
+    {
+      icon: 'admin',
+      label: 'Admin',
+      route: '/admin',
+      active: false,
+      children: [
+        { label: 'Overview', route: '/admin/overview', icon: 'bi-speedometer2' },
+        { label: 'Grouping', route: '/admin/grouping', icon: 'bi-collection' }
+      ]
     }
   ];
 

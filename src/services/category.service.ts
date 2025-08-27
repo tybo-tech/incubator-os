@@ -92,6 +92,10 @@ export class CategoryService {
     return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies-under-client.php?client_id=${clientId}`);
   }
 
+  listCohortsForCompany(companyId: number): Observable<ICategory[]> {
+    return this.http.get<ICategory[]>(`${this.apiUrl}/list-cohorts-for-company.php?company_id=${companyId}`);
+  }
+
   // Helper Operations
   ensureClient(name: string, description?: string, imageUrl?: string): Observable<ICategory> {
     return this.http.post<ICategory>(`${this.apiUrl}/ensure-client.php`, {
@@ -138,5 +142,17 @@ export class CategoryService {
       category_id: categoryId,
       new_parent_id: newParentId
     });
+  }
+
+  getCategoryStatistics(categoryId: number): Observable<{
+    programs_count?: number;
+    cohorts_count?: number;
+    companies_count?: number;
+  }> {
+    return this.http.get<{
+      programs_count?: number;
+      cohorts_count?: number;
+      companies_count?: number;
+    }>(`${this.apiUrl}/get-category-statistics.php?category_id=${categoryId}`);
   }
 }
