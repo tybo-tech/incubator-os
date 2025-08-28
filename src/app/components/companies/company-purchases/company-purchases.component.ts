@@ -253,7 +253,48 @@ export class CompanyPurchasesComponent implements OnInit {
   }
 
   getStatusBadgeClass(type: string, status: boolean): string {
-    const baseClass = status ? 'bg-success text-white' : 'bg-warning text-dark';
-    return `${baseClass} rounded-pill`;
+    switch (type) {
+      case 'po':
+        return status
+          ? 'bg-green-100 text-green-800'
+          : 'bg-gray-100 text-gray-500';
+      case 'invoice':
+        return status
+          ? 'bg-blue-100 text-blue-800'
+          : 'bg-gray-100 text-gray-500';
+      case 'delivery':
+        return status
+          ? 'bg-indigo-100 text-indigo-800'
+          : 'bg-gray-100 text-gray-500';
+      case 'aligned':
+        return status
+          ? 'bg-amber-100 text-amber-800'
+          : 'bg-gray-100 text-gray-500';
+      default:
+        return 'bg-gray-100 text-gray-500';
+    }
+  }
+
+  // Add method for action menu toggle (optional)
+  toggleActionMenu(purchaseId: number | undefined): void {
+    // You can implement dropdown logic here if needed
+    if (purchaseId) {
+      console.log('Toggle action menu for purchase:', purchaseId);
+    }
+  }
+
+  // Chart color helper for breakdown views
+  getChartColor(index: number): string {
+    const colors = [
+      '#3B82F6', // blue-500
+      '#10B981', // emerald-500
+      '#8B5CF6', // violet-500
+      '#F59E0B', // amber-500
+      '#EF4444', // red-500
+      '#06B6D4', // cyan-500
+      '#84CC16', // lime-500
+      '#F97316', // orange-500
+    ];
+    return colors[index % colors.length];
   }
 }
