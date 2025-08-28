@@ -75,7 +75,7 @@ class CompanyPurchases {
 
     // Read single purchase record
     public function read_single() {
-        $query = "SELECT cp.*, c.name as company_name, c.registration_number
+        $query = "SELECT cp.*, c.name as company_name, c.registration_no
                   FROM " . $this->table_name . " cp
                   LEFT JOIN companies c ON cp.company_id = c.id
                   WHERE cp.id = ?
@@ -111,7 +111,7 @@ class CompanyPurchases {
 
     // Read all purchases with filtering
     public function read($filters = []) {
-        $query = "SELECT cp.*, c.name as company_name, c.registration_number
+        $query = "SELECT cp.*, c.name as company_name, c.registration_no
                   FROM " . $this->table_name . " cp
                   LEFT JOIN companies c ON cp.company_id = c.id";
 
@@ -524,7 +524,7 @@ class CompanyPurchases {
             $params[':company_id'] = $company_id;
         }
 
-        $query = "SELECT cp.*, c.name as company_name, c.registration_number
+        $query = "SELECT cp.*, c.name as company_name, c.registration_no
                   FROM " . $this->table_name . " cp
                   LEFT JOIN companies c ON cp.company_id = c.id
                   WHERE " . implode(" AND ", $conditions) . "

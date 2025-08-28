@@ -1,129 +1,173 @@
-<div class="company-purchases-container">
-  <!-- Header -->
-  <div class="header-section mb-4">
-    <h3>Company Purchases</h3>
-    <div class="view-selector">
-      <button
-        class="btn btn-sm"
-        [class.btn-primary]="selectedView() === 'list'"
-        [class.btn-outline-primary]="selectedView() !== 'list'"
-        (click)="setView('list')">
-        List View
-      </button>
-      <button
-        class="btn btn-sm"
-        [class.btn-primary]="selectedView() === 'statistics'"
-        [class.btn-outline-primary]="selectedView() !== 'statistics'"
-        (click)="setView('statistics')">
-        Statistics
-      </button>
-      <button
-        class="btn btn-sm"
-        [class.btn-primary]="selectedView() === 'breakdown'"
-        [class.btn-outline-primary]="selectedView() !== 'breakdown'"
-        (click)="setView('breakdown')">
-        Breakdown
-      </button>
+<div class="container-fluid py-4">
+  <!-- Quick Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-gradient-primary text-white shadow-sm border-0 h-100">
+        <div class="card-body text-center py-4">
+          <i class="fas fa-shopping-cart fa-2x mb-3 opacity-75"></i>
+          <h4 class="card-title mb-1 fw-bold">{{ totalPurchases() }}</h4>
+          <p class="card-text small mb-0 opacity-90">
+            <i class="fas fa-box me-1"></i>Total Purchases
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-gradient-success text-white shadow-sm border-0 h-100">
+        <div class="card-body text-center py-4">
+          <i class="fas fa-money-bill-wave fa-2x mb-3 opacity-75"></i>
+          <h4 class="card-title mb-1 fw-bold">{{ formatCurrency(totalAmount()) }}</h4>
+          <p class="card-text small mb-0 opacity-90">
+            <i class="fas fa-wallet me-1"></i>Total Investment
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-gradient-info text-white shadow-sm border-0 h-100">
+        <div class="card-body text-center py-4">
+          <i class="fas fa-calculator fa-2x mb-3 opacity-75"></i>
+          <h4 class="card-title mb-1 fw-bold">{{ formatCurrency(averageAmount()) }}</h4>
+          <p class="card-text small mb-0 opacity-90">
+            <i class="fas fa-chart-line me-1"></i>Average Purchase
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card bg-gradient-warning text-white shadow-sm border-0 h-100">
+        <div class="card-body text-center py-4">
+          <i class="fas fa-tasks fa-2x mb-3 opacity-75"></i>
+          <h4 class="card-title mb-1 fw-bold">{{ formatPercentage(completionRates().alignmentRate) }}</h4>
+          <p class="card-text small mb-0 opacity-90">
+            <i class="fas fa-check-circle me-1"></i>Completion Rate
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Quick Stats -->
-  <div class="quick-stats mb-4" *ngIf="statistics()">
-    <div class="row">
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Total Purchases</h5>
-          <div class="stat-value">{{ totalPurchases() }}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Total Amount</h5>
-          <div class="stat-value">{{ formatCurrency(totalAmount()) }}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Average Amount</h5>
-          <div class="stat-value">{{ formatCurrency(averageAmount()) }}</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <h5>Completion Rate</h5>
-          <div class="stat-value">{{ formatPercentage(completionRates().alignmentRate) }}</div>
-        </div>
-      </div>
+  <!-- Header and View Selector -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="mb-1 fw-bold text-dark">
+        <i class="fas fa-list-alt me-2 text-primary"></i>Purchase Management
+      </h3>
+      <p class="text-muted mb-0 small">Track and manage company purchases funded by the incubator program</p>
+    </div>
+    <div class="btn-group shadow-sm" role="group">
+      <button
+        type="button"
+        class="btn btn-outline-primary d-flex align-items-center"
+        [class.active]="selectedView() === 'list'"
+        (click)="setView('list')">
+        <i class="fas fa-list me-2"></i>List View
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-primary d-flex align-items-center"
+        [class.active]="selectedView() === 'statistics'"
+        (click)="setView('statistics')">
+        <i class="fas fa-chart-bar me-2"></i>Analytics
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-primary d-flex align-items-center"
+        [class.active]="selectedView() === 'breakdown'"
+        (click)="setView('breakdown')">
+        <i class="fas fa-chart-pie me-2"></i>Breakdown
+      </button>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="loading()" class="text-center py-4">
-    <div class="spinner-border" role="status">
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
       <span class="visually-hidden">Loading...</span>
     </div>
-    <p class="mt-2">Loading purchases data...</p>
+    <p class="mt-3 text-muted">Loading purchases data...</p>
   </div>
 
   <!-- Error State -->
-  <div *ngIf="error()" class="alert alert-danger">
-    {{ error() }}
-    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadData()">
-      Retry
+  <div *ngIf="error()" class="alert alert-danger d-flex align-items-center" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <div class="flex-grow-1">{{ error() }}</div>
+    <button class="btn btn-sm btn-outline-danger ms-3" (click)="loadData()">
+      <i class="fas fa-redo me-1"></i>Retry
     </button>
   </div>
 
   <!-- List View -->
   <div *ngIf="selectedView() === 'list' && !loading()">
-    <!-- Search and Filters -->
-    <div class="search-filter-section mb-3">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="input-group">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Search purchases..."
-              [(ngModel)]="searchTerm"
-              (keyup.enter)="onSearch()">
-            <button class="btn btn-outline-secondary" (click)="onSearch()">
-              Search
+    <!-- Search and Filters Card -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          <i class="fas fa-search me-2 text-primary"></i>Search & Filter
+        </h5>
+        <button class="btn btn-sm btn-outline-secondary" (click)="toggleFilters()">
+          <i class="fas fa-filter me-1"></i>
+          {{ showFilters() ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="fas fa-search text-muted"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control border-start-0"
+                placeholder="Search by item description, type, or provider..."
+                [(ngModel)]="searchTerm"
+                (keyup.enter)="onSearch()">
+              <button class="btn btn-primary" (click)="onSearch()">
+                <i class="fas fa-search me-1"></i>Search
+              </button>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <button class="btn btn-outline-secondary me-2" (click)="clearFilters()">
+              <i class="fas fa-times me-1"></i>Clear All
+            </button>
+            <button class="btn btn-success">
+              <i class="fas fa-plus me-1"></i>Add Purchase
             </button>
           </div>
         </div>
-        <div class="col-md-6 text-end">
-          <button class="btn btn-outline-secondary" (click)="toggleFilters()">
-            <i class="bi bi-funnel"></i> Filters
-          </button>
-          <button class="btn btn-outline-secondary ms-2" (click)="clearFilters()">
-            Clear
-          </button>
-        </div>
-      </div>
 
-      <!-- Advanced Filters -->
-      <div *ngIf="showFilters()" class="filters-panel mt-3 p-3 border rounded">
-        <div class="row">
-          <div class="col-md-3">
-            <label class="form-label">Purchase Type</label>
-            <input type="text" class="form-control" placeholder="Type..."
+        <!-- Advanced Filters -->
+        <div *ngIf="showFilters()" class="row mt-4 pt-4 border-top">
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-tag me-1 text-primary"></i>Purchase Type
+            </label>
+            <input type="text" class="form-control" placeholder="e.g., Equipment, Tools..."
                    [value]="filters().purchase_type || ''"
                    (input)="onPurchaseTypeChange($event)">
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Service Provider</label>
-            <input type="text" class="form-control" placeholder="Provider..."
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-store me-1 text-primary"></i>Service Provider
+            </label>
+            <input type="text" class="form-control" placeholder="e.g., Company name..."
                    [value]="filters().service_provider || ''"
                    (input)="onServiceProviderChange($event)">
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Min Amount</label>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-dollar-sign me-1 text-primary"></i>Min Amount
+            </label>
             <input type="number" class="form-control" placeholder="0"
                    [value]="filters().min_amount || ''"
                    (input)="onMinAmountChange($event)">
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Max Amount</label>
+          <div class="col-md-3 mb-3">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-dollar-sign me-1 text-primary"></i>Max Amount
+            </label>
             <input type="number" class="form-control" placeholder="999999"
                    [value]="filters().max_amount || ''"
                    (input)="onMaxAmountChange($event)">
@@ -132,124 +176,220 @@
       </div>
     </div>
 
-    <!-- Purchases Table -->
-    <div class="table-responsive" *ngIf="purchases().length > 0">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Purchase Type</th>
-            <th>Service Provider</th>
-            <th>Amount</th>
-            <th>Purchase Order</th>
-            <th>Invoice</th>
-            <th>Items Received</th>
-            <th>Aligned</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let purchase of purchases()">
-            <td>{{ purchase.purchase_type }}</td>
-            <td>{{ purchase.service_provider }}</td>
-            <td class="text-end">{{ formatCurrency(purchase.amount) }}</td>
-            <td [class]="getBooleanClass(purchase.purchase_order)">
-              {{ getBooleanIcon(purchase.purchase_order) }}
-            </td>
-            <td [class]="getBooleanClass(purchase.invoice_received)">
-              {{ getBooleanIcon(purchase.invoice_received) }}
-            </td>
-            <td [class]="getBooleanClass(purchase.items_received)">
-              {{ getBooleanIcon(purchase.items_received) }}
-            </td>
-            <td [class]="getBooleanClass(purchase.aligned_with_presentation)">
-              {{ getBooleanIcon(purchase.aligned_with_presentation) }}
-            </td>
-            <td>{{ purchase.created_at | date:'shortDate' }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Purchases List -->
+    <div class="card shadow-sm" *ngIf="purchases().length > 0">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">
+          <i class="fas fa-receipt me-2 text-primary"></i>
+          Purchase History <span class="badge bg-primary ms-2">{{ purchases().length }}</span>
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="border-0 fw-semibold">
+                  <i class="fas fa-box me-1"></i>Item & Details
+                </th>
+                <th class="border-0 fw-semibold">
+                  <i class="fas fa-store me-1"></i>Provider
+                </th>
+                <th class="border-0 fw-semibold text-end">
+                  <i class="fas fa-money-bill me-1"></i>Amount
+                </th>
+                <th class="border-0 fw-semibold text-center">
+                  <i class="fas fa-clipboard-check me-1"></i>Status
+                </th>
+                <th class="border-0 fw-semibold">
+                  <i class="fas fa-calendar me-1"></i>Date
+                </th>
+                <th class="border-0 fw-semibold text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let purchase of purchases(); trackBy: trackByPurchaseId" class="align-middle">
+                <td>
+                  <div class="d-flex align-items-start">
+                    <div class="purchase-type-icon me-3">
+                      <i class="fas fa-{{ getPurchaseTypeIcon(purchase.purchase_type) }} fa-lg text-primary"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-1 fw-semibold">{{ purchase.purchase_type }}</h6>
+                      <p class="mb-0 text-muted small">
+                        <i class="fas fa-building me-1"></i>{{ purchase.service_provider }}
+                        <span class="ms-2">
+                          <i class="fas fa-calendar me-1"></i>{{ purchase.created_at | date:'MMM d, y' }}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-building me-2 text-muted"></i>
+                    <span class="fw-medium">{{ purchase.service_provider }}</span>
+                  </div>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold text-success fs-6">{{ formatCurrency(purchase.amount) }}</span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
+                    <span class="badge" [class]="getStatusBadgeClass('po', purchase.purchase_order)"
+                          [title]="'Purchase Order: ' + (purchase.purchase_order ? 'Available' : 'Missing')">
+                      <i class="fas fa-file-alt me-1"></i>PO
+                    </span>
+                    <span class="badge" [class]="getStatusBadgeClass('invoice', purchase.invoice_received)"
+                          [title]="'Invoice: ' + (purchase.invoice_received ? 'Received' : 'Pending')">
+                      <i class="fas fa-receipt me-1"></i>INV
+                    </span>
+                    <span class="badge" [class]="getStatusBadgeClass('delivery', purchase.items_received)"
+                          [title]="'Items: ' + (purchase.items_received ? 'Delivered' : 'Pending')">
+                      <i class="fas fa-truck me-1"></i>DEL
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-2 text-muted"></i>
+                    <span class="small">{{ purchase.created_at | date:'MMM d, y' }}</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary btn-sm" [title]="'Edit purchase'">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" [title]="'View details'">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" [title]="'Delete purchase'">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- No Data -->
-    <div *ngIf="purchases().length === 0 && !loading()" class="text-center py-4">
-      <p class="text-muted">No purchases found for this company.</p>
+    <!-- No Data State -->
+    <div *ngIf="purchases().length === 0 && !loading()" class="card shadow-sm">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No Purchases Found</h5>
+        <p class="text-muted mb-4">This company doesn't have any purchases recorded yet.</p>
+        <button class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>Add First Purchase
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Statistics View -->
-  <div *ngIf="selectedView() === 'statistics' && !loading()" class="statistics-view">
+  <div *ngIf="selectedView() === 'statistics' && !loading()">
     <div class="row" *ngIf="statistics()">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h5>Purchase Overview</h5>
+      <!-- Overview Card -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-chart-bar me-2"></i>Purchase Overview
+            </h5>
           </div>
           <div class="card-body">
-            <table class="table">
-              <tr>
-                <td>Total Purchases</td>
-                <td class="text-end">{{ statistics()!.total_purchases }}</td>
-              </tr>
-              <tr>
-                <td>Total Amount</td>
-                <td class="text-end">{{ formatCurrency(statistics()!.total_amount) }}</td>
-              </tr>
-              <tr>
-                <td>Average Amount</td>
-                <td class="text-end">{{ formatCurrency(statistics()!.average_amount) }}</td>
-              </tr>
-              <tr>
-                <td>Min Amount</td>
-                <td class="text-end">{{ formatCurrency(statistics()!.min_amount) }}</td>
-              </tr>
-              <tr>
-                <td>Max Amount</td>
-                <td class="text-end">{{ formatCurrency(statistics()!.max_amount) }}</td>
-              </tr>
-            </table>
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="d-flex align-items-center p-3 bg-light rounded">
+                  <i class="fas fa-shopping-cart fa-2x text-primary me-3"></i>
+                  <div>
+                    <h4 class="mb-0 fw-bold">{{ statistics()!.total_purchases }}</h4>
+                    <small class="text-muted">Total Purchases</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center p-3 bg-light rounded">
+                  <i class="fas fa-money-bill-wave fa-2x text-success me-3"></i>
+                  <div>
+                    <h4 class="mb-0 fw-bold">{{ formatCurrency(statistics()!.total_amount) }}</h4>
+                    <small class="text-muted">Total Amount</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center p-3 bg-light rounded">
+                  <i class="fas fa-calculator fa-2x text-info me-3"></i>
+                  <div>
+                    <h4 class="mb-0 fw-bold">{{ formatCurrency(statistics()!.average_amount) }}</h4>
+                    <small class="text-muted">Average Amount</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center p-3 bg-light rounded">
+                  <i class="fas fa-arrow-up fa-2x text-warning me-3"></i>
+                  <div>
+                    <h4 class="mb-0 fw-bold">{{ formatCurrency(statistics()!.max_amount) }}</h4>
+                    <small class="text-muted">Highest Purchase</small>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h5>Completion Rates</h5>
+
+      <!-- Completion Rates Card -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-tasks me-2"></i>Completion Rates
+            </h5>
           </div>
           <div class="card-body">
-            <div class="progress-item mb-3">
-              <div class="d-flex justify-content-between">
-                <span>Purchase Orders</span>
-                <span>{{ formatPercentage(completionRates().purchaseOrderRate) }}</span>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><i class="fas fa-file-alt me-2 text-primary"></i>Purchase Orders</span>
+                <span class="fw-bold">{{ formatPercentage(completionRates().purchaseOrderRate) }}</span>
               </div>
-              <div class="progress">
-                <div class="progress-bar" [style.width.%]="completionRates().purchaseOrderRate"></div>
-              </div>
-            </div>
-            <div class="progress-item mb-3">
-              <div class="d-flex justify-content-between">
-                <span>Invoices Received</span>
-                <span>{{ formatPercentage(completionRates().invoiceReceivedRate) }}</span>
-              </div>
-              <div class="progress">
-                <div class="progress-bar bg-success" [style.width.%]="completionRates().invoiceReceivedRate"></div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-primary"
+                     [style.width.%]="completionRates().purchaseOrderRate"></div>
               </div>
             </div>
-            <div class="progress-item mb-3">
-              <div class="d-flex justify-content-between">
-                <span>Items Delivered</span>
-                <span>{{ formatPercentage(completionRates().itemsDeliveredRate) }}</span>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><i class="fas fa-receipt me-2 text-success"></i>Invoices Received</span>
+                <span class="fw-bold">{{ formatPercentage(completionRates().invoiceReceivedRate) }}</span>
               </div>
-              <div class="progress">
-                <div class="progress-bar bg-info" [style.width.%]="completionRates().itemsDeliveredRate"></div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-success"
+                     [style.width.%]="completionRates().invoiceReceivedRate"></div>
               </div>
             </div>
-            <div class="progress-item">
-              <div class="d-flex justify-content-between">
-                <span>Aligned with Presentation</span>
-                <span>{{ formatPercentage(completionRates().alignmentRate) }}</span>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><i class="fas fa-truck me-2 text-info"></i>Items Delivered</span>
+                <span class="fw-bold">{{ formatPercentage(completionRates().itemsDeliveredRate) }}</span>
               </div>
-              <div class="progress">
-                <div class="progress-bar bg-warning" [style.width.%]="completionRates().alignmentRate"></div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-info"
+                     [style.width.%]="completionRates().itemsDeliveredRate"></div>
+              </div>
+            </div>
+            <div class="mb-0">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><i class="fas fa-check-circle me-2 text-warning"></i>Aligned with Program</span>
+                <span class="fw-bold">{{ formatPercentage(completionRates().alignmentRate) }}</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-warning"
+                     [style.width.%]="completionRates().alignmentRate"></div>
               </div>
             </div>
           </div>
@@ -259,46 +399,75 @@
   </div>
 
   <!-- Breakdown View -->
-  <div *ngIf="selectedView() === 'breakdown' && !loading()" class="breakdown-view">
+  <div *ngIf="selectedView() === 'breakdown' && !loading()">
     <div class="row">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h5>By Purchase Type</h5>
+      <!-- Purchase Type Breakdown -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-chart-pie me-2"></i>Purchase Type Breakdown
+            </h5>
           </div>
           <div class="card-body">
             <div *ngIf="typeBreakdown().length > 0">
-              <div *ngFor="let type of typeBreakdown()" class="breakdown-item mb-2">
-                <div class="d-flex justify-content-between">
-                  <span>{{ type.purchase_type }}</span>
-                  <span>{{ formatCurrency(type.total_amount) }}</span>
+              <div *ngFor="let type of typeBreakdown()" class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-{{ getPurchaseTypeIcon(type.purchase_type) }} me-2 text-primary"></i>
+                    <span class="fw-medium">{{ type.purchase_type }}</span>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold">{{ formatCurrency(type.total_amount) }}</div>
+                    <small class="text-muted">{{ type.count }} purchases</small>
+                  </div>
                 </div>
-                <small class="text-muted">{{ type.count }} purchases, avg: {{ formatCurrency(type.average_amount) }}</small>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar bg-info"
+                       [style.width.%]="(type.total_amount / totalAmount()) * 100"
+                       [title]="formatPercentage((type.total_amount / totalAmount()) * 100)"></div>
+                </div>
               </div>
             </div>
-            <div *ngIf="typeBreakdown().length === 0" class="text-muted">
-              No type breakdown available
+            <div *ngIf="typeBreakdown().length === 0" class="text-center text-muted py-4">
+              <i class="fas fa-chart-pie fa-3x mb-3"></i>
+              <p>No breakdown data available</p>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header">
-            <h5>By Service Provider</h5>
+
+      <!-- Service Provider Breakdown -->
+      <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-warning text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-store me-2"></i>Service Provider Breakdown
+            </h5>
           </div>
           <div class="card-body">
             <div *ngIf="providerBreakdown().length > 0">
-              <div *ngFor="let provider of providerBreakdown()" class="breakdown-item mb-2">
-                <div class="d-flex justify-content-between">
-                  <span>{{ provider.service_provider }}</span>
-                  <span>{{ formatCurrency(provider.total_amount) }}</span>
+              <div *ngFor="let provider of providerBreakdown()" class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-building me-2 text-warning"></i>
+                    <span class="fw-medium">{{ provider.service_provider }}</span>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold">{{ formatCurrency(provider.total_amount) }}</div>
+                    <small class="text-muted">{{ provider.count }} purchases</small>
+                  </div>
                 </div>
-                <small class="text-muted">{{ provider.count }} purchases, avg: {{ formatCurrency(provider.average_amount) }}</small>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar bg-warning"
+                       [style.width.%]="(provider.total_amount / totalAmount()) * 100"
+                       [title]="formatPercentage((provider.total_amount / totalAmount()) * 100)"></div>
+                </div>
               </div>
             </div>
-            <div *ngIf="providerBreakdown().length === 0" class="text-muted">
-              No provider breakdown available
+            <div *ngIf="providerBreakdown().length === 0" class="text-center text-muted py-4">
+              <i class="fas fa-store fa-3x mb-3"></i>
+              <p>No breakdown data available</p>
             </div>
           </div>
         </div>

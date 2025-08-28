@@ -222,4 +222,38 @@ export class CompanyPurchasesComponent implements OnInit {
     this.filters.update(f => ({ ...f, max_amount: value }));
     this.onFilterChange();
   }
+
+  // UI Helper methods for new template
+  trackByPurchaseId(index: number, purchase: CompanyPurchase): number {
+    return purchase.id || index;
+  }
+
+  getPurchaseTypeIcon(purchaseType: string): string {
+    const iconMap: { [key: string]: string } = {
+      'laptop': 'laptop',
+      'printer': 'print',
+      'tools': 'tools',
+      'ppe': 'hard-hat',
+      'stationery': 'paperclip',
+      'equipment': 'cogs',
+      'training': 'graduation-cap',
+      'generator': 'bolt',
+      'ecommerce': 'shopping-cart',
+      'website': 'globe',
+      'default': 'box'
+    };
+
+    const type = purchaseType.toLowerCase();
+    for (const [key, icon] of Object.entries(iconMap)) {
+      if (type.includes(key)) {
+        return icon;
+      }
+    }
+    return iconMap['default'];
+  }
+
+  getStatusBadgeClass(type: string, status: boolean): string {
+    const baseClass = status ? 'bg-success text-white' : 'bg-warning text-dark';
+    return `${baseClass} rounded-pill`;
+  }
 }

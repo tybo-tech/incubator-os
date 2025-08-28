@@ -66,7 +66,7 @@ if ($num > 0) {
             "id" => $id,
             "company_id" => $company_id,
             "company_name" => $company_name ?? null,
-            "registration_number" => $registration_number ?? null,
+            "registration_no" => $registration_no ?? null,
             "purchase_type" => $purchase_type,
             "service_provider" => $service_provider,
             "items" => $items,

@@ -2,7 +2,7 @@ export interface CompanyPurchase {
   id?: number;
   company_id: number;
   company_name?: string;
-  registration_number?: string;
+  registration_no?: string;
   purchase_type: string;
   service_provider: string;
   items: string;
