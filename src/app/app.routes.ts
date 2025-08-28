@@ -15,12 +15,11 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/companies',
-        pathMatch: 'full'
+        component: OverviewPageComponent,
       },
       {
         path: 'overview',
-        component: CompaniesComponent, // Placeholder for now
+        component: OverviewPageComponent, // Placeholder for now
       },
       {
         path: 'companies',
@@ -54,18 +53,10 @@ export const routes: Routes = [
         path: 'team',
         component: CompaniesComponent, // Placeholder for now
       },
-      {
-        path: 'admin',
-        redirectTo: '/admin/overview',
-        pathMatch: 'full'
-      },
-      {
-        path: 'admin/overview',
-        component: OverviewPageComponent,
-      },
+
       {
         path: 'admin/grouping',
-        children: groupingRoutes
+        children: groupingRoutes,
       },
     ],
   },

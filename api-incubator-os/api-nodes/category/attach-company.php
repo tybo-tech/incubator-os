@@ -1,17 +1,7 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 include_once '../../config/Database.php';
 include_once '../../models/Categories.php';
 include_once '../../config/headers.php';
-
-// Handle OPTIONS preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
 
 try {
     $data = json_decode(file_get_contents("php://input"), true);
@@ -22,9 +12,6 @@ try {
         echo json_encode(['error' => 'Invalid JSON: ' . json_last_error_msg()]);
         exit;
     }
-
-    // Log the received data for debugging
-    error_log("Received data: " . print_r($data, true));
 
     // Validate required fields
     $cohortId = (int)($data['cohort_id'] ?? $data['category_id'] ?? 0); // Support both field names
@@ -59,8 +46,6 @@ try {
             }
         }
 
-        error_log("Starting bulk attach for cohort $cohortId with " . count($companyIds) . " companies");
-
         // Use bulk method
         $result = $categories->bulkAttachCompaniesToCohort(
             $cohortId,
@@ -68,8 +53,6 @@ try {
             $data['added_by_user_id'] ?? null,
             $data['notes'] ?? null
         );
-
-        error_log("Bulk attach result: " . print_r($result, true));
 
         echo json_encode([
             'success' => true,
@@ -101,25 +84,7 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log("Exception in attach-company.php: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-
-    http_response_code(500);
-    echo json_encode([
-        'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine(),
-        'trace' => $e->getTraceAsString()
-    ]);
-} catch (Error $e) {
-    error_log("Fatal error in attach-company.php: " . $e->getMessage());
-    error_log("Stack trace: " . $e->getTraceAsString());
-
-    http_response_code(500);
-    echo json_encode([
-        'error' => 'Fatal error: ' . $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine()
-    ]);
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>
