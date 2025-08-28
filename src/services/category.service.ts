@@ -93,6 +93,10 @@ export class CategoryService {
     return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies-in-cohort.php?cohort_id=${cohortId}`);
   }
 
+  listCompaniesInCohortDetailed(cohortId: number): Observable<ICompany[]> {
+    return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies-in-cohort-detailed.php?cohort_id=${cohortId}`);
+  }
+
   listCompaniesInProgram(programId: number): Observable<ICompany[]> {
     return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies-in-program.php?program_id=${programId}`);
   }

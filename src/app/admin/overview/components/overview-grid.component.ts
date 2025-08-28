@@ -2,13 +2,18 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryCardComponent, CategoryWithStats } from './category-card.component';
 import { CompanyItem } from './company-card.component';
+import { RichCompanyCardComponent } from './rich-company-card.component';
+import { ICompany } from '../../../../models/simple.schema';
 
 export type CurrentLevel = 'root' | 'client' | 'program' | 'cohort';
+
+// Update the grid component to handle both CompanyItem and ICompany
+export type GridItem = CategoryWithStats | CompanyItem | ICompany;
 
 @Component({
   selector: 'app-overview-grid',
   standalone: true,
-  imports: [CommonModule, CategoryCardComponent],
+  imports: [CommonModule, CategoryCardComponent, RichCompanyCardComponent],
   template: `
     <!-- Loading State -->
     @if (isLoading) {
@@ -97,50 +102,18 @@ export type CurrentLevel = 'root' | 'client' | 'program' | 'cohort';
     @if (!isLoading && !error && items.length > 0) {
       <!-- List View (for companies) -->
       @if (currentLevel === 'cohort') {
-        <div class="bg-white rounded-2xl border shadow-sm">
-          <div class="p-6">
-            <div class="space-y-4">
-              @for (item of items; track item.id) {
-                @if (isCompany(item)) {
-                  <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1 min-w-0">
-                        <h4 class="text-lg font-medium text-gray-900 truncate">{{ item.name }}</h4>
-                        @if (item.contact_person) {
-                          <p class="text-sm text-gray-600">Contact: {{ item.contact_person }}</p>
-                        }
-                        <div class="flex items-center space-x-4 text-sm text-gray-500 mt-2">
-                          @if (item.email_address) {
-                            <span>{{ item.email_address }}</span>
-                          }
-                          @if (item.registration_no) {
-                            <span>• Reg: {{ item.registration_no }}</span>
-                          }
-                          @if (item.city) {
-                            <span>• {{ item.city }}</span>
-                          }
-                        </div>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        @if (item.status) {
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                [class]="getStatusClasses(item.status)">
-                            {{ item.status | titlecase }}
-                          </span>
-                        }
-                        <button
-                          (click)="onRemoveCompany(item)"
-                          class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              }
-            </div>
-          </div>
+        <div class="space-y-4">
+          @for (item of items; track item.id) {
+            @if (isCompany(item)) {
+              <app-rich-company-card
+                [company]="item"
+                [showRemoveAction]="true"
+                (cardClick)="onCompanyClick(item)"
+                (viewClick)="onCompanyClick(item)"
+                (removeClick)="onRemoveCompany(item)"
+              ></app-rich-company-card>
+            }
+          }
         </div>
       } @else {
         <!-- Grid View (for categories) -->
@@ -159,14 +132,14 @@ export type CurrentLevel = 'root' | 'client' | 'program' | 'cohort';
   `
 })
 export class OverviewGridComponent {
-  @Input() items: (CategoryWithStats | CompanyItem)[] = [];
+  @Input() items: GridItem[] = [];
   @Input() currentLevel: CurrentLevel = 'root';
   @Input() isLoading = false;
   @Input() error: string | null = null;
 
   @Output() categoryClick = new EventEmitter<CategoryWithStats>();
-  @Output() companyClick = new EventEmitter<CompanyItem>();
-  @Output() removeCompany = new EventEmitter<CompanyItem>();
+  @Output() companyClick = new EventEmitter<ICompany>();
+  @Output() removeCompany = new EventEmitter<ICompany>();
   @Output() retryClick = new EventEmitter<void>();
   @Output() createFirstClick = new EventEmitter<void>();
 
@@ -174,12 +147,16 @@ export class OverviewGridComponent {
     this.categoryClick.emit(category);
   }
 
-  onCompanyClick(company: CompanyItem): void {
-    this.companyClick.emit(company);
+  onCompanyClick(company: GridItem): void {
+    if (this.isCompany(company)) {
+      this.companyClick.emit(company as ICompany);
+    }
   }
 
-  onRemoveCompany(company: CompanyItem): void {
-    this.removeCompany.emit(company);
+  onRemoveCompany(company: GridItem): void {
+    if (this.isCompany(company)) {
+      this.removeCompany.emit(company as ICompany);
+    }
   }
 
   onRetryClick(): void {
@@ -190,11 +167,12 @@ export class OverviewGridComponent {
     this.createFirstClick.emit();
   }
 
-  isCompany(item: CategoryWithStats | CompanyItem): item is CompanyItem {
-    return 'email_address' in item;
+  isCompany(item: GridItem): item is ICompany {
+    // Check for ICompany specific properties
+    return 'bbbee_level' in item || 'email_address' in item;
   }
 
-  isCategory(item: CategoryWithStats | CompanyItem): item is CategoryWithStats {
+  isCategory(item: GridItem): item is CategoryWithStats {
     return 'type' in item;
   }
 

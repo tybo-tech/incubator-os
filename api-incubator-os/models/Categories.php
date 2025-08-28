@@ -453,6 +453,16 @@ final class Categories
     }
 
     /**
+     * List companies in a cohort with full details (delegates to CategoryItem model)
+     */
+    public function getCompaniesInCohortDetailed(int $cohortId, ?string $status = null): array
+    {
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->getCompaniesInCohortDetailed($cohortId, $status);
+    }
+
+    /**
      * Get enhanced statistics for a category using CategoryItem data
      */
     public function getCategoryStatistics(int $categoryId): array

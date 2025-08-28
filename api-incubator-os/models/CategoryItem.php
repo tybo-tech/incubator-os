@@ -247,6 +247,31 @@ final class CategoryItem
     /**
      * List all companies in a specific cohort
      */
+    /**
+     * List companies in a cohort with full company details (enhanced version)
+     */
+    public function getCompaniesInCohortDetailed(int $cohortId, ?string $status = null): array
+    {
+        $sql = "SELECT c.*, ci.status as assignment_status, ci.joined_at, ci.left_at, ci.notes, ci.id as assignment_id
+                FROM categories_item ci
+                INNER JOIN companies c ON c.id = ci.company_id
+                WHERE ci.cohort_id = ?";
+
+        $params = [$cohortId];
+
+        if ($status) {
+            $sql .= " AND ci.status = ?";
+            $params[] = $status;
+        }
+
+        $sql .= " ORDER BY ci.joined_at DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+
+        return array_map([$this, 'castCompanyDetailedAssignment'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
     public function getCompaniesInCohort(int $cohortId, ?string $status = null): array
     {
         $sql = "SELECT c.*, ci.status, ci.joined_at, ci.left_at, ci.notes, ci.id as assignment_id
@@ -459,6 +484,73 @@ final class CategoryItem
             'client_name' => $row['client_name'] ?? null,
             'program_name' => $row['program_name'] ?? null,
             'cohort_name' => $row['cohort_name'] ?? null,
+        ];
+    }
+
+    /**
+     * Cast company record with assignment info for API response (detailed version)
+     */
+    private function castCompanyDetailedAssignment(array $row): array
+    {
+        return [
+            // Full company fields
+            'id' => (int)$row['id'],
+            'name' => $row['name'],
+            'registration_no' => $row['registration_no'],
+            'bbbee_level' => $row['bbbee_level'],
+            'cipc_status' => $row['cipc_status'],
+            'service_offering' => $row['service_offering'],
+            'description' => $row['description'],
+            'city' => $row['city'],
+            'suburb' => $row['suburb'],
+            'address' => $row['address'],
+            'postal_code' => $row['postal_code'],
+            'business_location' => $row['business_location'],
+            'contact_number' => $row['contact_number'],
+            'email_address' => $row['email_address'],
+            'trading_name' => $row['trading_name'],
+
+            'youth_owned' => (bool)$row['youth_owned'],
+            'black_ownership' => (bool)$row['black_ownership'],
+            'black_women_ownership' => (bool)$row['black_women_ownership'],
+
+            'youth_owned_text' => $row['youth_owned_text'],
+            'black_ownership_text' => $row['black_ownership_text'],
+            'black_women_ownership_text' => $row['black_women_ownership_text'],
+
+            'compliance_notes' => $row['compliance_notes'],
+
+            'has_valid_bbbbee' => (bool)$row['has_valid_bbbbee'],
+            'has_tax_clearance' => (bool)$row['has_tax_clearance'],
+            'is_sars_registered' => (bool)$row['is_sars_registered'],
+            'has_cipc_registration' => (bool)$row['has_cipc_registration'],
+
+            'bbbee_valid_status' => $row['bbbee_valid_status'],
+            'bbbee_expiry_date' => $row['bbbee_expiry_date'],
+            'tax_valid_status' => $row['tax_valid_status'],
+            'tax_pin_expiry_date' => $row['tax_pin_expiry_date'],
+            'vat_number' => $row['vat_number'],
+
+            'turnover_estimated' => $row['turnover_estimated'] ? (float)$row['turnover_estimated'] : null,
+            'turnover_actual' => $row['turnover_actual'] ? (float)$row['turnover_actual'] : null,
+
+            'permanent_employees' => (int)$row['permanent_employees'],
+            'temporary_employees' => (int)$row['temporary_employees'],
+            'locations' => $row['locations'],
+
+            'created_at' => $row['created_at'],
+            'updated_at' => $row['updated_at'],
+            'industry_id' => $row['industry_id'] ? (int)$row['industry_id'] : null,
+
+            'contact_person' => $row['contact_person'],
+            'sector_name' => $row['sector_name'],
+
+            // Assignment specific fields
+            'assignment_id' => (int)$row['assignment_id'],
+            'status' => $row['assignment_status'], // Use assignment_status to avoid conflict
+            'joined_at' => $row['joined_at'],
+            'left_at' => $row['left_at'],
+            'notes' => $row['notes'],
         ];
     }
 

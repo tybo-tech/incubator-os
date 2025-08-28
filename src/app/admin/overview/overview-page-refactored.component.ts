@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
 import { CategoryCompanyPickerComponent } from '../../components/category-company-picker/category-company-picker.component';
 import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom } from 'rxjs';
+import { ICompany } from '../../../models/simple.schema';
 
 // Import our new smart components
 import {
@@ -248,12 +249,12 @@ export class OverviewPageRefactoredComponent implements OnInit {
     this.loadCurrentLevel();
   }
 
-  onCompanyClick(company: CompanyItem): void {
+  onCompanyClick(company: ICompany): void {
     // Navigate to company detail page
     this.router.navigate(['/companies', company.id]);
   }
 
-  onRemoveCompany(company: CompanyItem): void {
+  onRemoveCompany(company: ICompany): void {
     if (!confirm(`Remove ${company.name} from this cohort?`)) return;
 
     const cohortId = this.currentCategoryId();
@@ -493,7 +494,7 @@ export class OverviewPageRefactoredComponent implements OnInit {
   }
 
   loadCompaniesInCohort(cohortId: number): void {
-    this.categoryService.listCompaniesInCohort(cohortId)
+    this.categoryService.listCompaniesInCohortDetailed(cohortId)
       .pipe(
         catchError(error => {
           this.error.set(error.message || 'Failed to load companies');
