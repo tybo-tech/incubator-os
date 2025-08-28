@@ -118,7 +118,7 @@ import { ICompany } from '../../../models/simple.schema';
             </div>
 
             <!-- Company Assignment -->
-            <div class="mb-6">
+            <div class="mb-6" *ngIf="availableCompanies.length > 0">
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Link to Company
                 <span *ngIf="defaultCompanyId" class="text-xs text-blue-600">(Auto-assigned)</span>

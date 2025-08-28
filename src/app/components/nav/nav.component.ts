@@ -67,15 +67,18 @@ export class NavComponent implements OnInit {
     {
       icon: 'overview',
       label: 'Overview',
-      route: '/overview',
+      route: '/',
       active: false
     },
     {
       icon: 'companies',
-      label: 'Companies',
-      route: '/companies',
+      label: 'Clients',
+      route: '/admin/grouping/clients',
       active: true,
-      badge: '40'
+      children: [
+        { label: 'View All Clients', route: '/admin/grouping/clients', icon: 'bi-building' },
+        { label: 'Programs', route: '/admin/grouping/programs', icon: 'bi-collection' }
+      ]
     },
     // Tasks
     {
@@ -93,12 +96,6 @@ export class NavComponent implements OnInit {
       ]
     },
     {
-      icon: 'data',
-      label: 'Data',
-      route: '/data',
-      active: false
-    },
-    {
       icon: 'analytics',
       label: 'Analytics',
       route: '/analytics',
@@ -107,12 +104,6 @@ export class NavComponent implements OnInit {
         { label: 'Reports', route: '/analytics/reports', icon: 'bi-graph-up' },
         { label: 'Insights', route: '/analytics/insights', icon: 'bi-lightbulb' }
       ]
-    },
-    {
-      icon: 'team',
-      label: 'Team',
-      route: '/team',
-      active: false
     },
     {
       icon: 'admin',
@@ -127,9 +118,9 @@ export class NavComponent implements OnInit {
   ];
 
   starredItems = [
-    { label: 'Company imports', route: '/companies/imports' },
-    { label: 'Create new company', route: '/companies/create' },
-    { label: 'Compliance dashboard', route: '/compliance' }
+    { label: 'Client Overview', route: '/admin/grouping/clients' },
+    { label: 'Program Management', route: '/admin/grouping/programs' },
+    { label: 'Analytics Dashboard', route: '/analytics' }
   ];
 
 }

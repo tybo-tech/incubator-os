@@ -4,9 +4,6 @@ import { NavComponent } from "../nav/nav.component";
 import { GlobalTaskModalComponent } from '../tasks/global-task-modal.component';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
-import { NodeService } from '../../../services';
-import { ICompany } from '../../../models/simple.schema';
-import { CompanyService } from '../../../services/company.service';
 
 @Component({
   selector: 'app-app-shell',
@@ -16,21 +13,12 @@ import { CompanyService } from '../../../services/company.service';
 })
 export class AppShellComponent implements OnInit {
   showGlobalTaskModal = false;
-  availableCompanies: ICompany[] = [];
 
-  constructor(private nodeService: CompanyService) {}
+  constructor() {}
 
   ngOnInit() {
-    this.loadCompanies();
-  }
-
-  async loadCompanies() {
-    try {
-      const companies = await this.nodeService.listCompanies().toPromise();
-      this.availableCompanies = companies || [];
-    } catch (error) {
-      console.error('❌ Error loading companies:', error);
-    }
+    // App shell initialization - no need to load companies anymore
+    // Users will navigate through the proper hierarchy via Clients menu
   }
 
   openGlobalTaskModal() {
