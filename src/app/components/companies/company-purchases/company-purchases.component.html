@@ -1,0 +1,308 @@
+<div class="company-purchases-container">
+  <!-- Header -->
+  <div class="header-section mb-4">
+    <h3>Company Purchases</h3>
+    <div class="view-selector">
+      <button
+        class="btn btn-sm"
+        [class.btn-primary]="selectedView() === 'list'"
+        [class.btn-outline-primary]="selectedView() !== 'list'"
+        (click)="setView('list')">
+        List View
+      </button>
+      <button
+        class="btn btn-sm"
+        [class.btn-primary]="selectedView() === 'statistics'"
+        [class.btn-outline-primary]="selectedView() !== 'statistics'"
+        (click)="setView('statistics')">
+        Statistics
+      </button>
+      <button
+        class="btn btn-sm"
+        [class.btn-primary]="selectedView() === 'breakdown'"
+        [class.btn-outline-primary]="selectedView() !== 'breakdown'"
+        (click)="setView('breakdown')">
+        Breakdown
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats mb-4" *ngIf="statistics()">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Total Purchases</h5>
+          <div class="stat-value">{{ totalPurchases() }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Total Amount</h5>
+          <div class="stat-value">{{ formatCurrency(totalAmount()) }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Average Amount</h5>
+          <div class="stat-value">{{ formatCurrency(averageAmount()) }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <h5>Completion Rate</h5>
+          <div class="stat-value">{{ formatPercentage(completionRates().alignmentRate) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="text-center py-4">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading purchases data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="alert alert-danger">
+    {{ error() }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadData()">
+      Retry
+    </button>
+  </div>
+
+  <!-- List View -->
+  <div *ngIf="selectedView() === 'list' && !loading()">
+    <!-- Search and Filters -->
+    <div class="search-filter-section mb-3">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search purchases..."
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="onSearch()">
+            <button class="btn btn-outline-secondary" (click)="onSearch()">
+              Search
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-outline-secondary" (click)="toggleFilters()">
+            <i class="bi bi-funnel"></i> Filters
+          </button>
+          <button class="btn btn-outline-secondary ms-2" (click)="clearFilters()">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Advanced Filters -->
+      <div *ngIf="showFilters()" class="filters-panel mt-3 p-3 border rounded">
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label">Purchase Type</label>
+            <input type="text" class="form-control" placeholder="Type..."
+                   [value]="filters().purchase_type || ''"
+                   (input)="onPurchaseTypeChange($event)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Service Provider</label>
+            <input type="text" class="form-control" placeholder="Provider..."
+                   [value]="filters().service_provider || ''"
+                   (input)="onServiceProviderChange($event)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Min Amount</label>
+            <input type="number" class="form-control" placeholder="0"
+                   [value]="filters().min_amount || ''"
+                   (input)="onMinAmountChange($event)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Max Amount</label>
+            <input type="number" class="form-control" placeholder="999999"
+                   [value]="filters().max_amount || ''"
+                   (input)="onMaxAmountChange($event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purchases Table -->
+    <div class="table-responsive" *ngIf="purchases().length > 0">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Purchase Type</th>
+            <th>Service Provider</th>
+            <th>Amount</th>
+            <th>Purchase Order</th>
+            <th>Invoice</th>
+            <th>Items Received</th>
+            <th>Aligned</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let purchase of purchases()">
+            <td>{{ purchase.purchase_type }}</td>
+            <td>{{ purchase.service_provider }}</td>
+            <td class="text-end">{{ formatCurrency(purchase.amount) }}</td>
+            <td [class]="getBooleanClass(purchase.purchase_order)">
+              {{ getBooleanIcon(purchase.purchase_order) }}
+            </td>
+            <td [class]="getBooleanClass(purchase.invoice_received)">
+              {{ getBooleanIcon(purchase.invoice_received) }}
+            </td>
+            <td [class]="getBooleanClass(purchase.items_received)">
+              {{ getBooleanIcon(purchase.items_received) }}
+            </td>
+            <td [class]="getBooleanClass(purchase.aligned_with_presentation)">
+              {{ getBooleanIcon(purchase.aligned_with_presentation) }}
+            </td>
+            <td>{{ purchase.created_at | date:'shortDate' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- No Data -->
+    <div *ngIf="purchases().length === 0 && !loading()" class="text-center py-4">
+      <p class="text-muted">No purchases found for this company.</p>
+    </div>
+  </div>
+
+  <!-- Statistics View -->
+  <div *ngIf="selectedView() === 'statistics' && !loading()" class="statistics-view">
+    <div class="row" *ngIf="statistics()">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Purchase Overview</h5>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <tr>
+                <td>Total Purchases</td>
+                <td class="text-end">{{ statistics()!.total_purchases }}</td>
+              </tr>
+              <tr>
+                <td>Total Amount</td>
+                <td class="text-end">{{ formatCurrency(statistics()!.total_amount) }}</td>
+              </tr>
+              <tr>
+                <td>Average Amount</td>
+                <td class="text-end">{{ formatCurrency(statistics()!.average_amount) }}</td>
+              </tr>
+              <tr>
+                <td>Min Amount</td>
+                <td class="text-end">{{ formatCurrency(statistics()!.min_amount) }}</td>
+              </tr>
+              <tr>
+                <td>Max Amount</td>
+                <td class="text-end">{{ formatCurrency(statistics()!.max_amount) }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Completion Rates</h5>
+          </div>
+          <div class="card-body">
+            <div class="progress-item mb-3">
+              <div class="d-flex justify-content-between">
+                <span>Purchase Orders</span>
+                <span>{{ formatPercentage(completionRates().purchaseOrderRate) }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" [style.width.%]="completionRates().purchaseOrderRate"></div>
+              </div>
+            </div>
+            <div class="progress-item mb-3">
+              <div class="d-flex justify-content-between">
+                <span>Invoices Received</span>
+                <span>{{ formatPercentage(completionRates().invoiceReceivedRate) }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar bg-success" [style.width.%]="completionRates().invoiceReceivedRate"></div>
+              </div>
+            </div>
+            <div class="progress-item mb-3">
+              <div class="d-flex justify-content-between">
+                <span>Items Delivered</span>
+                <span>{{ formatPercentage(completionRates().itemsDeliveredRate) }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar bg-info" [style.width.%]="completionRates().itemsDeliveredRate"></div>
+              </div>
+            </div>
+            <div class="progress-item">
+              <div class="d-flex justify-content-between">
+                <span>Aligned with Presentation</span>
+                <span>{{ formatPercentage(completionRates().alignmentRate) }}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar bg-warning" [style.width.%]="completionRates().alignmentRate"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Breakdown View -->
+  <div *ngIf="selectedView() === 'breakdown' && !loading()" class="breakdown-view">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>By Purchase Type</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="typeBreakdown().length > 0">
+              <div *ngFor="let type of typeBreakdown()" class="breakdown-item mb-2">
+                <div class="d-flex justify-content-between">
+                  <span>{{ type.purchase_type }}</span>
+                  <span>{{ formatCurrency(type.total_amount) }}</span>
+                </div>
+                <small class="text-muted">{{ type.count }} purchases, avg: {{ formatCurrency(type.average_amount) }}</small>
+              </div>
+            </div>
+            <div *ngIf="typeBreakdown().length === 0" class="text-muted">
+              No type breakdown available
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>By Service Provider</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="providerBreakdown().length > 0">
+              <div *ngFor="let provider of providerBreakdown()" class="breakdown-item mb-2">
+                <div class="d-flex justify-content-between">
+                  <span>{{ provider.service_provider }}</span>
+                  <span>{{ formatCurrency(provider.total_amount) }}</span>
+                </div>
+                <small class="text-muted">{{ provider.count }} purchases, avg: {{ formatCurrency(provider.average_amount) }}</small>
+              </div>
+            </div>
+            <div *ngIf="providerBreakdown().length === 0" class="text-muted">
+              No provider breakdown available
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

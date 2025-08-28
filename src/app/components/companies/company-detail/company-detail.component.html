@@ -74,6 +74,12 @@
       [company]="company">
     </app-financial-tab>
 
+    <!-- Purchases Tab -->
+    <app-purchases-tab
+      *ngIf="activeTab === 'purchases'"
+      [company]="company">
+    </app-purchases-tab>
+
     <!-- Compliance Tab -->
     <app-compliance-tab
       *ngIf="activeTab === 'compliance'"

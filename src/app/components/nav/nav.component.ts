@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NodeService } from '../../../services';
 import { Task } from '../../../models/business.models';
-import { INode } from '../../../models/schema';
 
 interface NavChildItem {
   label: string;

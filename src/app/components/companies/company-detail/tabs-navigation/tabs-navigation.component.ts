@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type TabType = 'overview' | 'assessment' | 'swot' | 'gps-targets' | 'strategy' | 'financial' | 'compliance' | 'documents' | 'tasks' | 'growth' | 'financial-targets' | 'hr-tracking' | 'esg';
+export type TabType = 'overview' | 'assessment' | 'swot' | 'gps-targets' | 'strategy' | 'financial' | 'purchases' | 'compliance' | 'documents' | 'tasks' | 'growth' | 'financial-targets' | 'hr-tracking' | 'esg';
 
 @Component({
   selector: 'app-tabs-navigation',
@@ -45,7 +45,13 @@ export type TabType = 'overview' | 'assessment' | 'swot' | 'gps-targets' | 'stra
             (click)="onTabChange('financial')"
             [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'financial' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
           >
-            Bank Statements
+            Financials
+          </button>
+          <button
+            (click)="onTabChange('purchases')"
+            [class]="'py-4 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'purchases' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
+          >
+            🛒 Purchases
           </button>
           <button
             (click)="onTabChange('compliance')"
