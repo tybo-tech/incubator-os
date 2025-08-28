@@ -250,8 +250,27 @@ export class OverviewPageRefactoredComponent implements OnInit {
   }
 
   onCompanyClick(company: ICompany): void {
-    // Navigate to company detail page
-    this.router.navigate(['/companies', company.id]);
+    // Build query parameters to maintain context
+    const queryParams: any = {};
+    const breadcrumb = this.breadcrumb();
+
+    if (breadcrumb.length >= 1 && breadcrumb[0].type === 'client') {
+      queryParams.clientId = breadcrumb[0].id;
+      queryParams.clientName = breadcrumb[0].name;
+    }
+
+    if (breadcrumb.length >= 2 && breadcrumb[1].type === 'program') {
+      queryParams.programId = breadcrumb[1].id;
+      queryParams.programName = breadcrumb[1].name;
+    }
+
+    if (breadcrumb.length >= 3 && breadcrumb[2].type === 'cohort') {
+      queryParams.cohortId = breadcrumb[2].id;
+      queryParams.cohortName = breadcrumb[2].name;
+    }
+
+    // Navigate to company detail page with context
+    this.router.navigate(['/companies', company.id], { queryParams });
   }
 
   onRemoveCompany(company: ICompany): void {

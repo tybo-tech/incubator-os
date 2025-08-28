@@ -14,6 +14,14 @@
 
 <!-- Main Content -->
 <div *ngIf="company && !loading" class="min-h-screen bg-gray-50">
+  <!-- Context Breadcrumb -->
+  <app-context-breadcrumb
+    [context]="context"
+    [companyName]="company.name"
+    (navigateToContext)="onNavigateToContext($event)"
+    (backToOverview)="onBackToOverview()">
+  </app-context-breadcrumb>
+
   <!-- Header -->
   <app-company-header
     [company]="company"
