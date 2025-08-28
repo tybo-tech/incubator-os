@@ -161,11 +161,17 @@ export class CategoryService {
     programs_count?: number;
     cohorts_count?: number;
     companies_count?: number;
+    active_companies?: number;
+    completed_companies?: number;
+    withdrawn_companies?: number;
   }> {
     return this.http.get<{
       programs_count?: number;
       cohorts_count?: number;
       companies_count?: number;
+      active_companies?: number;
+      completed_companies?: number;
+      withdrawn_companies?: number;
     }>(`${this.apiUrl}/get-category-statistics.php?category_id=${categoryId}`);
   }
 

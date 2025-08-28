@@ -9,6 +9,20 @@ import { ICategory } from '../../../models/simple.schema';
 import { CategoryFormData } from './types';
 import { catchError, EMPTY, switchMap, forkJoin } from 'rxjs';
 
+// Import the enhanced stats interfaces from the overview components
+interface CategoryStats {
+  programs_count?: number;
+  cohorts_count?: number;
+  companies_count?: number;
+  active_companies?: number;
+  completed_companies?: number;
+  withdrawn_companies?: number;
+}
+
+interface ProgramWithStats extends ICategory {
+  stats?: CategoryStats;
+}
+
 @Component({
   selector: 'app-programs-page',
   standalone: true,
@@ -128,14 +142,54 @@ import { catchError, EMPTY, switchMap, forkJoin } from 'rxjs';
                     </p>
                   }
 
-                  <div class="flex items-center justify-between">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      @if (programStats()[program.id]) {
-                        Cohorts: {{ programStats()[program.id] }}
-                      } @else {
-                        Loading...
+                  <!-- Enhanced Statistics -->
+                  @if (program.stats) {
+                    <div class="space-y-2">
+                      <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        @if (program.stats.cohorts_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span>{{ program.stats.cohorts_count }} {{ program.stats.cohorts_count === 1 ? 'cohort' : 'cohorts' }}</span>
+                          </div>
+                        }
+                        @if (program.stats.companies_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span>{{ program.stats.companies_count }} {{ program.stats.companies_count === 1 ? 'company' : 'companies' }}</span>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Company status breakdown -->
+                      @if (program.stats.active_companies !== undefined || program.stats.completed_companies !== undefined) {
+                        <div class="flex items-center space-x-1 text-xs">
+                          @if (program.stats.active_companies !== undefined && program.stats.active_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                              {{ program.stats.active_companies }} active
+                            </span>
+                          }
+                          @if (program.stats.completed_companies !== undefined && program.stats.completed_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                              {{ program.stats.completed_companies }} completed
+                            </span>
+                          }
+                          @if (program.stats.withdrawn_companies !== undefined && program.stats.withdrawn_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800">
+                              {{ program.stats.withdrawn_companies }} withdrawn
+                            </span>
+                          }
+                        </div>
                       }
-                    </span>
+                    </div>
+                  } @else {
+                    <div class="text-sm text-gray-500">Loading statistics...</div>
+                  }
+
+                  <div class="flex items-center justify-end mt-4">
                     <span class="text-blue-600 hover:text-blue-700 text-sm">
                       View Cohorts →
                     </span>
@@ -251,8 +305,7 @@ export class ProgramsPageComponent implements OnInit {
   isLoading = signal(false);
   error = signal<string | null>(null);
   client = signal<ICategory | null>(null);
-  programs = signal<ICategory[]>([]);
-  programStats = signal<Record<number, number>>({});
+  programs = signal<ProgramWithStats[]>([]);
 
   // Modal state
   showCreateModal = signal(false);
@@ -261,7 +314,9 @@ export class ProgramsPageComponent implements OnInit {
   formData = signal<CategoryFormData>({ name: '', description: '', image_url: '' });
 
   // Computed
-  sortedPrograms = signal<ICategory[]>([]);
+  sortedPrograms = computed(() =>
+    [...this.programs()].sort((a, b) => a.name.localeCompare(b.name))
+  );
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -293,31 +348,40 @@ export class ProgramsPageComponent implements OnInit {
     .pipe(
       switchMap(({ client, programs }) => {
         this.client.set(client);
-        this.programs.set(programs);
-        this.sortedPrograms.set([...programs].sort((a, b) => a.name.localeCompare(b.name)));
 
-        // Load cohort counts for each program
-        const statRequests = programs.map(program =>
-          this.categoryService.listCohortsForProgram(program.id)
+        if (programs.length === 0) {
+          this.programs.set([]);
+          this.isLoading.set(false);
+          return EMPTY;
+        }
+
+        // Load enhanced statistics for each program
+        const statsRequests = programs.map(program =>
+          this.categoryService.getCategoryStatistics(program.id).pipe(
+            catchError(() => [{}]) // Return empty stats on error
+          )
         );
 
-        return forkJoin(statRequests);
+        return forkJoin(statsRequests).pipe(
+          switchMap(statsArray => {
+            const programsWithStats: ProgramWithStats[] = programs.map((program, index) => ({
+              ...program,
+              stats: statsArray[index]
+            }));
+            return [programsWithStats];
+          })
+        );
       }),
       catchError(error => {
         console.error('Failed to load programs data:', error);
         this.error.set(error.message || 'Failed to load programs');
+        this.isLoading.set(false);
         return EMPTY;
       })
     )
-    .subscribe(cohortLists => {
-      const programs = this.programs();
-      const stats: Record<number, number> = {};
-
-      programs.forEach((program, index) => {
-        stats[program.id] = cohortLists[index]?.length || 0;
-      });
-
-      this.programStats.set(stats);
+    .subscribe(programsWithStats => {
+      console.log('📊 Programs with enhanced stats:', programsWithStats);
+      this.programs.set(programsWithStats);
       this.isLoading.set(false);
     });
   }

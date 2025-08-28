@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,7 +6,21 @@ import { CategoryService } from '../../../services/category.service';
 import { TopBarContextComponent } from './top-bar-context.component';
 import { ICategory } from '../../../models/simple.schema';
 import { CategoryFormData } from './types';
-import { catchError, EMPTY } from 'rxjs';
+import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
+
+// Import the enhanced stats interfaces
+interface CategoryStats {
+  programs_count?: number;
+  cohorts_count?: number;
+  companies_count?: number;
+  active_companies?: number;
+  completed_companies?: number;
+  withdrawn_companies?: number;
+}
+
+interface ClientWithStats extends ICategory {
+  stats?: CategoryStats;
+}
 
 @Component({
   selector: 'app-clients-page',
@@ -105,9 +119,63 @@ import { catchError, EMPTY } from 'rxjs';
                     </p>
                   }
 
-                  <div class="flex items-center justify-between text-sm text-gray-500">
-                    <span>ID: {{ client.id }}</span>
-                    <span class="text-blue-600 hover:text-blue-700">
+                  <!-- Enhanced Statistics -->
+                  @if (client.stats) {
+                    <div class="space-y-2">
+                      <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        @if (client.stats.programs_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            <span>{{ client.stats.programs_count }} {{ client.stats.programs_count === 1 ? 'program' : 'programs' }}</span>
+                          </div>
+                        }
+                        @if (client.stats.cohorts_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            <span>{{ client.stats.cohorts_count }} {{ client.stats.cohorts_count === 1 ? 'cohort' : 'cohorts' }}</span>
+                          </div>
+                        }
+                        @if (client.stats.companies_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span>{{ client.stats.companies_count }} {{ client.stats.companies_count === 1 ? 'company' : 'companies' }}</span>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Company status breakdown -->
+                      @if (client.stats.active_companies !== undefined || client.stats.completed_companies !== undefined) {
+                        <div class="flex items-center space-x-1 text-xs">
+                          @if (client.stats.active_companies !== undefined && client.stats.active_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                              {{ client.stats.active_companies }} active
+                            </span>
+                          }
+                          @if (client.stats.completed_companies !== undefined && client.stats.completed_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                              {{ client.stats.completed_companies }} completed
+                            </span>
+                          }
+                          @if (client.stats.withdrawn_companies !== undefined && client.stats.withdrawn_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800">
+                              {{ client.stats.withdrawn_companies }} withdrawn
+                            </span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="text-sm text-gray-500">Loading statistics...</div>
+                  }
+
+                  <div class="flex items-center justify-end mt-4">
+                    <span class="text-blue-600 hover:text-blue-700 text-sm">
                       View Programs →
                     </span>
                   </div>
@@ -219,7 +287,7 @@ export class ClientsPageComponent implements OnInit {
   // State
   isLoading = signal(false);
   error = signal<string | null>(null);
-  clients = signal<ICategory[]>([]);
+  clients = signal<ClientWithStats[]>([]);
 
   // Modal state
   showCreateModal = signal(false);
@@ -228,7 +296,9 @@ export class ClientsPageComponent implements OnInit {
   formData = signal<CategoryFormData>({ name: '', description: '', image_url: '' });
 
   // Computed
-  sortedClients = signal<ICategory[]>([]);
+  sortedClients = computed(() =>
+    [...this.clients()].sort((a, b) => a.name.localeCompare(b.name))
+  );
 
   ngOnInit(): void {
     this.loadClients();
@@ -240,20 +310,45 @@ export class ClientsPageComponent implements OnInit {
 
     this.categoryService.listCategories({ type: 'client', depth: 1 })
       .pipe(
+        switchMap(clients => {
+          if (clients.length === 0) {
+            this.clients.set([]);
+            this.isLoading.set(false);
+            return EMPTY;
+          }
+
+          // Load enhanced statistics for each client
+          const statsRequests = clients.map(client =>
+            this.categoryService.getCategoryStatistics(client.id).pipe(
+              catchError(() => [{}]) // Return empty stats on error
+            )
+          );
+
+          return forkJoin(statsRequests).pipe(
+            switchMap(statsArray => {
+              const clientsWithStats: ClientWithStats[] = clients.map((client, index) => ({
+                ...client,
+                stats: statsArray[index]
+              }));
+              return [clientsWithStats];
+            })
+          );
+        }),
         catchError(error => {
           console.error('Failed to load clients:', error);
           this.error.set(error.message || 'Failed to load clients');
+          this.isLoading.set(false);
           return EMPTY;
         })
       )
-      .subscribe(clients => {
-        this.clients.set(clients);
-        this.sortedClients.set([...clients].sort((a, b) => a.name.localeCompare(b.name)));
+      .subscribe(clientsWithStats => {
+        console.log('📊 Clients with enhanced stats:', clientsWithStats);
+        this.clients.set(clientsWithStats);
         this.isLoading.set(false);
       });
   }
 
-  navigateToPrograms(client: ICategory): void {
+  navigateToPrograms(client: ClientWithStats): void {
     this.router.navigate(['/admin/grouping/clients', client.id, 'programs']);
   }
 

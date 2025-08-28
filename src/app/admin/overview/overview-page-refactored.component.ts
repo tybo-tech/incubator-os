@@ -397,10 +397,12 @@ export class OverviewPageRefactoredComponent implements OnInit {
 
           return forkJoin(statsRequests).pipe(
             switchMap(statsArray => {
+              console.log('📊 Client statistics loaded:', statsArray);
               const clientsWithStats: CategoryWithStats[] = clients.map((client, index) => ({
                 ...client,
                 stats: statsArray[index]
               }));
+              console.log('🏢 Clients with enhanced stats:', clientsWithStats);
               return [clientsWithStats];
             })
           );
@@ -435,10 +437,12 @@ export class OverviewPageRefactoredComponent implements OnInit {
 
           return forkJoin(statsRequests).pipe(
             switchMap(statsArray => {
+              console.log('📊 Program statistics loaded:', statsArray);
               const programsWithStats: CategoryWithStats[] = programs.map((program, index) => ({
                 ...program,
                 stats: statsArray[index]
               }));
+              console.log('📚 Programs with enhanced stats:', programsWithStats);
               return [programsWithStats];
             })
           );
@@ -473,10 +477,12 @@ export class OverviewPageRefactoredComponent implements OnInit {
 
           return forkJoin(statsRequests).pipe(
             switchMap(statsArray => {
+              console.log('📊 Cohort statistics loaded:', statsArray);
               const cohortsWithStats: CategoryWithStats[] = cohorts.map((cohort, index) => ({
                 ...cohort,
                 stats: statsArray[index]
               }));
+              console.log('👥 Cohorts with enhanced stats:', cohortsWithStats);
               return [cohortsWithStats];
             })
           );

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -8,6 +8,19 @@ import { GroupingStateService } from './grouping-state.service';
 import { ICategory } from '../../../models/simple.schema';
 import { CategoryFormData } from './types';
 import { catchError, EMPTY, switchMap, forkJoin } from 'rxjs';
+
+// Import the enhanced stats interfaces
+interface CategoryStats {
+  cohorts_count?: number;
+  companies_count?: number;
+  active_companies?: number;
+  completed_companies?: number;
+  withdrawn_companies?: number;
+}
+
+interface CohortWithStats extends ICategory {
+  stats?: CategoryStats;
+}
 
 @Component({
   selector: 'app-cohorts-page',
@@ -128,14 +141,46 @@ import { catchError, EMPTY, switchMap, forkJoin } from 'rxjs';
                     </p>
                   }
 
-                  <div class="flex items-center justify-between">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      @if (cohortStats()[cohort.id] !== undefined) {
-                        Companies: {{ cohortStats()[cohort.id] }}
-                      } @else {
-                        Loading...
+                  <!-- Enhanced Statistics -->
+                  @if (cohort.stats) {
+                    <div class="space-y-2">
+                      <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        @if (cohort.stats.companies_count !== undefined) {
+                          <div class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span>{{ cohort.stats.companies_count }} {{ cohort.stats.companies_count === 1 ? 'company' : 'companies' }}</span>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Company status breakdown -->
+                      @if (cohort.stats.active_companies !== undefined || cohort.stats.completed_companies !== undefined) {
+                        <div class="flex items-center space-x-1 text-xs">
+                          @if (cohort.stats.active_companies !== undefined && cohort.stats.active_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                              {{ cohort.stats.active_companies }} active
+                            </span>
+                          }
+                          @if (cohort.stats.completed_companies !== undefined && cohort.stats.completed_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                              {{ cohort.stats.completed_companies }} completed
+                            </span>
+                          }
+                          @if (cohort.stats.withdrawn_companies !== undefined && cohort.stats.withdrawn_companies > 0) {
+                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800">
+                              {{ cohort.stats.withdrawn_companies }} withdrawn
+                            </span>
+                          }
+                        </div>
                       }
-                    </span>
+                    </div>
+                  } @else {
+                    <div class="text-sm text-gray-500">Loading statistics...</div>
+                  }
+
+                  <div class="flex items-center justify-end mt-4">
                     <span class="text-blue-600 hover:text-blue-700 text-sm">
                       View Details →
                     </span>
@@ -251,8 +296,7 @@ export class CohortsPageComponent implements OnInit {
   isLoading = signal(false);
   error = signal<string | null>(null);
   program = signal<ICategory | null>(null);
-  cohorts = signal<ICategory[]>([]);
-  cohortStats = signal<Record<number, number>>({});
+  cohorts = signal<CohortWithStats[]>([]);
 
   // Modal state
   showCreateModal = signal(false);
@@ -261,7 +305,9 @@ export class CohortsPageComponent implements OnInit {
   formData = signal<CategoryFormData>({ name: '', description: '', image_url: '' });
 
   // Computed
-  sortedCohorts = signal<ICategory[]>([]);
+  sortedCohorts = computed(() =>
+    [...this.cohorts()].sort((a, b) => a.name.localeCompare(b.name))
+  );
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -293,31 +339,40 @@ export class CohortsPageComponent implements OnInit {
     .pipe(
       switchMap(({ program, cohorts }) => {
         this.program.set(program);
-        this.cohorts.set(cohorts);
-        this.sortedCohorts.set([...cohorts].sort((a, b) => a.name.localeCompare(b.name)));
 
-        // Load company counts for each cohort
-        const statRequests = cohorts.map(cohort =>
-          this.categoryService.listCompaniesInCohort(cohort.id)
+        if (cohorts.length === 0) {
+          this.cohorts.set([]);
+          this.isLoading.set(false);
+          return EMPTY;
+        }
+
+        // Load enhanced statistics for each cohort
+        const statsRequests = cohorts.map(cohort =>
+          this.categoryService.getCategoryStatistics(cohort.id).pipe(
+            catchError(() => [{}]) // Return empty stats on error
+          )
         );
 
-        return forkJoin(statRequests);
+        return forkJoin(statsRequests).pipe(
+          switchMap(statsArray => {
+            const cohortsWithStats: CohortWithStats[] = cohorts.map((cohort, index) => ({
+              ...cohort,
+              stats: statsArray[index]
+            }));
+            return [cohortsWithStats];
+          })
+        );
       }),
       catchError(error => {
         console.error('Failed to load cohorts data:', error);
         this.error.set(error.message || 'Failed to load cohorts');
+        this.isLoading.set(false);
         return EMPTY;
       })
     )
-    .subscribe(companyLists => {
-      const cohorts = this.cohorts();
-      const stats: Record<number, number> = {};
-
-      cohorts.forEach((cohort, index) => {
-        stats[cohort.id] = companyLists[index]?.length || 0;
-      });
-
-      this.cohortStats.set(stats);
+    .subscribe(cohortsWithStats => {
+      console.log('📊 Cohorts with enhanced stats:', cohortsWithStats);
+      this.cohorts.set(cohortsWithStats);
       this.isLoading.set(false);
     });
   }
