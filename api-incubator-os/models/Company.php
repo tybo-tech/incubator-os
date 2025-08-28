@@ -172,6 +172,53 @@ class Company
         return $this->update($companyId, ['industry_id' => (int)$iid]);
     }
 
+    /**
+     * Get companies available for assignment to a cohort (not already assigned)
+     * Returns minimal fields optimized for picker UI
+     */
+    public function getAvailableForCohort(int $cohortId, string $search = '', int $limit = 50): array
+    {
+        $sql = "SELECT DISTINCT c.id, c.name, c.email_address, c.registration_no
+                FROM companies c
+                WHERE 1=1";
+
+        $params = [];
+
+        // Add search filter if provided
+        if ($search) {
+            $sql .= " AND (c.name LIKE ? OR c.email_address LIKE ? OR c.registration_no LIKE ?)";
+            $searchTerm = "%{$search}%";
+            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+        }
+
+        // Exclude companies already in this cohort (if cohort_id provided)
+        if ($cohortId > 0) {
+            $sql .= " AND c.id NOT IN (
+                SELECT ci.company_id
+                FROM categories_item ci
+                WHERE ci.cohort_id = ? AND ci.status = 'active'
+            )";
+            $params[] = $cohortId;
+        }
+
+        // Use string concatenation for LIMIT to avoid parameter binding issues
+        $sql .= " ORDER BY c.name ASC LIMIT " . min((int)$limit, 100);
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        $companies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Cast and format for picker response
+        return array_map(function($row) {
+            return [
+                'id' => (int)$row['id'],
+                'name' => $row['name'],
+                'email_address' => $row['email_address'],
+                'registration_no' => $row['registration_no']
+            ];
+        }, $companies);
+    }
+
     /* ------------------------- internals ------------------------- */
 
     private function filterWritable(array $data): array

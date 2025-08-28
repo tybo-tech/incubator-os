@@ -155,4 +155,29 @@ export class CategoryService {
       companies_count?: number;
     }>(`${this.apiUrl}/get-category-statistics.php?category_id=${categoryId}`);
   }
+
+  // Company Picker for Category Assignment
+  getCompaniesForPicker(
+    cohortId: number,
+    programId?: number,
+    clientId?: number,
+    search?: string
+  ): Observable<{
+    available_companies: any[];
+    assigned_companies: any[];
+    search_term: string;
+    cohort_id: number;
+    program_id: number;
+    client_id: number;
+    total_available: number;
+    total_assigned: number;
+  }> {
+    const params = new URLSearchParams();
+    params.append('cohort_id', String(cohortId));
+    if (programId) params.append('program_id', String(programId));
+    if (clientId) params.append('client_id', String(clientId));
+    if (search) params.append('search', search);
+
+    return this.http.get<any>(`${this.apiUrl}/get-companies-for-picker.php?${params.toString()}`);
+  }
 }

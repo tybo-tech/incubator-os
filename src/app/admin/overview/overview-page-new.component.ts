@@ -6,6 +6,7 @@ import { CategoryService } from '../../../services/category.service';
 import { CompanyService } from '../../../services/company.service';
 import { ICategory, ICompany } from '../../../models/simple.schema';
 import { BreadcrumbItem } from '../grouping/types';
+import { CategoryCompanyPickerComponent } from '../../components/category-company-picker/category-company-picker.component';
 import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
 
 interface CategoryWithStats extends ICategory {
@@ -24,7 +25,7 @@ interface OverviewState {
 @Component({
   selector: 'app-overview-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CategoryCompanyPickerComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -216,7 +217,7 @@ interface OverviewState {
                   }
                 </p>
                 <button
-                  (click)="openCreateModal(getNextLevelType())"
+                  (click)="currentLevel() === 'cohort' ? openCompanyModal() : openCreateModal(getNextLevelType())"
                   class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   @if (currentLevel() === 'root') {
@@ -408,79 +409,31 @@ interface OverviewState {
         <!-- Company Assignment Modal -->
         @if (showCompanyModal()) {
           <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
               <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Add Companies to Cohort</h3>
-                <p class="text-sm text-gray-600 mt-1">Select companies to assign to this cohort</p>
-              </div>
-              <div class="p-6 flex-1 overflow-hidden">
-                <!-- Search -->
-                <div class="mb-4">
-                  <input
-                    type="search"
-                    [(ngModel)]="companySearchQuery"
-                    placeholder="Search companies..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                </div>
-
-                <!-- Company List -->
-                <div class="space-y-2 max-h-96 overflow-y-auto">
-                  @if (isLoadingAvailableCompanies()) {
-                    <div class="space-y-2">
-                      @for (_ of [1,2,3,4,5]; track $index) {
-                        <div class="animate-pulse h-12 bg-gray-200 rounded-lg"></div>
-                      }
-                    </div>
-                  } @else {
-                    @for (company of filteredAvailableCompanies(); track company.id) {
-                      <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          [value]="company.id"
-                          (change)="toggleCompanySelection(company.id, $event)"
-                          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        >
-                        <div class="ml-3 flex-1 min-w-0">
-                          <div class="text-sm font-medium text-gray-900">{{ company.name }}</div>
-                          @if (company.email_address) {
-                            <div class="text-sm text-gray-500">{{ company.email_address }}</div>
-                          }
-                        </div>
-                      </label>
-                    }
-                  }
-                </div>
-              </div>
-              <div class="p-6 border-t border-gray-200 flex justify-between items-center">
-                <div class="text-sm text-gray-600">
-                  {{ selectedCompanyIds().length }} companies selected
-                </div>
-                <div class="flex space-x-3">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Manage Companies for Cohort</h3>
+                    <p class="text-sm text-gray-600 mt-1">Assign and remove companies from this cohort</p>
+                  </div>
                   <button
                     (click)="closeCompanyModal()"
-                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    class="text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    Cancel
-                  </button>
-                  <button
-                    (click)="addSelectedCompaniesToCohort()"
-                    [disabled]="selectedCompanyIds().length === 0 || isAddingCompanies()"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    @if (isAddingCompanies()) {
-                      <span class="flex items-center">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Adding...
-                      </span>
-                    } @else {
-                      Add Companies
-                    }
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                   </button>
                 </div>
+              </div>
+              <div class="flex-1 p-6">
+                <app-category-company-picker
+                  [cohortId]="currentCategoryId()!"
+                  [programId]="getProgramId()"
+                  [clientId]="getClientId()"
+                  (close)="closeCompanyModal()"
+                  (companiesChanged)="onCompaniesChanged()"
+                ></app-category-company-picker>
               </div>
             </div>
           </div>
@@ -543,30 +496,11 @@ export class OverviewPageComponent implements OnInit {
   };
   isCreating = signal(false);
 
-  // Company modal state
+  // Company modal state (for CategoryCompanyPicker)
   showCompanyModal = signal(false);
-  availableCompanies = signal<ICompany[]>([]);
-  selectedCompanyIds = signal<number[]>([]);
-  companySearchQuery = signal('');
-  isLoadingAvailableCompanies = signal(false);
-  isAddingCompanies = signal(false);
 
   // Remove company state
   isRemoving = signal<number | null>(null);
-
-  // Computed for company modal
-  filteredAvailableCompanies = computed(() => {
-    const query = this.companySearchQuery().toLowerCase().trim();
-    const companies = this.availableCompanies();
-
-    if (!query) return companies;
-
-    return companies.filter(company =>
-      company.name.toLowerCase().includes(query) ||
-      company.email_address?.toLowerCase().includes(query) ||
-      company.registration_no?.toLowerCase().includes(query)
-    );
-  });
 
   ngOnInit(): void {
     this.loadFromStorage();
@@ -843,71 +777,13 @@ export class OverviewPageComponent implements OnInit {
       });
   }
 
-  // Company modal methods
+  // Company modal methods (simplified for CategoryCompanyPicker - updated)
   openCompanyModal(): void {
     this.showCompanyModal.set(true);
-    this.selectedCompanyIds.set([]);
-    this.companySearchQuery.set('');
-    this.loadAvailableCompanies();
   }
 
   closeCompanyModal(): void {
     this.showCompanyModal.set(false);
-    this.isAddingCompanies.set(false);
-  }
-
-  loadAvailableCompanies(): void {
-    this.isLoadingAvailableCompanies.set(true);
-
-    this.companyService.listCompanies(1000, 0) // Load many companies
-      .pipe(
-        catchError(error => {
-          console.error('Failed to load available companies:', error);
-          this.isLoadingAvailableCompanies.set(false);
-          return EMPTY;
-        })
-      )
-      .subscribe(companies => {
-        this.availableCompanies.set(companies);
-        this.isLoadingAvailableCompanies.set(false);
-      });
-  }
-
-  toggleCompanySelection(companyId: number, event: any): void {
-    const isChecked = event.target.checked;
-    const currentSelections = this.selectedCompanyIds();
-
-    if (isChecked) {
-      this.selectedCompanyIds.set([...currentSelections, companyId]);
-    } else {
-      this.selectedCompanyIds.set(currentSelections.filter(id => id !== companyId));
-    }
-  }
-
-  addSelectedCompaniesToCohort(): void {
-    const cohortId = this.currentCategoryId()!;
-    const companyIds = this.selectedCompanyIds();
-
-    if (companyIds.length === 0) return;
-
-    this.isAddingCompanies.set(true);
-
-    // Attach each company to the cohort
-    const attachRequests = companyIds.map(companyId =>
-      this.categoryService.attachCompany(cohortId, companyId).pipe(
-        catchError(error => {
-          console.error('Failed to attach company', companyId, error);
-          return EMPTY;
-        })
-      )
-    );
-
-    forkJoin(attachRequests)
-      .subscribe(() => {
-        this.isAddingCompanies.set(false);
-        this.closeCompanyModal();
-        this.loadCurrentLevel(); // Refresh the companies list
-      });
   }
 
   removeCompanyFromCohort(company: ICompany): void {
@@ -978,5 +854,24 @@ export class OverviewPageComponent implements OnInit {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  // Helper methods for CategoryCompanyPicker
+  getClientId(): number | undefined {
+    const breadcrumbList = this.breadcrumb();
+    // Find the client (first level after root)
+    return breadcrumbList.length > 0 ? breadcrumbList[0].id : undefined;
+  }
+
+  getProgramId(): number | undefined {
+    const breadcrumbList = this.breadcrumb();
+    // Find the program (second level after root)
+    return breadcrumbList.length > 1 ? breadcrumbList[1].id : undefined;
+  }
+
+  onCompaniesChanged(): void {
+    console.log('Companies changed');
+    // Refresh the current view to show updated company count
+    this.loadCurrentLevel();
   }
 }
