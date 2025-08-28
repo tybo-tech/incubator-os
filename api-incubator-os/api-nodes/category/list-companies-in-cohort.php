@@ -3,20 +3,24 @@ include_once '../../config/Database.php';
 include_once '../../models/Categories.php';
 include_once '../../config/headers.php';
 
-$cohort_id = $_GET['cohort_id'] ?? null;
+$cohortId = (int)($_GET['cohort_id'] ?? 0);
+$status = $_GET['status'] ?? null; // Optional filter by status
+
+if (!$cohortId) {
+    http_response_code(400);
+    echo json_encode(['error' => 'cohort_id parameter is required']);
+    exit;
+}
 
 try {
     $database = new Database();
     $db = $database->connect();
     $categories = new Categories($db);
 
-    if ($cohort_id) {
-        $result = $categories->listCompaniesInCohort((int)$cohort_id);
-        echo json_encode($result);
-    } else {
-        http_response_code(400);
-        echo json_encode(['error' => 'cohort_id parameter required']);
-    }
+    // Use enhanced method with optional status filter
+    $result = $categories->getCompaniesInCohort($cohortId, $status);
+    echo json_encode($result);
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

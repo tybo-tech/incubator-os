@@ -400,6 +400,59 @@ final class Categories
         throw new InvalidArgumentException("Invalid hierarchy for type=$type");
     }
 
+    /* =========================================================================
+       COMPANY-COHORT INTEGRATION
+       ========================================================================= */
+
+    /**
+     * Attach a company to a cohort (delegates to CategoryItem model)
+     */
+    public function attachCompanyToCohort(
+        int $cohortId,
+        int $companyId,
+        ?int $addedByUserId = null,
+        ?string $notes = null
+    ): array {
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->attachCompany($cohortId, $companyId, $addedByUserId, $notes);
+    }
+
+    /**
+     * Detach a company from a cohort (delegates to CategoryItem model)
+     */
+    public function detachCompanyFromCohort(int $cohortId, int $companyId): bool
+    {
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->detachCompany($cohortId, $companyId);
+    }
+
+    /**
+     * List companies in a cohort (delegates to CategoryItem model)
+     */
+    public function getCompaniesInCohort(int $cohortId, ?string $status = null): array
+    {
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->getCompaniesInCohort($cohortId, $status);
+    }
+
+    /**
+     * Get enhanced statistics for a category using CategoryItem data
+     */
+    public function getCategoryStatistics(int $categoryId): array
+    {
+        $category = $this->getCategoryById($categoryId);
+        if (!$category) {
+            throw new InvalidArgumentException("Category {$categoryId} not found");
+        }
+
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->getCategoryStatistics($categoryId, $category['type']);
+    }
+
     private function castCategory(array $row): array
     {
         foreach (['id','parent_id','depth'] as $k) {

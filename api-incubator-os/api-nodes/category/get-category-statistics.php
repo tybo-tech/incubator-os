@@ -3,26 +3,28 @@ include_once '../../config/Database.php';
 include_once '../../models/Categories.php';
 include_once '../../config/headers.php';
 
-$category_id = $_GET['category_id'] ?? null;
+$categoryId = (int)($_GET['category_id'] ?? 0);
+
+if (!$categoryId) {
+    http_response_code(400);
+    echo json_encode(['error' => 'category_id parameter is required']);
+    exit;
+}
 
 try {
     $database = new Database();
     $db = $database->connect();
     $categories = new Categories($db);
 
-    if (!$category_id) {
-        http_response_code(400);
-        echo json_encode(['error' => 'category_id parameter required']);
-        exit;
-    }
+    // Use enhanced statistics method that leverages CategoryItem model
+    $result = $categories->getCategoryStatistics($categoryId);
+    echo json_encode($result);
 
-    $categoryId = (int)$category_id;
-
-    // Get the category to check its type and depth
-    $category = $categories->getCategoryById($categoryId);
-    if (!$category) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Category not found']);
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
+}
+?>
         exit;
     }
 
