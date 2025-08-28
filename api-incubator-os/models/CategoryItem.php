@@ -72,6 +72,101 @@ final class CategoryItem
     }
 
     /**
+     * Bulk attach multiple companies to a cohort
+     *
+     * @param int $cohortId The cohort to attach companies to
+     * @param array $companyIds Array of company IDs to attach
+     * @param int|null $addedByUserId User performing the action
+     * @param string|null $notes Optional notes for all attachments
+     * @return array Results with success/failure details
+     */
+    public function bulkAttachCompanies(
+        int $cohortId,
+        array $companyIds,
+        ?int $addedByUserId = null,
+        ?string $notes = null
+    ): array {
+        if (empty($companyIds)) {
+            return ['success' => 0, 'failed' => 0, 'details' => []];
+        }
+
+        // Get hierarchy context from cohort
+        $hierarchy = $this->getCohortHierarchy($cohortId);
+        if (!$hierarchy) {
+            throw new InvalidArgumentException("Cohort {$cohortId} not found");
+        }
+
+        // Remove duplicates and ensure integers
+        $companyIds = array_unique(array_map('intval', $companyIds));
+
+        // Get already assigned companies to avoid duplicates
+        $existingPlaceholders = str_repeat('?,', count($companyIds) - 1) . '?';
+        $existingQuery = "SELECT company_id FROM categories_item
+                         WHERE cohort_id = ? AND company_id IN ($existingPlaceholders)";
+        $existingStmt = $this->conn->prepare($existingQuery);
+        $existingStmt->execute(array_merge([$cohortId], $companyIds));
+        $existingCompanyIds = $existingStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Filter out existing assignments
+        $newCompanyIds = array_diff($companyIds, $existingCompanyIds);
+
+        $results = [
+            'success' => 0,
+            'failed' => 0,
+            'skipped' => count($existingCompanyIds),
+            'details' => []
+        ];
+
+        if (empty($newCompanyIds)) {
+            $results['details'][] = 'All companies were already assigned to this cohort';
+            return $results;
+        }
+
+        // Prepare bulk insert
+        $placeholders = [];
+        $values = [];
+
+        foreach ($newCompanyIds as $companyId) {
+            $placeholders[] = "(?, ?, ?, ?, 'active', NOW(), ?, ?)";
+            $values = array_merge($values, [
+                $cohortId,
+                $hierarchy['program_id'],
+                $hierarchy['client_id'],
+                $companyId,
+                $notes,
+                $addedByUserId
+            ]);
+        }
+
+        try {
+            $this->conn->beginTransaction();
+
+            $sql = "INSERT INTO categories_item (
+                        cohort_id, program_id, client_id, company_id,
+                        status, joined_at, notes, added_by_user_id
+                    ) VALUES " . implode(', ', $placeholders);
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($values);
+
+            $results['success'] = $stmt->rowCount();
+            $this->conn->commit();
+
+            $results['details'][] = "Successfully attached {$results['success']} companies";
+            if ($results['skipped'] > 0) {
+                $results['details'][] = "Skipped {$results['skipped']} already assigned companies";
+            }
+
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            $results['failed'] = count($newCompanyIds);
+            $results['details'][] = "Bulk insert failed: " . $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    /**
      * Remove a company from a cohort
      */
     public function detachCompany(int $cohortId, int $companyId): bool

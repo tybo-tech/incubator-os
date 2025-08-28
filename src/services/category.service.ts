@@ -73,6 +73,15 @@ export class CategoryService {
     });
   }
 
+  bulkAttachCompanies(cohortId: number, companyIds: number[], addedByUserId?: number, notes?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/attach-company.php`, {
+      cohort_id: cohortId,
+      company_ids: companyIds,
+      added_by_user_id: addedByUserId,
+      notes: notes
+    });
+  }
+
   detachCompany(categoryId: number, companyId: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/detach-company.php`, {
       category_id: categoryId,

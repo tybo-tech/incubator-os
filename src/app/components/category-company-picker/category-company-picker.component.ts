@@ -185,11 +185,25 @@ interface CompanyPickerData {
 
       <!-- Footer Actions -->
       <div class="p-6 border-t border-gray-200 flex justify-between items-center flex-shrink-0">
-        <div class="text-sm text-gray-600">
-          @if (selectedCompanyIds().length > 0) {
-            {{ selectedCompanyIds().length }} companies selected to add
-          } @else {
-            Select companies to add to this cohort
+        <div class="flex items-center space-x-4">
+          <div class="text-sm text-gray-600">
+            @if (selectedCompanyIds().length > 0) {
+              {{ selectedCompanyIds().length }} companies selected to add
+            } @else {
+              Select companies to add to this cohort
+            }
+          </div>
+          @if (availableCompanies().length > 0) {
+            <button
+              (click)="toggleSelectAll()"
+              class="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              @if (allAvailableSelected()) {
+                Unselect All
+              } @else {
+                Select All
+              }
+            </button>
           }
         </div>
         <div class="flex space-x-3">
@@ -246,6 +260,11 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
   // Computed
   availableCompanies = computed(() => this.pickerData()?.available_companies || []);
   assignedCompanies = computed(() => this.pickerData()?.assigned_companies || []);
+  allAvailableSelected = computed(() => {
+    const available = this.availableCompanies();
+    const selected = this.selectedCompanyIds();
+    return available.length > 0 && available.every(company => selected.includes(company.id));
+  });
 
   ngOnInit(): void {
     // Setup search debouncing
@@ -280,36 +299,41 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleSelectAll(): void {
+    const available = this.availableCompanies();
+    const currentSelections = this.selectedCompanyIds();
+
+    if (this.allAvailableSelected()) {
+      // Unselect all - remove all available company IDs from selections
+      const availableIds = available.map(c => c.id);
+      this.selectedCompanyIds.set(currentSelections.filter(id => !availableIds.includes(id)));
+    } else {
+      // Select all - add all available company IDs to selections
+      const availableIds = available.map(c => c.id);
+      const newSelections = [...new Set([...currentSelections, ...availableIds])];
+      this.selectedCompanyIds.set(newSelections);
+    }
+  }
+
   addSelectedCompanies(): void {
     const companyIds = this.selectedCompanyIds();
     if (companyIds.length === 0) return;
 
     this.isAdding.set(true);
 
-    // Use the CategoryService to add companies
-    const requests = companyIds.map(companyId =>
-      this.categoryService.attachCompany(this.cohortId, companyId).pipe(
-        catchError(error => {
-          console.error('Failed to attach company', companyId, error);
-          return EMPTY;
-        })
-      )
-    );
-
-    // Execute all requests
-    import('rxjs').then(({ forkJoin }) => {
-      forkJoin(requests).subscribe({
-        next: () => {
-          this.isAdding.set(false);
-          this.selectedCompanyIds.set([]);
-          this.companiesChanged.emit();
-          this.loadCompanies(this.searchQuery()); // Refresh data
-        },
-        error: (error) => {
-          console.error('Failed to add companies:', error);
-          this.isAdding.set(false);
-        }
-      });
+    // Use the new bulk attach method for better performance
+    this.categoryService.bulkAttachCompanies(this.cohortId, companyIds).pipe(
+      catchError(error => {
+        console.error('Failed to bulk attach companies:', error);
+        this.isAdding.set(false);
+        return EMPTY;
+      })
+    ).subscribe((response) => {
+      console.log('Bulk attach response:', response);
+      this.isAdding.set(false);
+      this.selectedCompanyIds.set([]);
+      this.companiesChanged.emit();
+      this.loadCompanies(this.searchQuery()); // Refresh data
     });
   }
 

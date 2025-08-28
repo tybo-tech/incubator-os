@@ -419,6 +419,20 @@ final class Categories
     }
 
     /**
+     * Bulk attach multiple companies to a cohort (delegates to CategoryItem model)
+     */
+    public function bulkAttachCompaniesToCohort(
+        int $cohortId,
+        array $companyIds,
+        ?int $addedByUserId = null,
+        ?string $notes = null
+    ): array {
+        include_once __DIR__ . '/CategoryItem.php';
+        $categoryItem = new CategoryItem($this->conn);
+        return $categoryItem->bulkAttachCompanies($cohortId, $companyIds, $addedByUserId, $notes);
+    }
+
+    /**
      * Detach a company from a cohort (delegates to CategoryItem model)
      */
     public function detachCompanyFromCohort(int $cohortId, int $companyId): bool
