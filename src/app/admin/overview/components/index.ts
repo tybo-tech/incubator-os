@@ -3,7 +3,7 @@ export { OverviewBreadcrumbComponent } from './overview-breadcrumb.component';
 export type { BreadcrumbItem } from './overview-breadcrumb.component';
 
 export { OverviewHeaderComponent } from './overview-header.component';
-export type { CurrentLevel, CreateModalType } from './overview-header.component';
+export type { CurrentLevel, CreateModalType, OverviewStats } from './overview-header.component';
 
 export { OverviewGridComponent } from './overview-grid.component';
 

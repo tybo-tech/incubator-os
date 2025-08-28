@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
 import { CategoryCompanyPickerComponent } from '../../components/category-company-picker/category-company-picker.component';
-import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom } from 'rxjs';
 
 // Import our new smart components
 import {
@@ -14,6 +14,7 @@ import {
   type BreadcrumbItem,
   type CurrentLevel,
   type CreateModalType,
+  type OverviewStats,
   type CategoryWithStats,
   type CompanyItem,
   type CreateCategoryForm
@@ -51,6 +52,7 @@ interface OverviewState {
             [currentLevel]="currentLevel()"
             [showSearch]="currentItems().length > 5"
             [searchQuery]="searchQuery()"
+            [stats]="currentLevelStats()"
             (createCategory)="openCreateModal($event)"
             (openCompanyModal)="openCompanyModal()"
             (searchChange)="onSearchChange($event)"
@@ -149,13 +151,66 @@ export class OverviewPageRefactoredComponent implements OnInit {
     );
   });
 
-  ngOnInit(): void {
-    this.loadFromStorage();
-    this.loadFromQueryParams();
-    this.loadCurrentLevel();
-  }
+  // Current level statistics
+  currentLevelStats = computed((): OverviewStats | undefined => {
+    const items = this.currentItems();
+    const level = this.currentLevel();
 
-  // Navigation methods
+    if (items.length === 0) return undefined;
+
+    if (level === 'cohort') {
+      // For companies, calculate active/completed status
+      const companies = items as CompanyItem[];
+      const activeCount = companies.filter(c => c.status === 'active' || !c.status).length;
+      const completedCount = companies.filter(c => c.status === 'completed').length;
+
+      return {
+        totalItems: items.length,
+        activeItems: activeCount,
+        completedItems: completedCount
+      };
+    }
+
+    return {
+      totalItems: items.length
+    };
+  });
+
+  // Flag to prevent navigation loops
+  private isNavigatingFromUrl = false;
+
+  ngOnInit(): void {
+    // Check URL parameters first (they should take precedence)
+    const params = this.route.snapshot.queryParams;
+    console.log('🚀 ngOnInit - Query params:', params);
+
+    if (params['clientId'] || params['programId'] || params['cohortId']) {
+      console.log('📍 Loading from URL parameters:', {
+        clientId: params['clientId'],
+        programId: params['programId'],
+        cohortId: params['cohortId']
+      });
+      this.isNavigatingFromUrl = true;
+      // Don't call loadCurrentLevel() here - let loadFromUrlParams handle it
+      this.loadFromUrlParams(params);
+    } else {
+      console.log('💾 Loading from sessionStorage');
+      // Only load from storage if no URL parameters are present
+      this.loadFromStorage();
+      // Call loadCurrentLevel() here since loadFromStorage() is synchronous
+      this.loadCurrentLevel();
+    }
+
+    // Listen to route changes for back/forward navigation
+    this.route.queryParams.subscribe(params => {
+      console.log('🔄 Route params changed:', params);
+      if ((params['clientId'] || params['programId'] || params['cohortId']) && !this.isNavigatingFromUrl) {
+        console.log('🔄 Loading from URL parameter change:', params);
+        this.isNavigatingFromUrl = true;
+        this.loadFromUrlParams(params);
+      }
+    });
+  }  // Navigation methods
   navigateToRoot(): void {
     this.currentCategoryId.set(null);
     this.breadcrumb.set([]);
@@ -296,17 +351,28 @@ export class OverviewPageRefactoredComponent implements OnInit {
   loadCurrentLevel(): void {
     const level = this.currentLevel();
     const categoryId = this.currentCategoryId();
+    const breadcrumb = this.breadcrumb();
+
+    console.log('📊 loadCurrentLevel called:', {
+      level,
+      categoryId,
+      breadcrumb: breadcrumb.map(b => ({ id: b.id, name: b.name, type: b.type }))
+    });
 
     this.isLoading.set(true);
     this.error.set(null);
 
     if (level === 'root') {
+      console.log('🏠 Loading clients (root level)');
       this.loadClients();
     } else if (level === 'client') {
+      console.log('🏢 Loading programs for client:', categoryId);
       this.loadPrograms(categoryId!);
     } else if (level === 'program') {
+      console.log('📚 Loading cohorts for program:', categoryId);
       this.loadCohorts(categoryId!);
     } else if (level === 'cohort') {
+      console.log('🏭 Loading companies for cohort:', categoryId);
       this.loadCompaniesInCohort(categoryId!);
     }
   }
@@ -448,9 +514,12 @@ export class OverviewPageRefactoredComponent implements OnInit {
       breadcrumb: this.breadcrumb()
     };
     sessionStorage.setItem(this.storageKey, JSON.stringify(state));
-  }
 
-  private loadFromStorage(): void {
+    // Only update URL if we're not currently navigating from URL to prevent loops
+    if (!this.isNavigatingFromUrl) {
+      this.updateUrl();
+    }
+  }  private loadFromStorage(): void {
     try {
       const stored = sessionStorage.getItem(this.storageKey);
       if (stored) {
@@ -463,7 +532,153 @@ export class OverviewPageRefactoredComponent implements OnInit {
     }
   }
 
-  private loadFromQueryParams(): void {
-    // Could add query param support here if needed
+  private loadFromUrlParams(params: any): void {
+    try {
+      console.log('🔍 Parsing URL parameters:', params);
+
+      const clientId = params['clientId'] ? parseInt(params['clientId'], 10) : null;
+      const programId = params['programId'] ? parseInt(params['programId'], 10) : null;
+      const cohortId = params['cohortId'] ? parseInt(params['cohortId'], 10) : null;
+
+      console.log('📊 Parsed IDs:', { clientId, programId, cohortId });
+
+      // Build breadcrumb based on the deepest level provided
+      if (cohortId) {
+        // Full path: Client → Program → Cohort
+        this.loadBreadcrumbFromIds({ clientId, programId, cohortId });
+      } else if (programId) {
+        // Partial path: Client → Program
+        this.loadBreadcrumbFromIds({ clientId, programId });
+      } else if (clientId) {
+        // Single level: Client
+        this.loadBreadcrumbFromIds({ clientId });
+      } else {
+        // No valid IDs, go to root
+        this.isNavigatingFromUrl = false;
+        this.navigateToRoot();
+      }
+    } catch (error) {
+      console.warn('Failed to load from URL parameters:', error);
+      this.isNavigatingFromUrl = false;
+      this.navigateToRoot();
+    }
+  }
+
+  private async loadBreadcrumbFromIds(ids: { clientId?: number | null, programId?: number | null, cohortId?: number | null }): Promise<void> {
+    try {
+      console.log('🏗️ Building breadcrumb from IDs:', ids);
+
+      const breadcrumbItems: BreadcrumbItem[] = [];
+      let currentCategoryId: number | null = null;
+
+      // Load client if provided
+      if (ids.clientId) {
+        try {
+          const client = await firstValueFrom(this.categoryService.getCategoryById(ids.clientId));
+          if (client) {
+            breadcrumbItems.push({
+              id: client.id,
+              name: client.name,
+              type: client.type as any
+            });
+            currentCategoryId = client.id;
+          }
+        } catch (error) {
+          console.warn(`Failed to load client ${ids.clientId}:`, error);
+          this.isNavigatingFromUrl = false;
+          this.navigateToRoot();
+          return;
+        }
+      }
+
+      // Load program if provided
+      if (ids.programId) {
+        try {
+          const program = await firstValueFrom(this.categoryService.getCategoryById(ids.programId));
+          if (program) {
+            breadcrumbItems.push({
+              id: program.id,
+              name: program.name,
+              type: program.type as any
+            });
+            currentCategoryId = program.id;
+          }
+        } catch (error) {
+          console.warn(`Failed to load program ${ids.programId}:`, error);
+          this.isNavigatingFromUrl = false;
+          this.navigateToRoot();
+          return;
+        }
+      }
+
+      // Load cohort if provided
+      if (ids.cohortId) {
+        try {
+          const cohort = await firstValueFrom(this.categoryService.getCategoryById(ids.cohortId));
+          if (cohort) {
+            breadcrumbItems.push({
+              id: cohort.id,
+              name: cohort.name,
+              type: cohort.type as any
+            });
+            currentCategoryId = cohort.id;
+          }
+        } catch (error) {
+          console.warn(`Failed to load cohort ${ids.cohortId}:`, error);
+          this.isNavigatingFromUrl = false;
+          this.navigateToRoot();
+          return;
+        }
+      }
+
+      console.log('✅ Built breadcrumb:', breadcrumbItems);
+
+      // Set the state
+      this.breadcrumb.set(breadcrumbItems);
+      this.currentCategoryId.set(currentCategoryId);
+
+      // Save to storage for consistency
+      this.saveToStorage();
+
+      // Reset the navigation flag
+      this.isNavigatingFromUrl = false;
+
+      // Now that breadcrumb is built, load the current level data
+      console.log('📊 Loading current level data after breadcrumb is ready');
+      this.loadCurrentLevel();
+
+    } catch (error) {
+      console.warn('Failed to load breadcrumb from IDs:', error);
+      this.isNavigatingFromUrl = false;
+      this.navigateToRoot();
+    }
+  }
+
+  private updateUrl(): void {
+    const breadcrumb = this.breadcrumb();
+    console.log('🔗 Updating URL for breadcrumb:', breadcrumb);
+
+    // Build clean query parameters based on breadcrumb
+    const queryParams: any = {};
+
+    if (breadcrumb.length >= 1 && breadcrumb[0].type === 'client') {
+      queryParams.clientId = breadcrumb[0].id;
+    }
+
+    if (breadcrumb.length >= 2 && breadcrumb[1].type === 'program') {
+      queryParams.programId = breadcrumb[1].id;
+    }
+
+    if (breadcrumb.length >= 3 && breadcrumb[2].type === 'cohort') {
+      queryParams.cohortId = breadcrumb[2].id;
+    }
+
+    console.log('🎯 Setting URL params:', queryParams);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'replace' // Replace all params, don't merge
+    });
   }
 }
