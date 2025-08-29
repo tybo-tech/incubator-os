@@ -29,7 +29,7 @@ class Node
         $id = $this->conn->lastInsertId();
 
         // Sync flat meta fields
-        $this->metaSync->sync($id, $type, $companyId, $data);
+        // $this->metaSync->sync($id, $type, $companyId, $data);
 
         return $this->getById($id);
     }
@@ -48,7 +48,7 @@ class Node
         $node = $this->getById($id);
 
         // Sync updated meta values
-        $this->metaSync->sync($id, $node['type'], $node['company_id'], $data);
+        // $this->metaSync->sync($id, $node['type'], $node['company_id'], $data);
 
         return $node;
     }
@@ -135,7 +135,7 @@ class Node
     public function delete($id)
     {
         // Remove from meta_values as well
-        $this->metaSync->deleteByNodeId($id);
+        // $this->metaSync->deleteByNodeId($id);
 
         $stmt = $this->conn->prepare("DELETE FROM nodes WHERE id = ?");
         $stmt->execute([$id]);

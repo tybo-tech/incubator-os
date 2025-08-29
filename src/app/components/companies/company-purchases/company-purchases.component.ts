@@ -228,6 +228,93 @@ export class CompanyPurchasesComponent implements OnInit {
     return purchase.id || index;
   }
 
+  // Search and filter methods
+  onSearchChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchTerm.set(target.value);
+  }
+
+  updateFilter(key: keyof CompanyPurchaseFilters, value: any): void {
+    this.filters.update(f => ({ ...f, [key]: value || undefined }));
+    this.onFilterChange();
+  }
+
+  // Computed filtered purchases
+  filteredPurchases = computed(() => {
+    const purchases = this.purchases();
+    const searchTerm = this.searchTerm().toLowerCase();
+    const filters = this.filters();
+
+    return purchases.filter(purchase => {
+      // Search filter
+      if (searchTerm && !this.matchesSearch(purchase, searchTerm)) {
+        return false;
+      }
+
+      // Type filter
+      if (filters.purchase_type && purchase.purchase_type !== filters.purchase_type) {
+        return false;
+      }
+
+      // Date filters would need a date field in the model
+      // Currently the model doesn't have a date field, using created_at as fallback
+      if (filters.date_from && purchase.created_at) {
+        const purchaseDate = new Date(purchase.created_at);
+        const fromDate = new Date(filters.date_from);
+        if (purchaseDate < fromDate) {
+          return false;
+        }
+      }
+
+      if (filters.date_to && purchase.created_at) {
+        const purchaseDate = new Date(purchase.created_at);
+        const toDate = new Date(filters.date_to);
+        if (purchaseDate > toDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  });
+
+  private matchesSearch(purchase: CompanyPurchase, searchTerm: string): boolean {
+    const searchableFields = [
+      purchase.items,
+      purchase.service_provider,
+      purchase.purchase_type,
+      purchase.company_name
+    ];
+
+    return searchableFields.some(field =>
+      field && field.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Date formatting
+  formatDate(date: string | Date | undefined): string {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  // Type color mapping
+  getTypeColor(purchaseType: string): string {
+    const colorMap: { [key: string]: string } = {
+      'goods': '#3B82F6',      // blue-500
+      'services': '#10B981',   // emerald-500
+      'software': '#8B5CF6',   // violet-500
+      'equipment': '#F59E0B',  // amber-500
+      'default': '#6B7280'     // gray-500
+    };
+
+    return colorMap[purchaseType.toLowerCase()] || colorMap['default'];
+  }
+
   getPurchaseTypeIcon(purchaseType: string): string {
     const iconMap: { [key: string]: string } = {
       'laptop': 'laptop',
