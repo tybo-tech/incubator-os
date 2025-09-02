@@ -18,6 +18,7 @@ import { ContextBreadcrumbComponent, ContextItem } from '../companies/company-de
 // Import our new simplified components
 import { CompanyFormManagementComponent } from './company-form-management/company-form-management.component';
 import { CompanyTabsComponent } from './company-tabs/company-tabs.component';
+import { FormSelectorComponent } from './form-selector/form-selector.component';
 
 // Import models
 import { ICompany } from '../../../models/simple.schema';
@@ -43,7 +44,8 @@ export interface CompanyContext {
     CompanyHeaderComponent,
     ContextBreadcrumbComponent,
     CompanyFormManagementComponent,
-    CompanyTabsComponent
+    CompanyTabsComponent,
+    FormSelectorComponent
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -78,15 +80,27 @@ export interface CompanyContext {
           </app-company-header>
         </div>
 
-        <!-- Form Management Section -->
+        <!-- Form Selector (Top Level) -->
+        <app-form-selector
+          [context]="companyContextSignal"
+          [availableForms]="availableForms"
+          [selectedFormId]="selectedFormId"
+          [isLoading]="isLoadingForms"
+          [canCreateForms]="canCreateForms"
+          (formSelected)="onFormSelectedFromDropdown($event)"
+          (createFormRequested)="openFormCreationModal()">
+        </app-form-selector>
+
+        <!-- Form Management Section (Hidden - logic moved to form selector) -->
         <app-company-form-management
           [context]="companyContextSignal"
           [companyId]="companyId"
           (formSelected)="onFormSelected($event)"
-          (formsLoaded)="onFormsLoaded($event)">
+          (formsLoaded)="onFormsLoaded($event)"
+          style="display: none;">
         </app-company-form-management>
 
-        <!-- Company Tabs -->
+        <!-- Company Tabs (Focused on selected form) -->
         <app-company-tabs
           [tabs]="allTabs"
           [tabGroups]="tabGroups"
@@ -124,6 +138,12 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
   allTabs = signal<TabConfig[]>([]);
   tabGroups = signal<TabGroup[]>([]);
   activeTabId = signal<string>('overview');
+
+  // Form management
+  availableForms = signal<IForm[]>([]);
+  selectedFormId = signal<number | null>(null);
+  isLoadingForms = signal(false);
+  canCreateForms = signal(true);
 
   // Context management
   companyContext = signal<CompanyContext>({});
@@ -244,6 +264,14 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Handle form ID from URL
+    if (params['formId']) {
+      const formId = parseInt(params['formId'], 10);
+      if (!isNaN(formId)) {
+        this.selectedFormId.set(formId);
+      }
+    }
+
     this.companyContext.set(context);
     this.contextBreadcrumb.set(breadcrumb);
   }
@@ -254,12 +282,42 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
     this.allTabs.set(tabs);
     this.generateTabGroups(tabs);
     this.setDefaultActiveTab(tabs);
+
+    // Extract forms from tabs and update available forms
+    const forms = this.extractFormsFromTabs(tabs);
+    this.availableForms.set(forms);
+  }
+
+  extractFormsFromTabs(tabs: TabConfig[]): IForm[] {
+    return tabs
+      .filter(tab => tab.form !== undefined)
+      .map(tab => tab.form!)
+      .filter((form, index, array) =>
+        // Remove duplicates based on form id
+        array.findIndex(f => f.id === form.id) === index
+      );
   }
 
   onFormSelected(form: IForm) {
     console.log('Form selected:', form);
     // Navigate to the form tab
     this.activeTabId.set(`form_${form.id}`);
+  }
+
+  onFormSelectedFromDropdown(form: IForm) {
+    console.log('Form selected from dropdown:', form);
+    this.selectedFormId.set(form.id);
+
+    // Update URL with formId query parameter
+    this.updateUrlWithFormId(form.id);
+
+    // Navigate to the form tab
+    this.activeTabId.set(`form_${form.id}`);
+  }
+
+  openFormCreationModal() {
+    console.log('Opening form creation modal');
+    // TODO: Implement form creation modal logic
   }
 
   onTabSelected(tabId: string) {
@@ -283,7 +341,25 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
     this.activeTabId.set(defaultTabId);
   }
 
-  // Navigation methods
+  // URL and navigation management
+  updateUrlWithFormId(formId: number) {
+    const context = this.companyContext();
+    const queryParams: any = {};
+
+    // Preserve existing context
+    if (context.clientId) queryParams.clientId = context.clientId;
+    if (context.programId) queryParams.programId = context.programId;
+    if (context.cohortId) queryParams.cohortId = context.cohortId;
+
+    // Add form ID
+    queryParams.formId = formId;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'replace'
+    });
+  }
   navigateBack() {
     const context = this.companyContext();
     const queryParams: any = {};
