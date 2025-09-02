@@ -7,6 +7,14 @@ interface FormSelectorContext {
   programName?: string;
   cohortId?: number;
   cohortName?: string;
+  clientId?: number;
+  clientName?: string;
+}
+
+interface ContextItem {
+  id: number;
+  name: string;
+  type: 'client' | 'program' | 'cohort';
 }
 
 interface FormGroup {
@@ -20,15 +28,51 @@ interface FormGroup {
   imports: [CommonModule],
   template: `
     <div class="relative w-full">
-      <!-- Context Display -->
-      <div class="flex flex-wrap gap-2 mb-4" *ngIf="context()?.programId">
-        <div class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
-          <i class="fas fa-folder text-blue-500 mr-2"></i>
-          {{ context().programName || 'Program ' + context().programId }}
-        </div>
-        <div class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium" *ngIf="context()?.cohortId">
-          <i class="fas fa-users text-purple-500 mr-2"></i>
-          {{ context().cohortName || 'Cohort ' + context().cohortId }}
+      <!-- Context Navigation Breadcrumb -->
+      <div class="bg-gray-50 border-b rounded-t-lg" *ngIf="contextBreadcrumb().length > 0">
+        <div class="px-4 py-3">
+          <nav class="flex items-center space-x-2 text-sm">
+            <!-- Context Label -->
+            <span class="text-gray-500 font-medium">Context:</span>
+
+            <!-- Back to Overview Button -->
+            <button
+              (click)="onNavigateToOverview()"
+              class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+              Overview
+            </button>
+
+            <!-- Breadcrumb Items -->
+            <div *ngFor="let item of contextBreadcrumb(); let isLast = last" class="flex items-center space-x-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+
+              <div class="flex items-center space-x-2">
+                <!-- Context Type Icon -->
+                <div [class]="getContextIconClass(item.type)">
+                  <svg *ngIf="item.type === 'client'" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
+                  </svg>
+                  <svg *ngIf="item.type === 'program'" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <svg *ngIf="item.type === 'cohort'" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z"></path>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clip-rule="evenodd"></path>
+                  </svg>
+                </div>
+
+                <!-- Context Item Name -->
+                <button
+                  (click)="onNavigateToContext(item)"
+                  [class]="getContextTextClass(item.type)"
+                  type="button">
+                  {{ item.name }}
+                </button>
+              </div>
+            </div>
+          </nav>
         </div>
       </div>
 
@@ -36,7 +80,9 @@ interface FormGroup {
       <div class="relative w-full" [class]="isDropdownOpen() ? 'z-50' : ''">
         <button
           type="button"
-          class="w-full px-4 py-3 text-left bg-white border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200"
+          class="w-full px-4 py-3 text-left bg-white border border-gray-300 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200"
+          [class.rounded-lg]="contextBreadcrumb().length === 0"
+          [class.rounded-b-lg]="contextBreadcrumb().length > 0"
           [class.border-blue-500]="isDropdownOpen()"
           [class.ring-2]="isDropdownOpen()"
           [class.ring-blue-500]="isDropdownOpen()"
@@ -151,6 +197,8 @@ export class FormSelectorComponent {
   // Modern Angular outputs using output() function
   formSelected = output<IForm>();
   createFormRequested = output<void>();
+  navigateToContext = output<ContextItem>();
+  navigateToOverview = output<void>();
 
   // Internal state
   isDropdownOpen = signal(false);
@@ -159,6 +207,37 @@ export class FormSelectorComponent {
   selectedForm = computed(() => {
     const formId = this.selectedFormId();
     return this.availableForms().find(form => form.id === formId) || null;
+  });
+
+  contextBreadcrumb = computed(() => {
+    const ctx = this.context();
+    const breadcrumb: ContextItem[] = [];
+
+    if (ctx.clientId) {
+      breadcrumb.push({
+        id: ctx.clientId,
+        name: ctx.clientName || `Client ${ctx.clientId}`,
+        type: 'client'
+      });
+    }
+
+    if (ctx.programId) {
+      breadcrumb.push({
+        id: ctx.programId,
+        name: ctx.programName || `Program ${ctx.programId}`,
+        type: 'program'
+      });
+    }
+
+    if (ctx.cohortId) {
+      breadcrumb.push({
+        id: ctx.cohortId,
+        name: ctx.cohortName || `Cohort ${ctx.cohortId}`,
+        type: 'cohort'
+      });
+    }
+
+    return breadcrumb;
   });
 
   formGroups = computed(() => {
@@ -193,6 +272,34 @@ export class FormSelectorComponent {
   createNewForm(): void {
     this.createFormRequested.emit();
     this.isDropdownOpen.set(false);
+  }
+
+  onNavigateToContext(item: ContextItem): void {
+    this.navigateToContext.emit(item);
+  }
+
+  onNavigateToOverview(): void {
+    this.navigateToOverview.emit();
+  }
+
+  getContextIconClass(type: string): string {
+    const baseClass = 'w-3 h-3 rounded-sm flex items-center justify-center text-white';
+    switch (type) {
+      case 'client': return `${baseClass} bg-purple-500`;
+      case 'program': return `${baseClass} bg-green-500`;
+      case 'cohort': return `${baseClass} bg-orange-500`;
+      default: return `${baseClass} bg-gray-500`;
+    }
+  }
+
+  getContextTextClass(type: string): string {
+    const baseClass = 'hover:underline transition-colors font-medium';
+    switch (type) {
+      case 'client': return `${baseClass} text-purple-600 hover:text-purple-800`;
+      case 'program': return `${baseClass} text-green-600 hover:text-green-800`;
+      case 'cohort': return `${baseClass} text-orange-600 hover:text-orange-800`;
+      default: return `${baseClass} text-gray-600 hover:text-gray-800`;
+    }
   }
 
   formatScope(scopeType: string): string {

@@ -13,7 +13,7 @@ import { TabConfigurationService, TabConfig, TabGroup } from '../../../services/
 import { LoadingStateComponent } from '../companies/company-detail/loading-state/loading-state.component';
 import { ErrorStateComponent } from '../companies/company-detail/error-state/error-state.component';
 import { CompanyHeaderComponent } from '../companies/company-detail/company-header/company-header.component';
-import { ContextBreadcrumbComponent, ContextItem } from '../companies/company-detail/context-breadcrumb/context-breadcrumb.component';
+import { ContextItem } from '../companies/company-detail/context-breadcrumb/context-breadcrumb.component';
 
 // Import our new simplified components
 import { CompanyFormManagementComponent } from './company-form-management/company-form-management.component';
@@ -42,7 +42,6 @@ export interface CompanyContext {
     LoadingStateComponent,
     ErrorStateComponent,
     CompanyHeaderComponent,
-    ContextBreadcrumbComponent,
     CompanyFormManagementComponent,
     CompanyTabsComponent,
     FormSelectorComponent
@@ -66,12 +65,6 @@ export interface CompanyContext {
       <!-- Main Content -->
       <div *ngIf="!isLoading() && !error() && company()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- Context Breadcrumb -->
-        <app-context-breadcrumb
-          [context]="contextBreadcrumb()"
-          (navigateBack)="navigateBack()">
-        </app-context-breadcrumb>
-
         <!-- Company Header -->
         <div class="mb-6">
           <app-company-header
@@ -88,7 +81,9 @@ export interface CompanyContext {
           [isLoading]="isLoadingForms()"
           [canCreateForms]="canCreateForms()"
           (formSelected)="onFormSelectedFromDropdown($event)"
-          (createFormRequested)="openFormCreationModal()">
+          (createFormRequested)="openFormCreationModal()"
+          (navigateToContext)="onNavigateToContext($event)"
+          (navigateToOverview)="navigateBack()">
         </app-form-selector>
 
         <!-- Form Management Section (Hidden - logic moved to form selector) -->
@@ -147,7 +142,6 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
 
   // Context management
   companyContext = signal<CompanyContext>({});
-  contextBreadcrumb = signal<ContextItem[]>([]);
 
   // For passing to child components
   companyContextSignal = this.companyContext;
@@ -232,36 +226,20 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
   // Context management
   loadContextFromParams(params: any) {
     const context: CompanyContext = {};
-    const breadcrumb: ContextItem[] = [];
 
     if (params['clientId']) {
       context.clientId = parseInt(params['clientId'], 10);
       context.clientName = params['clientName'] || `Client ${context.clientId}`;
-      breadcrumb.push({
-        type: 'client',
-        name: context.clientName!,
-        id: context.clientId!
-      });
     }
 
     if (params['programId']) {
       context.programId = parseInt(params['programId'], 10);
       context.programName = params['programName'] || `Program ${context.programId}`;
-      breadcrumb.push({
-        type: 'program',
-        name: context.programName!,
-        id: context.programId!
-      });
     }
 
     if (params['cohortId']) {
       context.cohortId = parseInt(params['cohortId'], 10);
       context.cohortName = params['cohortName'] || `Cohort ${context.cohortId}`;
-      breadcrumb.push({
-        type: 'cohort',
-        name: context.cohortName!,
-        id: context.cohortId!
-      });
     }
 
     // Handle form ID from URL
@@ -273,7 +251,6 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
     }
 
     this.companyContext.set(context);
-    this.contextBreadcrumb.set(breadcrumb);
   }
 
   // Event handlers from child components
@@ -313,6 +290,46 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
 
     // Navigate to the form tab
     this.activeTabId.set(`form_${form.id}`);
+  }
+
+  onNavigateToContext(item: ContextItem) {
+    console.log('Navigate to context:', item);
+    const context = this.companyContext();
+    const queryParams: any = {};
+
+    // Include context based on the navigation target
+    if (item.type === 'client') {
+      queryParams.clientId = item.id;
+      if (item.name !== `Client ${item.id}`) {
+        queryParams.clientName = item.name;
+      }
+    } else if (item.type === 'program') {
+      // Include client context if available
+      if (context.clientId) {
+        queryParams.clientId = context.clientId;
+        if (context.clientName) queryParams.clientName = context.clientName;
+      }
+      queryParams.programId = item.id;
+      if (item.name !== `Program ${item.id}`) {
+        queryParams.programName = item.name;
+      }
+    } else if (item.type === 'cohort') {
+      // Include client and program context if available
+      if (context.clientId) {
+        queryParams.clientId = context.clientId;
+        if (context.clientName) queryParams.clientName = context.clientName;
+      }
+      if (context.programId) {
+        queryParams.programId = context.programId;
+        if (context.programName) queryParams.programName = context.programName;
+      }
+      queryParams.cohortId = item.id;
+      if (item.name !== `Cohort ${item.id}`) {
+        queryParams.cohortName = item.name;
+      }
+    }
+
+    this.router.navigate(['/', 'overview'], { queryParams });
   }
 
   openFormCreationModal() {
