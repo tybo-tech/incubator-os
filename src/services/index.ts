@@ -5,3 +5,4 @@ export * from './node.service';
 export * from './questionnaire.service';
 export * from './category.service';
 export * from './company-purchases.service';
+export * from '../app/services/toast.service';

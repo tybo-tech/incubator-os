@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Task, initTask } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
-import { NodeService } from '../../../services';
+import { NodeService, ToastService } from '../../../services';
 import { ICompany } from '../../../models/simple.schema';
 
 @Component({
@@ -182,7 +182,10 @@ export class GlobalTaskModalComponent implements OnInit {
   taskData: Task = initTask();
   isSaving = false;
 
-  constructor(private nodeService: NodeService<Task>) {}
+  constructor(
+    private nodeService: NodeService<Task>,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.resetForm();
@@ -262,7 +265,7 @@ export class GlobalTaskModalComponent implements OnInit {
 
     } catch (error) {
       console.error('❌ Error saving task:', error);
-      alert('Failed to save task. Please try again.');
+      this.toast.error('Failed to save task. Please try again.');
     } finally {
       this.isSaving = false;
     }

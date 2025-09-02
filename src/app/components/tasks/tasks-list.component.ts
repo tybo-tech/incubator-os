@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
-import { NodeService } from '../../../services';
+import { NodeService, ToastService } from '../../../services';
 import { GlobalTaskModalComponent } from './global-task-modal.component';
 import { ICompany } from '../../../models/simple.schema';
 
@@ -223,7 +223,10 @@ export class TasksListComponent implements OnInit {
     { value: 'high', label: 'High Priority', icon: 'fas fa-fire' }
   ];
 
-  constructor(private nodeService: NodeService<Task>) {}
+  constructor(
+    private nodeService: NodeService<Task>,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.loadTasks();
@@ -386,7 +389,7 @@ export class TasksListComponent implements OnInit {
       }
     } catch (error) {
       console.error('❌ Error updating task status:', error);
-      alert('Failed to update task status. Please try again.');
+      this.toast.error('Failed to update task status. Please try again.');
     }
   }
 
@@ -400,7 +403,7 @@ export class TasksListComponent implements OnInit {
       this.tasks = this.tasks.filter(t => t.id !== task.id);
     } catch (error) {
       console.error('❌ Error deleting task:', error);
-      alert('Failed to delete task. Please try again.');
+      this.toast.error('Failed to delete task. Please try again.');
     }
   }
 }

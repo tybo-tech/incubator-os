@@ -17,6 +17,7 @@ import {
 import { NodeService } from '../../../../../../services/node.service';
 import { INode } from '../../../../../../models/schema';
 import { ICompany } from '../../../../../../models/simple.schema';
+import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-compliance-questionnaire',
@@ -258,7 +259,10 @@ export class ComplianceQuestionnaireComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
 
-  constructor(private nodeService: NodeService<any>) {}
+  constructor(
+    private nodeService: NodeService<any>,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadComplianceData();
@@ -405,10 +409,10 @@ export class ComplianceQuestionnaireComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    console.log(message);
+    this.toast.success(message);
   }
 
   private showErrorMessage(message: string): void {
-    alert(message);
+    this.toast.error(message);
   }
 }

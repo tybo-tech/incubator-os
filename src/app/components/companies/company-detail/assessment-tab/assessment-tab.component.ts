@@ -13,6 +13,7 @@ import {
 } from '../../../../../models/questionnaire.models';
 import { QuestionnaireService } from '../../../../../services/questionnaire.service';
 import { ICompany } from '../../../../../models/simple.schema';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-assessment-tab',
@@ -326,7 +327,10 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(private questionnaireService: QuestionnaireService) {}
+  constructor(
+    private questionnaireService: QuestionnaireService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadQuestionnaire();
@@ -551,14 +555,14 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification
-    alert(message);
+    this.toast.success(message);
   }
 
   private showErrorMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification
-    alert(message);
-  }  private validateForm(): boolean {
+    this.toast.error(message);
+  }
+
+  private validateForm(): boolean {
     this.formData.errors = {};
     let isValid = true;
 
