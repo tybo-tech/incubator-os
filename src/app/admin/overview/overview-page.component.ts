@@ -269,8 +269,8 @@ export class OverviewPageComponent implements OnInit {
       queryParams.cohortName = breadcrumb[2].name;
     }
 
-    // Navigate to company detail page with context
-    this.router.navigate(['/companies', company.id], { queryParams });
+    // Navigate to NEW dynamic company detail page with context
+    this.router.navigate(['/company', company.id], { queryParams });
   }
 
   onRemoveCompany(company: ICompany): void {

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { CompaniesComponent } from './components/companies/companies.component';
 import { CompanyDetailComponent } from './components/companies/company-detail/company-detail.component';
+import { DynamicCompanyDetailComponent } from './components/dynamic-company-detail/dynamic-company-detail.component';
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
@@ -28,6 +29,10 @@ export const routes: Routes = [
       {
         path: 'companies/:id',
         component: CompanyDetailComponent,
+      },
+      {
+        path: 'company/:id',
+        component: DynamicCompanyDetailComponent,
       },
       {
         path: 'companies/:id/pdf-export',
