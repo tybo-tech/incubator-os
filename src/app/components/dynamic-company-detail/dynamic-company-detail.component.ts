@@ -82,11 +82,11 @@ export interface CompanyContext {
 
         <!-- Form Selector (Top Level) -->
         <app-form-selector
-          [context]="companyContextSignal"
-          [availableForms]="availableForms"
-          [selectedFormId]="selectedFormId"
-          [isLoading]="isLoadingForms"
-          [canCreateForms]="canCreateForms"
+          [context]="companyContextSignal()"
+          [availableForms]="availableForms()"
+          [selectedFormId]="selectedFormId()"
+          [isLoading]="isLoadingForms()"
+          [canCreateForms]="canCreateForms()"
           (formSelected)="onFormSelectedFromDropdown($event)"
           (createFormRequested)="openFormCreationModal()">
         </app-form-selector>

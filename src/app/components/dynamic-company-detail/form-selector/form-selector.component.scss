@@ -1,0 +1,125 @@
+/* Form Selector Component Styles */
+
+.form-selector-container {
+  @apply relative w-full;
+}
+
+.context-info {
+  @apply flex flex-wrap gap-2 mb-4;
+}
+
+.context-badge {
+  @apply inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium;
+}
+
+.dropdown-container {
+  @apply relative w-full;
+}
+
+.dropdown-trigger {
+  @apply w-full px-4 py-3 text-left bg-white border border-gray-300 rounded-lg shadow-sm;
+  @apply hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed;
+  @apply transition-all duration-200;
+}
+
+.form-name {
+  @apply font-medium text-gray-900;
+}
+
+.form-scope {
+  @apply ml-2 text-sm text-gray-500;
+}
+
+.dropdown-menu {
+  @apply absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50;
+  @apply max-h-80 overflow-y-auto;
+}
+
+.form-groups {
+  @apply p-2;
+}
+
+.form-group {
+  @apply mb-4 last:mb-0;
+}
+
+.group-header {
+  @apply px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 rounded-md mb-2;
+}
+
+.form-list {
+  @apply space-y-1;
+}
+
+.form-item {
+  @apply flex items-center justify-between px-3 py-2 rounded-md cursor-pointer;
+  @apply hover:bg-blue-50 hover:text-blue-700;
+  @apply transition-colors duration-150;
+
+  &.selected {
+    @apply bg-blue-100 text-blue-800;
+  }
+}
+
+.form-info {
+  @apply flex items-center space-x-2;
+}
+
+.form-title {
+  @apply font-medium;
+}
+
+.scope-badge {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+
+  &.scope-company {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  &.scope-program {
+    @apply bg-green-100 text-green-800;
+  }
+
+  &.scope-cohort {
+    @apply bg-purple-100 text-purple-800;
+  }
+
+  &.scope-global {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  &.scope-default {
+    @apply bg-gray-100 text-gray-800;
+  }
+}
+
+.create-form-section {
+  @apply border-t border-gray-200;
+}
+
+.divider {
+  @apply h-px bg-gray-200;
+}
+
+.create-form-btn {
+  @apply w-full px-3 py-2 text-left text-blue-600 hover:bg-blue-50 rounded-b-lg;
+  @apply transition-colors duration-150 font-medium;
+  @apply disabled:text-gray-400 disabled:hover:bg-transparent disabled:cursor-not-allowed;
+}
+
+/* Dropdown arrow rotation */
+.fa-chevron-down {
+  @apply transition-transform duration-200;
+
+  &.rotated {
+    @apply rotate-180;
+  }
+}
+
+/* Open state */
+.dropdown-container.open {
+  .dropdown-trigger {
+    @apply border-blue-500 ring-2 ring-blue-500;
+  }
+}

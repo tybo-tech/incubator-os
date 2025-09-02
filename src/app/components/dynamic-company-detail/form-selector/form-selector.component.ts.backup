@@ -1,0 +1,352 @@
+// src/app/components/dynamic-company-detail/form-selector/form-selector.component.ts
+import { Component, input, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IForm } from '../../../../models/form-system.models';
+
+export interface FormSelectorContext {
+  clientId?: number;
+  clientName?: string;
+  programId?: number;
+  programName?: string;
+  cohortId?: number;
+  cohortName?: string;
+}
+
+@Component({
+  selector: 'app-form-selector',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule],
+  template: `
+    <div class="form-selector-container">
+
+      <!-- Context Info -->
+      <div class="context-info" *ngIf="context()?.programId">
+        <span class="context-label">
+          <i class="fas fa-layer-group text-blue-500"></i>
+          {{ context().programName || 'Program ' + context().programId }}
+        </span>
+        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+        <span class="context-label">
+          <i class="fas fa-users text-green-500"></i>
+          {{ context().cohortName || 'Cohort ' + context().cohortId }}
+        </span>
+      </div>
+
+      <!-- Form Selector Dropdown -->
+      <div class="form-dropdown-wrapper">
+        <div class="dropdown-container" [class.open]="isDropdownOpen()">
+
+          <!-- Selected Form Display / Trigger -->
+          <button
+            type="button"
+            class="form-selector-trigger"
+            (click)="toggleDropdown()"
+            [disabled]="isLoading() || availableForms().length === 0">
+
+            <div class="selected-form-content">
+              <!-- Loading State -->
+              <div *ngIf="isLoading()" class="flex items-center">
+                <i class="fas fa-spinner fa-spin text-gray-400 mr-2"></i>
+                <span class="text-gray-600">Loading forms...</span>
+              </div>
+
+              <!-- No Forms Available -->
+              <div *ngIf="!isLoading() && availableForms().length === 0" class="flex items-center">
+                <i class="fas fa-file-alt text-gray-400 mr-2"></i>
+                <span class="text-gray-500">No forms available</span>
+              </div>
+
+              <!-- Selected Form -->
+              <div *ngIf="!isLoading() && selectedForm()" class="flex items-center">
+                <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                <div class="form-info">
+                  <span class="form-name">{{ selectedForm()?.title }}</span>
+                  <span class="form-scope" *ngIf="selectedForm()?.scope_type">
+                    ({{ formatScope(selectedForm()!.scope_type) }})
+                  </span>
+                </div>
+              </div>
+
+              <!-- No Selection -->
+              <div *ngIf="!isLoading() && availableForms().length > 0 && !selectedForm()" class="flex items-center">
+                <i class="fas fa-file-alt text-gray-400 mr-2"></i>
+                <span class="text-gray-600">Select a form</span>
+              </div>
+            </div>
+
+            <!-- Dropdown Arrow -->
+            <i class="fas fa-chevron-down dropdown-arrow"
+               [class.rotated]="isDropdownOpen()"
+               *ngIf="!isLoading() && availableForms().length > 0"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="dropdown-menu" *ngIf="isDropdownOpen() && availableForms().length > 0">
+
+            <!-- Form Options -->
+            <div class="form-groups">
+
+              <!-- Group forms by scope -->
+              <div *ngFor="let group of formGroups()" class="form-group">
+                <div class="group-header" *ngIf="group.label">
+                  <i [class]="group.icon"></i>
+                  {{ group.label }}
+                </div>
+
+                <button
+                  type="button"
+                  *ngFor="let form of group.forms"
+                  class="form-option"
+                  [class.selected]="selectedFormId() === form.id"
+                  (click)="selectForm(form)">
+
+                  <div class="form-option-content">
+                    <div class="form-name">{{ form.title }}</div>
+                    <div class="form-meta">
+                      <span class="scope-badge" [class]="getScopeBadgeClass(form.scope_type)">
+                        {{ formatScope(form.scope_type) }}
+                      </span>
+                      <span class="form-id text-xs text-gray-400">#{{ form.id }}</span>
+                    </div>
+                  </div>
+
+                  <i class="fas fa-check text-green-500" *ngIf="selectedFormId() === form.id"></i>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Add New Form Action -->
+            <div class="dropdown-footer">
+              <button
+                type="button"
+                class="add-form-button"
+                (click)="createNewForm()"
+                [disabled]="!canCreateForms()">
+                <i class="fas fa-plus"></i>
+                Create New Form
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  `,
+  styles: [`
+    .form-selector-container {
+      @apply flex items-center mb-6 p-4 bg-white rounded-lg shadow-sm border;
+      gap: 1rem;
+    }
+
+    .context-info {
+      @apply flex items-center text-sm text-gray-600 font-medium;
+    }
+
+    .context-label {
+      @apply flex items-center;
+      gap: 0.25rem;
+    }
+
+    .form-dropdown-wrapper {
+      @apply relative flex-1 max-w-md;
+    }
+
+    .dropdown-container {
+      @apply relative;
+    }
+
+    .form-selector-trigger {
+      @apply w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm;
+      @apply flex items-center justify-between;
+      @apply hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+      @apply transition-all duration-200;
+      @apply disabled:bg-gray-50 disabled:cursor-not-allowed;
+    }
+
+    .selected-form-content {
+      @apply flex-1 text-left;
+    }
+
+    .form-info {
+      @apply flex flex-col;
+    }
+
+    .form-name {
+      @apply font-medium text-gray-900;
+    }
+
+    .form-scope {
+      @apply text-xs text-gray-500;
+    }
+
+    .dropdown-arrow {
+      @apply ml-2 text-gray-400 transition-transform duration-200;
+    }
+
+    .dropdown-arrow.rotated {
+      @apply transform rotate-180;
+    }
+
+    .dropdown-menu {
+      @apply absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50;
+      @apply max-h-80 overflow-y-auto;
+    }
+
+    .form-groups {
+      @apply py-2;
+    }
+
+    .form-group {
+      @apply border-b border-gray-100 last:border-b-0;
+    }
+
+    .group-header {
+      @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide;
+      @apply bg-gray-50 flex items-center gap-2;
+    }
+
+    .form-option {
+      @apply w-full px-4 py-3 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50;
+      @apply flex items-center justify-between;
+      @apply transition-colors duration-150;
+    }
+
+    .form-option.selected {
+      @apply bg-blue-50 text-blue-900;
+    }
+
+    .form-option-content {
+      @apply flex-1;
+    }
+
+    .form-name {
+      @apply font-medium text-gray-900;
+    }
+
+    .form-option.selected .form-name {
+      @apply text-blue-900;
+    }
+
+    .form-meta {
+      @apply flex items-center gap-2 mt-1;
+    }
+
+    .scope-badge {
+      @apply px-2 py-1 text-xs font-medium rounded-full;
+    }
+
+    .scope-badge.global {
+      @apply bg-purple-100 text-purple-800;
+    }
+
+    .scope-badge.client {
+      @apply bg-blue-100 text-blue-800;
+    }
+
+    .scope-badge.program {
+      @apply bg-green-100 text-green-800;
+    }
+
+    .scope-badge.cohort {
+      @apply bg-orange-100 text-orange-800;
+    }
+
+    .dropdown-footer {
+      @apply border-t border-gray-100 p-2;
+    }
+
+    .add-form-button {
+      @apply w-full px-3 py-2 text-left text-blue-600 hover:bg-blue-50 rounded-md;
+      @apply flex items-center gap-2 text-sm font-medium;
+      @apply focus:outline-none focus:bg-blue-50;
+      @apply disabled:text-gray-400 disabled:cursor-not-allowed;
+    }
+  `]
+})
+export class FormSelectorComponent {
+export class FormSelectorComponent {
+  // Input signals
+  context = input<FormSelectorContext>({});
+  availableForms = input<IForm[]>([]);
+  selectedFormId = input<number | null>(null);
+  isLoading = input<boolean>(false);
+  canCreateForms = input<boolean>(true);
+
+  // Output events
+  formSelected = output<IForm>();
+  createFormRequested = output<void>();
+
+  // Internal state
+  isDropdownOpen = signal(false);
+
+  // Computed properties
+  selectedForm = computed(() => {
+    const formId = this.selectedFormId();
+    return this.availableForms().find(f => f.id === formId) || null;
+  });
+
+  formGroups = computed(() => {
+    const forms = this.availableForms();
+    const groups: Array<{label: string; icon: string; forms: IForm[]}> = [];
+
+    // Group by scope_type
+    const scopeGroups = forms.reduce((acc, form) => {
+      const scope = form.scope_type || 'global';
+      if (!acc[scope]) acc[scope] = [];
+      acc[scope].push(form);
+      return acc;
+    }, {} as Record<string, IForm[]>);
+
+    // Create ordered groups
+    const scopeOrder = ['global', 'client', 'program', 'cohort'];
+    const scopeConfig = {
+      global: { label: 'Global Forms', icon: 'fas fa-globe text-purple-500' },
+      client: { label: 'Client Forms', icon: 'fas fa-building text-blue-500' },
+      program: { label: 'Program Forms', icon: 'fas fa-layer-group text-green-500' },
+      cohort: { label: 'Cohort Forms', icon: 'fas fa-users text-orange-500' }
+    };
+
+    scopeOrder.forEach(scope => {
+      if (scopeGroups[scope]?.length) {
+        groups.push({
+          ...scopeConfig[scope as keyof typeof scopeConfig],
+          forms: scopeGroups[scope].sort((a, b) => a.title.localeCompare(b.title))
+        });
+      }
+    });
+
+    return groups;
+  });
+
+  toggleDropdown() {
+    if (this.isLoading() || this.availableForms().length === 0) return;
+    this.isDropdownOpen.set(!this.isDropdownOpen());
+  }
+
+  selectForm(form: IForm) {
+    this.formSelected.emit(form);
+    this.isDropdownOpen.set(false);
+  }
+
+  createNewForm() {
+    this.createFormRequested.emit();
+    this.isDropdownOpen.set(false);
+  }
+
+  formatScope(scope: string): string {
+    const scopeMap: Record<string, string> = {
+      'global': 'Global',
+      'client': 'Client',
+      'program': 'Program',
+      'cohort': 'Cohort'
+    };
+    return scopeMap[scope] || scope;
+  }
+
+  getScopeBadgeClass(scope: string): string {
+    return `scope-badge ${scope || 'global'}`;
+  }
+}
