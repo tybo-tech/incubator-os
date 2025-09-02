@@ -1,15 +1,19 @@
 <?php
 include_once '../../config/Database.php';
-include_once '../../models/FormDefinition.php';
+include_once '../../models/FormNode.php';
 
-$onlyActive = isset($_GET['only_active']) ? ($_GET['only_active'] == '1' ? true : false) : null;
+$formId = $_GET['form_id'] ?? null;
 
 try {
+    if (!$formId) {
+        throw new Exception('Missing form_id parameter');
+    }
+
     $database = new Database();
     $db = $database->connect();
-    $formDefinition = new FormDefinition($db);
+    $formNode = new FormNode($db);
 
-    $result = $formDefinition->listForms($onlyActive);
+    $result = $formNode->getByFormId((int)$formId);
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);

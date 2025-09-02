@@ -1,18 +1,18 @@
 <?php
 include_once '../../config/Database.php';
-include_once '../../models/FormSubmission.php';
+include_once '../../models/FormNode.php';
 
-$id = $_GET['id'] ?? null;
+$parentId = $_GET['parent_id'] ?? null;
 
 try {
     $database = new Database();
     $db = $database->connect();
-    $formSubmission = new FormSubmission($db);
+    $formNode = new FormNode($db);
 
-    if ($id) {
-        $result = $formSubmission->getById((int)$id);
+    if ($parentId) {
+        $result = $formNode->getChildren((int)$parentId);
     } else {
-        throw new Exception('Missing id');
+        throw new Exception('Missing parent_id parameter');
     }
 
     echo json_encode($result);

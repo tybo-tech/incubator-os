@@ -1,22 +1,20 @@
 <?php
 include_once '../../config/Database.php';
-include_once '../../models/FormDefinition.php';
+include_once '../../models/FormNode.php';
 
+$id = $_GET['id'] ?? null;
 $data = json_decode(file_get_contents("php://input"), true);
 
 try {
+    if (!$id) {
+        throw new Exception('Missing id parameter');
+    }
+
     $database = new Database();
     $db = $database->connect();
-    $formDefinition = new FormDefinition($db);
+    $formNode = new FormNode($db);
 
-    $result = $formDefinition->update(
-        $data['id'],
-        $data['title'] ?? null,
-        $data['description'] ?? null,
-        $data['schema'] ?? null,
-        $data['is_active'] ?? null
-    );
-
+    $result = $formNode->update((int)$id, $data);
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);

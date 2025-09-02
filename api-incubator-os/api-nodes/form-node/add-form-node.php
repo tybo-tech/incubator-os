@@ -1,20 +1,15 @@
 <?php
 include_once '../../config/Database.php';
-include_once '../../models/FormSubmission.php';
+include_once '../../models/FormNode.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
 try {
     $database = new Database();
     $db = $database->connect();
-    $formSubmission = new FormSubmission($db);
+    $formNode = new FormNode($db);
 
-    $result = $formSubmission->updatePayload(
-        $data['id'],
-        $data['payload'],
-        $data['updated_by'] ?? null
-    );
-
+    $result = $formNode->add($data);
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);

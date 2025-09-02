@@ -1,15 +1,19 @@
 <?php
 include_once '../../config/Database.php';
-include_once '../../models/FormDefinition.php';
+include_once '../../models/SessionFieldResponse.php';
 
-$data = json_decode(file_get_contents("php://input"), true);
+$id = $_GET['id'] ?? null;
 
 try {
+    if (!$id) {
+        throw new Exception('Missing id parameter');
+    }
+
     $database = new Database();
     $db = $database->connect();
-    $formDefinition = new FormDefinition($db);
+    $sessionFieldResponse = new SessionFieldResponse($db);
 
-    $result = $formDefinition->archive($data['id']);
+    $result = $sessionFieldResponse->delete((int)$id);
     echo json_encode(['success' => $result]);
 } catch (Exception $e) {
     http_response_code(400);
