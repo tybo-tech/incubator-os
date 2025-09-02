@@ -159,3 +159,60 @@ export interface FormNodeSettings {
   collapsible?: boolean;
   default_collapsed?: boolean;
 }
+
+/** =========================
+ * Integration with Category System
+ * ========================= */
+
+// Extended category item interface to include form session info
+export interface ICategoryItemWithSession {
+  id: number;
+  cohort_id: number;
+  program_id: number;
+  client_id: number | null;
+  company_id: number;
+  status: 'active' | 'completed' | 'withdrawn';
+  joined_at: string;
+  left_at?: string | null;
+  notes?: string | null;
+  added_by_user_id?: number | null;
+
+  // Optional joined data
+  company_name?: string;
+  cohort_name?: string;
+  program_name?: string;
+  client_name?: string;
+
+  // Form session data
+  form_sessions?: IFormSession[];
+  active_sessions?: IFormSession[];
+  completed_sessions?: IFormSession[];
+}
+
+// Company detail context for dynamic form loading
+export interface CompanyFormContext {
+  company_id: number;
+  categories_item_id?: number; // Current enrollment context
+  program_id?: number;
+  cohort_id?: number;
+  client_id?: number;
+}
+
+// Dynamic form tab structure for company details
+export interface CompanyFormTab {
+  form: IForm;
+  nodes: IFormNode[];
+  session?: IFormSession;
+  responses?: ISessionFieldResponse[];
+  is_active: boolean;
+  can_edit: boolean;
+}
+
+// Program form configuration
+export interface ProgramFormConfig {
+  program_id: number;
+  program_name: string;
+  forms: IForm[];
+  default_form_id?: number;
+  form_order?: number[];
+}

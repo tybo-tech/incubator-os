@@ -17,4 +17,7 @@ export * from './form-session.service';
 export * from './session-field-response.service';
 export * from './form-builder.service';
 
+// Form Integration Service
+export * from './company-form-integration.service';
+
 export * from '../app/services/toast.service';
