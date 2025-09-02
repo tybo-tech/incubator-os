@@ -6,7 +6,7 @@ import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
-import { OverviewPageRefactoredComponent } from './admin/overview/overview-page-refactored.component';
+import { OverviewPageComponent } from './admin/overview/overview-page.component';
 
 export const routes: Routes = [
   {
@@ -15,11 +15,11 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: OverviewPageRefactoredComponent,
+        component: OverviewPageComponent,
       },
       {
         path: 'overview',
-        component: OverviewPageRefactoredComponent, // Placeholder for now
+        component: OverviewPageComponent, // Placeholder for now
       },
       {
         path: 'companies',

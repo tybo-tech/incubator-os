@@ -324,4 +324,28 @@ export class CompanyFormIntegrationService {
       })
     );
   }
+
+  /**
+   * Get complete company form context with enrollments and tabs
+   * Used by CompanyContextService for hybrid tab generation
+   */
+  getCompanyFormTabs(companyId: number): Observable<{
+    enrollments: ICategoryItemWithSession[];
+    tabs: CompanyFormTab[];
+  }> {
+    return this.getCompanyEnrollments(companyId).pipe(
+      switchMap(enrollments => {
+        if (enrollments.length === 0) {
+          return of({ enrollments: [], tabs: [] });
+        }
+
+        return this.generateCompanyTabs(companyId).pipe(
+          map(tabs => ({
+            enrollments,
+            tabs
+          }))
+        );
+      })
+    );
+  }
 }
