@@ -41,7 +41,7 @@ export class CompanyFormIntegrationService {
    */
   getCompanyEnrollments(companyId: number): Observable<ICategoryItemWithSession[]> {
     return this.http.get<ICategoryItemWithSession[]>(
-      `${this.apiUrl}/category-item/list-for-company.php?company_id=${companyId}`
+      `${this.apiUrl}/category/get-company-participation.php?company_id=${companyId}`
     ).pipe(
       switchMap(enrollments => {
         if (enrollments.length === 0) return of([]);

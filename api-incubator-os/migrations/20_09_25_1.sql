@@ -48,16 +48,6 @@ CREATE TABLE form_nodes (
 
   -- Normalize NULL parent for unique enforcement on top-level tabs
   parent_norm BIGINT AS (IFNULL(parent_id, 0)) STORED,
-
-  CONSTRAINT fk_fn_form   FOREIGN KEY (form_id)   REFERENCES forms(id)      ON DELETE CASCADE,
-  CONSTRAINT fk_fn_parent FOREIGN KEY (parent_id) REFERENCES form_nodes(id) ON DELETE CASCADE,
-
-  -- unique within a parent (works even when parent_id is NULL via parent_norm)
-  UNIQUE KEY uq_sibling (form_id, parent_norm, node_key),
-
-  KEY idx_form_depth_parent (form_id, depth, parent_id, sort_order, id),
-  KEY idx_type (form_id, node_type),
-  KEY idx_metric (metric_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -74,9 +64,6 @@ CREATE TABLE form_sessions (
   approved_by        INT NULL, approved_at DATETIME NULL,
   created_by         INT NULL,
   notes              TEXT NULL,
-  KEY idx_ci_form_date (categories_item_id, form_id, session_date),
-  CONSTRAINT fk_fs_ci   FOREIGN KEY (categories_item_id) REFERENCES categories_item(id) ON DELETE CASCADE,
-  CONSTRAINT fk_fs_form FOREIGN KEY (form_id)            REFERENCES forms(id)           ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE session_field_responses (
@@ -91,10 +78,5 @@ CREATE TABLE session_field_responses (
   file_url      VARCHAR(500) NULL,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY uq_answer (session_id, field_node_id),
-  KEY idx_field_num (field_node_id, value_num),
-  KEY idx_field_date (field_node_id, value_date),
-  CONSTRAINT fk_sfr_session FOREIGN KEY (session_id)    REFERENCES form_sessions(id) ON DELETE CASCADE,
-  CONSTRAINT fk_sfr_field   FOREIGN KEY (field_node_id) REFERENCES form_nodes(id)    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
