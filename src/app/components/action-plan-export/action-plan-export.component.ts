@@ -5,7 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { NodeService } from '../../../services/node.service';
 import { SwotAnalysis, SwotItem } from '../../../models/swot.models';
 import { INode } from '../../../models/schema';
-import html2pdf from 'html2pdf.js';
+import { PdfService } from '../../../services/pdf';
 
 interface ActionPlanItem {
   priority: 'critical' | 'high' | 'medium' | 'low';
@@ -39,6 +39,39 @@ interface ActionPlanItem {
     .summary-card {
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+
+    /* Enhanced Status Badge Styling */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    /* Priority Summary Table Styling */
+    .priority-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .priority-summary-table td {
+      text-align: center;
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      transition: background-color 0.2s ease;
+    }
+
+    .priority-summary-table td:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .page-break-before {
@@ -107,12 +140,20 @@ interface ActionPlanItem {
                 ← Back
               </button>
               <button
+                (click)="previewPDF()"
+                [disabled]="loading || isGenerating"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
+                <span *ngIf="isGenerating" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                {{ isGenerating ? 'Generating...' : '👁️ Preview PDF' }}
+              </button>
+              <button
                 (click)="exportToPDF()"
                 [disabled]="loading || isGenerating"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
                 <span *ngIf="isGenerating" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                {{ isGenerating ? 'Generating PDF...' : '📄 Export PDF' }}
+                {{ isGenerating ? 'Generating PDF...' : '📄 Download PDF' }}
               </button>
             </div>
           </div>
@@ -192,13 +233,13 @@ interface ActionPlanItem {
                         <td style="width: 10%; padding-right: 0.5rem; vertical-align: top;">
                           <span style="display: inline-block; padding: 0.25rem 0.4rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; white-space: nowrap;"
                                 [ngClass]="{
-                                  'bg-gray-100 text-gray-800': item.status === 'identified',
-                                  'bg-blue-100 text-blue-800': item.status === 'planning',
-                                  'bg-yellow-100 text-yellow-800': item.status === 'in_progress',
-                                  'bg-green-100 text-green-800': item.status === 'completed',
-                                  'bg-red-100 text-red-800': item.status === 'on_hold'
+                                  'bg-slate-100 text-slate-700': item.status === 'identified',
+                                  'bg-blue-100 text-blue-700': item.status === 'planning',
+                                  'bg-amber-100 text-amber-700': item.status === 'in_progress',
+                                  'bg-emerald-100 text-emerald-700': item.status === 'completed',
+                                  'bg-red-100 text-red-700': item.status === 'on_hold'
                                 }"
-                                style="background-color: #f3f4f6; color: #374151;">
+                                style="background-color: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">
                             {{ getStatusDisplay(item.status) }}
                           </span>
                         </td>
@@ -219,24 +260,27 @@ interface ActionPlanItem {
 
               <!-- Summary Footer -->
               <div style="padding: 1rem 1.5rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb; page-break-inside: avoid;" class="summary-card">
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
-                  <div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;">{{ getTotalByPriority('critical') }}</div>
-                    <div style="font-size: 0.875rem; color: #6b7280;">Critical</div>
-                  </div>
-                  <div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: #ea580c;">{{ getTotalByPriority('high') }}</div>
-                    <div style="font-size: 0.875rem; color: #6b7280;">High</div>
-                  </div>
-                  <div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">{{ getTotalByPriority('medium') }}</div>
-                    <div style="font-size: 0.875rem; color: #6b7280;">Medium</div>
-                  </div>
-                  <div>
-                    <div style="font-size: 1.5rem; font-weight: bold; color: #6b7280;">{{ getTotalByPriority('low') }}</div>
-                    <div style="font-size: 0.875rem; color: #6b7280;">Low</div>
-                  </div>
-                </div>
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #374151;">Priority Summary</h3>
+                <table class="priority-summary-table" style="width: 100%; border-collapse: collapse; border-radius: 0.5rem; overflow: hidden;">
+                  <tr>
+                    <td style="text-align: center; padding: 1rem; border: 1px solid #e5e7eb; background-color: #fee2e2;">
+                      <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;">{{ getTotalByPriority('critical') }}</div>
+                      <div style="font-size: 0.875rem; color: #991b1b; font-weight: 500;">Critical</div>
+                    </td>
+                    <td style="text-align: center; padding: 1rem; border: 1px solid #e5e7eb; background-color: #fed7aa;">
+                      <div style="font-size: 1.5rem; font-weight: bold; color: #ea580c;">{{ getTotalByPriority('high') }}</div>
+                      <div style="font-size: 0.875rem; color: #c2410c; font-weight: 500;">High</div>
+                    </td>
+                    <td style="text-align: center; padding: 1rem; border: 1px solid #e5e7eb; background-color: #fef3c7;">
+                      <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">{{ getTotalByPriority('medium') }}</div>
+                      <div style="font-size: 0.875rem; color: #92400e; font-weight: 500;">Medium</div>
+                    </td>
+                    <td style="text-align: center; padding: 1rem; border: 1px solid #e5e7eb; background-color: #f3f4f6;">
+                      <div style="font-size: 1.5rem; font-weight: bold; color: #6b7280;">{{ getTotalByPriority('low') }}</div>
+                      <div style="font-size: 0.875rem; color: #4b5563; font-weight: 500;">Low</div>
+                    </td>
+                  </tr>
+                </table>
               </div>
             </div>
 
@@ -277,7 +321,8 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
-    private nodeService: NodeService<any>
+    private nodeService: NodeService<any>,
+    private pdfService: PdfService
   ) {}
 
   ngOnInit(): void {
@@ -454,13 +499,13 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
 
   getStatusColor(status: string): { bg: string; text: string } {
     const colors: { [key: string]: { bg: string; text: string } } = {
-      identified: { bg: '#f3f4f6', text: '#374151' },
-      planning: { bg: '#dbeafe', text: '#1e40af' },
-      in_progress: { bg: '#fef3c7', text: '#92400e' },
-      completed: { bg: '#dcfce7', text: '#166534' },
-      on_hold: { bg: '#fee2e2', text: '#991b1b' }
+      identified: { bg: '#f1f5f9', text: '#334155' },
+      planning: { bg: '#dbeafe', text: '#1d4ed8' },
+      in_progress: { bg: '#fef3c7', text: '#b45309' },
+      completed: { bg: '#dcfce7', text: '#15803d' },
+      on_hold: { bg: '#fee2e2', text: '#dc2626' }
     };
-    return colors[status] || { bg: '#f3f4f6', text: '#374151' };
+    return colors[status] || { bg: '#f1f5f9', text: '#334155' };
   }
 
   isOverdue(dateString: string): boolean {
@@ -484,6 +529,36 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  async previewPDF(): Promise<void> {
+    this.isGenerating = true;
+
+    try {
+      const element = document.getElementById('pdf-content');
+      if (!element) {
+        throw new Error('PDF content element not found');
+      }
+
+      // Get the HTML content from the PDF element
+      const htmlContent = element.outerHTML;
+
+      // Create a complete HTML document with DomPDF-optimized styling
+      const styledHtml = this.createDomPdfOptimizedDocument(htmlContent);
+
+      // Use our PDF service to preview the PDF - Portrait for better document flow
+      this.pdfService.previewPdf(
+        styledHtml,
+        'A4',
+        'portrait' // Portrait for better DomPDF handling
+      );
+
+    } catch (error) {
+      console.error('Error generating PDF preview:', error);
+      alert('There was an error generating the PDF preview. Please try again.');
+    } finally {
+      this.isGenerating = false;
+    }
+  }
+
   async exportToPDF(): Promise<void> {
     this.isGenerating = true;
 
@@ -493,60 +568,235 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
         throw new Error('PDF content element not found');
       }
 
-      // Get actual element dimensions for better sizing
-      const rect = element.getBoundingClientRect();
-      const actualWidth = Math.max(1400, element.scrollWidth, rect.width);
-      const actualHeight = Math.max(1000, element.scrollHeight, rect.height) + 200; // Add extra padding
+      // Get the HTML content from the PDF element
+      const htmlContent = element.outerHTML;
 
+      // Generate filename
       const filename = `${this.companyName.replace(/[^a-zA-Z0-9]/g, '_')}_Action_Plan_${this.source.toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-      // Enhanced configuration to capture full content without cutting
-      const options = {
-        margin: [0.3, 0.3, 0.3, 0.3], // Smaller margins for more content space
-        filename: filename,
-        image: {
-          type: 'jpeg',
-          quality: 0.92 // Balanced quality for performance
-        },
-        html2canvas: {
-          scale: 1, // Keep scale at 1 to prevent overflow
-          useCORS: true,
-          allowTaint: true,
-          letterRendering: true,
-          logging: false,
-          dpi: 150, // Good quality without being too heavy
-          backgroundColor: '#ffffff',
-          scrollX: 0,
-          scrollY: 0,
-          // Use calculated dimensions with extra padding
-          windowWidth: actualWidth,
-          windowHeight: actualHeight,
-          width: actualWidth,
-          height: actualHeight
-        },
-        jsPDF: {
-          unit: 'in',
-          format: 'a4',
-          orientation: 'landscape', // Landscape for wider table
-          compress: true,
-          hotfixes: ['px_scaling'] // Prevents scaling issues
-        },
-        pagebreak: {
-          // Enhanced page break control
-          mode: ['avoid-all', 'css', 'legacy'],
-          before: ['.page-break-before'],
-          after: ['.page-break-after'],
-          avoid: ['tr', '.action-item', '.priority-group', '.summary-card']
-        },
-        enableLinks: false
-      };
+      // Create a complete HTML document with DomPDF-optimized styling
+      const styledHtml = this.createDomPdfOptimizedDocument(htmlContent);
 
-      await html2pdf().set(options).from(element).save();
-    } catch (error) {
+      // Use our PDF service to generate and download the PDF - Portrait for better document flow
+      this.pdfService.downloadPdf(
+        styledHtml,
+        filename,
+        'A4',
+        'portrait' // Portrait for better DomPDF handling
+      );    } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating the PDF. Please try again.');
     } finally {
       this.isGenerating = false;
     }
+  }
+
+  private createDomPdfOptimizedDocument(content: string): string {
+    // Process the content to ensure better DomPDF compatibility
+    let processedContent = content;
+
+    // Remove all CSS Grid layouts and replace with table layouts for DomPDF
+    processedContent = processedContent.replace(
+      /style="display:\s*grid[^"]*"/g,
+      'style="width: 100%"'
+    );
+
+    // Convert CSS Grid summary to table layout
+    processedContent = processedContent.replace(
+      /<div[^>]*grid-template-columns[^>]*>(.*?)<\/div>/gs,
+      (match, content) => {
+        const items = content.match(/<div[^>]*?>(.*?)<\/div>/gs) || [];
+        if (items.length >= 4) {
+          const cells = items.slice(0, 4).map((item: string) => {
+            const cleanContent = item.replace(/<\/?div[^>]*>/g, '');
+            return `<td style="text-align: center; padding: 15px; width: 25%;">${cleanContent}</td>`;
+          }).join('');
+          return `<table style="width: 100%; border-collapse: collapse;"><tr>${cells}</tr></table>`;
+        }
+        return match;
+      }
+    );
+
+    // Create complete HTML document optimized for DomPDF
+    const domPdfStyles = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${this.companyName} - Action Plan</title>
+        <style>
+          @page {
+            margin: 1cm;
+            size: A4 portrait;
+          }
+
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+          }
+
+          /* DomPDF-specific page break controls */
+          .page-break-before {
+            page-break-before: always;
+          }
+
+          .page-break-after {
+            page-break-after: always;
+          }
+
+          .no-page-break {
+            page-break-inside: avoid;
+          }
+
+          /* Content wrapper */
+          #pdf-content {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+          }
+
+          /* Typography */
+          h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #111;
+            margin-bottom: 5pt;
+            page-break-after: avoid;
+          }
+
+          h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #333;
+            margin: 15pt 0 8pt 0;
+            page-break-after: avoid;
+          }
+
+          h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #555;
+            margin: 10pt 0 5pt 0;
+            page-break-after: avoid;
+          }
+
+          p {
+            margin-bottom: 8pt;
+            font-size: 9pt;
+            color: #666;
+          }
+
+          /* Table styling optimized for DomPDF */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+            page-break-inside: avoid;
+          }
+
+          th, td {
+            padding: 6pt 8pt;
+            vertical-align: top;
+            word-wrap: break-word;
+            font-size: 8pt;
+          }
+
+          th {
+            background-color: #f5f5f5;
+            border-bottom: 1pt solid #ddd;
+            font-weight: bold;
+            page-break-after: avoid;
+          }
+
+          tr {
+            page-break-inside: avoid;
+          }
+
+          /* Priority groups */
+          .priority-group {
+            margin-bottom: 20pt;
+            page-break-inside: avoid;
+            border: 1pt solid #eee;
+          }
+
+          .action-item {
+            padding: 10pt 12pt;
+            border-bottom: 1pt solid #f3f4f6;
+            page-break-inside: avoid;
+          }
+
+          /* Color classes for DomPDF - Enhanced Status Colors */
+          .bg-slate-100 { background-color: #f1f5f9; }
+          .text-slate-700 { color: #334155; }
+          .bg-blue-100 { background-color: #dbeafe; }
+          .text-blue-700 { color: #1d4ed8; }
+          .bg-amber-100 { background-color: #fef3c7; }
+          .text-amber-700 { color: #b45309; }
+          .bg-emerald-100 { background-color: #dcfce7; }
+          .text-emerald-700 { color: #15803d; }
+          .bg-red-100 { background-color: #fee2e2; }
+          .text-red-700 { color: #dc2626; }
+
+          /* Priority Summary Table Styling for PDF */
+          .priority-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+          }
+
+          .priority-summary-table td {
+            text-align: center;
+            padding: 12pt;
+            border: 1pt solid #e5e7eb;
+            font-size: 9pt;
+          }
+
+          /* Status Badge Styling for PDF */
+          .status-badge {
+            display: inline-block;
+            padding: 2pt 4pt;
+            border-radius: 3pt;
+            font-size: 7pt;
+            font-weight: bold;
+            border: 1pt solid #cbd5e1;
+          }
+
+          /* Legacy color support */
+          .bg-green-100 { background-color: #dcfce7; }
+          .text-green-800 { color: #166534; }
+          .bg-red-100 { background-color: #fee2e2; }
+          .text-red-800 { color: #991b1b; }
+          .bg-blue-100 { background-color: #dbeafe; }
+          .text-blue-800 { color: #1e40af; }
+          .bg-yellow-100 { background-color: #fef3c7; }
+          .text-yellow-800 { color: #92400e; }
+          .bg-purple-100 { background-color: #f3e8ff; }
+          .text-purple-800 { color: #7c3aed; }
+          .bg-gray-100 { background-color: #f3f4f6; }
+          .text-gray-800 { color: #374151; }
+
+          /* Remove modern CSS that DomPDF doesn't support */
+          .rounded-lg, .shadow-sm, .shadow {
+            border-radius: 0;
+            box-shadow: none;
+          }
+        </style>
+      </head>
+      <body>
+        ${processedContent}
+      </body>
+      </html>
+    `;
+
+    return domPdfStyles;
   }
 }
