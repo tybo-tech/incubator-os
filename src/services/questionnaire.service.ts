@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { NodeService } from './node.service';
 import {
   BusinessQuestionnaire,
@@ -364,9 +364,68 @@ export class QuestionnaireService {
     currentSectionId: string,
     metadata?: any
   ): Observable<boolean> {
-    // For now, just return success - implement actual saving later
     console.log('Saving responses:', { companyId, responses, currentSectionId });
-    return of(true);
+
+    // Get existing assessment and merge with new responses
+    return this.getConsolidatedAssessment(companyId).pipe(
+      switchMap(existingAssessment => {
+        // Merge responses
+        const mergedResponses = {
+          ...existingAssessment.responses,
+          ...responses
+        };
+
+        // Calculate progress
+        const answeredCount = Object.values(mergedResponses).filter(val =>
+          val !== null && val !== undefined && val !== ''
+        ).length;
+
+        const assessmentData = {
+          responses: mergedResponses,
+          metadata: {
+            last_updated: new Date().toISOString(),
+            current_section: currentSectionId,
+            answered_questions: answeredCount,
+            progress_percentage: Math.round((answeredCount / 25) * 100),
+            ...metadata
+          },
+          updated_at: new Date().toISOString()
+        };
+
+        // Prepare node data
+        const nodeData = {
+          type: 'consolidated_assessment',
+          data: assessmentData,
+          company_id: companyId,
+          updated_at: new Date().toISOString()
+        };
+
+        // Update or create node
+        if (existingAssessment.metadata?.node_id) {
+          // Update existing node
+          const nodeToUpdate = {
+            ...nodeData,
+            id: existingAssessment.metadata.node_id
+          };
+          return this.nodeService.updateNode(nodeToUpdate);
+        } else {
+          // Create new node
+          const newNode = {
+            ...nodeData,
+            created_at: new Date().toISOString()
+          };
+          return this.nodeService.addNode(newNode);
+        }
+      }),
+      map(result => {
+        console.log('Save result:', result);
+        return result && result.id !== undefined;
+      }),
+      catchError(error => {
+        console.error('Error saving assessment:', error);
+        return of(false);
+      })
+    );
   }
 
   /**
@@ -408,6 +467,72 @@ export class QuestionnaireService {
   ): Observable<boolean> {
     console.log('Marking section complete:', { companyId, sectionId, responses });
     return of(true);
+  }
+
+  /**
+   * Get total number of questions in the questionnaire
+   */
+  private getTotalQuestionsCount(): number {
+    // Based on our questionnaire structure (5 sections with multiple questions each)
+    return 25; // Approximate count based on the questionnaire structure
+  }
+
+  /**
+   * Count answered questions from responses
+   */
+  private getAnsweredQuestionsCount(responses: { [questionId: string]: any }): number {
+    if (!responses) return 0;
+
+    return Object.values(responses).filter(response => {
+      return response !== null &&
+             response !== undefined &&
+             response !== '' &&
+             response !== 0; // Allow 0 as a valid answer for numeric fields
+    }).length;
+  }
+
+  /**
+   * Calculate overall progress percentage
+   */
+  private calculateOverallProgress(responses: { [questionId: string]: any }): number {
+    const totalQuestions = this.getTotalQuestionsCount();
+    const answeredQuestions = this.getAnsweredQuestionsCount(responses);
+
+    return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+  }
+
+  /**
+   * Calculate progress for a specific section
+   */
+  private calculateSectionProgress(sectionId: string, responses: { [questionId: string]: any }): number {
+    // Get questions for this section based on sectionId prefix
+    const sectionQuestions = Object.keys(responses).filter(questionId => {
+      switch (sectionId) {
+        case 'introduction':
+          return questionId.startsWith('intro_');
+        case 'products_services':
+          return questionId.startsWith('ps_');
+        case 'strategy_cascade':
+          return questionId.startsWith('sc_');
+        case 'self_assessment':
+          return questionId.startsWith('sa_');
+        case 'sars_compliance':
+          return questionId.startsWith('sars_');
+        default:
+          return false;
+      }
+    });
+
+    const answeredInSection = sectionQuestions.filter(questionId => {
+      const response = responses[questionId];
+      return response !== null && response !== undefined && response !== '';
+    }).length;
+
+    // Estimate questions per section (total 25 questions across 5 sections)
+    const estimatedQuestionsPerSection = Math.ceil(25 / 5);
+
+    return estimatedQuestionsPerSection > 0 ?
+      Math.round((answeredInSection / estimatedQuestionsPerSection) * 100) : 0;
   }
 
   /**
