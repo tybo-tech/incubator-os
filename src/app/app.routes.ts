@@ -6,6 +6,7 @@ import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { PdfExportPageComponent } from './components/companies/company-detail/financial-tab/components/pdf-export-page.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
+import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
 import { OverviewPageComponent } from './admin/overview/overview-page.component';
 
@@ -41,6 +42,10 @@ export const routes: Routes = [
       {
         path: 'companies/:id/executive-report',
         component: ExecutiveReportComponent,
+      },
+      {
+        path: 'action-plan-export',
+        component: ActionPlanExportComponent,
       },
       {
         path: 'tasks',

@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { Router } from '@angular/router';
 import {
   SwotAnalysis,
   SwotItem,
@@ -32,6 +33,13 @@ import { ICompany } from '../../../../../models/simple.schema';
               <div class="text-lg font-semibold text-gray-900">{{ getTotalItemsCount() }} Items</div>
               <div class="text-sm text-gray-500">Total Analysis Points</div>
             </div>
+            <button
+              (click)="exportActionPlan()"
+              [disabled]="getActionItems().length === 0"
+              class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+            >
+              📄 Export Action Plan
+            </button>
             <button
               (click)="saveSwotAnalysis()"
               [disabled]="saving"
@@ -653,7 +661,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
 
-  constructor(private nodeService: NodeService<any>) {}
+  constructor(private nodeService: NodeService<any>, private router: Router) {}
 
   ngOnInit(): void {
     this.loadSwotData();
@@ -901,6 +909,19 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     threeDaysFromNow.setDate(today.getDate() + 3);
     threeDaysFromNow.setHours(0, 0, 0, 0);
     return dueDate >= today && dueDate <= threeDaysFromNow;
+  }
+
+  exportActionPlan(): void {
+    if (!this.company?.id) return;
+
+    // Navigate to action plan export page with SWOT source
+    this.router.navigate(['/action-plan-export'], {
+      queryParams: {
+        companyId: this.company.id,
+        source: 'swot',
+        companyName: this.company.name || 'Company'
+      }
+    });
   }
 
   saveSwotAnalysis(): void {
