@@ -13,7 +13,6 @@ import { Subscription } from 'rxjs';
         *ngFor="let toast of toasts; trackBy: trackByToastId"
         [class]="getToastClasses(toast)"
         class="toast-item transform transition-all duration-300 ease-in-out"
-        [@slideIn]
       >
         <!-- Toast Content -->
         <div class="flex items-start space-x-3">

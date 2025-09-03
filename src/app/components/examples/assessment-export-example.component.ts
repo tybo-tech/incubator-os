@@ -86,49 +86,43 @@ export class AssessmentExportExampleComponent implements OnInit {
   includeEmptyAnswers = false;
   lastResult: any = null;
 
-  // Sample data from your provided example
+  // Sample data matching the actual ConsolidatedAssessment interface
   private sampleAssessment: ConsolidatedAssessment = {
-    id: 1991,
-    type: "consolidated_assessment",
-    company_id: 11,
-    data: {
-      metadata: {
-        last_updated: "2025-09-03T03:21:30.275Z",
-        current_section: "introduction",
-        answered_questions: 25,
-        progress_percentage: 100
-      },
-      responses: {
-        "sc_how_win": "uniqueness - collaboration with other industry players. ",
-        "sa_strengths": "time keeping; ensure quality control of clients-garments. excellent communication skills. ",
-        "sc_where_play": "I want to play locally, be a local supplier within KCD. channels - schools; medical practitioners; corporates and farmers. including the hospitality industry. ",
-        "sars_vat_status": "non_compliant",
-        "sc_capabilities": "sewing and designing skills and manufacturing skills. management skills, marketing skills and strategies.",
-        "ps_primary_focus": "products",
-        "ps_target_market": "Individuals, schools, businesses using PPE, medical practitioners.",
-        "sa_sales_ability": 6,
-        "sars_paye_status": "non_compliant",
-        "ps_offerings_list": "Uniforms for schools, PPE and Scrubs. Customized outfits and bags.",
-        "ps_revenue_streams": "1",
-        "sars_tax_clearance": true,
-        "intro_business_stage": "startup",
-        "sa_improvement_areas": "need help with patternmaking, assistance with financial management skills including costing. need more business skills and mentoring ie HR, ",
-        "sa_leadership_skills": 7,
-        "sa_marketing_ability": 6,
-        "sars_compliance_notes": "New business venture.",
-        "sc_management_systems": "SACAS - ISO systems - quality control systems: use whiteboard to tracks orders. need a sales and marketing system. accounting systems, HR and payroll systems. Health and Safety systems.",
-        "sc_winning_aspiration": "I see myself supplying uniforms, PPE locally and sewing for individuals.",
-        "sars_income_tax_status": "non_compliant",
-        "intro_registration_date": "2024-02-07",
-        "sars_outstanding_issues": false,
-        "intro_business_motivation": "I want to make money, and this is my passion. Current state of the business. Currently sales of R 20 000. Cash in the bank R9000. There is no sales coming in at the moment....",
-        "intro_business_description": "Sewing and tailoring for individual. Want to upgrade to do bulk sewing. Focusing on uniforms and PPE and scrubs.",
-        "sa_accounting_understanding": 5
-      },
-      updated_at: "2025-09-03T03:21:30.275Z"
+    responses: {
+      "sc_how_win": "uniqueness - collaboration with other industry players. ",
+      "sa_strengths": "time keeping; ensure quality control of clients-garments. excellent communication skills. ",
+      "sc_where_play": "I want to play locally, be a local supplier within KCD. channels - schools; medical practitioners; corporates and farmers. including the hospitality industry. ",
+      "sars_vat_status": "non_compliant",
+      "sc_capabilities": "sewing and designing skills and manufacturing skills. management skills, marketing skills and strategies.",
+      "ps_primary_focus": "products",
+      "ps_target_market": "Individuals, schools, businesses using PPE, medical practitioners.",
+      "sa_sales_ability": 6,
+      "sars_paye_status": "non_compliant",
+      "ps_offerings_list": "Uniforms for schools, PPE and Scrubs. Customized outfits and bags.",
+      "ps_revenue_streams": "1",
+      "sars_tax_clearance": true,
+      "intro_business_stage": "startup",
+      "sa_improvement_areas": "need help with patternmaking, assistance with financial management skills including costing. need more business skills and mentoring ie HR, ",
+      "sa_leadership_skills": 7,
+      "sa_marketing_ability": 6,
+      "sars_compliance_notes": "New business venture.",
+      "sc_management_systems": "SACAS - ISO systems - quality control systems: use whiteboard to tracks orders. need a sales and marketing system. accounting systems, HR and payroll systems. Health and Safety systems.",
+      "sc_winning_aspiration": "I see myself supplying uniforms, PPE locally and sewing for individuals.",
+      "sars_income_tax_status": "non_compliant",
+      "intro_registration_date": "2024-02-07",
+      "sars_outstanding_issues": false,
+      "intro_business_motivation": "I want to make money, and this is my passion. Current state of the business. Currently sales of R 20 000. Cash in the bank R9000. There is no sales coming in at the moment....",
+      "intro_business_description": "Sewing and tailoring for individual. Want to upgrade to do bulk sewing. Focusing on uniforms and PPE and scrubs.",
+      "sa_accounting_understanding": 5
     },
-    created_at: "2025-09-03 02:05:02",
-    updated_at: "2025-09-03 03:21:30"
+    metadata: {
+      last_updated: "2025-09-03T03:21:30.275Z",
+      completion_status: "completed",
+      progress_percentage: 100,
+      node_id: 1991,
+      answered_questions: 25,
+      total_questions: 25
+    }
   };
 
   private sampleCompany: ICompany = {

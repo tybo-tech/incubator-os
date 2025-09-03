@@ -5,8 +5,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { AssessmentExportService, ConsolidatedAssessment, AssessmentExportOptions } from './assessment-export.service';
 import { CompanyService } from '../company.service';
-import { HttpClient } from '@angular/common/http';
-import { Constants } from '../service';
+import { QuestionnaireService } from '../questionnaire.service';
 import { ICompany } from '../../models/simple.schema';
 
 @Injectable({
@@ -17,7 +16,7 @@ export class AssessmentExportHelperService {
   constructor(
     private assessmentExportService: AssessmentExportService,
     private companyService: CompanyService,
-    private http: HttpClient
+    private questionnaireService: QuestionnaireService
   ) {}
 
   /**
@@ -67,25 +66,25 @@ export class AssessmentExportHelperService {
       map(({ company, assessment }) => ({
         company,
         assessment,
-        responseCount: assessment ? Object.keys(assessment.data.responses).length : 0,
-        completionPercentage: assessment ? assessment.data.metadata.progress_percentage : 0
+        responseCount: assessment ? Object.keys(assessment.responses).length : 0,
+        completionPercentage: assessment ? assessment.metadata.progress_percentage : 0
       }))
     );
   }
 
   /**
-   * Get consolidated assessment data
+   * Get consolidated assessment data using the questionnaire service
    */
   private getConsolidatedAssessment(companyId: number): Observable<ConsolidatedAssessment | null> {
-    const url = `${Constants.ApiBase}/api-nodes/company/${companyId}/consolidated-assessment`;
-    return this.http.get<ConsolidatedAssessment[]>(url).pipe(
-      map(response => {
-        if (response && Array.isArray(response) && response.length > 0) {
-          return response[0] as ConsolidatedAssessment;
-        }
-        return null;
+    return this.questionnaireService.getConsolidatedAssessment(companyId).pipe(
+      map(assessment => {
+        console.log('Assessment data from questionnaire service:', assessment);
+        return assessment;
       }),
-      catchError(() => of(null))
+      catchError((error) => {
+        console.error('Error fetching assessment data:', error);
+        return of(null);
+      })
     );
   }
 
@@ -94,7 +93,7 @@ export class AssessmentExportHelperService {
    */
   hasAssessmentData(companyId: number): Observable<boolean> {
     return this.getConsolidatedAssessment(companyId).pipe(
-      map(assessment => !!assessment && Object.keys(assessment.data.responses).length > 0)
+      map(assessment => !!assessment && Object.keys(assessment.responses).length > 0)
     );
   }
 
@@ -122,10 +121,10 @@ export class AssessmentExportHelperService {
 
         return {
           hasData: true,
-          responseCount: Object.keys(assessment.data.responses).length,
-          completionPercentage: assessment.data.metadata.progress_percentage,
-          lastUpdated: assessment.data.metadata.last_updated,
-          currentSection: assessment.data.metadata.current_section
+          responseCount: Object.keys(assessment.responses).length,
+          completionPercentage: assessment.metadata.progress_percentage,
+          lastUpdated: assessment.metadata.last_updated,
+          currentSection: assessment.metadata.completion_status
         };
       })
     );

@@ -13,21 +13,16 @@ import {
 import { ICompany } from '../../models/simple.schema';
 
 export interface ConsolidatedAssessment {
-  id: number;
-  type: string;
-  company_id: number;
-  data: {
-    metadata: {
-      last_updated: string;
-      current_section: string;
-      answered_questions: number;
-      progress_percentage: number;
-    };
-    responses: { [questionId: string]: any };
-    updated_at: string;
+  responses: { [questionId: string]: any };
+  metadata: {
+    last_updated: string | null;
+    completion_status: string;
+    progress_percentage: number;
+    node_id: number | null;
+    total_questions?: number;
+    answered_questions?: number;
+    section_completion?: any;
   };
-  created_at: string;
-  updated_at: string;
 }
 
 export interface AssessmentExportOptions {
@@ -72,10 +67,17 @@ export class AssessmentExportService {
     questionnaire: BusinessQuestionnaire,
     options: AssessmentExportOptions
   ): string {
-    const { responses, metadata } = assessment.data;
-    const sections = this.organizeResponsesBySection(questionnaire, responses);
+    // The assessment object already has responses and metadata at root level
+    const responses = assessment.responses || {};
+    const metadata = assessment.metadata || {
+      last_updated: new Date().toISOString(),
+      completion_status: 'unknown',
+      progress_percentage: 0,
+      node_id: null
+    };
 
-    return `
+    console.log('Processing assessment data:', { responses, metadata });
+    const sections = this.organizeResponsesBySection(questionnaire, responses);    return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -186,7 +188,9 @@ export class AssessmentExportService {
   ): string {
     const title = options.customTitle || 'Business Assessment Report';
     const reportDate = new Date().toLocaleDateString();
-    const assessmentDate = new Date(assessment.updated_at).toLocaleDateString();
+    const assessmentDate = assessment.metadata.last_updated
+      ? new Date(assessment.metadata.last_updated).toLocaleDateString()
+      : 'N/A';
 
     return `
       <header class="header">
@@ -204,7 +208,7 @@ export class AssessmentExportService {
           <div class="logo-section">
             <div class="assessment-badge">
               <div class="completion-circle">
-                <span>${assessment.data.metadata.progress_percentage}%</span>
+                <span>${assessment.metadata.progress_percentage}%</span>
                 <small>Complete</small>
               </div>
             </div>
@@ -233,19 +237,31 @@ export class AssessmentExportService {
           </div>
           <div class="metadata-item">
             <span class="label">Questions Answered:</span>
-            <span class="value">${metadata.answered_questions}</span>
+            <span class="value">${metadata.answered_questions || 0}</span>
           </div>
           <div class="metadata-item">
-            <span class="label">Current Section:</span>
-            <span class="value">${this.formatSectionName(metadata.current_section)}</span>
+            <span class="label">Status:</span>
+            <span class="value">${this.formatCompletionStatus(metadata.completion_status)}</span>
           </div>
           <div class="metadata-item">
             <span class="label">Last Updated:</span>
-            <span class="value">${new Date(metadata.last_updated).toLocaleDateString()}</span>
+            <span class="value">${metadata.last_updated ? new Date(metadata.last_updated).toLocaleDateString() : 'N/A'}</span>
           </div>
         </div>
       </section>
     `;
+  }
+
+  /**
+   * Format completion status
+   */
+  private formatCompletionStatus(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'completed': 'Completed',
+      'in_progress': 'In Progress',
+      'not_started': 'Not Started'
+    };
+    return statusMap[status] || status;
   }
 
   /**
