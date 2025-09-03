@@ -6,6 +6,7 @@ import { NodeService } from '../../../services/node.service';
 import { SwotAnalysis, SwotItem } from '../../../models/swot.models';
 import { INode } from '../../../models/schema';
 import { PdfService } from '../../../services/pdf';
+import { DocumentGeneratorService} from '../../../services/pdf/document-generator.service';
 
 interface ActionPlanItem {
   priority: 'critical' | 'high' | 'medium' | 'low';
@@ -322,7 +323,8 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
     private router: Router,
     private location: Location,
     private nodeService: NodeService<any>,
-    private pdfService: PdfService
+    private pdfService: PdfService,
+    private documentGenerator: DocumentGeneratorService
   ) {}
 
   ngOnInit(): void {
@@ -538,11 +540,22 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
         throw new Error('PDF content element not found');
       }
 
-      // Get the HTML content from the PDF element
-      const htmlContent = element.outerHTML;
+      // Extract only the content part, excluding the header that's already in the template
+      const contentElement = element.querySelector('.rounded-lg.shadow-sm.border');
+      if (!contentElement) {
+        throw new Error('Content element not found');
+      }
 
-      // Create a complete HTML document with DomPDF-optimized styling
-      const styledHtml = this.createDomPdfOptimizedDocument(htmlContent);
+      const htmlContent = contentElement.outerHTML;
+
+      // Use the new document generator service for consistent styling
+      const styledHtml = this.documentGenerator.generateSimpleDocument({
+        title: `${this.companyName} - Action Plan`,
+        companyName: this.companyName,
+        content: this.documentGenerator.cleanContentForDomPdf(htmlContent),
+        includeSummary: false, // Don't include summary since it's already in the content
+        summaryData: undefined
+      });
 
       // Use our PDF service to preview the PDF - Portrait for better document flow
       this.pdfService.previewPdf(
@@ -568,14 +581,25 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
         throw new Error('PDF content element not found');
       }
 
-      // Get the HTML content from the PDF element
-      const htmlContent = element.outerHTML;
+      // Extract only the content part, excluding the header that's already in the template
+      const contentElement = element.querySelector('.rounded-lg.shadow-sm.border');
+      if (!contentElement) {
+        throw new Error('Content element not found');
+      }
+
+      const htmlContent = contentElement.outerHTML;
 
       // Generate filename
       const filename = `${this.companyName.replace(/[^a-zA-Z0-9]/g, '_')}_Action_Plan_${this.source.toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
 
-      // Create a complete HTML document with DomPDF-optimized styling
-      const styledHtml = this.createDomPdfOptimizedDocument(htmlContent);
+      // Use the new document generator service for consistent styling
+      const styledHtml = this.documentGenerator.generateSimpleDocument({
+        title: `${this.companyName} - Action Plan`,
+        companyName: this.companyName,
+        content: this.documentGenerator.cleanContentForDomPdf(htmlContent),
+        includeSummary: false, // Don't include summary since it's already in the content
+        summaryData: undefined
+      });
 
       // Use our PDF service to generate and download the PDF - Portrait for better document flow
       this.pdfService.downloadPdf(
@@ -583,220 +607,13 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
         filename,
         'A4',
         'portrait' // Portrait for better DomPDF handling
-      );    } catch (error) {
+      );
+
+    } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating the PDF. Please try again.');
     } finally {
       this.isGenerating = false;
     }
-  }
-
-  private createDomPdfOptimizedDocument(content: string): string {
-    // Process the content to ensure better DomPDF compatibility
-    let processedContent = content;
-
-    // Remove all CSS Grid layouts and replace with table layouts for DomPDF
-    processedContent = processedContent.replace(
-      /style="display:\s*grid[^"]*"/g,
-      'style="width: 100%"'
-    );
-
-    // Convert CSS Grid summary to table layout
-    processedContent = processedContent.replace(
-      /<div[^>]*grid-template-columns[^>]*>(.*?)<\/div>/gs,
-      (match, content) => {
-        const items = content.match(/<div[^>]*?>(.*?)<\/div>/gs) || [];
-        if (items.length >= 4) {
-          const cells = items.slice(0, 4).map((item: string) => {
-            const cleanContent = item.replace(/<\/?div[^>]*>/g, '');
-            return `<td style="text-align: center; padding: 15px; width: 25%;">${cleanContent}</td>`;
-          }).join('');
-          return `<table style="width: 100%; border-collapse: collapse;"><tr>${cells}</tr></table>`;
-        }
-        return match;
-      }
-    );
-
-    // Create complete HTML document optimized for DomPDF
-    const domPdfStyles = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>${this.companyName} - Action Plan</title>
-        <style>
-          @page {
-            margin: 1cm;
-            size: A4 portrait;
-          }
-
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-
-          body {
-            font-family: DejaVu Sans, Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.4;
-            color: #333;
-            background: white;
-          }
-
-          /* DomPDF-specific page break controls */
-          .page-break-before {
-            page-break-before: always;
-          }
-
-          .page-break-after {
-            page-break-after: always;
-          }
-
-          .no-page-break {
-            page-break-inside: avoid;
-          }
-
-          /* Content wrapper */
-          #pdf-content {
-            width: 100%;
-            padding: 0;
-            margin: 0;
-          }
-
-          /* Typography */
-          h1 {
-            font-size: 16pt;
-            font-weight: bold;
-            color: #111;
-            margin-bottom: 5pt;
-            page-break-after: avoid;
-          }
-
-          h2 {
-            font-size: 14pt;
-            font-weight: bold;
-            color: #333;
-            margin: 15pt 0 8pt 0;
-            page-break-after: avoid;
-          }
-
-          h3 {
-            font-size: 12pt;
-            font-weight: bold;
-            color: #555;
-            margin: 10pt 0 5pt 0;
-            page-break-after: avoid;
-          }
-
-          p {
-            margin-bottom: 8pt;
-            font-size: 9pt;
-            color: #666;
-          }
-
-          /* Table styling optimized for DomPDF */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15pt;
-            page-break-inside: avoid;
-          }
-
-          th, td {
-            padding: 6pt 8pt;
-            vertical-align: top;
-            word-wrap: break-word;
-            font-size: 8pt;
-          }
-
-          th {
-            background-color: #f5f5f5;
-            border-bottom: 1pt solid #ddd;
-            font-weight: bold;
-            page-break-after: avoid;
-          }
-
-          tr {
-            page-break-inside: avoid;
-          }
-
-          /* Priority groups */
-          .priority-group {
-            margin-bottom: 20pt;
-            page-break-inside: avoid;
-            border: 1pt solid #eee;
-          }
-
-          .action-item {
-            padding: 10pt 12pt;
-            border-bottom: 1pt solid #f3f4f6;
-            page-break-inside: avoid;
-          }
-
-          /* Color classes for DomPDF - Enhanced Status Colors */
-          .bg-slate-100 { background-color: #f1f5f9; }
-          .text-slate-700 { color: #334155; }
-          .bg-blue-100 { background-color: #dbeafe; }
-          .text-blue-700 { color: #1d4ed8; }
-          .bg-amber-100 { background-color: #fef3c7; }
-          .text-amber-700 { color: #b45309; }
-          .bg-emerald-100 { background-color: #dcfce7; }
-          .text-emerald-700 { color: #15803d; }
-          .bg-red-100 { background-color: #fee2e2; }
-          .text-red-700 { color: #dc2626; }
-
-          /* Priority Summary Table Styling for PDF */
-          .priority-summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15pt;
-          }
-
-          .priority-summary-table td {
-            text-align: center;
-            padding: 12pt;
-            border: 1pt solid #e5e7eb;
-            font-size: 9pt;
-          }
-
-          /* Status Badge Styling for PDF */
-          .status-badge {
-            display: inline-block;
-            padding: 2pt 4pt;
-            border-radius: 3pt;
-            font-size: 7pt;
-            font-weight: bold;
-            border: 1pt solid #cbd5e1;
-          }
-
-          /* Legacy color support */
-          .bg-green-100 { background-color: #dcfce7; }
-          .text-green-800 { color: #166534; }
-          .bg-red-100 { background-color: #fee2e2; }
-          .text-red-800 { color: #991b1b; }
-          .bg-blue-100 { background-color: #dbeafe; }
-          .text-blue-800 { color: #1e40af; }
-          .bg-yellow-100 { background-color: #fef3c7; }
-          .text-yellow-800 { color: #92400e; }
-          .bg-purple-100 { background-color: #f3e8ff; }
-          .text-purple-800 { color: #7c3aed; }
-          .bg-gray-100 { background-color: #f3f4f6; }
-          .text-gray-800 { color: #374151; }
-
-          /* Remove modern CSS that DomPDF doesn't support */
-          .rounded-lg, .shadow-sm, .shadow {
-            border-radius: 0;
-            box-shadow: none;
-          }
-        </style>
-      </head>
-      <body>
-        ${processedContent}
-      </body>
-      </html>
-    `;
-
-    return domPdfStyles;
   }
 }
