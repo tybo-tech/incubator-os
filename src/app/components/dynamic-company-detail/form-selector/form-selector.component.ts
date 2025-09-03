@@ -134,12 +134,13 @@ interface FormGroup {
 
               <div class="space-y-1">
                 <div *ngFor="let form of group.forms"
-                     class="flex items-center justify-between px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150"
+                     class="flex items-center justify-between px-3 py-2 rounded-md transition-colors duration-150"
                      [class.bg-blue-100]="selectedFormId() === form.id"
-                     [class.text-blue-800]="selectedFormId() === form.id"
-                     (click)="selectForm(form)">
+                     [class.text-blue-800]="selectedFormId() === form.id">
 
-                  <div class="flex items-center space-x-2">
+                  <!-- Form Info (Clickable to select) -->
+                  <div class="flex items-center space-x-2 flex-1 cursor-pointer hover:text-blue-700"
+                       (click)="selectForm(form)">
                     <span class="font-medium">{{ form.title }}</span>
                     <span class="px-2 py-1 text-xs font-medium rounded-full"
                           [class.bg-blue-100]="form.scope_type === 'client'"
@@ -154,7 +155,20 @@ interface FormGroup {
                     </span>
                   </div>
 
-                  <i class="fas fa-check text-green-500" *ngIf="selectedFormId() === form.id"></i>
+                  <!-- Action Buttons -->
+                  <div class="flex items-center space-x-2">
+                    <!-- Edit Button -->
+                    <button
+                      type="button"
+                      class="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-150"
+                      (click)="editForm(form); $event.stopPropagation()"
+                      title="Edit form">
+                      <i class="fas fa-edit text-sm"></i>
+                    </button>
+
+                    <!-- Selected Indicator -->
+                    <i class="fas fa-check text-green-500" *ngIf="selectedFormId() === form.id"></i>
+                  </div>
                 </div>
               </div>
             </div>
@@ -197,6 +211,7 @@ export class FormSelectorComponent {
   // Modern Angular outputs using output() function
   formSelected = output<IForm>();
   createFormRequested = output<void>();
+  editFormRequested = output<IForm>();
   navigateToContext = output<ContextItem>();
   navigateToOverview = output<void>();
 
@@ -267,6 +282,11 @@ export class FormSelectorComponent {
   selectForm(form: IForm): void {
     this.formSelected.emit(form);
     this.isDropdownOpen.set(false);
+  }
+
+  editForm(form: IForm): void {
+    this.editFormRequested.emit(form);
+    // Don't close dropdown immediately to allow for edit modal interaction
   }
 
   createNewForm(): void {
