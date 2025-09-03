@@ -270,7 +270,8 @@ export class OverviewPageComponent implements OnInit {
     }
 
     // Navigate to NEW dynamic company detail page with context
-    this.router.navigate(['/company', company.id], { queryParams });
+    // this.router.navigate(['/company', company.id], { queryParams });
+    this.router.navigate(['/companies', company.id], { queryParams });
   }
 
   onRemoveCompany(company: ICompany): void {

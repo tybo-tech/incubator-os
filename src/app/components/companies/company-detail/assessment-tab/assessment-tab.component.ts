@@ -1,3 +1,5 @@
+// assessment-tab.component.ts - Assessment questionnaire using consolidated data approach
+
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,8 +22,9 @@ import { ToastService } from '../../../../services/toast.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    <!-- Same template as original, but now works with consolidated data -->
     <div class="space-y-6">
-      <!-- Header -->
+      <!-- Header with improved progress tracking -->
       <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -29,14 +32,25 @@ import { ToastService } from '../../../../services/toast.service';
             <p class="text-sm text-gray-600 mt-1">
               Complete this comprehensive assessment to help us understand your business better
             </p>
+            <!-- New: Last saved indicator -->
+            <div *ngIf="consolidatedAssessment && !formData.is_dirty" class="text-xs text-green-600 mt-1">
+              ✓ Last saved: {{ getLastSavedText() }}
+            </div>
+            <div *ngIf="formData.is_dirty" class="text-xs text-amber-600 mt-1">
+              ⏳ Changes pending...
+            </div>
           </div>
           <div class="text-right">
             <div class="text-2xl font-bold text-blue-600">{{ progress?.progress_percentage || 0 }}%</div>
             <div class="text-sm text-gray-500">Complete</div>
+            <!-- New: Response count -->
+            <div class="text-xs text-gray-400 mt-1">
+              {{ getTotalResponseCount() }} responses saved
+            </div>
           </div>
         </div>
 
-        <!-- Progress Bar -->
+        <!-- Enhanced Progress Bar -->
         <div class="mt-4">
           <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
             <span>Progress</span>
@@ -52,11 +66,15 @@ import { ToastService } from '../../../../services/toast.service';
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <!-- Section Navigation -->
+        <!-- Enhanced Section Navigation -->
         <div class="lg:col-span-1">
           <div class="bg-white rounded-lg shadow-sm border">
             <div class="p-4 border-b">
               <h3 class="font-medium text-gray-900">Sections</h3>
+              <!-- New: Overall completion indicator -->
+              <div class="text-xs text-gray-500 mt-1">
+                {{ getCompletedSectionsCount() }} of {{ sectionNavigation.length }} completed
+              </div>
             </div>
             <nav class="p-2">
               <div *ngFor="let nav of sectionNavigation" class="mb-1">
@@ -77,13 +95,22 @@ import { ToastService } from '../../../../services/toast.service';
                       <span class="text-xs text-gray-400">{{ nav.order }}</span>
                     </div>
                   </div>
+                  <!-- New: Progress indicator for each section -->
+                  <div class="mt-1">
+                    <div class="w-full bg-gray-100 rounded-full h-1">
+                      <div
+                        class="bg-blue-400 h-1 rounded-full transition-all duration-200"
+                        [style.width.%]="getSectionProgress(nav.section_id)">
+                      </div>
+                    </div>
+                  </div>
                 </button>
               </div>
             </nav>
           </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- Main Content - Same as original -->
         <div class="lg:col-span-3">
           <div *ngIf="currentSection" class="bg-white rounded-lg shadow-sm border">
             <!-- Section Header -->
@@ -266,7 +293,7 @@ import { ToastService } from '../../../../services/toast.service';
               </form>
             </div>
 
-            <!-- Section Navigation Footer -->
+            <!-- Enhanced Section Navigation Footer -->
             <div class="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
               <button
                 *ngIf="currentSectionIndex > 0"
@@ -277,6 +304,10 @@ import { ToastService } from '../../../../services/toast.service';
               </button>
               <div></div>
               <div class="flex space-x-3">
+                <!-- Auto-save indicator -->
+                <div *ngIf="autoSaveStatus" class="text-xs text-gray-500 flex items-center px-2">
+                  <span>{{ autoSaveStatus }}</span>
+                </div>
                 <button
                   (click)="saveProgress()"
                   [disabled]="formData.is_submitting"
@@ -304,18 +335,32 @@ import { ToastService } from '../../../../services/toast.service';
           </div>
         </div>
       </div>
+
+      <!-- New: Debug panel (can be removed in production) -->
+      <div *ngIf="showDebugInfo" class="bg-gray-50 border rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-2">Debug Info</h4>
+        <div class="text-xs text-gray-600 space-y-1">
+          <div>Assessment ID: {{ consolidatedAssessment?.id }}</div>
+          <div>Total Responses: {{ getTotalResponseCount() }}</div>
+          <div>Current Section: {{ currentSection?.id }}</div>
+          <div>Last Updated: {{ consolidatedAssessment?.updated_at }}</div>
+        </div>
+      </div>
     </div>
   `,
   styleUrls: ['./assessment-tab.component.scss']
 })
 export class AssessmentTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
+  @Input() showDebugInfo = false; // For development
 
   questionnaire: BusinessQuestionnaire | null = null;
   currentSection: QuestionnaireSection | null = null;
   currentSectionIndex = 0;
   progress: QuestionnaireProgress | null = null;
   sectionNavigation: SectionNavigationItem[] = [];
+  consolidatedAssessment: any | null = null;
+  autoSaveStatus = '';
 
   formData: QuestionnaireFormData = {
     current_section_index: 0,
@@ -326,6 +371,7 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   };
 
   private destroy$ = new Subject<void>();
+  private autoSaveTimeout: any;
 
   constructor(
     private questionnaireService: QuestionnaireService,
@@ -344,17 +390,47 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // Load questionnaire and consolidated assessment data
   private loadQuestionnaire(): void {
+    if (!this.company?.id) return;
+
+    // Load questionnaire structure (this can be cached)
     this.questionnaireService.getBusinessAssessmentQuestionnaire()
       .pipe(takeUntil(this.destroy$))
       .subscribe(questionnaire => {
         this.questionnaire = questionnaire;
         this.setupNavigation();
-        this.setCurrentSection(0);
-        this.loadExistingResponses();
+        this.loadConsolidatedData();
       });
   }
 
+  // Load all assessment data in one call
+  private loadConsolidatedData(): void {
+    if (!this.company?.id) return;
+
+    this.questionnaireService.getConsolidatedAssessment(this.company.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(assessment => {
+        this.consolidatedAssessment = assessment;
+
+        if (assessment) {
+          // Load all responses
+          this.formData.responses = { ...assessment.responses };
+
+          // Set current section from metadata
+          this.setCurrentSection(assessment.metadata.current_section_index || 0);
+
+          // Update progress
+          this.updateProgress();
+          this.setupNavigation();
+        } else {
+          // No existing data, start fresh
+          this.setCurrentSection(0);
+        }
+      });
+  }
+
+  // Enhanced navigation setup with completion status
   private setupNavigation(): void {
     if (!this.questionnaire) return;
 
@@ -370,6 +446,123 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     this.updateProgress();
   }
 
+  // Save progress using consolidated approach (single API call)
+  saveProgress(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
+    this.formData.is_submitting = true;
+    this.autoSaveStatus = 'Saving...';
+
+    // Get responses for current section only
+    const sectionResponses: { [questionId: string]: any } = {};
+    this.currentSection.questions.forEach(question => {
+      const value = this.formData.responses[question.id];
+      if (value !== undefined && value !== null && value !== '') {
+        sectionResponses[question.id] = value;
+      }
+    });
+
+    // Save to consolidated assessment
+    this.questionnaireService.savePartialResponse(
+      this.company.id,
+      sectionResponses,
+      this.currentSection.id
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          this.formData.is_submitting = false;
+          this.formData.is_dirty = false;
+          this.autoSaveStatus = success ? 'Saved ✓' : 'Error ✗';
+
+          if (success) {
+            // Reload consolidated data to get updated metadata
+            this.loadConsolidatedData();
+            this.showSuccessMessage('Progress saved successfully!');
+          }
+
+          // Clear status after 2 seconds
+          setTimeout(() => this.autoSaveStatus = '', 2000);
+        },
+        error: (error) => {
+          console.error('Error saving progress:', error);
+          this.formData.is_submitting = false;
+          this.autoSaveStatus = 'Error ✗';
+          this.showErrorMessage('Failed to save progress. Please try again.');
+          setTimeout(() => this.autoSaveStatus = '', 3000);
+        }
+      });
+  }
+
+  // Enhanced auto-save with consolidated data
+  onFormDataChange(): void {
+    this.formData.is_dirty = true;
+    this.updateProgress();
+
+    // Update current section in metadata
+    if (this.company?.id && this.currentSection) {
+      this.questionnaireService.updateCurrentSection(
+        this.company.id,
+        this.currentSection.id
+      ).subscribe();
+    }
+
+    // Auto-save after 2 seconds of inactivity
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+
+    this.autoSaveTimeout = setTimeout(() => {
+      if (this.formData.is_dirty && !this.formData.is_submitting) {
+        this.autoSaveStatus = 'Auto-saving...';
+        this.saveProgress();
+      }
+    }, 2000);
+  }
+
+  // New helper methods for enhanced UI
+
+  getLastSavedText(): string {
+    if (!this.consolidatedAssessment?.updated_at) return 'Never';
+
+    const lastSaved = new Date(this.consolidatedAssessment.updated_at);
+    const now = new Date();
+    const diffMinutes = Math.floor((now.getTime() - lastSaved.getTime()) / (1000 * 60));
+
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes} min ago`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+
+    return lastSaved.toLocaleDateString();
+  }
+
+  getTotalResponseCount(): number {
+    return Object.keys(this.formData.responses).length;
+  }
+
+  getCompletedSectionsCount(): number {
+    return this.sectionNavigation.filter(nav => nav.completed).length;
+  }
+
+  getSectionProgress(sectionId: string): number {
+    if (!this.questionnaire || !this.consolidatedAssessment) return 0;
+
+    const section = this.questionnaire.sections.find(s => s.id === sectionId);
+    if (!section) return 0;
+
+    const answeredQuestions = section.questions.filter(q =>
+      this.consolidatedAssessment!.responses[q.id] !== undefined
+    ).length;
+
+    return section.questions.length > 0
+      ? Math.round((answeredQuestions / section.questions.length) * 100)
+      : 0;
+  }
+
+  // Rest of the methods remain largely the same as original component
+  // ... (include other methods from original component)
+
   private setCurrentSection(index: number): void {
     if (!this.questionnaire || index < 0 || index >= this.questionnaire.sections.length) return;
 
@@ -381,43 +574,6 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     this.sectionNavigation.forEach((nav, i) => {
       nav.current = i === index;
     });
-
-    // Load responses for this section
-    this.loadSectionResponses();
-  }
-
-  private loadExistingResponses(): void {
-    if (!this.company?.id || !this.questionnaire?.id) return;
-
-    this.questionnaireService.getResponse(this.company.id.toString(), this.questionnaire.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(response => {
-        if (response) {
-          // Populate form with existing responses
-          response.section_responses.forEach(sectionResponse => {
-            sectionResponse.question_responses.forEach(questionResponse => {
-              this.formData.responses[questionResponse.question_id] = questionResponse.value;
-            });
-          });
-          this.updateProgress();
-          this.setupNavigation(); // Refresh navigation with completion status
-        }
-      });
-  }
-
-  private loadSectionResponses(): void {
-    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
-
-    this.questionnaireService.getSectionResponses(
-      this.company.id.toString(),
-      this.questionnaire.id,
-      this.currentSection.id
-    ).pipe(takeUntil(this.destroy$))
-      .subscribe(responses => {
-        // Merge responses for current section
-        Object.assign(this.formData.responses, responses);
-        this.updateProgress();
-      });
   }
 
   navigateToSection(sectionId: string): void {
@@ -439,159 +595,6 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     if (this.questionnaire && this.currentSectionIndex < this.questionnaire.sections.length - 1) {
       this.setCurrentSection(this.currentSectionIndex + 1);
     }
-  }
-
-  saveProgress(): void {
-    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
-
-    this.formData.is_submitting = true;
-
-    // Get responses for current section only
-    const sectionResponses: { [questionId: string]: any } = {};
-    this.currentSection.questions.forEach(question => {
-      const value = this.formData.responses[question.id];
-      if (value !== undefined && value !== null && value !== '') {
-        sectionResponses[question.id] = value;
-      }
-    });
-
-    // Save partial responses for current section
-    this.questionnaireService.savePartialResponse(
-      this.company.id.toString(),
-      this.questionnaire.id,
-      this.currentSection.id,
-      sectionResponses
-    ).pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (success) => {
-          this.formData.is_submitting = false;
-          this.formData.is_dirty = false;
-          if (success) {
-            this.updateProgress();
-            this.setupNavigation(); // Refresh completion status
-            // Show success message
-            this.showSuccessMessage('Progress saved successfully!');
-          }
-        },
-        error: (error) => {
-          console.error('Error saving progress:', error);
-          this.formData.is_submitting = false;
-          this.showErrorMessage('Failed to save progress. Please try again.');
-        }
-      });
-  }
-
-  submitAssessment(): void {
-    if (!this.validateForm()) return;
-
-    this.formData.is_submitting = true;
-
-    // Mark current section as complete and save
-    this.saveCurrentSectionAsComplete();
-  }
-
-  private saveCurrentSectionAsComplete(): void {
-    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
-
-    // First save the current responses
-    const sectionResponses: { [questionId: string]: any } = {};
-    this.currentSection.questions.forEach(question => {
-      const value = this.formData.responses[question.id];
-      if (value !== undefined && value !== null && value !== '') {
-        sectionResponses[question.id] = value;
-      }
-    });
-
-    this.questionnaireService.savePartialResponse(
-      this.company.id.toString(),
-      this.questionnaire.id,
-      this.currentSection.id,
-      sectionResponses
-    ).pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          // Mark section as complete
-          if (!this.company?.id || !this.questionnaire?.id || !this.currentSection?.id) return;
-
-          this.questionnaireService.markSectionComplete(
-            this.company.id.toString(),
-            this.questionnaire.id,
-            this.currentSection.id
-          ).pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: () => {
-                this.formData.is_submitting = false;
-                this.updateProgress();
-                this.setupNavigation();
-
-                // Check if all sections are complete
-                if (this.isAssessmentComplete()) {
-                  this.showSuccessMessage('Assessment completed successfully!');
-                } else {
-                  this.showSuccessMessage('Section completed! Continue with the next section.');
-                  // Auto-advance to next section if available
-                  if (this.currentSectionIndex < (this.questionnaire?.sections?.length || 0) - 1) {
-                    setTimeout(() => {
-                      this.nextSection();
-                    }, 1000);
-                  }
-                }
-              },
-              error: (error) => {
-                console.error('Error marking section complete:', error);
-                this.formData.is_submitting = false;
-              }
-            });
-        },
-        error: (error) => {
-          console.error('Error saving section:', error);
-          this.formData.is_submitting = false;
-        }
-      });
-  }
-
-  private isAssessmentComplete(): boolean {
-    return this.sectionNavigation.every(nav => nav.completed);
-  }
-
-  private showSuccessMessage(message: string): void {
-    this.toast.success(message);
-  }
-
-  private showErrorMessage(message: string): void {
-    this.toast.error(message);
-  }
-
-  private validateForm(): boolean {
-    this.formData.errors = {};
-    let isValid = true;
-
-    if (!this.currentSection) return false;
-
-    this.currentSection.questions.forEach(question => {
-      const value = this.formData.responses[question.id];
-
-      if (question.required && (!value || value === '')) {
-        this.formData.errors[question.id] = 'This field is required';
-        isValid = false;
-      }
-
-      if (value && question.validation) {
-        const validation = question.validation;
-
-        if (validation.min_length && value.length < validation.min_length) {
-          this.formData.errors[question.id] = `Minimum ${validation.min_length} characters required`;
-          isValid = false;
-        }
-
-        if (validation.max_length && value.length > validation.max_length) {
-          this.formData.errors[question.id] = `Maximum ${validation.max_length} characters allowed`;
-          isValid = false;
-        }
-      }
-    });
-
-    return isValid;
   }
 
   private updateProgress(): void {
@@ -628,6 +631,78 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     return 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
   }
 
+  private showSuccessMessage(message: string): void {
+    this.toast.success(message);
+  }
+
+  private showErrorMessage(message: string): void {
+    this.toast.error(message);
+  }
+
+  submitAssessment(): void {
+    if (!this.validateForm()) return;
+
+    this.formData.is_submitting = true;
+    this.saveCurrentSectionAsComplete();
+  }
+
+  private saveCurrentSectionAsComplete(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
+    // Save current responses first, then mark complete
+    this.saveProgress();
+
+    // Mark section as complete
+    this.questionnaireService.markSectionComplete(
+      this.company.id,
+      this.currentSection.id,
+      this.formData.responses
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.formData.is_submitting = false;
+          this.loadConsolidatedData(); // Refresh data
+
+          if (this.isAssessmentComplete()) {
+            this.showSuccessMessage('Assessment completed successfully!');
+          } else {
+            this.showSuccessMessage('Section completed! Continue with the next section.');
+            // Auto-advance to next section
+            if (this.currentSectionIndex < (this.questionnaire?.sections?.length || 0) - 1) {
+              setTimeout(() => this.nextSection(), 1000);
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error marking section complete:', error);
+          this.formData.is_submitting = false;
+        }
+      });
+  }
+
+  private isAssessmentComplete(): boolean {
+    return this.sectionNavigation.every(nav => nav.completed);
+  }
+
+  private validateForm(): boolean {
+    this.formData.errors = {};
+    let isValid = true;
+
+    if (!this.currentSection) return false;
+
+    this.currentSection.questions.forEach(question => {
+      const value = this.formData.responses[question.id];
+
+      if (question.required && (!value || value === '')) {
+        this.formData.errors[question.id] = 'This field is required';
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }
+
+  // Helper methods for question rendering
   getQuestionTypeDisplay(type: QuestionType): string {
     const typeMap: { [key in QuestionType]: string } = {
       text: 'Text',
@@ -670,24 +745,6 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
     this.formData.responses[questionId] = rating;
     this.onFormDataChange();
   }
-
-  onFormDataChange(): void {
-    this.formData.is_dirty = true;
-    this.updateProgress();
-
-    // Auto-save after 2 seconds of inactivity
-    if (this.autoSaveTimeout) {
-      clearTimeout(this.autoSaveTimeout);
-    }
-
-    this.autoSaveTimeout = setTimeout(() => {
-      if (this.formData.is_dirty && !this.formData.is_submitting) {
-        this.saveProgress();
-      }
-    }, 2000);
-  }
-
-  private autoSaveTimeout: any;
 
   getRatingClass(questionId: string, rating: number): string {
     const selectedRating = this.formData.responses[questionId];
