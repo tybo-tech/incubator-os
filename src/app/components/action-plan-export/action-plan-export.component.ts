@@ -24,6 +24,69 @@ interface ActionPlanItem {
   selector: 'app-action-plan-export',
   standalone: true,
   imports: [CommonModule],
+  styles: [`
+    /* PDF-specific styles for better page breaks */
+    .priority-group {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .action-item {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .summary-card {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .page-break-before {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .page-break-after {
+      page-break-after: always;
+      break-after: page;
+    }
+
+    /* Ensure tables don't break poorly */
+    table {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* Prevent orphaned headers */
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    /* Better content flow - Remove fixed width to prevent cutting */
+    #pdf-content {
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      background: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      min-width: 1000px; /* Ensure minimum width for table content */
+      min-height: 100vh; /* Ensure minimum height */
+      padding-bottom: 50px; /* Extra bottom padding */
+    }
+
+    /* Improve text rendering in PDF */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  `],
   template: `
     <div class="min-h-screen bg-gray-50 py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,7 +126,7 @@ interface ActionPlanItem {
         <!-- Action Plan Table -->
         <div *ngIf="!loading" class="bg-white">
           <!-- PDF Content Wrapper -->
-          <div id="pdf-content" class="w-full max-w-none bg-white p-8 mx-auto" style="width: 794px; margin: 0 auto;">
+          <div id="pdf-content" class="w-full bg-white p-8 mx-auto">
 
             <!-- PDF Header -->
             <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
@@ -82,9 +145,11 @@ interface ActionPlanItem {
               </div>
 
               <!-- Priority Groups -->
-              <div *ngFor="let priorityGroup of priorityGroups; let priorityIndex = index" style="border-bottom: 1px solid #e5e7eb;" class="last:border-b-0">
+              <div *ngFor="let priorityGroup of priorityGroups; let priorityIndex = index"
+                   style="border-bottom: 1px solid #e5e7eb; page-break-inside: avoid;"
+                   class="priority-group last:border-b-0">
                 <!-- Priority Header -->
-                <div style="padding: 0.75rem 1.5rem; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                <div style="padding: 0.75rem 1.5rem; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb; page-break-after: avoid;">
                   <h3 style="font-weight: 600; color: #374151; margin: 0;">
                     Priority #{{ priorityIndex + 1 }}: {{ getPriorityTitle(priorityGroup.priority) }}
                   </h3>
@@ -92,22 +157,24 @@ interface ActionPlanItem {
 
                 <!-- Action Items -->
                 <div>
-                  <div *ngFor="let item of priorityGroup.items; let itemIndex = index" style="padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6;" class="last:border-b-0">
+                  <div *ngFor="let item of priorityGroup.items; let itemIndex = index"
+                       style="padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; page-break-inside: avoid;"
+                       class="action-item last:border-b-0">
 
-                    <!-- Table-like layout for PDF -->
-                    <table style="width: 100%; font-size: 0.875rem; border-collapse: collapse;">
+                    <!-- Table-like layout for PDF - Adjusted column widths -->
+                    <table style="width: 100%; font-size: 0.875rem; border-collapse: collapse; table-layout: fixed;">
                       <tr>
-                        <td style="width: 8%; padding-right: 1rem; vertical-align: top;">
+                        <td style="width: 6%; padding-right: 0.5rem; vertical-align: top;">
                           <span style="font-weight: 500; color: #6b7280;">
                             {{ priorityIndex + 1 }}.{{ itemIndex + 1 }}
                           </span>
                         </td>
-                        <td style="width: 35%; padding-right: 1rem; vertical-align: top;">
-                          <div style="font-weight: 500; color: #111827; margin-bottom: 0.25rem;">{{ item.action_required }}</div>
-                          <div style="font-size: 0.75rem; color: #6b7280;">({{ item.description }})</div>
+                        <td style="width: 40%; padding-right: 0.75rem; vertical-align: top;">
+                          <div style="font-weight: 500; color: #111827; margin-bottom: 0.25rem; word-wrap: break-word;">{{ item.action_required }}</div>
+                          <div style="font-size: 0.75rem; color: #6b7280; word-wrap: break-word;">({{ item.description }})</div>
                         </td>
-                        <td style="width: 15%; padding-right: 1rem; vertical-align: top;">
-                          <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;"
+                        <td style="width: 12%; padding-right: 0.5rem; vertical-align: top;">
+                          <span style="display: inline-block; padding: 0.25rem 0.4rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; white-space: nowrap;"
                                 [ngClass]="{
                                   'bg-green-100 text-green-800': item.source === 'strength',
                                   'bg-red-100 text-red-800': item.source === 'weakness',
@@ -119,11 +186,11 @@ interface ActionPlanItem {
                             {{ getSourceLabel(item.source) }}
                           </span>
                         </td>
-                        <td style="width: 15%; padding-right: 1rem; vertical-align: top;">
-                          <div style="font-size: 0.875rem; color: #111827;">{{ item.assigned_to || 'Not assigned' }}</div>
+                        <td style="width: 16%; padding-right: 0.5rem; vertical-align: top;">
+                          <div style="font-size: 0.8rem; color: #111827; word-wrap: break-word;">{{ item.assigned_to || 'Not assigned' }}</div>
                         </td>
-                        <td style="width: 12%; padding-right: 1rem; vertical-align: top;">
-                          <span style="display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;"
+                        <td style="width: 10%; padding-right: 0.5rem; vertical-align: top;">
+                          <span style="display: inline-block; padding: 0.25rem 0.4rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; white-space: nowrap;"
                                 [ngClass]="{
                                   'bg-gray-100 text-gray-800': item.status === 'identified',
                                   'bg-blue-100 text-blue-800': item.status === 'planning',
@@ -135,14 +202,14 @@ interface ActionPlanItem {
                             {{ getStatusDisplay(item.status) }}
                           </span>
                         </td>
-                        <td style="width: 15%; vertical-align: top;">
-                          <div *ngIf="item.target_date" style="font-size: 0.875rem;"
+                        <td style="width: 16%; vertical-align: top;">
+                          <div *ngIf="item.target_date" style="font-size: 0.8rem; word-wrap: break-word;"
                                [style.color]="isOverdue(item.target_date) ? '#dc2626' : isDueSoon(item.target_date) ? '#ea580c' : '#111827'"
                                [style.font-weight]="isOverdue(item.target_date) || isDueSoon(item.target_date) ? '500' : '400'">
                             {{ item.target_date | date:'MMM d, y' }}
-                            <span *ngIf="isOverdue(item.target_date)" style="font-size: 0.75rem;">(Overdue)</span>
+                            <span *ngIf="isOverdue(item.target_date)" style="font-size: 0.7rem;">(Overdue)</span>
                           </div>
-                          <div *ngIf="!item.target_date" style="font-size: 0.875rem; color: #9ca3af;">No due date</div>
+                          <div *ngIf="!item.target_date" style="font-size: 0.8rem; color: #9ca3af;">No due date</div>
                         </td>
                       </tr>
                     </table>
@@ -151,7 +218,7 @@ interface ActionPlanItem {
               </div>
 
               <!-- Summary Footer -->
-              <div style="padding: 1rem 1.5rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+              <div style="padding: 1rem 1.5rem; background-color: #f9fafb; border-top: 1px solid #e5e7eb; page-break-inside: avoid;" class="summary-card">
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
                   <div>
                     <div style="font-size: 1.5rem; font-weight: bold; color: #dc2626;">{{ getTotalByPriority('critical') }}</div>
@@ -174,7 +241,7 @@ interface ActionPlanItem {
             </div>
 
             <!-- PDF Footer -->
-            <div style="text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 2rem;">
+            <div style="text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 2rem; margin-bottom: 2rem; padding-bottom: 2rem;">
               <p>This action plan was generated on {{ exportDate | date:'medium' }}</p>
               <p>Action items are based on {{ sourceLabel.toLowerCase() }} analysis for {{ companyName }}</p>
             </div>
@@ -426,33 +493,52 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
         throw new Error('PDF content element not found');
       }
 
+      // Get actual element dimensions for better sizing
+      const rect = element.getBoundingClientRect();
+      const actualWidth = Math.max(1400, element.scrollWidth, rect.width);
+      const actualHeight = Math.max(1000, element.scrollHeight, rect.height) + 200; // Add extra padding
+
       const filename = `${this.companyName.replace(/[^a-zA-Z0-9]/g, '_')}_Action_Plan_${this.source.toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
 
+      // Enhanced configuration to capture full content without cutting
       const options = {
-        margin: [0.3, 0.3, 0.3, 0.3],
+        margin: [0.3, 0.3, 0.3, 0.3], // Smaller margins for more content space
         filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
+        image: {
+          type: 'jpeg',
+          quality: 0.92 // Balanced quality for performance
+        },
         html2canvas: {
-          scale: 2,
+          scale: 1, // Keep scale at 1 to prevent overflow
           useCORS: true,
+          allowTaint: true,
           letterRendering: true,
-          width: 794,
-          height: 1123,
-          windowWidth: 1200,
+          logging: false,
+          dpi: 150, // Good quality without being too heavy
+          backgroundColor: '#ffffff',
           scrollX: 0,
-          scrollY: 0
+          scrollY: 0,
+          // Use calculated dimensions with extra padding
+          windowWidth: actualWidth,
+          windowHeight: actualHeight,
+          width: actualWidth,
+          height: actualHeight
         },
         jsPDF: {
           unit: 'in',
           format: 'a4',
-          orientation: 'portrait',
-          compress: true
+          orientation: 'landscape', // Landscape for wider table
+          compress: true,
+          hotfixes: ['px_scaling'] // Prevents scaling issues
         },
         pagebreak: {
+          // Enhanced page break control
           mode: ['avoid-all', 'css', 'legacy'],
           before: ['.page-break-before'],
-          after: ['.page-break-after']
-        }
+          after: ['.page-break-after'],
+          avoid: ['tr', '.action-item', '.priority-group', '.summary-card']
+        },
+        enableLinks: false
       };
 
       await html2pdf().set(options).from(element).save();

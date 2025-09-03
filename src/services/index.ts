@@ -20,4 +20,7 @@ export * from './form-builder.service';
 // Form Integration Service
 export * from './company-form-integration.service';
 
+// PDF Services
+export * from './pdf';
+
 export * from '../app/services/toast.service';
