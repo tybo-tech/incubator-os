@@ -70,6 +70,19 @@ export class QuestionnaireService {
               type: 'date',
               order: 4,
               required: false
+            },
+            {
+              id: 'intro_operating_duration',
+              question: 'How long have you been operating this business?',
+              type: 'dropdown',
+              order: 4,
+              required: false,
+              options: [
+                { value: 'less_than_1_year', label: 'Less than 1 year' },
+                { value: '1_to_3_years', label: '1 to 3 years' },
+                { value: '3_to_5_years', label: '3 to 5 years' },
+                { value: 'more_than_5_years', label: 'More than 5 years' }
+              ]
             }
           ]
         },
