@@ -12,6 +12,7 @@ import {
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
+import { SwotActionPlanExportService } from '../../../../../services/pdf/swot-action-plan-export.service';
 
 @Component({
   selector: 'app-swot-tab',
@@ -38,7 +39,7 @@ import { ICompany } from '../../../../../models/simple.schema';
               [disabled]="getActionItems().length === 0"
               class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed mr-2"
             >
-              📄 Export Action Plan
+              📄 Export Action Plan PDF
             </button>
             <button
               (click)="saveSwotAnalysis()"
@@ -661,7 +662,11 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
 
-  constructor(private nodeService: NodeService<any>, private router: Router) {}
+  constructor(
+    private nodeService: NodeService<any>,
+    private router: Router,
+    private swotExportService: SwotActionPlanExportService
+  ) {}
 
   ngOnInit(): void {
     this.loadSwotData();
@@ -914,14 +919,38 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   exportActionPlan(): void {
     if (!this.company?.id) return;
 
-    // Navigate to action plan export page with SWOT source
-    this.router.navigate(['/action-plan-export'], {
-      queryParams: {
-        companyId: this.company.id,
-        source: 'swot',
-        companyName: this.company.name || 'Company'
-      }
-    });
+    // Convert current SWOT data to action plan format
+    const actionPlanData = this.swotExportService.convertSwotToActionPlan(
+      { data: this.swotData },
+      this.company.name || 'Company',
+      this.company.id.toString()
+    );
+
+    if (actionPlanData.actionItems.length === 0) {
+      alert('No action items found. Please add actions to your SWOT analysis items.');
+      return;
+    }
+
+    // Generate PDF directly
+    this.swotExportService.generateActionPlanPDF(actionPlanData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob) => {
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${this.company?.name || 'Company'}_SWOT_Action_Plan_${new Date().toISOString().split('T')[0]}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        },
+        error: (error) => {
+          console.error('Error generating PDF:', error);
+          alert('Error generating PDF. Please try again.');
+        }
+      });
   }
 
   saveSwotAnalysis(): void {
