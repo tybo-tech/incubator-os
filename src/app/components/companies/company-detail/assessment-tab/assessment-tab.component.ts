@@ -14,6 +14,7 @@ import {
   QuestionType
 } from '../../../../../models/questionnaire.models';
 import { QuestionnaireService } from '../../../../../services/questionnaire.service';
+import { AssessmentExportHelperService } from '../../../../../services/pdf/assessment-export-helper.service';
 import { ICompany } from '../../../../../models/simple.schema';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -25,7 +26,7 @@ import { ToastService } from '../../../../services/toast.service';
     <!-- Same template as original, but now works with consolidated data -->
     <div class="space-y-6">
       <!-- Header with improved progress tracking -->
-      <div class="bg-white rounded-lg shadow-sm border p-6">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-semibold text-gray-900">Business Assessment</h2>
@@ -41,16 +42,35 @@ import { ToastService } from '../../../../services/toast.service';
             </div>
           </div>
           <div class="text-right">
-            <div class="text-2xl font-bold text-blue-600">{{ progress?.progress_percentage || 0 }}%</div>
-            <div class="text-sm text-gray-500">Complete</div>
-            <!-- New: Response count -->
-            <div class="text-xs text-gray-400 mt-1">
-              {{ getTotalResponseCount() }} responses saved
+            <div class="flex items-center space-x-4">
+              <div>
+                <div class="text-2xl font-bold text-blue-600">{{ progress?.progress_percentage || 0 }}%</div>
+                <div class="text-sm text-gray-500">Complete</div>
+                <!-- New: Response count -->
+                <div class="text-xs text-gray-400 mt-1">
+                  {{ getTotalResponseCount() }} responses saved
+                </div>
+              </div>
+              <!-- Export Button -->
+              <div *ngIf="consolidatedAssessment && getTotalResponseCount() > 0" class="ml-4">
+                <button
+                  (click)="exportAssessmentPdf()"
+                  [disabled]="isExporting"
+                  class="flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  <svg *ngIf="!isExporting" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <svg *ngIf="isExporting" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {{ isExporting ? 'Generating PDF...' : 'Export PDF' }}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Enhanced Progress Bar -->
+        </div>        <!-- Enhanced Progress Bar -->
         <div class="mt-4">
           <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
             <span>Progress</span>
@@ -361,6 +381,7 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   sectionNavigation: SectionNavigationItem[] = [];
   consolidatedAssessment: any | null = null;
   autoSaveStatus = '';
+  isExporting = false;
 
   formData: QuestionnaireFormData = {
     current_section_index: 0,
@@ -375,6 +396,7 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
 
   constructor(
     private questionnaireService: QuestionnaireService,
+    private assessmentExportService: AssessmentExportHelperService,
     private toast: ToastService
   ) {}
 
@@ -752,5 +774,53 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
       return 'bg-blue-600 text-white border-blue-600';
     }
     return 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+  }
+
+  /**
+   * Export assessment as PDF
+   */
+  exportAssessmentPdf(): void {
+    if (!this.company?.id || !this.consolidatedAssessment) {
+      this.showErrorMessage('No assessment data available for export');
+      return;
+    }
+
+    this.isExporting = true;
+
+    this.assessmentExportService.exportAssessmentFromData(
+      this.company,
+      this.consolidatedAssessment,
+      {
+        includeEmptyAnswers: false,
+        groupBySection: true,
+        includeMetadata: true,
+        customTitle: 'Business Assessment Report'
+      }
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isExporting = false;
+          this.showSuccessMessage('Assessment PDF exported successfully!');
+        },
+        error: (error) => {
+          console.error('Error exporting assessment PDF:', error);
+          this.isExporting = false;
+          this.showErrorMessage('Failed to export PDF. Please try again.');
+        }
+      });
+  }
+
+  /**
+   * Preview assessment data for debugging
+   */
+  previewAssessmentData(): void {
+    if (!this.company?.id) return;
+
+    this.assessmentExportService.previewAssessmentData(this.company.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(preview => {
+        console.log('Assessment Preview:', preview);
+        this.showSuccessMessage(`Assessment has ${preview.responseCount} responses (${preview.completionPercentage}% complete)`);
+      });
   }
 }
