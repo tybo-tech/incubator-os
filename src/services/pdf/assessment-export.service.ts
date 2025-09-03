@@ -394,7 +394,7 @@ export class AssessmentExportService {
   private getAssessmentStyles(): string {
     return `
       @page {
-        margin: 1cm;
+        margin: 0.5cm 1cm;
         size: A4;
       }
 
@@ -410,77 +410,109 @@ export class AssessmentExportService {
         line-height: 1.4;
         color: #333;
         background: white;
+        font-weight: normal;
       }
 
       .container {
         max-width: 100%;
         margin: 0 auto;
+        padding-top: 10px;
       }
 
       /* Header Styles */
       .header {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
+        background: #f8fafc;
+        color: #1e293b;
         padding: 20px;
         margin-bottom: 20px;
-        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
       }
 
       .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+        width: 100%;
+        position: relative;
+      }
+
+      .header-content:after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      .company-info {
+        width: 70%;
+        float: left;
+      }
+
+      .logo-section {
+        width: 25%;
+        float: right;
+        text-align: center;
+        padding-top: 10px;
       }
 
       .company-info h1 {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: bold;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
+        color: #1e293b;
       }
 
       .company-info h2 {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
-        margin-bottom: 12px;
-        color: #e0e7ff;
+        margin-bottom: 10px;
+        color: #2563eb;
       }
 
       .company-details p {
         margin-bottom: 4px;
         font-size: 11px;
+        font-weight: normal;
+        color: #64748b;
       }
 
       .assessment-badge {
         text-align: center;
+        width: 80px;
+        height: 80px;
+        position: relative;
       }
 
       .completion-circle {
-        background: rgba(255, 255, 255, 0.2);
-        border: 2px solid rgba(255, 255, 255, 0.5);
+        background: #f1f5f9;
+        border: 3px solid #2563eb;
         border-radius: 50%;
         width: 80px;
         height: 80px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
+        text-align: center;
+        position: relative;
+        padding-top: 20px;
       }
 
       .completion-circle span {
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #2563eb;
+        display: block;
+        line-height: 1;
       }
 
       .completion-circle small {
         font-size: 10px;
-        opacity: 0.8;
+        color: #2563eb;
+        display: block;
+        margin-top: 2px;
+        font-weight: normal;
       }
 
       /* Metadata Section */
       .metadata-section {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 16px;
         margin-bottom: 20px;
       }
@@ -504,50 +536,62 @@ export class AssessmentExportService {
       }
 
       .metadata-item .label {
-        font-weight: 500;
+        font-weight: normal;
         color: #64748b;
       }
 
       .metadata-item .value {
-        font-weight: 600;
+        font-weight: 500;
         color: #1e293b;
       }
 
       /* Section Styles */
       .assessment-section {
-        margin-bottom: 30px;
+        margin-bottom: 28px;
         break-inside: avoid;
       }
 
       .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #2563eb;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+        display: block;
+        overflow: hidden;
       }
 
       .section-header h3 {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
         color: #1e293b;
+        float: left;
+        margin: 0;
       }
 
       .section-badge {
         background: #2563eb;
         color: white;
         padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 10px;
-        font-weight: 500;
+        border-radius: 10px;
+        font-size: 9px;
+        font-weight: normal;
+        float: right;
+        margin-top: 2px;
+      }
+
+      .section-header:after {
+        content: "";
+        display: table;
+        clear: both;
       }
 
       .section-description {
         color: #64748b;
         font-style: italic;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         font-size: 11px;
+        font-weight: normal;
       }
 
       /* Table Styles */
@@ -582,7 +626,7 @@ export class AssessmentExportService {
       }
 
       .question-text {
-        font-weight: 500;
+        font-weight: normal;
         color: #1e293b;
         margin-bottom: 4px;
         font-size: 11px;
@@ -593,6 +637,7 @@ export class AssessmentExportService {
         font-size: 10px;
         font-style: italic;
         margin-bottom: 6px;
+        font-weight: normal;
       }
 
       .question-meta {
@@ -604,19 +649,19 @@ export class AssessmentExportService {
       .question-type {
         background: #e2e8f0;
         color: #475569;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 9px;
-        font-weight: 500;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 8px;
+        font-weight: normal;
       }
 
       .required-badge {
         background: #fecaca;
         color: #b91c1c;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 9px;
-        font-weight: 500;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 8px;
+        font-weight: normal;
       }
 
       .answer-cell {
@@ -624,18 +669,18 @@ export class AssessmentExportService {
       }
 
       .answer-text {
-        font-weight: 500;
+        font-weight: normal;
         color: #1e293b;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         word-wrap: break-word;
       }
 
       /* Insight badges */
       .insight {
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 9px;
-        font-weight: 500;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 8px;
+        font-weight: normal;
       }
 
       .insight.excellent {
@@ -665,8 +710,8 @@ export class AssessmentExportService {
 
       /* Footer */
       .footer {
-        margin-top: 30px;
-        padding: 16px;
+        margin-top: 20px;
+        padding: 12px;
         background: #f8fafc;
         border-top: 1px solid #e2e8f0;
         text-align: center;
@@ -674,8 +719,9 @@ export class AssessmentExportService {
 
       .footer-content p {
         color: #64748b;
-        font-size: 10px;
-        margin-bottom: 4px;
+        font-size: 9px;
+        margin-bottom: 3px;
+        font-weight: normal;
       }
 
       /* Print optimizations */
@@ -704,8 +750,9 @@ export class AssessmentExportService {
     formData.append('html', html);
     formData.append('options', JSON.stringify({
       format: 'A4',
-      margin: { top: '0.5cm', right: '0.5cm', bottom: '0.5cm', left: '0.5cm' },
-      printBackground: true
+      margin: { top: '0.3cm', right: '0.8cm', bottom: '0.3cm', left: '0.8cm' },
+      printBackground: true,
+      preferCSSPageSize: true
     }));
 
     return this.http.post(this.PDF_ENDPOINT, formData, {
