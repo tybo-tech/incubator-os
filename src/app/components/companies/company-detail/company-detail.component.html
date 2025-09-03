@@ -115,6 +115,13 @@
       *ngIf="activeTab === 'hr-tracking'"
       [company]="company">
     </app-hr-tracking-tab>
+
+    <!-- Sessions Tab -->
+    <app-sessions-tab
+      *ngIf="activeTab === 'sessions'"
+      [company]="company">
+    </app-sessions-tab>
+
     <!-- Executive Report Tab -->
     <!-- <app-executive-report
       *ngIf="activeTab === 'executive-report'"

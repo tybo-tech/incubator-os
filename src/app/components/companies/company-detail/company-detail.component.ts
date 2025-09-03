@@ -24,6 +24,7 @@ import { GrowthAreasTabComponent } from './growth-areas-tab/growth-areas-tab.com
 import { FinancialTargetsTabComponent } from './financial-targets-tab/financial-targets-tab.component';
 import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.component';
 import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
+import { SessionsTabComponent } from './sessions-tab/sessions-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 import { CompanyService } from '../../../../services/company.service';
 import { ICompany } from '../../../../models/simple.schema';
@@ -51,6 +52,7 @@ import { ICompany } from '../../../../models/simple.schema';
     FinancialTargetsTabComponent,
     HRTrackingTabComponent,
     GpsTargetsTabComponent,
+    SessionsTabComponent,
     CompanyFormModalComponent,
   ],
   templateUrl: './company-detail.component.html',
