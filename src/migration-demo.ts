@@ -1,0 +1,279 @@
+// migration-demo.ts - Demonstration of how to migrate the answers.json data
+
+import { AssessmentDataMigrator } from './utils/assessment-data-migrator';
+
+// Your actual answers.json data
+const answersData = [
+  {
+    "id": 1941,
+    "type": "assessment_introduction",
+    "company_id": 11,
+    "data": {
+      "section_id": "introduction",
+      "is_complete": false,
+      "last_updated": "2025-08-29T08:57:55.515Z",
+      "response_date": "2025-08-29T08:57:55.515Z",
+      "questionnaire_id": "business-assessment-v1",
+      "question_responses": [
+        {
+          "value": "Sewing and tailoring for individual. Want to upgrade to do bulk sewing. Focusing on uniforms and PPE and scrubs.",
+          "question_id": "intro_business_description",
+          "response_date": "2025-08-29T08:57:55.515Z"
+        },
+        {
+          "value": "I want to make money, and this is my passion. Current state of the business. Currently sales of R 20 000. Cash in the bank R9000. There is no sales coming in at the moment.",
+          "question_id": "intro_business_motivation",
+          "response_date": "2025-08-29T08:57:55.515Z"
+        },
+        {
+          "value": "2024-02-07",
+          "question_id": "intro_registration_date",
+          "response_date": "2025-08-29T08:57:55.515Z"
+        },
+        {
+          "value": "startup",
+          "question_id": "intro_business_stage",
+          "response_date": "2025-08-29T08:57:55.515Z"
+        }
+      ]
+    },
+    "parent_id": null,
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2025-08-29 10:19:23",
+    "updated_at": "2025-08-29 10:57:55"
+  },
+  {
+    "id": 1942,
+    "type": "assessment_products_services",
+    "company_id": 11,
+    "data": {
+      "section_id": "products_services",
+      "is_complete": false,
+      "last_updated": "2025-08-29T08:26:12.722Z",
+      "response_date": "2025-08-29T08:26:12.722Z",
+      "questionnaire_id": "business-assessment-v1",
+      "question_responses": [
+        {
+          "value": "Uniforms for schools, PPE and Scrubs. Customized outfits and bags.",
+          "question_id": "ps_offerings_list",
+          "response_date": "2025-08-29T08:26:12.722Z"
+        },
+        {
+          "value": "products",
+          "question_id": "ps_primary_focus",
+          "response_date": "2025-08-29T08:26:12.722Z"
+        },
+        {
+          "value": "Individuals, schools, businesses using PPE, medical practitioners.",
+          "question_id": "ps_target_market",
+          "response_date": "2025-08-29T08:26:12.722Z"
+        },
+        {
+          "value": "1",
+          "question_id": "ps_revenue_streams",
+          "response_date": "2025-08-29T08:26:12.722Z"
+        }
+      ]
+    },
+    "parent_id": null,
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2025-08-29 10:22:56",
+    "updated_at": "2025-08-29 10:26:12"
+  },
+  {
+    "id": 1943,
+    "type": "assessment_strategy_cascade",
+    "company_id": 11,
+    "data": {
+      "section_id": "strategy_cascade",
+      "is_complete": false,
+      "last_updated": "2025-08-29T08:45:58.698Z",
+      "response_date": "2025-08-29T08:45:58.698Z",
+      "questionnaire_id": "business-assessment-v1",
+      "question_responses": [
+        {
+          "value": "I see myself supplying uniforms, PPE locally and sewing for individuals.",
+          "question_id": "sc_winning_aspiration",
+          "response_date": "2025-08-29T08:45:58.698Z"
+        },
+        {
+          "value": "I want to play locally, be a local supplier within KCD. channels - schools; medical practitioners; corporates and farmers. including the hospitality industry. ",
+          "question_id": "sc_where_play",
+          "response_date": "2025-08-29T08:45:58.698Z"
+        },
+        {
+          "value": "uniqueness - collaboration with other industry players. ",
+          "question_id": "sc_how_win",
+          "response_date": "2025-08-29T08:45:58.698Z"
+        },
+        {
+          "value": "sewing and designing skills and manufacturing skills. management skills, marketing skills and strategies.",
+          "question_id": "sc_capabilities",
+          "response_date": "2025-08-29T08:45:58.698Z"
+        },
+        {
+          "value": "SACAS - ISO systems - quality control systems: use whiteboard to tracks orders. need a sales and marketing system. accounting systems, HR and payroll systems. Health and Safety systems.",
+          "question_id": "sc_management_systems",
+          "response_date": "2025-08-29T08:45:58.698Z"
+        }
+      ]
+    },
+    "parent_id": null,
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2025-08-29 10:29:12",
+    "updated_at": "2025-08-29 10:45:58"
+  },
+  {
+    "id": 1944,
+    "type": "assessment_self_assessment",
+    "company_id": 11,
+    "data": {
+      "section_id": "self_assessment",
+      "is_complete": false,
+      "last_updated": "2025-08-29T08:52:13.589Z",
+      "response_date": "2025-08-29T08:52:13.589Z",
+      "questionnaire_id": "business-assessment-v1",
+      "question_responses": [
+        {
+          "value": 6,
+          "question_id": "sa_sales_ability",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        },
+        {
+          "value": 6,
+          "question_id": "sa_marketing_ability",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        },
+        {
+          "value": 5,
+          "question_id": "sa_accounting_understanding",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        },
+        {
+          "value": 7,
+          "question_id": "sa_leadership_skills",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        },
+        {
+          "value": "time keeping; ensure quality control of clients-garments. excellent communication skills. ",
+          "question_id": "sa_strengths",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        },
+        {
+          "value": "need help with patternmaking, assistance with financial management skills including costing. need more business skills and mentoring ie HR, ",
+          "question_id": "sa_improvement_areas",
+          "response_date": "2025-08-29T08:52:13.589Z"
+        }
+      ]
+    },
+    "parent_id": null,
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2025-08-29 10:46:53",
+    "updated_at": "2025-08-29 10:52:13"
+  },
+  {
+    "id": 1945,
+    "type": "assessment_sars_compliance",
+    "company_id": 11,
+    "data": {
+      "section_id": "sars_compliance",
+      "is_complete": true,
+      "last_updated": "2025-08-29T08:57:23.694Z",
+      "response_date": "2025-08-29T08:57:23.694Z",
+      "completed_date": "2025-09-02T04:05:14.082Z",
+      "questionnaire_id": "business-assessment-v1",
+      "question_responses": [
+        {
+          "value": "non_compliant",
+          "question_id": "sars_vat_status",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        },
+        {
+          "value": "non_compliant",
+          "question_id": "sars_paye_status",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        },
+        {
+          "value": "non_compliant",
+          "question_id": "sars_income_tax_status",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        },
+        {
+          "value": true,
+          "question_id": "sars_tax_clearance",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        },
+        {
+          "value": "New business venture.",
+          "question_id": "sars_compliance_notes",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        },
+        {
+          "value": false,
+          "question_id": "sars_outstanding_issues",
+          "response_date": "2025-08-29T08:57:23.694Z"
+        }
+      ]
+    },
+    "parent_id": null,
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2025-08-29 10:52:54",
+    "updated_at": "2025-09-02 06:05:14"
+  }
+];
+
+// Migrate the data
+function demonstrateMigration() {
+  console.log('=== ASSESSMENT DATA MIGRATION DEMO ===\n');
+
+  const companyId = 11;
+
+  // Convert to consolidated format
+  const consolidatedAssessment = AssessmentDataMigrator.convertAnswersJsonToConsolidated(
+    answersData,
+    companyId
+  );
+
+  console.log('📊 CONSOLIDATED ASSESSMENT DATA:');
+  console.log(JSON.stringify(consolidatedAssessment, null, 2));
+
+  console.log('\n📋 MIGRATION SUMMARY:');
+  console.log(`Company ID: ${consolidatedAssessment.company_id}`);
+  console.log(`Total Responses: ${Object.keys(consolidatedAssessment.responses).length}`);
+  console.log(`Completion: ${consolidatedAssessment.metadata.overall_completion_percentage}%`);
+  console.log(`Completed Sections: ${Object.values(consolidatedAssessment.section_completion).filter(sc => sc.is_complete).length}/${Object.keys(consolidatedAssessment.section_completion).length}`);
+
+  console.log('\n🔍 SECTION BREAKDOWN:');
+  Object.entries(consolidatedAssessment.section_completion).forEach(([sectionId, completion]) => {
+    console.log(`  ${sectionId}: ${completion.answered_questions}/${completion.total_questions} questions ${completion.is_complete ? '✅' : '⏳'}`);
+  });
+
+  console.log('\n💾 SAMPLE RESPONSES:');
+  Object.entries(consolidatedAssessment.responses).slice(0, 5).forEach(([questionId, value]) => {
+    console.log(`  ${questionId}: ${typeof value === 'string' && value.length > 50 ? value.substring(0, 50) + '...' : value}`);
+  });
+
+  // Validate migration
+  console.log('\n✅ VALIDATION:');
+  const validation = AssessmentDataMigrator.validateMigratedData(answersData, consolidatedAssessment);
+  console.log(`Migration Valid: ${validation.isValid}`);
+  if (validation.errors.length > 0) {
+    console.log('Errors:');
+    validation.errors.forEach(error => console.log(`  - ${error}`));
+  }
+
+  // Generate SQL script
+  console.log('\n📝 SQL MIGRATION SCRIPT:');
+  const sqlScript = AssessmentDataMigrator.generateMigrationScript(answersData, companyId);
+  console.log(sqlScript);
+}
+
+// Run the demo
+demonstrateMigration();
+
+export { demonstrateMigration };

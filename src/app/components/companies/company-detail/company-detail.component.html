@@ -45,10 +45,61 @@
     </app-overview-tab>
 
     <!-- Assessment Tab -->
-    <app-assessment-tab
-      *ngIf="activeTab === 'assessment'"
-      [company]="company">
-    </app-assessment-tab>
+    <div *ngIf="activeTab === 'assessment'">
+      <!-- Assessment Tab Toggle and Migration Controls -->
+      <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-medium text-yellow-800">Assessment Tab Testing</h3>
+            <p class="text-xs text-yellow-700 mt-1">
+              Testing new consolidated assessment approach. Switch between versions to compare.
+            </p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <!-- Version Toggle -->
+            <div class="flex items-center space-x-2">
+              <label class="text-xs text-yellow-700">Version:</label>
+              <select
+                [(ngModel)]="assessmentVersion"
+                class="text-xs border-yellow-300 rounded px-2 py-1 bg-white"
+              >
+                <option value="original">Original (Sections)</option>
+                <option value="consolidated">Consolidated (New)</option>
+              </select>
+            </div>
+
+            <!-- Migration Button -->
+            <button
+              *ngIf="assessmentVersion === 'consolidated'"
+              (click)="migrateAssessmentData()"
+              [disabled]="isMigrating"
+              class="px-3 py-1 text-xs font-medium text-white bg-blue-600 border border-transparent rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              {{ isMigrating ? 'Migrating...' : 'Migrate Data' }}
+            </button>
+
+            <!-- Migration Status -->
+            <div *ngIf="migrationStatus" class="text-xs px-2 py-1 rounded"
+                 [class]="getMigrationStatusClass()">
+              {{ migrationStatus }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Original Assessment Component -->
+      <app-assessment-tab
+        *ngIf="assessmentVersion === 'original'"
+        [company]="company">
+      </app-assessment-tab>
+
+      <!-- New Consolidated Assessment Component -->
+      <app-assessment-tab-consolidated
+        *ngIf="assessmentVersion === 'consolidated'"
+        [company]="company"
+        [showDebugInfo]="true">
+      </app-assessment-tab-consolidated>
+    </div>
 
     <!-- SWOT Analysis Tab -->
     <app-swot-tab

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 // Import all the new sub-components
@@ -13,6 +14,7 @@ import {
 } from './tabs-navigation/tabs-navigation.component';
 import { OverviewTabComponent } from './overview-tab/overview-tab.component';
 import { AssessmentTabComponent } from './assessment-tab/assessment-tab.component';
+import { AssessmentTabConsolidatedComponent } from './assessment-tab/assessment-tab-consolidated.component';
 import { SwotTabComponent } from './swot-tab/swot-tab.component';
 import { StrategyTabComponent } from './strategy-tab/strategy-tab.component';
 import { FinancialTabComponent } from './financial-tab/financial-tab.component';
@@ -26,6 +28,8 @@ import { HRTrackingTabComponent } from './hr-tracking-tab/hr-tracking-tab.compon
 import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 import { CompanyService } from '../../../../services/company.service';
+import { AssessmentMigrationService } from '../../../../services/assessment-migration.service';
+import { QuestionnaireService } from '../../../../services/questionnaire.service';
 import { ICompany } from '../../../../models/simple.schema';
 
 @Component({
@@ -33,6 +37,7 @@ import { ICompany } from '../../../../models/simple.schema';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     LoadingStateComponent,
     ErrorStateComponent,
     CompanyHeaderComponent,
@@ -40,6 +45,7 @@ import { ICompany } from '../../../../models/simple.schema';
     TabsNavigationComponent,
     OverviewTabComponent,
     AssessmentTabComponent,
+    AssessmentTabConsolidatedComponent,
     SwotTabComponent,
     StrategyTabComponent,
     FinancialTabComponent,
@@ -68,10 +74,17 @@ export class CompanyDetailComponent implements OnInit {
   // Edit modal properties
   isEditModalOpen = false;
 
+  // Assessment tab version control
+  assessmentVersion: 'original' | 'consolidated' = 'original';
+  isMigrating = false;
+  migrationStatus = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private nodeService: CompanyService
+    private nodeService: CompanyService,
+    private migrationService: AssessmentMigrationService,
+    private questionnaireService: QuestionnaireService
   ) {}
 
   ngOnInit() {
@@ -211,5 +224,75 @@ export class CompanyDetailComponent implements OnInit {
     this.company = updatedCompany;
     this.closeEditModal();
     // Optionally show a success message
+  }
+
+  // Assessment migration methods
+  migrateAssessmentData(): void {
+    if (!this.company?.id) return;
+
+    this.isMigrating = true;
+    this.migrationStatus = 'Starting migration...';
+
+    // First get the questionnaire
+    this.questionnaireService.getBusinessAssessmentQuestionnaire()
+      .subscribe({
+        next: (questionnaire) => {
+          this.migrationStatus = 'Questionnaire loaded, migrating data...';
+
+          // Perform migration
+          this.migrationService.migrateCompanyAssessment(this.company!.id, questionnaire)
+            .subscribe({
+              next: (result) => {
+                this.isMigrating = false;
+
+                if (result.success) {
+                  this.migrationStatus = `✅ Migration completed! ${result.migratedSections} sections migrated.`;
+
+                  // Clear status after 5 seconds
+                  setTimeout(() => {
+                    this.migrationStatus = '';
+                  }, 5000);
+                } else {
+                  this.migrationStatus = `❌ Migration failed: ${result.errors.join(', ')}`;
+
+                  // Clear status after 8 seconds
+                  setTimeout(() => {
+                    this.migrationStatus = '';
+                  }, 8000);
+                }
+              },
+              error: (error) => {
+                console.error('Migration error:', error);
+                this.isMigrating = false;
+                this.migrationStatus = '❌ Migration failed: ' + error.message;
+
+                // Clear status after 8 seconds
+                setTimeout(() => {
+                  this.migrationStatus = '';
+                }, 8000);
+              }
+            });
+        },
+        error: (error) => {
+          console.error('Failed to load questionnaire:', error);
+          this.isMigrating = false;
+          this.migrationStatus = '❌ Failed to load questionnaire';
+
+          // Clear status after 5 seconds
+          setTimeout(() => {
+            this.migrationStatus = '';
+          }, 5000);
+        }
+      });
+  }
+
+  getMigrationStatusClass(): string {
+    if (this.migrationStatus.includes('✅')) {
+      return 'bg-green-100 text-green-800';
+    } else if (this.migrationStatus.includes('❌')) {
+      return 'bg-red-100 text-red-800';
+    } else {
+      return 'bg-blue-100 text-blue-800';
+    }
   }
 }
