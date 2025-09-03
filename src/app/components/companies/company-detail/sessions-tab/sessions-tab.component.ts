@@ -21,7 +21,7 @@ import { SignaturePadComponent } from '../../../shared/signature-pad.component';
             <p class="text-gray-600 mt-1">Track coaching session feedback and progress</p>
           </div>
           <button
-            (click)="showNewSessionForm = !showNewSessionForm"
+            (click)="showNewSessionForm ? cancelForm() : (showNewSessionForm = true)"
             [class]="'px-4 py-2 rounded-lg font-medium transition-colors ' + (showNewSessionForm ? 'bg-gray-500 text-white hover:bg-gray-600' : 'bg-blue-600 text-white hover:bg-blue-700')"
           >
             {{ showNewSessionForm ? 'Cancel' : '+ New Session' }}
@@ -72,7 +72,7 @@ import { SignaturePadComponent } from '../../../shared/signature-pad.component';
 
       <!-- New Session Form -->
       <div *ngIf="showNewSessionForm" class="bg-white p-6 rounded-lg border shadow-sm mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">New Session Feedback</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ editingSessionId ? 'Edit Session Feedback' : 'New Session Feedback' }}</h3>
 
         <form (ngSubmit)="saveSession()" #sessionForm="ngForm">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,7 +220,7 @@ import { SignaturePadComponent } from '../../../shared/signature-pad.component';
               [disabled]="!sessionForm.valid || formData.is_submitting"
               class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
-              {{ formData.is_submitting ? 'Saving...' : 'Save Session' }}
+              {{ formData.is_submitting ? (editingSessionId ? 'Updating...' : 'Saving...') : (editingSessionId ? 'Update Session' : 'Save Session') }}
             </button>
           </div>
         </form>
@@ -325,6 +325,7 @@ export class SessionsTabComponent implements OnInit {
   sessionSummary: SessionSummary | null = null;
   loading = true;
   showNewSessionForm = false;
+  editingSessionId: number | null = null;
 
   formData: SessionFormData = {
     session_date: new Date().toISOString().split('T')[0], // Today's date
@@ -388,24 +389,57 @@ export class SessionsTabComponent implements OnInit {
       consultant_name: this.formData.consultant_name
     };
 
-    this.sessionService.createSession(this.company.id, sessionData).subscribe({
-      next: (newSession) => {
-        this.sessions.unshift(newSession); // Add to top of list
-        this.resetForm();
-        this.showNewSessionForm = false;
-        this.loadSummary(); // Refresh summary
-        this.showSuccessMessage('Session feedback saved successfully!');
-      },
-      error: (error) => {
-        console.error('Error saving session:', error);
-        this.showErrorMessage('Failed to save session. Please try again.');
-        this.formData.is_submitting = false;
-      }
-    });
+    // Check if we're editing an existing session or creating a new one
+    if (this.editingSessionId) {
+      // Update existing session
+      const updateData = {
+        ...sessionData,
+        company_id: this.company.id
+      };
+
+      this.sessionService.updateSession(this.editingSessionId, updateData).subscribe({
+        next: (updatedSession) => {
+          // Update the session in the list
+          const index = this.sessions.findIndex(s => s.id === this.editingSessionId);
+          if (index !== -1) {
+            this.sessions[index] = updatedSession;
+          }
+          this.resetForm();
+          this.showNewSessionForm = false;
+          this.editingSessionId = null;
+          this.loadSummary(); // Refresh summary
+          this.showSuccessMessage('Session feedback updated successfully!');
+        },
+        error: (error) => {
+          console.error('Error updating session:', error);
+          this.showErrorMessage('Failed to update session. Please try again.');
+          this.formData.is_submitting = false;
+        }
+      });
+    } else {
+      // Create new session
+      this.sessionService.createSession(this.company.id, sessionData).subscribe({
+        next: (newSession) => {
+          this.sessions.unshift(newSession); // Add to top of list
+          this.resetForm();
+          this.showNewSessionForm = false;
+          this.loadSummary(); // Refresh summary
+          this.showSuccessMessage('Session feedback saved successfully!');
+        },
+        error: (error) => {
+          console.error('Error saving session:', error);
+          this.showErrorMessage('Failed to save session. Please try again.');
+          this.formData.is_submitting = false;
+        }
+      });
+    }
   }
 
   editSession(session: SessionFeedback) {
-    // For now, just populate the form with existing data
+    // Set the editing session ID to track that we're editing
+    this.editingSessionId = session.id || null;
+
+    // Populate the form with existing data
     this.formData = {
       session_date: session.session_date,
       session_rating: session.session_rating,
@@ -439,6 +473,7 @@ export class SessionsTabComponent implements OnInit {
   cancelForm() {
     this.resetForm();
     this.showNewSessionForm = false;
+    this.editingSessionId = null;
   }
 
   resetForm() {
