@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SessionService } from '../../../../../services/session.service';
 import { SessionFeedback, SessionSummary, SessionFormData } from '../../../../../models/session.models';
+import { SignaturePadComponent } from '../../../shared/signature-pad.component';
 
 @Component({
   selector: 'app-sessions-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SignaturePadComponent],
   template: `
     <div class="max-w-7xl mx-auto px-6 py-8">
       <!-- Header with Summary -->
@@ -160,23 +161,37 @@ import { SessionFeedback, SessionSummary, SessionFormData } from '../../../../..
             </div>
 
             <!-- Client Signature -->
-            <div>
-              <label for="clientSignature" class="block text-sm font-medium text-gray-700 mb-2">
-                Client Signature *
-              </label>
-              <input
-                type="text"
-                id="clientSignature"
-                name="clientSignature"
-                [(ngModel)]="formData.client_signature"
-                required
-                placeholder="Type your full name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
+            <div class="md:col-span-2">
+              <app-signature-pad
+                [(ngModel)]="formData.signature_data"
+                name="signatureData"
+                label="Client Digital Signature *"
+                placeholder="Please sign here to confirm this session feedback"
+                [required]="true"
+                [width]="500"
+                [height]="200"
+                (signatureChange)="onSignatureChange($event)">
+              </app-signature-pad>
+
+              <!-- Client Name Input -->
+              <div class="mt-4">
+                <label for="clientName" class="block text-sm font-medium text-gray-700 mb-2">
+                  Client Name *
+                </label>
+                <input
+                  type="text"
+                  id="clientName"
+                  name="clientName"
+                  [(ngModel)]="formData.client_signature"
+                  required
+                  placeholder="Type your full name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+              </div>
             </div>
 
             <!-- Consultant Name -->
-            <div>
+            <div class="md:col-span-2">
               <label for="consultantName" class="block text-sm font-medium text-gray-700 mb-2">
                 Consultant Name
               </label>
@@ -318,6 +333,7 @@ export class SessionsTabComponent implements OnInit {
     next_session_focus: '',
     other_comments: '',
     client_signature: '',
+    signature_data: '',
     consultant_name: '',
     is_submitting: false
   };
@@ -368,6 +384,7 @@ export class SessionsTabComponent implements OnInit {
       next_session_focus: this.formData.next_session_focus,
       other_comments: this.formData.other_comments,
       client_signature: this.formData.client_signature,
+      signature_data: this.formData.signature_data,
       consultant_name: this.formData.consultant_name
     };
 
@@ -396,6 +413,7 @@ export class SessionsTabComponent implements OnInit {
       next_session_focus: session.next_session_focus,
       other_comments: session.other_comments || '',
       client_signature: session.client_signature || '',
+      signature_data: session.signature_data || '',
       consultant_name: session.consultant_name || '',
       is_submitting: false
     };
@@ -431,6 +449,7 @@ export class SessionsTabComponent implements OnInit {
       next_session_focus: '',
       other_comments: '',
       client_signature: '',
+      signature_data: '',
       consultant_name: '',
       is_submitting: false
     };
@@ -451,6 +470,10 @@ export class SessionsTabComponent implements OnInit {
 
   trackBySessionId(index: number, session: SessionFeedback): number {
     return session.id || index;
+  }
+
+  onSignatureChange(signatureData: string) {
+    this.formData.signature_data = signatureData;
   }
 
   private showSuccessMessage(message: string) {

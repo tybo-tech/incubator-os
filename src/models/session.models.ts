@@ -8,7 +8,8 @@ export interface SessionFeedback {
   key_takeaways: string;
   next_session_focus: string;
   other_comments?: string;
-  client_signature?: string;
+  client_signature?: string; // Base64 image data or name
+  signature_data?: string; // Base64 signature image
   consultant_name?: string;
   created_at?: string;
   updated_at?: string;
@@ -28,6 +29,7 @@ export interface SessionFormData {
   next_session_focus: string;
   other_comments: string;
   client_signature: string;
+  signature_data: string; // Base64 signature image
   consultant_name: string;
   is_submitting: boolean;
 }

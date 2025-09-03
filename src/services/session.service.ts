@@ -33,6 +33,7 @@ export class SessionService {
           next_session_focus: node.data.next_session_focus || '',
           other_comments: node.data.other_comments || '',
           client_signature: node.data.client_signature || '',
+          signature_data: node.data.signature_data || '',
           consultant_name: node.data.consultant_name || '',
           created_at: node.created_at,
           updated_at: node.updated_at
@@ -90,6 +91,7 @@ export class SessionService {
         next_session_focus: sessionData.next_session_focus,
         other_comments: sessionData.other_comments,
         client_signature: sessionData.client_signature,
+        signature_data: sessionData.signature_data,
         consultant_name: sessionData.consultant_name
       },
       created_at: new Date().toISOString(),
@@ -107,6 +109,7 @@ export class SessionService {
         other_comments: sessionData.other_comments,
         client_signature: sessionData.client_signature,
         consultant_name: sessionData.consultant_name,
+        signature_data: sessionData.signature_data,
         created_at: node.created_at,
         updated_at: node.updated_at
       })),
@@ -131,7 +134,8 @@ export class SessionService {
         next_session_focus: sessionData.next_session_focus,
         other_comments: sessionData.other_comments,
         client_signature: sessionData.client_signature,
-        consultant_name: sessionData.consultant_name
+        consultant_name: sessionData.consultant_name,
+        signature_data: sessionData.signature_data
       },
       updated_at: new Date().toISOString()
     };
@@ -147,6 +151,7 @@ export class SessionService {
         other_comments: sessionData.other_comments!,
         client_signature: sessionData.client_signature!,
         consultant_name: sessionData.consultant_name!,
+        signature_data: sessionData.signature_data!,
         created_at: node.created_at,
         updated_at: node.updated_at
       })),
