@@ -8,7 +8,8 @@ import { QuestionnaireService } from '../questionnaire.service';
 import {
   BusinessQuestionnaire,
   QuestionnaireSection,
-  QuestionnaireQuestion
+  QuestionnaireQuestion,
+  QuestionnaireProgress
 } from '../../models/questionnaire.models';
 import { ICompany } from '../../models/simple.schema';
 
@@ -76,8 +77,13 @@ export class AssessmentExportService {
       node_id: null
     };
 
-    console.log('Processing assessment data:', { responses, metadata });
-    const sections = this.organizeResponsesBySection(questionnaire, responses);    return `
+    // Calculate correct progress percentage using the same logic as assessment tab
+    const correctProgress = this.questionnaireService.calculateProgress(questionnaire, responses);
+
+    console.log('Processing assessment data:', { responses, metadata, correctProgress });
+    const sections = this.organizeResponsesBySection(questionnaire, responses);
+
+    return `
       <!DOCTYPE html>
       <html>
       <head>
@@ -89,8 +95,8 @@ export class AssessmentExportService {
       </head>
       <body>
         <div class="container">
-          ${this.generateHeader(company, assessment, options)}
-          ${this.generateMetadataSection(metadata, options)}
+          ${this.generateHeader(company, assessment, questionnaire, options)}
+          ${this.generateMetadataSection(metadata, correctProgress, options)}
           ${this.generateSectionsContent(sections, options)}
           ${this.generateFooter()}
         </div>
@@ -184,6 +190,7 @@ export class AssessmentExportService {
   private generateHeader(
     company: ICompany,
     assessment: ConsolidatedAssessment,
+    questionnaire: BusinessQuestionnaire,
     options: AssessmentExportOptions
   ): string {
     const title = options.customTitle || 'Business Assessment Report';
@@ -191,6 +198,9 @@ export class AssessmentExportService {
     const assessmentDate = assessment.metadata.last_updated
       ? new Date(assessment.metadata.last_updated).toLocaleDateString()
       : 'N/A';
+
+    // Calculate correct progress percentage
+    const correctProgress = this.questionnaireService.calculateProgress(questionnaire, assessment.responses);
 
     return `
       <header class="header">
@@ -208,7 +218,7 @@ export class AssessmentExportService {
           <div class="logo-section">
             <div class="assessment-badge">
               <div class="completion-circle">
-                <span>${assessment.metadata.progress_percentage}%</span>
+                <span>${correctProgress.progress_percentage}%</span>
                 <small>Complete</small>
               </div>
             </div>
@@ -223,6 +233,7 @@ export class AssessmentExportService {
    */
   private generateMetadataSection(
     metadata: any,
+    correctProgress: QuestionnaireProgress,
     options: AssessmentExportOptions
   ): string {
     if (!options.includeMetadata) return '';
@@ -233,11 +244,11 @@ export class AssessmentExportService {
         <div class="metadata-grid">
           <div class="metadata-item">
             <span class="label">Progress:</span>
-            <span class="value">${metadata.progress_percentage}% Complete</span>
+            <span class="value">${correctProgress.progress_percentage}% Complete</span>
           </div>
           <div class="metadata-item">
             <span class="label">Questions Answered:</span>
-            <span class="value">${metadata.answered_questions || 0}</span>
+            <span class="value">${correctProgress.answered_questions || 0}</span>
           </div>
           <div class="metadata-item">
             <span class="label">Status:</span>
@@ -589,6 +600,7 @@ export class AssessmentExportService {
       .section-description {
         color: #64748b;
         font-style: italic;
+        padding: 12px 16px;
         margin-bottom: 14px;
         font-size: 11px;
         font-weight: normal;
