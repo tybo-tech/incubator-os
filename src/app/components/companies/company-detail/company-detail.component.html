@@ -74,6 +74,12 @@
       [company]="company">
     </app-financial-tab>
 
+    <!-- Financials V2 Tab -->
+    <app-financial-v2-tab
+      *ngIf="activeTab === 'financial-v2'"
+      [company]="company">
+    </app-financial-v2-tab>
+
     <!-- Purchases Tab -->
     <app-purchases-tab
       *ngIf="activeTab === 'purchases'"

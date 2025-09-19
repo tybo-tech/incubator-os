@@ -16,6 +16,7 @@ import { AssessmentTabComponent } from './assessment-tab/assessment-tab.componen
 import { SwotTabComponent } from './swot-tab/swot-tab.component';
 import { StrategyTabComponent } from './strategy-tab/strategy-tab.component';
 import { FinancialTabComponent } from './financial-tab/financial-tab.component';
+import { FinancialV2TabComponent } from './financial-v2-tab/financial-v2-tab.component';
 import { PurchasesTabComponent } from './purchases-tab/purchases-tab.component';
 import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
 import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
@@ -44,6 +45,7 @@ import { ICompany } from '../../../../models/simple.schema';
     SwotTabComponent,
     StrategyTabComponent,
     FinancialTabComponent,
+  FinancialV2TabComponent,
     PurchasesTabComponent,
     ComplianceTabComponent,
     DocumentsTabComponent,
