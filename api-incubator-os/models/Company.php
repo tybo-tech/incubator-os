@@ -239,11 +239,16 @@ class Company
      * Get companies available for assignment to a cohort (not already assigned)
      * Returns minimal fields optimized for picker UI
      */
-    public function getAvailableForCohort(int $cohortId, string $search = '', string $descriptionFilter = '', int $limit = 50): array
+    public function getAvailableForCohort(
+        int $cohortId,
+        string $search = '',
+        string $descriptionFilter = '',
+        int $limit = 50,
+        bool $full = false
+    ): array
     {
-        $sql = "SELECT DISTINCT c.id, c.name, c.email_address, c.registration_no
-                FROM companies c
-                WHERE 1=1";
+        $selectCols = $full ? 'c.*' : 'c.id, c.name, c.email_address, c.registration_no';
+        $sql = "SELECT DISTINCT {$selectCols} FROM companies c WHERE 1=1";
 
         $params = [];
 
@@ -270,16 +275,20 @@ class Company
             $params[] = $cohortId;
         }
 
-    // Use string concatenation for LIMIT to avoid parameter binding issues
-    // If a description filter is present we allow a higher cap (up to 500) to ensure batch tag operations get full set
-    $cap = $descriptionFilter ? 500 : 100;
-    $sql .= " ORDER BY c.name ASC LIMIT " . min((int)$limit, $cap);
+    // LIMIT handling: if limit <= 0, fetch all up to a safety cap
+    $safetyCap = $full ? 5000 : 2000; // generous safety caps
+    $effectiveLimit = ($limit <= 0) ? $safetyCap : min($limit, $safetyCap);
+    $sql .= " ORDER BY c.name ASC LIMIT {$effectiveLimit}";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
         $companies = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Cast and format for picker response
+        if ($full) {
+            // Cast rows to include proper types
+            return array_map(fn($r) => $this->castRow($r), $companies);
+        }
+
         return array_map(function($row) {
             return [
                 'id' => (int)$row['id'],

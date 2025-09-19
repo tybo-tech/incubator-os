@@ -181,7 +181,8 @@ export class CategoryService {
     programId?: number,
     clientId?: number,
     search?: string,
-    description?: string
+    description?: string,
+    options: { limit?: number; full?: boolean } = {}
   ): Observable<{
     available_companies: any[];
     assigned_companies: any[];
@@ -192,6 +193,8 @@ export class CategoryService {
     total_available: number;
     total_assigned: number;
     description_filter?: string;
+    limit?: number;
+    full?: boolean;
   }> {
     const params = new URLSearchParams();
     params.append('cohort_id', String(cohortId));
@@ -199,6 +202,8 @@ export class CategoryService {
     if (clientId) params.append('client_id', String(clientId));
     if (search) params.append('search', search);
     if (description) params.append('description', description);
+    if (options.limit !== undefined) params.append('limit', String(options.limit));
+    if (options.full) params.append('full', '1');
 
     return this.http.get<any>(`${this.apiUrl}/get-companies-for-picker.php?${params.toString()}`);
   }

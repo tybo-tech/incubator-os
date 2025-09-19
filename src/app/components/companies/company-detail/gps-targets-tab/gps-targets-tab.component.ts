@@ -614,7 +614,6 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
             this.gpsData = { ...this.gpsNode.data };
           } else {
             this.gpsData = initGpsTargets(this.company?.id?.toString() || '');
-            this.populateSampleData(); // Add sample data for new GPS
           }
           this.loading = false;
         },
@@ -625,111 +624,6 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
       });
   }
 
-  private populateSampleData(): void {
-    // Initialize with sample data based on your Excel example
-    this.gpsData.strategy_general.targets = [
-      {
-        ...initGpsTarget('Complete the business certification.'),
-        evidence: '',
-        due_date: '2024-04-30',
-        status: 'in_progress',
-        priority: 'high',
-        progress_percentage: 25
-      },
-      {
-        ...initGpsTarget('Complete the certification of the equipment.'),
-        evidence: '',
-        due_date: '2024-04-30',
-        status: 'not_started',
-        priority: 'high',
-        progress_percentage: 0
-      },
-      {
-        ...initGpsTarget('Implement business systems manual'),
-        evidence: '',
-        due_date: '2024-03-15',
-        status: 'in_progress',
-        priority: 'medium',
-        progress_percentage: 50
-      },
-      {
-        ...initGpsTarget('Remove existing partner from Share holding in the business.'),
-        evidence: 'CIPC documents showing directors and shareholding',
-        due_date: '2024-03-15',
-        status: 'in_progress',
-        priority: 'critical',
-        progress_percentage: 75
-      },
-      {
-        ...initGpsTarget('Introduce new service like perm make up and IV drips.'),
-        evidence: 'New Brochure is done and service is in place.',
-        due_date: '2024-03-31',
-        status: 'completed',
-        priority: 'medium',
-        progress_percentage: 100
-      }
-    ];
-
-    this.gpsData.finance.targets = [
-      {
-        ...initGpsTarget('Introduce inhouse accounting system'),
-        evidence: '',
-        due_date: '2024-03-31',
-        status: 'not_started',
-        priority: 'critical',
-        assigned_to: 'CFO',
-        progress_percentage: 0
-      },
-      {
-        ...initGpsTarget('Create a budget for the business'),
-        evidence: '',
-        due_date: '2024-03-15',
-        status: 'in_progress',
-        priority: 'high',
-        assigned_to: 'Finance Manager',
-        progress_percentage: 60
-      },
-      {
-        ...initGpsTarget('Set targets based on budget for the business'),
-        evidence: '',
-        due_date: '2024-03-15',
-        status: 'not_started',
-        priority: 'high',
-        progress_percentage: 0
-      },
-      {
-        ...initGpsTarget('Introduce booking system.'),
-        evidence: '',
-        due_date: '2024-03-15',
-        status: 'in_progress',
-        priority: 'medium',
-        assigned_to: 'IT Manager',
-        progress_percentage: 30
-      }
-    ];
-
-    this.gpsData.sales_marketing.targets = [
-      {
-        ...initGpsTarget('Create a marketing strategy for the business.'),
-        evidence: '',
-        due_date: '',
-        status: 'not_started',
-        priority: 'high',
-        assigned_to: 'Marketing Manager',
-        progress_percentage: 0
-      },
-      {
-        ...initGpsTarget('Visit the Ixopo Buddhist retreat for Ideas.'),
-        evidence: '',
-        due_date: '',
-        status: 'not_started',
-        priority: 'low',
-        progress_percentage: 0
-      }
-    ];
-
-    this.gpsData.personal_development.targets = [];
-  }
 
   onDataChange(): void {
     this.isDirty = true;

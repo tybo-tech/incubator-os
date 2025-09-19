@@ -394,12 +394,14 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
   private loadCompanies(search: string = ''): void {
     this.isLoading.set(true);
 
+    const wantFull = !search && !this.activeDescriptionFilter();
     this.categoryService.getCompaniesForPicker(
       this.cohortId,
       this.programId,
       this.clientId,
       search,
-      this.activeDescriptionFilter() || undefined
+      this.activeDescriptionFilter() || undefined,
+      { limit: wantFull ? 0 : 200, full: wantFull }
     ).pipe(
       catchError(error => {
         console.error('Failed to load companies:', error);

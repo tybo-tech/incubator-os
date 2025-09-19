@@ -693,7 +693,6 @@ export class SwotTabComponent implements OnInit, OnDestroy {
             this.swotData = { ...this.swotNode.data };
           } else {
             this.swotData = initSwotAnalysis(this.company?.id?.toString() || '');
-            this.populateSampleData(); // Add sample data for new SWOT
           }
           this.loading = false;
         },
@@ -704,81 +703,6 @@ export class SwotTabComponent implements OnInit, OnDestroy {
       });
   }
 
-  private populateSampleData(): void {
-    // Initialize with sample data based on your example
-    this.swotData.internal.strengths = [
-      {
-        ...initSwotItem('Existing business operational and with paying customers', 'strength'),
-        action_required: 'Leverage customer base for growth',
-        assigned_to: 'Sales Manager',
-        target_date: this.getDatePlusWeeks(2)
-      },
-      {
-        ...initSwotItem('Do have the necessary equipment', 'strength'),
-        action_required: 'Maintain and upgrade equipment',
-        status: 'in_progress'
-      },
-      {
-        ...initSwotItem('Do have the training in place', 'strength'),
-        action_required: 'Continue training programs',
-        assigned_to: 'HR Manager'
-      },
-      {
-        ...initSwotItem('Have sales training', 'strength'),
-        action_required: 'Expand sales training to new team members',
-        priority: 'high'
-      }
-    ];
-
-    this.swotData.internal.weaknesses = [
-      {
-        ...initSwotItem('State of the finance is a weakness', 'weakness'),
-        action_required: 'Implement financial management system',
-        priority: 'critical',
-        assigned_to: 'CFO',
-        target_date: this.getDatePlusWeeks(4)
-      },
-      {
-        ...initSwotItem('No accounting system', 'weakness'),
-        action_required: 'Introduce accounting system',
-        priority: 'high',
-        assigned_to: 'Finance Team',
-        target_date: this.getDatePlusWeeks(6)
-      },
-      {
-        ...initSwotItem('Marketing is very weak', 'weakness'),
-        action_required: 'Develop marketing strategy and hire marketing specialist',
-        priority: 'high',
-        assigned_to: 'CEO'
-      },
-      {
-        ...initSwotItem('Cash flow', 'weakness'),
-        action_required: 'Introduce a budget',
-        priority: 'critical',
-        status: 'planning',
-        target_date: this.getDatePlusWeeks(2)
-      },
-      {
-        ...initSwotItem('Booking system needed', 'weakness'),
-        action_required: 'Introduce a booking system',
-        priority: 'medium',
-        assigned_to: 'IT Manager',
-        target_date: this.getDatePlusWeeks(8)
-      }
-    ];
-
-    this.swotData.external.opportunities = [];
-
-    this.swotData.external.threats = [
-      {
-        ...initSwotItem('Going to change the name of the business', 'threat'),
-        action_required: 'Plan brand transition strategy',
-        priority: 'medium',
-        assigned_to: 'Marketing Team',
-        target_date: this.getDatePlusWeeks(12)
-      }
-    ];
-  }
 
   private getDatePlusWeeks(weeks: number): string {
     const date = new Date();
