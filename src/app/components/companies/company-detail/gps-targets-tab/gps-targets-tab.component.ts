@@ -12,6 +12,7 @@ import {
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
+import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets-export.service';
 
 @Component({
   selector: 'app-gps-targets-tab',
@@ -33,13 +34,22 @@ import { ICompany } from '../../../../../models/simple.schema';
               <div class="text-lg font-semibold text-gray-900">{{ getTotalTargetsCount() }} Targets</div>
               <div class="text-sm text-gray-500">{{ getCompletionPercentage() }}% Complete</div>
             </div>
-            <button
-              (click)="saveGpsTargets()"
-              [disabled]="saving"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {{ saving ? 'Saving...' : 'Save Targets' }}
-            </button>
+            <div class="flex items-center space-x-2">
+              <button
+                (click)="saveGpsTargets()"
+                [disabled]="saving"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {{ saving ? 'Saving...' : 'Save Targets' }}
+              </button>
+              <button
+                (click)="exportPdf()"
+                [disabled]="exporting || saving"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {{ exporting ? 'Exporting...' : 'Export PDF' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -582,12 +592,13 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   gpsNode: INode<GpsTargets> | null = null;
   loading = false;
   saving = false;
+  exporting = false;
   isDirty = false;
 
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
 
-  constructor(private nodeService: NodeService<any>) {}
+  constructor(private nodeService: NodeService<any>, private gpsExport: GpsTargetsExportService) {}
 
   ngOnInit(): void {
     this.loadGpsData();
@@ -706,6 +717,47 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
           this.showErrorMessage('Failed to save GPS targets. Please try again.');
         }
       });
+  }
+
+  exportPdf(): void {
+    if (!this.company?.id) return;
+    this.exporting = true;
+
+    const proceed = () => {
+      const exportData = this.gpsExport.convertNodeToExport(this.gpsData, this.company!.name || 'Company', this.company!.id!.toString());
+      this.gpsExport.generateGpsTargetsPDF(exportData).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${(this.company?.name || 'company').replace(/[^a-z0-9_-]+/ig,'_')}_GPS_Targets.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          this.exporting = false;
+        },
+        error: (err) => {
+          console.error('Export failed', err);
+          this.exporting = false;
+          this.showErrorMessage('Failed to export GPS Targets PDF.');
+        }
+      });
+    };
+
+    if (this.isDirty) {
+      this.saveGpsTargets();
+      const check = () => {
+        if (!this.saving) {
+          proceed();
+        } else {
+          setTimeout(check, 300);
+        }
+      };
+      check();
+    } else {
+      proceed();
+    }
   }
 
   private showSuccessMessage(message: string): void {
