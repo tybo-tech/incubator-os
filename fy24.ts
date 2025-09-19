@@ -1,4 +1,6 @@
-[
+import { ICompany } from "./src/models/simple.schema";
+
+const companies : FY24[] = [
   {
     "Company Name": "035 Freshcuts (Pty) Ltd",
     "Entrepreneur Name": "Mduduzi Madondo",
@@ -600,3 +602,151 @@
     "IsYouth": "Youth"
   }
 ]
+
+interface FY24 {
+  "Company Name": string;
+  "Entrepreneur Name": string;
+  "CIPC Registration": string;
+  "AR Status": string;
+  "BBBEE ": string;
+  "Gender": string;
+  "ID Number": string;
+  "Location": string;
+  "Industry": string;
+  "Cell phone Number ": string;
+  "Email": string;
+  "YOB": string;
+  "IsYouth": string;
+}
+
+
+function mapToCompany(fy24: FY24): ICompany {
+  // Helper function to parse BBBEE status and extract expiry date
+  const parseBBBEEStatus = (bbbeeText: string) => {
+    const expiredMatch = bbbeeText.match(/Expired?\s*-?\s*(\d{2}\/\d{2}\/\d{4})/i);
+    const expiresMatch = bbbeeText.match(/Expires?\s*-?\s*(\d{2}\/\d{2}\/\d{4})/i);
+
+    if (expiredMatch) {
+      const [day, month, year] = expiredMatch[1].split('/');
+      return {
+        status: 'Expired',
+        expiry_date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      };
+    } else if (expiresMatch) {
+      const [day, month, year] = expiresMatch[1].split('/');
+      return {
+        status: 'Valid',
+        expiry_date: `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+      };
+    }
+
+    return {
+      status: 'No Date Captured',
+      expiry_date: null
+    };
+  };
+
+  // Helper function to determine gender-based ownership
+  const isBlackWomenOwned = (gender: string) => {
+    return gender === 'F'; // Female entrepreneurs are black women owned
+  };
+
+  // Helper function to clean phone numbers
+  const cleanPhoneNumber = (phone: string) => {
+    return phone?.replace(/'/g, '').trim() || null;
+  };
+
+  const bbbeeInfo = parseBBBEEStatus(fy24["BBBEE "]);
+  const currentDate = new Date().toISOString().split('T')[0] + ' 00:00:00';
+
+  return {
+    id: 0, // Will be set by database
+    name: fy24["Company Name"],
+    registration_no: fy24["CIPC Registration"] || null,
+    bbbee_level: null, // Not specified in source data
+    cipc_status: fy24["AR Status"],
+    service_offering: fy24["Industry"],
+    description: null,
+    city: fy24["Location"],
+    suburb: null,
+    address: null,
+    postal_code: null,
+    business_location: fy24["Location"],
+    contact_number: cleanPhoneNumber(fy24["Cell phone Number "]),
+    email_address: fy24["Email"] || null,
+    trading_name: fy24["Company Name"], // Using company name as trading name
+
+    // Ownership flags
+    youth_owned: fy24["IsYouth"] === "Youth",
+    black_ownership: true, // Assuming all companies in this dataset are black-owned
+    black_women_ownership: isBlackWomenOwned(fy24["Gender"]),
+
+    // Ownership text fields
+    youth_owned_text: fy24["IsYouth"],
+    black_ownership_text: "Black Owned", // Default text
+    black_women_ownership_text: isBlackWomenOwned(fy24["Gender"]) ? "Black Women Owned" : null,
+
+    compliance_notes: null,
+
+    // Compliance status flags
+    has_valid_bbbbee: bbbeeInfo.status === 'Valid',
+    has_tax_clearance: false, // Not specified in source data
+    is_sars_registered: false, // Not specified in source data
+    has_cipc_registration: fy24["CIPC Registration"] ? true : false,
+
+    // BBBEE details
+    bbbee_valid_status: bbbeeInfo.status,
+    bbbee_expiry_date: bbbeeInfo.expiry_date,
+
+    // Tax details (not available in source)
+    tax_valid_status: null,
+    tax_pin_expiry_date: null,
+    vat_number: null,
+
+    // Financial data (not available in source)
+    turnover_estimated: null,
+    turnover_actual: null,
+
+    // Employee counts (not available in source)
+    permanent_employees: 0,
+    temporary_employees: 0,
+    locations: fy24["Location"],
+
+    // Timestamps
+    created_at: currentDate,
+    updated_at: currentDate,
+    industry_id: null, // Will need to be mapped separately
+
+    // Temp fields
+    contact_person: fy24["Entrepreneur Name"],
+    sector_name: fy24["Industry"],
+  };
+}
+
+// Convert all FY24 companies to ICompany format
+export const convertedCompanies: ICompany[] = companies.map(mapToCompany);
+
+// Helper function to get unique industries from the dataset
+export function getUniqueIndustries(): string[] {
+  return [...new Set(companies.map(company => company["Industry"]))].sort();
+}
+
+// Helper function to get unique locations from the dataset
+export function getUniqueLocations(): string[] {
+  return [...new Set(companies.map(company => company["Location"]))].sort();
+}
+
+// Helper function to get companies by industry
+export function getCompaniesByIndustry(industry: string): ICompany[] {
+  return convertedCompanies.filter(company => company.service_offering === industry);
+}
+
+// Helper function to get youth-owned companies
+export function getYouthOwnedCompanies(): ICompany[] {
+  return convertedCompanies.filter(company => company.youth_owned);
+}
+
+// Helper function to get women-owned companies
+export function getWomenOwnedCompanies(): ICompany[] {
+  return convertedCompanies.filter(company => company.black_women_ownership);
+}

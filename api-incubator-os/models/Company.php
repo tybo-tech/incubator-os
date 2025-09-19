@@ -75,6 +75,69 @@ class Company
         return $this->add($data);
     }
 
+    /**
+     * Bulk insert companies.
+     * Accepts an array of associative arrays (each a company payload with WRITABLE keys).
+     * - Skips rows missing required 'name'.
+     * - Optionally performs upsert by registration_no (if $upsertByRegistrationNo = true and registration_no provided).
+     * - Wraps everything in a transaction for atomicity.
+     * Returns an array with summary + inserted/updated rows.
+     */
+    public function bulkAdd(array $rows, bool $upsertByRegistrationNo = false): array
+    {
+        if (empty($rows)) {
+            return [
+                'count' => 0,
+                'inserted' => [],
+                'updated' => [],
+                'skipped' => 0,
+                'errors' => []
+            ];
+        }
+
+        $inserted = [];
+        $updated = [];
+        $skipped = 0;
+        $errors = [];
+
+        $this->conn->beginTransaction();
+        try {
+            foreach ($rows as $idx => $raw) {
+                try {
+                    if (!is_array($raw)) { $skipped++; continue; }
+                    if (empty($raw['name'])) { $skipped++; continue; }
+
+                    if ($upsertByRegistrationNo && !empty($raw['registration_no'])) {
+                        $existing = $this->getByRegistrationNo($raw['registration_no']);
+                        if ($existing) {
+                            $updated[] = $this->update((int)$existing['id'], $raw);
+                            continue;
+                        }
+                    }
+
+                    // Normal insert path
+                    $inserted[] = $this->add($raw);
+                } catch (Throwable $t) {
+                    $errors[] = [ 'index' => $idx, 'message' => $t->getMessage() ];
+                }
+            }
+            $this->conn->commit();
+        } catch (Throwable $t) {
+            $this->conn->rollBack();
+            throw $t; // bubble up
+        }
+
+        return [
+            'count' => count($inserted) + count($updated),
+            'inserted_count' => count($inserted),
+            'updated_count' => count($updated),
+            'inserted' => $inserted,
+            'updated' => $updated,
+            'skipped' => $skipped,
+            'errors' => $errors,
+        ];
+    }
+
     public function getById(int $id): ?array
     {
         $stmt = $this->conn->prepare("SELECT * FROM companies WHERE id = ?");

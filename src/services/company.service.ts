@@ -46,4 +46,16 @@ export class CompanyService {
   setIndustryByName(company_id: number, industry_name: string): Observable<ICompany> {
     return this.http.post<ICompany>(`${this.apiUrl}/set-industry-by-name.php`, { company_id, industry_name });
   }
+
+  /**
+   * Bulk import companies.
+   * Accepts an array of Partial<ICompany>. Optional upsert by registration_no when true.
+   * Backend returns summary with inserted / updated arrays.
+   */
+  bulkImportCompanies(companies: Partial<ICompany>[], upsertByRegistrationNo: boolean = false): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/bulk-import-companies.php`, {
+      companies,
+      upsertByRegistrationNo
+    });
+  }
 }
