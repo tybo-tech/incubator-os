@@ -41,6 +41,33 @@ interface CompanyPickerData {
             <p class="text-sm text-gray-600 mt-1">
               Add or remove companies from this cohort
             </p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button
+                (click)="loadTag('#fy24')"
+                class="px-3 py-1 text-xs rounded-full border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+                [disabled]="isLoading() || loadingTag() === '#fy24'"
+                title="Show only companies imported in FY24 batch"
+              >
+                @if (loadingTag() === '#fy24') { Loading #fy24... } @else { Filter: #fy24 }
+              </button>
+              @if (activeDescriptionFilter()) {
+                <button
+                  (click)="clearTagFilter()"
+                  class="px-3 py-1 text-xs rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                  title="Clear description filter"
+                >
+                  Clear Filter
+                </button>
+                <button
+                  (click)="attachAllFiltered()"
+                  class="px-3 py-1 text-xs rounded-full border border-green-500 text-white bg-green-600 hover:bg-green-700 transition disabled:opacity-50"
+                  [disabled]="isBulkAttaching() || availableCompanies().length === 0"
+                  title="Attach all currently filtered available companies"
+                >
+                  @if (isBulkAttaching()) { Attaching... } @else { Attach All ({{ availableCompanies().length }}) }
+                </button>
+              }
+            </div>
           </div>
           <button
             (click)="onClose()"
@@ -256,6 +283,9 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
   isLoading = signal(false);
   isAdding = signal(false);
   isRemoving = signal<number | null>(null);
+  loadingTag = signal<string | null>(null);
+  activeDescriptionFilter = signal<string | null>(null);
+  isBulkAttaching = signal(false);
 
   // Computed
   availableCompanies = computed(() => this.pickerData()?.available_companies || []);
@@ -368,7 +398,8 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
       this.cohortId,
       this.programId,
       this.clientId,
-      search
+      search,
+      this.activeDescriptionFilter() || undefined
     ).pipe(
       catchError(error => {
         console.error('Failed to load companies:', error);
@@ -380,6 +411,41 @@ export class CategoryCompanyPickerComponent implements OnInit, OnDestroy {
       this.isLoading.set(false);
       // Clear selections when data refreshes
       this.selectedCompanyIds.set([]);
+      this.loadingTag.set(null);
+    });
+  }
+
+  // Quick helper: load all companies with specific description/tag
+  loadTag(tag: string) {
+    if (this.loadingTag()) return;
+    this.loadingTag.set(tag);
+    this.activeDescriptionFilter.set(tag);
+    // Clear search when tag filtering for maximal recall
+    this.searchQuery.set('');
+    this.loadCompanies('');
+  }
+
+  clearTagFilter() {
+    this.activeDescriptionFilter.set(null);
+    this.loadingTag.set(null);
+    this.loadCompanies(this.searchQuery());
+  }
+
+  attachAllFiltered() {
+    const ids = this.availableCompanies().map(c => c.id);
+    if (ids.length === 0) return;
+    this.isBulkAttaching.set(true);
+    this.categoryService.bulkAttachCompanies(this.cohortId, ids).pipe(
+      catchError(err => {
+        console.error('Bulk attach filtered failed', err);
+        this.isBulkAttaching.set(false);
+        return EMPTY;
+      })
+    ).subscribe(res => {
+      this.isBulkAttaching.set(false);
+      this.companiesChanged.emit();
+      // Reload to refresh available/assigned lists under same filter
+      this.loadCompanies(this.searchQuery());
     });
   }
 }

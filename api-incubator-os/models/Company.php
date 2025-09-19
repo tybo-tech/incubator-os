@@ -239,7 +239,7 @@ class Company
      * Get companies available for assignment to a cohort (not already assigned)
      * Returns minimal fields optimized for picker UI
      */
-    public function getAvailableForCohort(int $cohortId, string $search = '', int $limit = 50): array
+    public function getAvailableForCohort(int $cohortId, string $search = '', string $descriptionFilter = '', int $limit = 50): array
     {
         $sql = "SELECT DISTINCT c.id, c.name, c.email_address, c.registration_no
                 FROM companies c
@@ -254,6 +254,12 @@ class Company
             $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
         }
 
+        // Filter by exact description/tag if provided (e.g. '#fy24')
+        if ($descriptionFilter) {
+            $sql .= " AND c.description = ?";
+            $params[] = $descriptionFilter;
+        }
+
         // Exclude companies already in this cohort (if cohort_id provided)
         if ($cohortId > 0) {
             $sql .= " AND c.id NOT IN (
@@ -264,8 +270,10 @@ class Company
             $params[] = $cohortId;
         }
 
-        // Use string concatenation for LIMIT to avoid parameter binding issues
-        $sql .= " ORDER BY c.name ASC LIMIT " . min((int)$limit, 100);
+    // Use string concatenation for LIMIT to avoid parameter binding issues
+    // If a description filter is present we allow a higher cap (up to 500) to ensure batch tag operations get full set
+    $cap = $descriptionFilter ? 500 : 100;
+    $sql .= " ORDER BY c.name ASC LIMIT " . min((int)$limit, $cap);
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);

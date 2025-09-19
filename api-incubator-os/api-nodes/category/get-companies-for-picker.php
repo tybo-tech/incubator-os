@@ -9,6 +9,8 @@ $cohortId = (int)($_GET['cohort_id'] ?? 0);
 $programId = (int)($_GET['program_id'] ?? 0);
 $clientId = (int)($_GET['client_id'] ?? 0);
 $search = $_GET['search'] ?? '';
+// Optional description exact match (e.g., tag like '#fy24')
+$description = $_GET['description'] ?? '';
 
 try {
     // Database connection
@@ -20,7 +22,7 @@ try {
     $categoryItem = new CategoryItem($db);
 
     // Get available companies (not assigned to this cohort)
-    $availableCompanies = $company->getAvailableForCohort($cohortId, $search);
+    $availableCompanies = $company->getAvailableForCohort($cohortId, $search, $description);
 
     // Get assigned companies (if cohort provided)
     $assignedCompanies = [];
@@ -37,7 +39,8 @@ try {
         'program_id' => $programId,
         'client_id' => $clientId,
         'total_available' => count($availableCompanies),
-        'total_assigned' => count($assignedCompanies)
+        'total_assigned' => count($assignedCompanies),
+        'description_filter' => $description
     ];
 
     // Success response

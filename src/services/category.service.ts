@@ -180,7 +180,8 @@ export class CategoryService {
     cohortId: number,
     programId?: number,
     clientId?: number,
-    search?: string
+    search?: string,
+    description?: string
   ): Observable<{
     available_companies: any[];
     assigned_companies: any[];
@@ -190,12 +191,14 @@ export class CategoryService {
     client_id: number;
     total_available: number;
     total_assigned: number;
+    description_filter?: string;
   }> {
     const params = new URLSearchParams();
     params.append('cohort_id', String(cohortId));
     if (programId) params.append('program_id', String(programId));
     if (clientId) params.append('client_id', String(clientId));
     if (search) params.append('search', search);
+    if (description) params.append('description', description);
 
     return this.http.get<any>(`${this.apiUrl}/get-companies-for-picker.php?${params.toString()}`);
   }
