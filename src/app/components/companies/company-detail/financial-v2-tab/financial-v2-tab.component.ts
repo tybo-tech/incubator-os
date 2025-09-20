@@ -16,10 +16,18 @@ export class FinancialV2TabComponent implements OnInit {
   @Input() clientId: number = 1;
   @Input() programId: number = 0;
   @Input() cohortId: number = 0;
+  // If set, only show this metric group id
+  @Input() filterGroupId: number | null = null;
 
   loading = signal(true);
   error = signal<string | null>(null);
   hierarchy = signal<MetricsHierarchy>([]);
+  // derived filtered view
+  get displayedHierarchy(): MetricsHierarchy {
+    const groups = this.hierarchy();
+    if (this.filterGroupId) return groups.filter(g => g.id === this.filterGroupId);
+    return groups;
+  }
 
   constructor(private metricsService: MetricsService) {}
 
@@ -30,7 +38,7 @@ export class FinancialV2TabComponent implements OnInit {
     if (!this.company?.id) return;
     this.loading.set(true); this.error.set(null);
     this.metricsService.fullMetrics(this.clientId, this.company.id, this.programId, this.cohortId).subscribe({
-      next: (groups) => { this.hierarchy.set(groups); this.loading.set(false); },
+  next: (groups) => { this.hierarchy.set(groups); this.loading.set(false); },
       error: (err) => { console.error(err); this.error.set('Failed to load metrics'); this.loading.set(false); }
     });
   }

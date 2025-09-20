@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type TabType =
+// Base static tab identifiers
+type StaticTabType =
   | 'overview'
   | 'assessment'
   | 'swot'
@@ -18,6 +19,11 @@ export type TabType =
   | 'hr-tracking'
   | 'esg'
   | 'sessions';
+
+// Dynamic metric group tabs will use the pattern: metric-group-<id>
+export type TabType = StaticTabType | `metric-group-${number}`;
+
+export interface MetricGroupTabMeta { id: number; name: string; code?: string; }
 
 @Component({
   selector: 'app-tabs-navigation',
@@ -93,7 +99,8 @@ export type TabType =
           >
             Financials
           </button>
-          <button
+          <!-- Optional aggregate metrics tab (Financials V2) -->
+          <button *ngIf="showAllMetricsTab"
             (click)="onTabChange('financial-v2')"
             [class]="
               'py-4 px-1 border-b-2 font-medium text-sm ' +
@@ -101,10 +108,25 @@ export type TabType =
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')
             "
-            title="New metrics architecture"
+            title="All metric groups"
           >
-            ⭐ Financials V2
+            ⭐ Metrics
           </button>
+          <!-- Dynamic Metric Group Tabs -->
+          <ng-container *ngFor="let g of metricGroupTabs">
+            <button
+              (click)="onTabChange(metricGroupTabId(g.id))"
+              [class]="
+                'py-4 px-1 border-b-2 font-medium text-sm ' +
+                (activeTab === metricGroupTabId(g.id)
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')
+              "
+              [title]="g.code || g.name"
+            >
+              {{ g.name }}
+            </button>
+          </ng-container>
           <!-- <button
             (click)="onTabChange('purchases')"
             [class]="
@@ -191,9 +213,11 @@ export type TabType =
 })
 export class TabsNavigationComponent {
   @Input() activeTab: TabType = 'overview';
+  @Input() metricGroupTabs: MetricGroupTabMeta[] = [];
+  @Input() showAllMetricsTab = true; // allow parent to hide aggregate tab
   @Output() tabChange = new EventEmitter<TabType>();
 
-  onTabChange(tab: TabType): void {
-    this.tabChange.emit(tab);
-  }
+  metricGroupTabId(id: number): `metric-group-${number}` { return `metric-group-${id}`; }
+
+  onTabChange(tab: TabType): void { this.tabChange.emit(tab); }
 }

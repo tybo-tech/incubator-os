@@ -2,14 +2,30 @@
 include_once '../../config/Database.php';
 include_once '../../models/Metrics.php';
 
-$clientId = $_GET['client_id'] ?? null;
-$companyId = $_GET['company_id'] ?? null;
-$programId = $_GET['program_id'] ?? null;
-$cohortId = $_GET['cohort_id'] ?? null;
+$clientId  = isset($_GET['client_id'])  ? $_GET['client_id']  : null;
+$companyId = isset($_GET['company_id']) ? $_GET['company_id'] : null;
+$programId = isset($_GET['program_id']) ? $_GET['program_id'] : null;
+$cohortId  = isset($_GET['cohort_id'])  ? $_GET['cohort_id']  : null;
 try {
-    foreach(['client_id','company_id','program_id','cohort_id'] as $r) if(!$$r) throw new Exception("$r required");
-    $database = new Database(); $db = $database->connect(); $m = new Metrics($db);
-    $groups = $m->getFullMetrics((int)$clientId,(int)$companyId,(int)$programId,(int)$cohortId);
+    $params = [
+        'client_id'  => $clientId,
+        'company_id' => $companyId,
+        'program_id' => $programId,
+        'cohort_id'  => $cohortId,
+    ];
+    foreach ($params as $key => $value) {
+        // Accept 0 as valid; only error if null or empty string
+        if ($value === null || $value === '') {
+            throw new Exception("$key required");
+        }
+        if (!is_numeric($value)) {
+            throw new Exception("$key must be numeric");
+        }
+    }
+    $database = new Database();
+    $db = $database->connect();
+    $m = new Metrics($db);
+    $groups = $m->getFullMetrics((int)$clientId, (int)$companyId, (int)$programId, (int)$cohortId);
     // Cast numeric fields & rename year_
     foreach($groups as &$g){
         foreach($g['types'] as &$t){

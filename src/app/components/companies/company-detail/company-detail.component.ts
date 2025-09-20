@@ -28,6 +28,8 @@ import { GpsTargetsTabComponent } from './gps-targets-tab/gps-targets-tab.compon
 import { SessionsTabComponent } from './sessions-tab/sessions-tab.component';
 import { CompanyFormModalComponent } from '../company-form-modal/company-form-modal.component';
 import { CompanyService } from '../../../../services/company.service';
+import { MetricsService } from '../../../../services/metrics.service';
+import { IMetricGroup } from '../../../../models/metrics.model';
 import { ICompany } from '../../../../models/simple.schema';
 
 @Component({
@@ -72,10 +74,16 @@ export class CompanyDetailComponent implements OnInit {
   // Edit modal properties
   isEditModalOpen = false;
 
+  // Dynamic metric group tabs
+  metricGroupTabs: { id: number; name: string; code?: string }[] = [];
+  metricsLoading = false;
+  metricsError: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private nodeService: CompanyService
+    private nodeService: CompanyService,
+    private metricsService: MetricsService
   ) {}
 
   ngOnInit() {
@@ -89,6 +97,8 @@ export class CompanyDetailComponent implements OnInit {
     // Load context from query parameters
     this.route.queryParams.subscribe(params => {
       this.loadContextFromParams(params);
+      // After context is available attempt loading metric group tabs
+      this.loadMetricGroups();
     });
   }
 
@@ -216,4 +226,51 @@ export class CompanyDetailComponent implements OnInit {
     this.closeEditModal();
     // Optionally show a success message
   }
+
+  private resolveClientId(): number | null {
+    const c = this.context.find(x => x.type === 'client');
+    return c ? c.id : null;
+  }
+
+  private loadMetricGroups() {
+    const clientId = this.resolveClientId();
+    if (!clientId) {
+      this.metricGroupTabs = [];
+      return; // can't load without client context yet
+    }
+    this.metricsLoading = true;
+    this.metricsError = null;
+    this.metricsService.listGroups(clientId).subscribe({
+      next: (groups: IMetricGroup[]) => {
+        this.metricGroupTabs = groups.map(g => ({ id: g.id, name: g.name, code: g.code }));
+        // If user navigated directly to a metric-group tab ensure it still exists, else reset
+        if (this.activeTab.startsWith && this.activeTab.startsWith('metric-group-')) {
+          const id = parseInt(this.activeTab.split('metric-group-')[1], 10);
+          if (!this.metricGroupTabs.find(g => g.id === id)) {
+            this.activeTab = 'financial-v2';
+          }
+        }
+      },
+      error: err => {
+        console.error('Failed loading metric groups', err);
+        this.metricsError = 'Failed to load metric groups';
+      },
+      complete: () => this.metricsLoading = false
+    });
+  }
+
+  isMetricGroupTab(tab: string | TabType): boolean {
+    return typeof tab === 'string' && tab.startsWith('metric-group-');
+  }
+
+  getActiveMetricGroupId(): number | null {
+    if (!this.isMetricGroupTab(this.activeTab)) return null;
+    const idStr = (this.activeTab as string).split('metric-group-')[1];
+    const num = parseInt(idStr, 10);
+    return isNaN(num) ? null : num;
+  }
+
+  getActiveClientId(): number { return this.resolveClientId() ?? 0; }
+  getActiveProgramId(): number { const p = this.context.find(x => x.type==='program'); return p ? p.id : 0; }
+  getActiveCohortId(): number { const c = this.context.find(x => x.type==='cohort'); return c ? c.id : 0; }
 }

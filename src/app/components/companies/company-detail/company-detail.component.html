@@ -33,6 +33,8 @@
   <!-- Tabs Navigation -->
   <app-tabs-navigation
     [activeTab]="activeTab"
+    [metricGroupTabs]="metricGroupTabs"
+    [showAllMetricsTab]="true"
     (tabChange)="setActiveTab($event)">
   </app-tabs-navigation>
 
@@ -74,11 +76,25 @@
       [company]="company">
     </app-financial-tab>
 
-    <!-- Financials V2 Tab -->
+    <!-- Aggregate Metrics (All groups) Tab -->
     <app-financial-v2-tab
       *ngIf="activeTab === 'financial-v2'"
-      [company]="company">
+      [company]="company"
+      [clientId]="getActiveClientId()"
+      [programId]="getActiveProgramId()"
+      [cohortId]="getActiveCohortId()"
+    >
     </app-financial-v2-tab>
+
+    <!-- Dynamic Metric Group Specific View (reuse financial-v2 component for now; it can filter internally later) -->
+    <app-financial-v2-tab
+      *ngIf="isMetricGroupTab(activeTab)"
+      [company]="company"
+      [clientId]="getActiveClientId()"
+      [programId]="getActiveProgramId()"
+      [cohortId]="getActiveCohortId()"
+      [filterGroupId]="getActiveMetricGroupId()"
+    ></app-financial-v2-tab>
 
     <!-- Purchases Tab -->
     <app-purchases-tab

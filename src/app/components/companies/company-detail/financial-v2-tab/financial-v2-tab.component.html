@@ -7,12 +7,12 @@
   </div>
 
   <ng-container *ngIf="!loading() && !error()">
-    <div *ngIf="hierarchy().length === 0" class="text-sm text-gray-500">
+    <div *ngIf="displayedHierarchy.length === 0" class="text-sm text-gray-500">
       No metric groups configured.
     </div>
 
-    <div class="space-y-8" *ngIf="hierarchy().length > 0">
-      <div *ngFor="let group of hierarchy()" class="bg-white border rounded-lg shadow-sm">
+    <div class="space-y-8" *ngIf="displayedHierarchy.length > 0">
+      <div *ngFor="let group of displayedHierarchy" class="bg-white border rounded-lg shadow-sm">
         <div class="px-5 py-3 border-b">
           <h3 class="text-lg font-medium flex items-center gap-2">
             <span>{{ group.name }}</span>
