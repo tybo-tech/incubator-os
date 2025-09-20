@@ -209,9 +209,21 @@ export class MetricsTabComponent implements OnInit {
   private buildRevenueIndex() {
     this.revenueTotalsByYear.clear();
     const groups = this.hierarchy();
-    const revenueGroup = groups.find(g => g.code === 'REVENUE' || g.name?.toUpperCase() === 'REVENUE');
-    const revenueType = revenueGroup?.types?.find(t => t.code === 'REVENUE_TOTAL' || t.name?.toUpperCase() === 'REVENUE');
-    revenueType?.records?.forEach(r => {
+    // Collect candidate revenue types (flexible matching: code or name contains 'REV')
+    const candidateTypes: IMetricType[] = [];
+    for (const g of groups) {
+      const gName = (g.code || g.name || '').toUpperCase();
+      g.types?.forEach(t => {
+        const tName = (t.code + ' ' + t.name).toUpperCase();
+        if (gName.includes('REV') || tName.includes('REV')) candidateTypes.push(t);
+      });
+    }
+    if (candidateTypes.length === 0) return; // no revenue present yet
+    // Prefer an explicit TOTAL revenue type
+    let revenueType = candidateTypes.find(t => (t.code || '').toUpperCase().includes('TOTAL'))
+      || candidateTypes.find(t => (t.code || '').toUpperCase() === 'REVENUE_TOTAL')
+      || candidateTypes[0];
+    revenueType.records?.forEach(r => {
       const total = this.computeRowTotal(r) ?? r.total ?? null;
       if (r.year && total != null) this.revenueTotalsByYear.set(r.year, Number(total));
     });
@@ -263,7 +275,10 @@ export class MetricsTabComponent implements OnInit {
 
   // ----- Normalization helpers -----
   private normalizeHierarchy(groups: MetricsHierarchy) {
-    groups.forEach(g => g.types?.forEach(t => t.records?.forEach(r => this.normalizeRecord(r, t))));
+    groups.forEach(g => g.types?.forEach(t => {
+      t.records?.forEach(r => this.normalizeRecord(r, t));
+    }));
+    this.normalizeMarginsInPlace(groups);
   }
 
   private normalizeRecord(r: IMetricRecord, type?: IMetricType) {
@@ -275,6 +290,18 @@ export class MetricsTabComponent implements OnInit {
     r.q4 = r.q4 == null ? null : Number(r.q4);
     r.total = r.total == null ? null : Number(r.total);
     r.margin_pct = r.margin_pct == null ? null : Number(r.margin_pct);
+    // Normalize legacy stored percentage (e.g. 53 -> 0.53)
+    if (r.margin_pct != null && r.margin_pct > 1) r.margin_pct = r.margin_pct / 100;
     if (!r.unit && type?.unit) r.unit = type.unit;
+  }
+
+  private normalizeMarginsInPlace(groups: MetricsHierarchy) {
+    groups.forEach(g => g.types?.forEach(t => {
+      if (t.show_margin === 1) {
+        t.records?.forEach(r => {
+          if (r.margin_pct != null && r.margin_pct > 1) r.margin_pct = r.margin_pct / 100;
+        });
+      }
+    }));
   }
 }
