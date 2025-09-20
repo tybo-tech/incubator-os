@@ -42,7 +42,12 @@ export class MetricsTabComponent implements OnInit {
     if (!this.company?.id) return;
     this.loading.set(true); this.error.set(null);
     this.metricsService.fullMetrics(this.clientId, this.company.id, this.programId, this.cohortId).subscribe({
-      next: (groups) => { this.hierarchy.set(groups); this.refreshDerivedCaches(); this.loading.set(false); },
+      next: (groups) => {
+        this.normalizeHierarchy(groups);
+        this.hierarchy.set(groups);
+        this.refreshDerivedCaches();
+        this.loading.set(false);
+      },
       error: (err) => { console.error(err); this.error.set('Failed to load metrics'); this.loading.set(false); }
     });
   }
@@ -124,10 +129,11 @@ export class MetricsTabComponent implements OnInit {
 
   computeRowTotal(record: IMetricRecord): number | null {
     const d = this.draft[record.id] || {};
-    const q1 = d.q1 ?? record.q1 ?? 0;
-    const q2 = d.q2 ?? record.q2 ?? 0;
-    const q3 = d.q3 ?? record.q3 ?? 0;
-    const q4 = d.q4 ?? record.q4 ?? 0;
+    // Force numeric coercion in case backend delivered strings
+    const q1 = Number(d.q1 ?? record.q1 ?? 0) || 0;
+    const q2 = Number(d.q2 ?? record.q2 ?? 0) || 0;
+    const q3 = Number(d.q3 ?? record.q3 ?? 0) || 0;
+    const q4 = Number(d.q4 ?? record.q4 ?? 0) || 0;
     const sum = q1 + q2 + q3 + q4;
     return Number.isFinite(sum) ? sum : null;
   }
@@ -140,12 +146,24 @@ export class MetricsTabComponent implements OnInit {
     const snapshot = { ...record }; // rollback snapshot
     // Optimistic: merge into visible record immediately
     Object.assign(record, changes);
-    // Derived values
+    // Derived values (compute before sending to backend)
     record.total = this.computeRowTotal(record) ?? null;
     record.margin_pct = this.computeMargin(record, type);
-    this.metricsService.updateRecord({ id: record.id, ...changes }).subscribe({
+    const updatePayload: any = {
+      id: record.id,
+      q1: record.q1 ?? null,
+      q2: record.q2 ?? null,
+      q3: record.q3 ?? null,
+      q4: record.q4 ?? null,
+      total: record.total ?? null,
+      margin_pct: record.margin_pct ?? null
+    };
+    this.metricsService.updateRecord(updatePayload).subscribe({
       next: updated => {
         Object.assign(record, updated);
+        // Re-normalize & re-derive (backend might not recompute derived fields)
+        record.total = this.computeRowTotal(record) ?? (record.total ?? null);
+        record.margin_pct = this.computeMargin(record, type);
         delete this.draft[record.id];
         this.dirtyRecords.delete(record.id);
         delete this.savingRecord[record.id];
@@ -235,9 +253,28 @@ export class MetricsTabComponent implements OnInit {
       next: records => {
         // ensure year mapping (API might send year_)
         (records as any[]).forEach(r => { if ((r as any).year_ && !r.year) r.year = (r as any).year_; });
+        records.forEach(r => this.normalizeRecord(r, type));
         type.records = records.sort((a,b)=> b.year - a.year);
+        this.refreshDerivedCaches();
       },
       error: err => console.error('Failed to reload records', err)
     });
+  }
+
+  // ----- Normalization helpers -----
+  private normalizeHierarchy(groups: MetricsHierarchy) {
+    groups.forEach(g => g.types?.forEach(t => t.records?.forEach(r => this.normalizeRecord(r, t))));
+  }
+
+  private normalizeRecord(r: IMetricRecord, type?: IMetricType) {
+    // Coerce numerics (backend may send strings)
+    r.year = Number(r.year);
+    r.q1 = r.q1 == null ? null : Number(r.q1);
+    r.q2 = r.q2 == null ? null : Number(r.q2);
+    r.q3 = r.q3 == null ? null : Number(r.q3);
+    r.q4 = r.q4 == null ? null : Number(r.q4);
+    r.total = r.total == null ? null : Number(r.total);
+    r.margin_pct = r.margin_pct == null ? null : Number(r.margin_pct);
+    if (!r.unit && type?.unit) r.unit = type.unit;
   }
 }
