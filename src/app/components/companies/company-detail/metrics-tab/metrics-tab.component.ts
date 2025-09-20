@@ -30,6 +30,8 @@ export class MetricsTabComponent implements OnInit {
 
   // Local mutable draft values keyed by record id
   draft: { [recordId: number]: Partial<IMetricRecord> } = {};
+  // Revenue lookup cache (year -> revenue total)
+  private revenueTotalsByYear = new Map<number, number>();
 
   constructor(private metricsService: MetricsService, private toast: ToastService) {}
 
@@ -40,7 +42,7 @@ export class MetricsTabComponent implements OnInit {
     if (!this.company?.id) return;
     this.loading.set(true); this.error.set(null);
     this.metricsService.fullMetrics(this.clientId, this.company.id, this.programId, this.cohortId).subscribe({
-      next: (groups) => { this.hierarchy.set(groups); this.loading.set(false); },
+      next: (groups) => { this.hierarchy.set(groups); this.refreshDerivedCaches(); this.loading.set(false); },
       error: (err) => { console.error(err); this.error.set('Failed to load metrics'); this.loading.set(false); }
     });
   }
@@ -80,7 +82,7 @@ export class MetricsTabComponent implements OnInit {
       program_id: this.programId,
       cohort_id: this.cohortId,
       year,
-      unit: type.unit || 'ZAR'
+      unit: type.unit ?? 'ZAR'
     } as IMetricRecord;
     // Ensure array
     if (!type.records) type.records = [];
@@ -99,8 +101,8 @@ export class MetricsTabComponent implements OnInit {
         type.records = (type.records||[]).map(r => r.id === optimistic.id ? saved : r)
           .sort((a,b)=> b.year - a.year);
         this.toast.success('Year added');
-        // Reload just this type's records to avoid any mapping inconsistencies
         this.reloadTypeRecords(type);
+        this.refreshDerivedCaches();
       },
       error: err => {
         console.error(err);
@@ -117,6 +119,7 @@ export class MetricsTabComponent implements OnInit {
     (this.draft[record.id] as any)[field] = (value === '' ? null : Number(value));
     // Do not persist total/margin in draft; they are derived live.
     this.dirtyRecords.add(record.id);
+    this.refreshDerivedCaches();
   }
 
   computeRowTotal(record: IMetricRecord): number | null {
@@ -139,13 +142,14 @@ export class MetricsTabComponent implements OnInit {
     Object.assign(record, changes);
     // Derived values
     record.total = this.computeRowTotal(record) ?? null;
-    record.margin_pct = this.computeMargin(record);
+    record.margin_pct = this.computeMargin(record, type);
     this.metricsService.updateRecord({ id: record.id, ...changes }).subscribe({
       next: updated => {
         Object.assign(record, updated);
         delete this.draft[record.id];
         this.dirtyRecords.delete(record.id);
         delete this.savingRecord[record.id];
+        this.refreshDerivedCaches();
         this.toast.success('Saved');
       },
       error: err => {
@@ -165,10 +169,46 @@ export class MetricsTabComponent implements OnInit {
     return (this.draft[record.id] && (this.draft[record.id] as any)[field]) ?? (record as any)[field];
   }
 
-  computeMargin(record: IMetricRecord): number | null {
-    // Margin disabled until formula specified; returning null.
+  computeMargin(record: IMetricRecord, type?: IMetricType): number | null {
+    const t = type ?? this.findTypeOfRecord(record);
+    if (!t || t.show_margin !== 1) return null;
+    const total = this.computeRowTotal(record) ?? record.total ?? null;
+    if (total == null) return null;
+    const rev = this.revenueTotalsByYear.get(record.year);
+    if (rev == null || rev === 0) return null;
+    // Return ratio (0-1). UI will format as %.
+    return total / rev;
+  }
+
+  private findTypeOfRecord(rec: IMetricRecord): IMetricType | null {
+    for (const g of this.hierarchy()) {
+      const type = g.types?.find(t => t.id === rec.metric_type_id);
+      if (type) return type;
+    }
     return null;
   }
+
+  private buildRevenueIndex() {
+    this.revenueTotalsByYear.clear();
+    const groups = this.hierarchy();
+    const revenueGroup = groups.find(g => g.code === 'REVENUE' || g.name?.toUpperCase() === 'REVENUE');
+    const revenueType = revenueGroup?.types?.find(t => t.code === 'REVENUE_TOTAL' || t.name?.toUpperCase() === 'REVENUE');
+    revenueType?.records?.forEach(r => {
+      const total = this.computeRowTotal(r) ?? r.total ?? null;
+      if (r.year && total != null) this.revenueTotalsByYear.set(r.year, Number(total));
+    });
+  }
+
+  private refreshDerivedCaches() { this.buildRevenueIndex(); }
+
+  // Bulk save all dirty records
+  saveAllDirty() {
+    for (const g of this.displayedHierarchy) {
+      g.types?.forEach(t => t.records?.forEach(r => { if (this.isDirty(r)) this.saveRecord(t, r); }));
+    }
+  }
+
+  trackByRecord(index: number, rec: IMetricRecord) { return rec.id; }
 
   deleteRecord(type: IMetricType, record: IMetricRecord) {
     if (record.id < 0) { // optimistic unsaved

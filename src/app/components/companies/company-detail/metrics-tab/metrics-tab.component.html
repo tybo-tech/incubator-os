@@ -2,6 +2,7 @@
   <div class="flex items-center gap-3">
     <h2 class="text-xl font-semibold">⭐ Metrics</h2>
     <button class="text-sm px-3 py-1.5 rounded border bg-white hover:bg-gray-50" (click)="refresh()">Reload</button>
+  <button class="text-sm px-3 py-1.5 rounded bg-blue-600 text-white disabled:opacity-40" [disabled]="dirtyRecords.size === 0" (click)="saveAllDirty()">Save all ({{ dirtyRecords.size }})</button>
     <span *ngIf="loading()" class="text-sm text-gray-500">Loading...</span>
     <span *ngIf="error()" class="text-sm text-red-600">{{ error() }}</span>
   </div>
@@ -40,17 +41,17 @@
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="text-left p-2 w-20">Year</th>
-                    <th class="text-left p-2">Q1</th>
-                    <th class="text-left p-2">Q2</th>
-                    <th class="text-left p-2">Q3</th>
-                    <th class="text-left p-2">Q4</th>
-                    <th class="text-left p-2">Total</th>
+                    <th class="text-left p-2">Q1 <span class="text-[10px] text-gray-400" *ngIf="type.unit">({{ type.unit }})</span></th>
+                    <th class="text-left p-2">Q2 <span class="text-[10px] text-gray-400" *ngIf="type.unit">({{ type.unit }})</span></th>
+                    <th class="text-left p-2">Q3 <span class="text-[10px] text-gray-400" *ngIf="type.unit">({{ type.unit }})</span></th>
+                    <th class="text-left p-2">Q4 <span class="text-[10px] text-gray-400" *ngIf="type.unit">({{ type.unit }})</span></th>
+                    <th class="text-left p-2">Total <span class="text-[10px] text-gray-400" *ngIf="type.unit">({{ type.unit }})</span></th>
                     <th class="text-left p-2" *ngIf="type.show_margin === 1">Margin %</th>
-                    <th class="text-left p-2 w-28">Actions</th>
+                    <th class="text-left p-2 w-36">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50 align-top" [class.bg-yellow-50]="isDirty(r)">
+                  <tr *ngFor="let r of type.records; trackBy: trackByRecord" class="hover:bg-gray-50 align-top" [class.bg-yellow-50]="isDirty(r)">
                     <td class="p-2 font-medium">{{ r.year }}</td>
                     <td class="p-1">
                       <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q1')" (ngModelChange)="editField(r,'q1',$event)" />
@@ -72,7 +73,9 @@
                       </div>
                     </td>
                     <td class="p-1 align-top" *ngIf="type.show_margin === 1">
-                      <p class="px-2 py-1 rounded bg-gray-100 text-right min-w-20">{{ computeMargin(r) ?? '—' }}</p>
+                      <p class="px-2 py-1 rounded bg-gray-100 text-right min-w-20">
+                        {{ (computeMargin(r, type) ?? null) !== null ? ((computeMargin(r, type)! * 100) | number:'1.0-1') + '%' : '—' }}
+                      </p>
                       <div class="text-[10px] text-gray-400"><span class="px-1 rounded bg-gray-200">auto</span> derived</div>
                     </td>
                     <td class="p-2 flex gap-2">
