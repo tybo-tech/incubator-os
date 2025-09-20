@@ -20,14 +20,22 @@
         </div>
 
         <div class="divide-y" *ngIf="group.types?.length">
-          <div *ngFor="let type of group.types" class="p-5">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="font-semibold">{{ type.name }}</h4>
+          <div *ngFor="let type of group.types" class="p-5 space-y-3">
+            <div class="flex items-center gap-3 justify-between">
+              <div class="flex items-center gap-2">
+                <h4 class="font-semibold">{{ type.name }}</h4>
+                <button class="text-xs px-2 py-1 border rounded hover:bg-gray-50" (click)="startAddYear(type)" *ngIf="!isAddingYear(type)">Add Year</button>
+                <div class="flex items-center gap-2" *ngIf="isAddingYear(type)">
+                  <input type="number" class="w-24 text-xs px-2 py-1 border rounded" [(ngModel)]="newYearInput[type.id]" placeholder="Year" />
+                  <button class="text-xs px-2 py-1 bg-blue-600 text-white rounded" (click)="addYear(type)">Add</button>
+                  <button class="text-xs px-2 py-1 border rounded" (click)="cancelAddYear(type)">Cancel</button>
+                </div>
+              </div>
               <div class="text-xs text-gray-500" *ngIf="(type.records?.length || 0) > 0">Records: {{ type.records?.length || 0 }}</div>
             </div>
 
             <div *ngIf="!type.records?.length" class="text-xs text-gray-400">No records yet.</div>
-            <div *ngIf="type.records?.length">
+            <div *ngIf="type.records?.length" class="overflow-x-auto">
               <table class="w-full text-sm border">
                 <thead class="bg-gray-50">
                   <tr>
@@ -38,17 +46,36 @@
                     <th class="text-left p-2">Q4</th>
                     <th class="text-left p-2">Total</th>
                     <th class="text-left p-2" *ngIf="type.show_margin === 1">Margin %</th>
+                    <th class="text-left p-2 w-28">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50">
+                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50 align-top">
                     <td class="p-2 font-medium">{{ r.year }}</td>
-                    <td class="p-2">{{ r.q1 ?? '-' }}</td>
-                    <td class="p-2">{{ r.q2 ?? '-' }}</td>
-                    <td class="p-2">{{ r.q3 ?? '-' }}</td>
-                    <td class="p-2">{{ r.q4 ?? '-' }}</td>
-                    <td class="p-2 font-medium">{{ r.total ?? ((r.q1||0)+(r.q2||0)+(r.q3||0)+(r.q4||0)) }}</td>
-                    <td class="p-2" *ngIf="type.show_margin === 1">{{ r.margin_pct ?? '-' }}</td>
+                    <td class="p-1">
+                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q1')" (ngModelChange)="editField(r,'q1',$event)" />
+                    </td>
+                    <td class="p-1">
+                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q2')" (ngModelChange)="editField(r,'q2',$event)" />
+                    </td>
+                    <td class="p-1">
+                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q3')" (ngModelChange)="editField(r,'q3',$event)" />
+                    </td>
+                    <td class="p-1">
+                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q4')" (ngModelChange)="editField(r,'q4',$event)" />
+                    </td>
+                    <td class="p-1">
+                      <input type="number" class="w-28 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'total') ?? computeRowTotal(r)" (ngModelChange)="editField(r,'total',$event)" />
+                      <div class="text-[10px] text-gray-400" *ngIf="!(draft[r.id]?.total)">Auto = sum quarters</div>
+                    </td>
+                    <td class="p-1" *ngIf="type.show_margin === 1">
+                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'margin_pct')" (ngModelChange)="editField(r,'margin_pct',$event)" />
+                    </td>
+                    <td class="p-2">
+                      <button class="text-xs px-2 py-1 rounded bg-blue-600 text-white disabled:opacity-50" [disabled]="!isDirty(r) || isSaving(r)" (click)="saveRecord(type,r)">
+                        {{ isSaving(r) ? 'Saving...' : 'Save' }}
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
