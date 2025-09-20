@@ -1,0 +1,61 @@
+<div class="space-y-6">
+  <div class="flex items-center gap-3">
+    <h2 class="text-xl font-semibold">⭐ Metrics</h2>
+    <button class="text-sm px-3 py-1.5 rounded border bg-white hover:bg-gray-50" (click)="refresh()">Reload</button>
+    <span *ngIf="loading()" class="text-sm text-gray-500">Loading...</span>
+    <span *ngIf="error()" class="text-sm text-red-600">{{ error() }}</span>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error()">
+    <div *ngIf="displayedHierarchy.length === 0" class="text-sm text-gray-500">No metric groups configured.</div>
+
+    <div class="space-y-8" *ngIf="displayedHierarchy.length > 0">
+      <div *ngFor="let group of displayedHierarchy" class="bg-white border rounded-lg shadow-sm">
+        <div class="px-5 py-3 border-b">
+          <h3 class="text-lg font-medium flex items-center gap-2">
+            <span>{{ group.name }}</span>
+            <span class="text-xs text-gray-400">({{ group.types?.length || 0 }} types)</span>
+          </h3>
+          <p class="text-xs text-gray-500 mt-1" *ngIf="group.description">{{ group.description }}</p>
+        </div>
+
+        <div class="divide-y" *ngIf="group.types?.length">
+          <div *ngFor="let type of group.types" class="p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-semibold">{{ type.name }}</h4>
+              <div class="text-xs text-gray-500" *ngIf="(type.records?.length || 0) > 0">Records: {{ type.records?.length || 0 }}</div>
+            </div>
+
+            <div *ngIf="!type.records?.length" class="text-xs text-gray-400">No records yet.</div>
+            <div *ngIf="type.records?.length">
+              <table class="w-full text-sm border">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="text-left p-2 w-20">Year</th>
+                    <th class="text-left p-2">Q1</th>
+                    <th class="text-left p-2">Q2</th>
+                    <th class="text-left p-2">Q3</th>
+                    <th class="text-left p-2">Q4</th>
+                    <th class="text-left p-2">Total</th>
+                    <th class="text-left p-2" *ngIf="type.show_margin === 1">Margin %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50">
+                    <td class="p-2 font-medium">{{ r.year }}</td>
+                    <td class="p-2">{{ r.q1 ?? '-' }}</td>
+                    <td class="p-2">{{ r.q2 ?? '-' }}</td>
+                    <td class="p-2">{{ r.q3 ?? '-' }}</td>
+                    <td class="p-2">{{ r.q4 ?? '-' }}</td>
+                    <td class="p-2 font-medium">{{ r.total ?? ((r.q1||0)+(r.q2||0)+(r.q3||0)+(r.q4||0)) }}</td>
+                    <td class="p-2" *ngIf="type.show_margin === 1">{{ r.margin_pct ?? '-' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
