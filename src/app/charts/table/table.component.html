@@ -1,0 +1,26 @@
+<div class="card text-bg-dark">
+  <div class="card-body" [style.minHeight]="minHeight">
+    <h5 class="mb-4 d-flex justify-content-between align-items-center">
+      {{ componentTitle }}
+      <button
+        class="btn btn-light"
+        *ngIf="showAddButton"
+        (click)="addClick.emit()"
+      >
+        <i class="bi bi-plus"></i>
+      </button>
+    </h5>
+    <table class="table table-dark table-hover table-striped">
+      <thead>
+        <tr>
+          <th *ngFor="let column of columns">{{ column.value }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of data" (click)="rowClick.emit(row)">
+          <td *ngFor="let column of columns">{{ row[column.key] }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

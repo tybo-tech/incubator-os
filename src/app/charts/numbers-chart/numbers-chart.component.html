@@ -1,0 +1,8 @@
+<div class="card text-bg-dark">
+  <div class="card-body">
+    <h5 *ngFor="let item of items" (click)="itemClicked.emit(item)">
+      {{ item.value }}
+      <span>{{ item.key  | titlecase}}</span>
+    </h5>
+  </div>
+</div>

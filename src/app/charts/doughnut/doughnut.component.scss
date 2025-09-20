@@ -1,0 +1,9 @@
+:host {
+  .chart-container {
+    width: 89% !important;
+    // Phone
+    @media (max-width: 768px) {
+      width: 100% !important;
+    }
+  }
+}

@@ -1,0 +1,22 @@
+:host {
+  h5 {
+    font-size: 1.6rem;
+    border-bottom: 1px solid #4f4d4d;
+    transition: all 0.3s;
+    font-weight: 900;
+    padding: 10px 0;
+    cursor: pointer;
+    &:hover {
+      transform: translateX(10px);
+    }
+    &:last-child {
+      border-bottom: none;
+    }
+    span {
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      display: block;
+    }
+  }
+}

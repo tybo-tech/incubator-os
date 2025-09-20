@@ -50,7 +50,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50 align-top">
+                  <tr *ngFor="let r of type.records" class="hover:bg-gray-50 align-top" [class.bg-yellow-50]="isDirty(r)">
                     <td class="p-2 font-medium">{{ r.year }}</td>
                     <td class="p-1">
                       <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q1')" (ngModelChange)="editField(r,'q1',$event)" />
@@ -66,15 +66,17 @@
                     </td>
                     <td class="p-1">
                       <input type="number" class="w-28 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'total') ?? computeRowTotal(r)" (ngModelChange)="editField(r,'total',$event)" />
-                      <div class="text-[10px] text-gray-400" *ngIf="!(draft[r.id]?.total)">Auto = sum quarters</div>
+                      <div class="text-[10px] text-gray-400 flex items-center gap-1" *ngIf="!(draft[r.id]?.total)">
+                        <span class="px-1 rounded bg-gray-200">auto</span>
+                        sum quarters
+                      </div>
                     </td>
                     <td class="p-1" *ngIf="type.show_margin === 1">
                       <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'margin_pct')" (ngModelChange)="editField(r,'margin_pct',$event)" />
                     </td>
-                    <td class="p-2">
-                      <button class="text-xs px-2 py-1 rounded bg-blue-600 text-white disabled:opacity-50" [disabled]="!isDirty(r) || isSaving(r)" (click)="saveRecord(type,r)">
-                        {{ isSaving(r) ? 'Saving...' : 'Save' }}
-                      </button>
+                    <td class="p-2 flex gap-2">
+                      <button class="text-xs px-2 py-1 rounded bg-blue-600 text-white disabled:opacity-50" [disabled]="!isDirty(r) || isSaving(r)" (click)="saveRecord(type,r)">{{ isSaving(r) ? 'Saving...' : 'Save' }}</button>
+                      <button class="text-xs px-2 py-1 rounded border text-red-600 border-red-300 hover:bg-red-50" (click)="deleteRecord(type,r)">Delete</button>
                     </td>
                   </tr>
                 </tbody>
