@@ -64,15 +64,16 @@
                     <td class="p-1">
                       <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'q4')" (ngModelChange)="editField(r,'q4',$event)" />
                     </td>
-                    <td class="p-1">
-                      <input type="number" class="w-28 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'total') ?? computeRowTotal(r)" (ngModelChange)="editField(r,'total',$event)" />
-                      <div class="text-[10px] text-gray-400 flex items-center gap-1" *ngIf="!(draft[r.id]?.total)">
+                    <td class="p-1 align-top">
+                      <p class="px-2 py-1 rounded bg-gray-100 font-medium text-right min-w-24">{{ computeRowTotal(r) ?? '—' }}</p>
+                      <div class="text-[10px] text-gray-400 flex items-center gap-1">
                         <span class="px-1 rounded bg-gray-200">auto</span>
                         sum quarters
                       </div>
                     </td>
-                    <td class="p-1" *ngIf="type.show_margin === 1">
-                      <input type="number" class="w-24 px-2 py-1 border rounded" [ngModel]="fieldDraft(r,'margin_pct')" (ngModelChange)="editField(r,'margin_pct',$event)" />
+                    <td class="p-1 align-top" *ngIf="type.show_margin === 1">
+                      <p class="px-2 py-1 rounded bg-gray-100 text-right min-w-20">{{ computeMargin(r) ?? '—' }}</p>
+                      <div class="text-[10px] text-gray-400"><span class="px-1 rounded bg-gray-200">auto</span> derived</div>
                     </td>
                     <td class="p-2 flex gap-2">
                       <button class="text-xs px-2 py-1 rounded bg-blue-600 text-white disabled:opacity-50" [disabled]="!isDirty(r) || isSaving(r)" (click)="saveRecord(type,r)">{{ isSaving(r) ? 'Saving...' : 'Save' }}</button>

@@ -112,29 +112,21 @@ export class MetricsTabComponent implements OnInit {
   }
 
   editField(record: IMetricRecord, field: keyof IMetricRecord, value: any) {
-    const numFields: (keyof IMetricRecord)[] = ['q1','q2','q3','q4','total','margin_pct'];
+    if (!['q1','q2','q3','q4'].includes(field)) return; // only quarters editable
     if (!this.draft[record.id]) this.draft[record.id] = {};
-    (this.draft[record.id] as any)[field] = numFields.includes(field) ? (value === '' ? null : Number(value)) : value;
-    // Auto compute total if user isn't explicitly overriding total
-    if (['q1','q2','q3','q4'].includes(field) && (this.draft[record.id] as any)['total'] == null) {
-      (this.draft[record.id] as any)['total'] = this.computeRowTotal(record);
-    }
-    // Auto compute margin if quarters or total changed and margin not explicitly changed
-    if ((['q1','q2','q3','q4','total'].includes(field)) && (this.draft[record.id] as any)['margin_pct'] == null) {
-      const margin = this.computeMargin(record);
-      if (margin != null) (this.draft[record.id] as any)['margin_pct'] = margin;
-    }
+    (this.draft[record.id] as any)[field] = (value === '' ? null : Number(value));
+    // Do not persist total/margin in draft; they are derived live.
     this.dirtyRecords.add(record.id);
   }
 
   computeRowTotal(record: IMetricRecord): number | null {
-    const draft = this.draft[record.id] || {};
-    const q1 = draft.q1 ?? record.q1 ?? 0;
-    const q2 = draft.q2 ?? record.q2 ?? 0;
-    const q3 = draft.q3 ?? record.q3 ?? 0;
-    const q4 = draft.q4 ?? record.q4 ?? 0;
-    const explicit = draft.total ?? record.total;
-    return explicit ?? (q1+q2+q3+q4);
+    const d = this.draft[record.id] || {};
+    const q1 = d.q1 ?? record.q1 ?? 0;
+    const q2 = d.q2 ?? record.q2 ?? 0;
+    const q3 = d.q3 ?? record.q3 ?? 0;
+    const q4 = d.q4 ?? record.q4 ?? 0;
+    const sum = q1 + q2 + q3 + q4;
+    return Number.isFinite(sum) ? sum : null;
   }
 
   saveRecord(type: IMetricType, record: IMetricRecord) {
@@ -145,9 +137,9 @@ export class MetricsTabComponent implements OnInit {
     const snapshot = { ...record }; // rollback snapshot
     // Optimistic: merge into visible record immediately
     Object.assign(record, changes);
-    // Auto fill total if missing
-    if (record.total == null) record.total = this.computeRowTotal(record) ?? null;
-    if (record.margin_pct == null) record.margin_pct = this.computeMargin(record);
+    // Derived values
+    record.total = this.computeRowTotal(record) ?? null;
+    record.margin_pct = this.computeMargin(record);
     this.metricsService.updateRecord({ id: record.id, ...changes }).subscribe({
       next: updated => {
         Object.assign(record, updated);
@@ -174,18 +166,8 @@ export class MetricsTabComponent implements OnInit {
   }
 
   computeMargin(record: IMetricRecord): number | null {
-    const draft = this.draft[record.id] || {};
-    const total = (draft.total ?? record.total);
-    // Example: margin = (q1 - cost etc.) -- since we only have total & quarters we can't infer; placeholder logic use total vs sum.
-    // If definition differs, adjust here. For now margin derived as (sum quarters != 0) ? total / sumQuarters * 100 : null when total provided.
-    const q1 = draft.q1 ?? record.q1 ?? 0;
-    const q2 = draft.q2 ?? record.q2 ?? 0;
-    const q3 = draft.q3 ?? record.q3 ?? 0;
-    const q4 = draft.q4 ?? record.q4 ?? 0;
-    const sum = q1 + q2 + q3 + q4;
-    if (total == null || sum === 0) return null;
-    const pct = (total / sum) * 100;
-    return Math.round(pct * 100) / 100;
+    // Margin disabled until formula specified; returning null.
+    return null;
   }
 
   deleteRecord(type: IMetricType, record: IMetricRecord) {
