@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IMetricRecord, IMetricType } from '../../../../../../models/metrics.model';
+import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-year-button.component';
 
 @Component({
   selector: 'app-yearly-metrics-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AddYearButtonComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
       <!-- Header -->
@@ -18,12 +19,19 @@ import { IMetricRecord, IMetricType } from '../../../../../../models/metrics.mod
               {{ metricType.description }}
             </p>
           </div>
-          <button
-            (click)="addNewYear()"
-            class="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center gap-2">
-            <span>+</span>
-            Add Year
-          </button>
+          <app-add-year-button
+            [metricTypeName]="metricType.name"
+            [buttonText]="'Add Year'"
+            [buttonClass]="'success'"
+            [size]="'md'"
+            [minYear]="2000"
+            [maxYear]="2100"
+            [existingYears]="existingYears"
+            [modalTitle]="'Add New Year'"
+            [inputLabel]="'Year'"
+            [actionLabel]="'Create Year'"
+            (yearAdded)="onYearAdded($event)">
+          </app-add-year-button>
         </div>
       </div>
 
@@ -101,11 +109,19 @@ import { IMetricRecord, IMetricType } from '../../../../../../models/metrics.mod
         <div class="text-gray-400 text-4xl mb-4">📊</div>
         <h3 class="text-sm font-medium text-gray-900 mb-2">No {{ metricType.name }} Data</h3>
         <p class="text-sm text-gray-500 mb-4">Start by adding your first annual record.</p>
-        <button
-          (click)="addNewYear()"
-          class="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
-          Add {{ metricType.name }} Data
-        </button>
+        <app-add-year-button
+          [metricTypeName]="metricType.name"
+          [buttonText]="'Add ' + metricType.name + ' Data'"
+          [buttonClass]="'success'"
+          [size]="'md'"
+          [minYear]="2000"
+          [maxYear]="2100"
+          [existingYears]="existingYears"
+          [modalTitle]="'Add New Year'"
+          [inputLabel]="'Year'"
+          [actionLabel]="'Create Year'"
+          (yearAdded)="onYearAdded($event)">
+        </app-add-year-button>
       </div>
     </div>
   `
@@ -119,6 +135,10 @@ export class YearlyMetricsTableComponent {
 
   get sortedRecords(): IMetricRecord[] {
     return [...this.records].sort((a, b) => b.year - a.year);
+  }
+
+  get existingYears(): number[] {
+    return this.records.map(r => r.year);
   }
 
   trackByRecord(index: number, record: IMetricRecord): number {
@@ -153,6 +173,13 @@ export class YearlyMetricsTableComponent {
     if (confirm(`Delete ${record.year} ${this.metricType.name} data?`)) {
       this.recordDeleted.emit(record.id);
     }
+  }
+
+  onYearAdded(year: number): void {
+    this.addYearRequested.emit({
+      metricTypeId: this.metricType.id,
+      year: year
+    });
   }
 
   addNewYear(): void {
