@@ -1,9 +1,11 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ICompany } from '../../../../../models/simple.schema';
 import { MetricsTabComponent } from '../metrics-tab/metrics-tab.component';
 import { FinancialTabComponent } from '../financial-tab/financial-tab.component';
 import { MetricGroupTabMeta } from '../tabs-navigation/tabs-navigation.component';
+import { MetricsManagementModalComponent } from './metrics-management-modal/metrics-management-modal.component';
+import { SettingsButtonComponent } from './settings-button/settings-button.component';
 
 // Internal sub-tab ids
 export type FinancialDashboardInnerTab =
@@ -14,7 +16,7 @@ export type FinancialDashboardInnerTab =
 @Component({
   selector: 'app-financial-dashboard-tab',
   standalone: true,
-  imports: [CommonModule, MetricsTabComponent, FinancialTabComponent],
+  imports: [CommonModule, MetricsTabComponent, FinancialTabComponent, MetricsManagementModalComponent, SettingsButtonComponent],
   template: `
     <div class="space-y-6">
       <!-- Enhanced Tab Navigation -->
@@ -49,6 +51,14 @@ export type FinancialDashboardInnerTab =
               {{ g.name }}
             </button>
           </ng-container>
+
+          <!-- Settings Button -->
+          <app-settings-button
+            (clicked)="openSettings()"
+            label="Settings"
+            title="Manage Metric Groups and Types"
+            customClasses="ml-2"
+          ></app-settings-button>
         </div>
       </div>
 
@@ -77,6 +87,14 @@ export type FinancialDashboardInnerTab =
         [filterGroupId]="extractGroupId(innerTab)"
       ></app-metrics-tab>
     </div>
+
+    <!-- Metrics Management Modal -->
+    <app-metrics-management-modal
+      #metricsModal
+      [clientId]="clientId"
+      (modalClosed)="onModalClosed()"
+      (dataUpdated)="onDataUpdated()"
+    ></app-metrics-management-modal>
   `,
 })
 export class FinancialDashboardTabComponent {
@@ -86,6 +104,8 @@ export class FinancialDashboardTabComponent {
   @Input() cohortId: number = 0;
   @Input() metricGroups: MetricGroupTabMeta[] = [];
   @Input() showAllMetricsTab: boolean = false; // Optional "All Metrics" tab
+
+  @ViewChild('metricsModal') metricsModal!: MetricsManagementModalComponent;
 
   innerTab: FinancialDashboardInnerTab = 'bank-statements';
 
@@ -114,5 +134,27 @@ export class FinancialDashboardTabComponent {
     const activeClasses = 'border-blue-500 text-blue-600 bg-blue-50 shadow-sm';
 
     return isActive ? activeClasses : baseClasses;
+  }
+
+  /**
+   * Open the metrics management modal
+   */
+  openSettings(): void {
+    this.metricsModal.open();
+  }
+
+  /**
+   * Handle modal closed event
+   */
+  onModalClosed(): void {
+    console.log('Metrics management modal closed');
+  }
+
+  /**
+   * Handle data updated event - refresh metric groups
+   */
+  onDataUpdated(): void {
+    console.log('Metrics data updated - parent should refresh groups');
+    // Emit an event or call parent method to refresh metricGroups if needed
   }
 }
