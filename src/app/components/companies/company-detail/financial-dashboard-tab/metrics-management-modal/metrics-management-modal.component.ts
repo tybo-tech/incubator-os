@@ -23,19 +23,14 @@ import { MetricsService } from '../../../../../../services/metrics.service';
               <button
                 *ngIf="currentView !== 'groups-list'"
                 (click)="goBack()"
-                class="p-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
+                class=""
                 title="Go Back"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
+                <i class="fas fa-arrow-left text-white"></i>
               </button>
 
-              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
+              <div class="p-2 bg-black bg-opacity-20 rounded-lg">
+                <i class="fas fa-cog text-white text-lg"></i>
               </div>
 
               <div>
@@ -60,12 +55,10 @@ import { MetricsService } from '../../../../../../services/metrics.service';
 
             <button
               (click)="closeModal()"
-              class="p-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
+              class=""
               title="Close Modal"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
+              <i class="fas fa-times text-white"></i>
             </button>
           </div>
         </div>
@@ -82,18 +75,14 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                 (click)="showCreateGroup()"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
+                <i class="fas fa-plus"></i>
                 Create New Group
               </button>
             </div>
 
             <!-- Groups Grid -->
             <div *ngIf="groups.length === 0" class="text-center py-12 text-gray-500">
-              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-              </svg>
+              <i class="fas fa-folder-open text-6xl mx-auto mb-4 text-gray-300 block"></i>
               <h3 class="text-lg font-semibold text-gray-700 mb-2">No Groups Found</h3>
               <p class="mb-4">Create your first metric group to get started</p>
             </div>
@@ -116,9 +105,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                     class="opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-800 p-1 rounded transition-all"
                     title="Edit Group"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
+                    <i class="fas fa-edit text-sm"></i>
                   </button>
                 </div>
 
@@ -146,10 +133,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
           <div *ngIf="currentView === 'create-group' || currentView === 'edit-group'">
             <div class="bg-blue-50 rounded-lg p-6 border border-blue-200">
               <h3 class="text-xl font-semibold text-blue-900 mb-6 flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path *ngIf="currentView === 'create-group'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  <path *ngIf="currentView === 'edit-group'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
+                <i class="fas text-lg" [class.fa-plus]="currentView === 'create-group'" [class.fa-edit]="currentView === 'edit-group'"></i>
                 {{ currentView === 'create-group' ? 'Create New Group' : 'Edit Group' }}
               </h3>
 
@@ -257,9 +241,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                   (click)="showCreateType()"
                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
+                  <i class="fas fa-plus"></i>
                   Create New Type
                 </button>
               </div>
@@ -267,9 +249,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
 
             <!-- Types List -->
             <div *ngIf="getTypesForGroup(selectedGroup.id).length === 0" class="text-center py-12 text-gray-500">
-              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H9a2 2 0 01-2-2z"></path>
-              </svg>
+              <i class="fas fa-chart-bar text-6xl mx-auto mb-4 text-gray-300 block"></i>
               <h3 class="text-lg font-semibold text-gray-700 mb-2">No Types Found</h3>
               <p class="mb-4">Create your first metric type for this group</p>
             </div>
@@ -308,9 +288,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                       class="opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-800 p-1 rounded transition-all"
                       title="Edit Type"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                      </svg>
+                      <i class="fas fa-edit text-sm"></i>
                     </button>
                   </div>
                 </div>
@@ -322,10 +300,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
           <div *ngIf="currentView === 'create-type' || currentView === 'edit-type'">
             <div class="bg-green-50 rounded-lg p-6 border border-green-200">
               <h3 class="text-xl font-semibold text-green-900 mb-6 flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path *ngIf="currentView === 'create-type'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  <path *ngIf="currentView === 'edit-type'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
+                <i class="fas text-lg" [class.fa-plus]="currentView === 'create-type'" [class.fa-edit]="currentView === 'edit-type'"></i>
                 {{ currentView === 'create-type' ? 'Create New Type' : 'Edit Type' }}
               </h3>
 
