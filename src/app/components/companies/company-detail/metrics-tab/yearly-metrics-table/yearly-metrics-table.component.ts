@@ -56,12 +56,14 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
               <td class="px-6 py-4 whitespace-nowrap">
                 <input
                   type="number"
-                  [(ngModel)]="record.year"
+                  [value]="record.year || ''"
+                  (input)="onYearInput(record, $event)"
                   (blur)="updateRecord(record)"
                   class="w-20 px-2 py-1 text-sm font-medium text-gray-900 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   min="2000"
                   max="2100"
-                  step="1" />
+                  step="1"
+                  placeholder="Year" />
               </td>
 
               <!-- Annual Value Input -->
@@ -69,6 +71,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                 <input
                   type="number"
                   [(ngModel)]="record.total"
+                  (input)="onAnnualValueChange(record)"
                   (blur)="updateRecord(record)"
                   class="w-32 px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="0.00"
@@ -145,27 +148,50 @@ export class YearlyMetricsTableComponent {
     return record.id;
   }
 
-  updateRecord(record: IMetricRecord): void {
-    // Validate year
-    const year = parseInt(String(record.year), 10);
-    if (isNaN(year) || year < 2000 || year > 2100) {
-      alert('Please enter a valid year between 2000 and 2100.');
+  onYearInput(record: IMetricRecord, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const yearValue = target.value.trim();
+
+    // Handle empty input
+    if (!yearValue) {
+      record.year = undefined as any; // Allow empty for now
       return;
     }
 
-    // Check for duplicate years (excluding current record)
-    const duplicateYear = this.records.find(r => r.id !== record.id && r.year === year);
-    if (duplicateYear) {
-      alert(`Year ${year} already exists for ${this.metricType.name}. Please choose a different year.`);
-      return;
+    // Parse and validate year
+    const parsedYear = parseInt(yearValue, 10);
+    if (!isNaN(parsedYear)) {
+      record.year = parsedYear;
     }
+  }
 
-    record.year = year;
-
-    // Ensure values are numbers before emitting
+  onAnnualValueChange(record: IMetricRecord): void {
+    // For yearly metrics, ensure the total value is a proper number
+    record.total = record.total != null ? parseFloat(String(record.total)) || null : null;
+  }  updateRecord(record: IMetricRecord): void {
+    // Always ensure values are numbers
     record.total = record.total != null ? parseFloat(String(record.total)) || null : null;
     record.margin_pct = record.margin_pct != null ? parseFloat(String(record.margin_pct)) || null : null;
 
+    // Validate year only if it's set
+    if (record.year !== undefined && record.year !== null) {
+      const year = parseInt(String(record.year), 10);
+      if (isNaN(year) || year < 2000 || year > 2100) {
+        alert('Please enter a valid year between 2000 and 2100.');
+        return;
+      }
+
+      // Check for duplicate years (excluding current record)
+      const duplicateYear = this.records.find(r => r.id !== record.id && r.year === year);
+      if (duplicateYear) {
+        alert(`Year ${year} already exists for ${this.metricType.name}. Please choose a different year.`);
+        return;
+      }
+
+      record.year = year;
+    }
+
+    // Always emit the updated record (even if year validation fails, we want to save the values)
     this.recordUpdated.emit(record);
   }
 

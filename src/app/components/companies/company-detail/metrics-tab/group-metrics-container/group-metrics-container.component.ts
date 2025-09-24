@@ -231,8 +231,9 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
   }
 
   onAddYearRequested(event: { metricTypeId: number; year: number }): void {
-    console.log('Adding new year:', event);
-    this.metricsService.addRecord({
+    console.log('🔄 Adding new year record:', event);
+
+    const createPayload = {
       client_id: this.clientId,
       company_id: this.company.id,
       program_id: this.programId,
@@ -246,15 +247,44 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       total: null,
       margin_pct: null,
       unit: 'ZAR' // Default unit
-    }).subscribe({
+    };
+
+    console.log('📤 Sending payload to API:', createPayload);
+
+    this.metricsService.addRecord(createPayload).subscribe({
       next: (newRecord) => {
-        console.log('New record created:', newRecord);
+        console.log('✅ API returned record:', newRecord);
+
+        // Ensure the year is properly set from our request (in case API doesn't return it properly)
+        const recordToAdd: IMetricRecord = {
+          id: newRecord.id || Date.now(), // Fallback ID if not provided
+          client_id: this.clientId,
+          company_id: this.company.id,
+          program_id: this.programId,
+          cohort_id: this.cohortId,
+          metric_type_id: event.metricTypeId,
+          year: event.year, // Force the year from our request
+          q1: newRecord.q1 || null,
+          q2: newRecord.q2 || null,
+          q3: newRecord.q3 || null,
+          q4: newRecord.q4 || null,
+          total: newRecord.total || null,
+          margin_pct: newRecord.margin_pct || null,
+          unit: newRecord.unit || 'ZAR',
+          created_at: newRecord.created_at,
+          updated_at: newRecord.updated_at
+        };
+
+        console.log('🎯 Final record to add to UI:', recordToAdd);
+
         // Add to local array
-        this.allRecords.push(newRecord);
+        this.allRecords.push(recordToAdd);
+
+        console.log('📊 Updated records array length:', this.allRecords.length);
       },
       error: (err) => {
-        console.error('Error creating record:', err);
-        // TODO: Show user-friendly error message
+        console.error('❌ Error creating record:', err);
+        alert('Failed to add new year. Please try again.');
       }
     });
   }

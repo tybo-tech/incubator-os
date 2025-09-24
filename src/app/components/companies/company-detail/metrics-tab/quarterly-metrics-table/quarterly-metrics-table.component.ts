@@ -56,12 +56,14 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                 <td class="px-3 py-4 whitespace-nowrap">
                   <input
                     type="number"
-                    [(ngModel)]="record.year"
+                    [value]="record.year || ''"
+                    (input)="onYearInput(record, $event)"
                     (blur)="updateRecord(record)"
                     class="w-20 px-2 py-1 text-sm font-medium text-gray-900 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     min="2000"
                     max="2100"
-                    step="1" />
+                    step="1"
+                    placeholder="Year" />
                 </td>
 
                 <!-- Q1-Q4 Inputs -->
@@ -69,6 +71,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                   <input
                     type="number"
                     [(ngModel)]="record.q1"
+                    (input)="onQuarterlyValueChange(record)"
                     (blur)="updateRecord(record)"
                     class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
@@ -78,6 +81,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                   <input
                     type="number"
                     [(ngModel)]="record.q2"
+                    (input)="onQuarterlyValueChange(record)"
                     (blur)="updateRecord(record)"
                     class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
@@ -87,6 +91,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                   <input
                     type="number"
                     [(ngModel)]="record.q3"
+                    (input)="onQuarterlyValueChange(record)"
                     (blur)="updateRecord(record)"
                     class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
@@ -96,6 +101,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                   <input
                     type="number"
                     [(ngModel)]="record.q4"
+                    (input)="onQuarterlyValueChange(record)"
                     (blur)="updateRecord(record)"
                     class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0"
@@ -175,7 +181,27 @@ export class QuarterlyMetricsTableComponent {
     return record.id;
   }
 
-  getCalculatedTotal(record: IMetricRecord): number {
+  onYearInput(record: IMetricRecord, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const yearValue = target.value.trim();
+
+    // Handle empty input
+    if (!yearValue) {
+      record.year = undefined as any; // Allow empty for now
+      return;
+    }
+
+    // Parse and validate year
+    const parsedYear = parseInt(yearValue, 10);
+    if (!isNaN(parsedYear)) {
+      record.year = parsedYear;
+    }
+  }
+
+  onQuarterlyValueChange(record: IMetricRecord): void {
+    // Recalculate total immediately when any quarterly value changes
+    record.total = this.getCalculatedTotal(record);
+  }  getCalculatedTotal(record: IMetricRecord): number {
     const quarters = [record.q1, record.q2, record.q3, record.q4];
     return quarters.reduce((sum: number, val) => {
       const numVal = val ? parseFloat(String(val)) : 0;
@@ -184,23 +210,7 @@ export class QuarterlyMetricsTableComponent {
   }
 
   updateRecord(record: IMetricRecord): void {
-    // Validate year
-    const year = parseInt(String(record.year), 10);
-    if (isNaN(year) || year < 2000 || year > 2100) {
-      alert('Please enter a valid year between 2000 and 2100.');
-      return;
-    }
-
-    // Check for duplicate years (excluding current record)
-    const duplicateYear = this.records.find(r => r.id !== record.id && r.year === year);
-    if (duplicateYear) {
-      alert(`Year ${year} already exists for ${this.metricType.name}. Please choose a different year.`);
-      return;
-    }
-
-    record.year = year;
-
-    // Ensure quarterly values are numbers
+    // Always ensure quarterly values are numbers and recalculate total
     record.q1 = record.q1 != null ? parseFloat(String(record.q1)) || null : null;
     record.q2 = record.q2 != null ? parseFloat(String(record.q2)) || null : null;
     record.q3 = record.q3 != null ? parseFloat(String(record.q3)) || null : null;
@@ -208,6 +218,26 @@ export class QuarterlyMetricsTableComponent {
 
     // Auto-calculate total
     record.total = this.getCalculatedTotal(record);
+
+    // Validate year only if it's set
+    if (record.year !== undefined && record.year !== null) {
+      const year = parseInt(String(record.year), 10);
+      if (isNaN(year) || year < 2000 || year > 2100) {
+        alert('Please enter a valid year between 2000 and 2100.');
+        return;
+      }
+
+      // Check for duplicate years (excluding current record)
+      const duplicateYear = this.records.find(r => r.id !== record.id && r.year === year);
+      if (duplicateYear) {
+        alert(`Year ${year} already exists for ${this.metricType.name}. Please choose a different year.`);
+        return;
+      }
+
+      record.year = year;
+    }
+
+    // Always emit the updated record (even if year validation fails, we want to save the quarterly values)
     this.recordUpdated.emit(record);
   }
 
