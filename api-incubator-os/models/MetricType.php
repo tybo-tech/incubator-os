@@ -13,25 +13,46 @@ class MetricType
 
     /* ============================ Create / Update ============================ */
 
-    public function add(string $code, string $name, string $description, string $defaultUnit = 'ZAR', int $isRatio = 0): array
+    public function add(array $data): array
     {
-        $sql = "INSERT INTO metric_types (code, name, description, default_unit, is_ratio) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $metadata = isset($data['metadata']) ? json_encode($data['metadata']) : null;
+
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$code, $name, $description, $defaultUnit, $isRatio]);
+        $stmt->execute([
+            $data['group_id'] ?? 1,
+            $data['code'],
+            $data['name'],
+            $data['description'] ?? '',
+            $data['unit'] ?? 'ZAR',
+            $data['show_total'] ?? 1,
+            $data['show_margin'] ?? 0,
+            $data['graph_color'] ?? null,
+            $data['period_type'] ?? 'QUARTERLY',
+            $metadata
+        ]);
 
         return $this->getById((int)$this->conn->lastInsertId());
     }
 
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['code','name','description','default_unit','is_ratio'];
+        $allowed = ['group_id', 'code', 'name', 'description', 'unit', 'show_total', 'show_margin', 'graph_color', 'period_type', 'metadata'];
         $sets = [];
         $params = [];
 
         foreach ($allowed as $k) {
             if (array_key_exists($k, $fields)) {
-                $sets[] = "$k = ?";
-                $params[] = $fields[$k];
+                if ($k === 'metadata') {
+                    // Convert metadata to JSON string
+                    $sets[] = "$k = ?";
+                    $params[] = is_array($fields[$k]) ? json_encode($fields[$k]) : $fields[$k];
+                } else {
+                    $sets[] = "$k = ?";
+                    $params[] = $fields[$k];
+                }
             }
         }
         if (!$sets) return $this->getById($id);
@@ -83,11 +104,66 @@ class MetricType
 
     private function castRow(array $row): array
     {
-        foreach (['id','is_ratio'] as $k) {
+        // Cast integers
+        foreach (['id', 'group_id', 'show_total', 'show_margin'] as $k) {
             if (array_key_exists($k, $row)) {
                 $row[$k] = (int)$row[$k];
             }
         }
+
+        // Parse metadata JSON
+        if (isset($row['metadata']) && $row['metadata']) {
+            $decoded = json_decode($row['metadata'], true);
+            $row['metadata'] = $decoded !== null ? $decoded : null;
+        } else {
+            $row['metadata'] = null;
+        }
+
         return $row;
+    }
+
+    /* ============================= Metadata Helpers ============================= */
+
+    /**
+     * Get categories from metadata for a specific metric type
+     */
+    public function getCategories(int $id): array
+    {
+        $metricType = $this->getById($id);
+        if (!$metricType || !$metricType['metadata'] || !isset($metricType['metadata']['categories'])) {
+            return [];
+        }
+
+        return $metricType['metadata']['categories'];
+    }
+
+    /**
+     * Add or update categories in metadata
+     */
+    public function updateCategories(int $id, array $categories): ?array
+    {
+        $metricType = $this->getById($id);
+        if (!$metricType) return null;
+
+        $metadata = $metricType['metadata'] ?? [];
+        $metadata['categories'] = $categories;
+
+        return $this->update($id, ['metadata' => $metadata]);
+    }
+
+    /**
+     * Get metric types that have categories (for dropdowns)
+     */
+    public function getTypesWithCategories(): array
+    {
+        $stmt = $this->conn->query("
+            SELECT * FROM metric_types
+            WHERE metadata IS NOT NULL
+            AND JSON_EXTRACT(metadata, '$.categories') IS NOT NULL
+            ORDER BY name ASC
+        ");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(fn($r) => $this->castRow($r), $rows);
     }
 }
