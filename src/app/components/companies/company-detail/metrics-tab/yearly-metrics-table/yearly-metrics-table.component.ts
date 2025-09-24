@@ -44,9 +44,16 @@ import { IMetricRecord, IMetricType } from '../../../../../../models/metrics.mod
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr *ngFor="let record of sortedRecords; trackBy: trackByRecord" class="hover:bg-gray-50">
-              <!-- Year -->
+              <!-- Editable Year -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-gray-900">{{ record.year }}</span>
+                <input
+                  type="number"
+                  [(ngModel)]="record.year"
+                  (blur)="updateRecord(record)"
+                  class="w-20 px-2 py-1 text-sm font-medium text-gray-900 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  min="2000"
+                  max="2100"
+                  step="1" />
               </td>
 
               <!-- Annual Value Input -->
@@ -119,6 +126,22 @@ export class YearlyMetricsTableComponent {
   }
 
   updateRecord(record: IMetricRecord): void {
+    // Validate year
+    const year = parseInt(String(record.year), 10);
+    if (isNaN(year) || year < 2000 || year > 2100) {
+      alert('Please enter a valid year between 2000 and 2100.');
+      return;
+    }
+
+    // Check for duplicate years (excluding current record)
+    const duplicateYear = this.records.find(r => r.id !== record.id && r.year === year);
+    if (duplicateYear) {
+      alert(`Year ${year} already exists for ${this.metricType.name}. Please choose a different year.`);
+      return;
+    }
+
+    record.year = year;
+
     // Ensure values are numbers before emitting
     record.total = record.total != null ? parseFloat(String(record.total)) || null : null;
     record.margin_pct = record.margin_pct != null ? parseFloat(String(record.margin_pct)) || null : null;
@@ -135,16 +158,29 @@ export class YearlyMetricsTableComponent {
   addNewYear(): void {
     const currentYear = new Date().getFullYear();
     const existingYears = this.records.map(r => r.year);
-    let nextYear = currentYear;
 
-    // Find the next available year
-    while (existingYears.includes(nextYear)) {
-      nextYear++;
+    // Prompt user for year input
+    const yearInput = prompt(`Enter the year for new ${this.metricType.name} record:`, currentYear.toString());
+
+    if (!yearInput) return; // User cancelled
+
+    const newYear = parseInt(yearInput, 10);
+
+    // Validate year
+    if (isNaN(newYear) || newYear < 2000 || newYear > 2100) {
+      alert('Please enter a valid year between 2000 and 2100.');
+      return;
+    }
+
+    // Check if year already exists
+    if (existingYears.includes(newYear)) {
+      alert(`Year ${newYear} already exists for ${this.metricType.name}. Please choose a different year.`);
+      return;
     }
 
     this.addYearRequested.emit({
       metricTypeId: this.metricType.id,
-      year: nextYear
+      year: newYear
     });
   }
 
