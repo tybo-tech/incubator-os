@@ -16,8 +16,8 @@ import { AssessmentTabComponent } from './assessment-tab/assessment-tab.componen
 import { SwotTabComponent } from './swot-tab/swot-tab.component';
 import { StrategyTabComponent } from './strategy-tab/strategy-tab.component';
 import { FinancialTabComponent } from './financial-tab/financial-tab.component';
-// Metrics (renamed from financial-v2)
-import { MetricsTabComponent } from './metrics-tab/metrics-tab.component';
+import { FinancialDashboardTabComponent } from './financial-dashboard-tab/financial-dashboard-tab.component';
+// Metrics now rendered exclusively within FinancialDashboardTabComponent
 import { PurchasesTabComponent } from './purchases-tab/purchases-tab.component';
 import { ComplianceTabComponent } from './compliance-tab/compliance-tab.component';
 import { DocumentsTabComponent } from './documents-tab/documents-tab.component';
@@ -47,8 +47,8 @@ import { ICompany } from '../../../../models/simple.schema';
     AssessmentTabComponent,
     SwotTabComponent,
     StrategyTabComponent,
-    FinancialTabComponent,
-    MetricsTabComponent,
+  FinancialTabComponent,
+  FinancialDashboardTabComponent,
     PurchasesTabComponent,
     ComplianceTabComponent,
     DocumentsTabComponent,
@@ -248,7 +248,8 @@ export class CompanyDetailComponent implements OnInit {
         if (this.activeTab.startsWith && this.activeTab.startsWith('metric-group-')) {
           const id = parseInt(this.activeTab.split('metric-group-')[1], 10);
           if (!this.metricGroupTabs.find(g => g.id === id)) {
-            this.activeTab = 'financial-v2';
+            // Fallback to new consolidated financial dashboard if old metric-group tab no longer exists
+            this.activeTab = 'financial-dashboard';
           }
         }
       },

@@ -36,7 +36,7 @@ class Metrics
 
     public function listGroups(int $clientId): array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM metric_groups WHERE client_id = ? ORDER BY name ASC");
+        $stmt = $this->conn->prepare("SELECT * FROM metric_groups WHERE client_id = ? ORDER BY order_no ASC");
         $stmt->execute([$clientId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

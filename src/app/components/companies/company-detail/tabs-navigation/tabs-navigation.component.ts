@@ -9,6 +9,7 @@ type StaticTabType =
   | 'gps-targets'
   | 'strategy'
   | 'financial'
+  | 'financial-dashboard'
   | 'financial-v2'
   | 'purchases'
   | 'compliance'
@@ -88,7 +89,7 @@ export interface MetricGroupTabMeta { id: number; name: string; code?: string; }
           >
             Strategy
           </button> -->
-          <button
+          <!-- <button
             (click)="onTabChange('financial')"
             [class]="
               'py-4 px-1 border-b-2 font-medium text-sm ' +
@@ -98,9 +99,21 @@ export interface MetricGroupTabMeta { id: number; name: string; code?: string; }
             "
           >
             Financials
+          </button> -->
+          <button
+            (click)="onTabChange('financial-dashboard')"
+            [class]="
+              'py-4 px-1 border-b-2 font-medium text-sm ' +
+              (activeTab === 'financial-dashboard'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')
+            "
+            title="Financial dashboard with metrics"
+          >
+            📊 Financial
           </button>
           <!-- Optional aggregate metrics tab (Financials V2) -->
-          <button *ngIf="showAllMetricsTab"
+          <!-- <button *ngIf="showAllMetricsTab"
             (click)="onTabChange('financial-v2')"
             [class]="
               'py-4 px-1 border-b-2 font-medium text-sm ' +
@@ -111,22 +124,8 @@ export interface MetricGroupTabMeta { id: number; name: string; code?: string; }
             title="All metric groups"
           >
             ⭐ Metrics
-          </button>
-          <!-- Dynamic Metric Group Tabs -->
-          <ng-container *ngFor="let g of metricGroupTabs">
-            <button
-              (click)="onTabChange(metricGroupTabId(g.id))"
-              [class]="
-                'py-4 px-1 border-b-2 font-medium text-sm ' +
-                (activeTab === metricGroupTabId(g.id)
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')
-              "
-              [title]="g.code || g.name"
-            >
-              {{ g.name }}
-            </button>
-          </ng-container>
+          </button> -->
+          <!-- Dynamic metric group tabs moved inside Financial Dashboard -->
           <!-- <button
             (click)="onTabChange('purchases')"
             [class]="

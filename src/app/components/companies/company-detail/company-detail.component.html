@@ -70,31 +70,21 @@
       [company]="company">
     </app-strategy-tab>
 
-    <!-- Financial Tab -->
+    <!-- Financial Tab (legacy bank statements view kept standalone) -->
     <app-financial-tab
       *ngIf="activeTab === 'financial'"
       [company]="company">
     </app-financial-tab>
 
-    <!-- Aggregate Metrics (All groups) Tab -->
-    <app-metrics-tab
-      *ngIf="activeTab === 'financial-v2'"
+    <!-- New Financial Dashboard Tab encapsulating metrics + bank statements -->
+    <app-financial-dashboard-tab
+      *ngIf="activeTab === 'financial-dashboard'"
       [company]="company"
       [clientId]="getActiveClientId()"
       [programId]="getActiveProgramId()"
       [cohortId]="getActiveCohortId()"
-    >
-    </app-metrics-tab>
-
-    <!-- Dynamic Metric Group Specific View (reuse financial-v2 component for now; it can filter internally later) -->
-    <app-metrics-tab
-      *ngIf="isMetricGroupTab(activeTab)"
-      [company]="company"
-      [clientId]="getActiveClientId()"
-      [programId]="getActiveProgramId()"
-      [cohortId]="getActiveCohortId()"
-      [filterGroupId]="getActiveMetricGroupId()"
-    ></app-metrics-tab>
+      [metricGroups]="metricGroupTabs"
+    ></app-financial-dashboard-tab>
 
     <!-- Purchases Tab -->
     <app-purchases-tab
