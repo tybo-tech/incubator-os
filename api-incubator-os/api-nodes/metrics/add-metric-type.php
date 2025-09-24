@@ -17,7 +17,8 @@ try {
         $data['unit'] ?? 'count',
         isset($data['show_total']) ? (int)$data['show_total'] : 1,
         isset($data['show_margin']) ? (int)$data['show_margin'] : 0,
-        $data['graph_color'] ?? null
+        $data['graph_color'] ?? null,
+        $data['period_type'] ?? 'QUARTERLY'
     );
     echo json_encode($res);
 } catch (Exception $e) {

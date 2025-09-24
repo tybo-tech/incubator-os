@@ -48,19 +48,19 @@ class Metrics
 
     /* ========================= TYPES ========================= */
 
-    public function addType(int $groupId, string $code, string $name, string $description = '', string $unit = 'count', int $showTotal = 1, int $showMargin = 0, ?string $graphColor = null): array
+    public function addType(int $groupId, string $code, string $name, string $description = '', string $unit = 'count', int $showTotal = 1, int $showMargin = 0, ?string $graphColor = null, string $periodType = 'QUARTERLY'): array
     {
-        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$groupId, $code, $name, $description, $unit, $showTotal, $showMargin, $graphColor]);
+        $stmt->execute([$groupId, $code, $name, $description, $unit, $showTotal, $showMargin, $graphColor, $periodType]);
 
         return $this->getTypeById((int)$this->conn->lastInsertId());
     }
 
     public function updateType(int $id, array $fields): ?array
     {
-        $allowed = ['group_id','code','name','description','unit','show_total','show_margin','graph_color'];
+        $allowed = ['group_id','code','name','description','unit','show_total','show_margin','graph_color','period_type'];
         return $this->updateRow('metric_types', $id, $fields, $allowed);
     }
 
