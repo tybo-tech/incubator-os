@@ -26,6 +26,7 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
                 [(ngModel)]="selectedYear"
                 (change)="onYearChange()"
                 class="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="all">All Years</option>
                 <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
               </select>
             </div>
@@ -41,11 +42,6 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
                 class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors">
                 View Trends
               </button>
-              <button
-                (click)="debugData()"
-                class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded hover:bg-yellow-700 transition-colors">
-                Debug
-              </button>
             </div>
           </div>
         </div>
@@ -56,16 +52,20 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ selectedYear === 'all' ? 'Period' : 'Month' }}
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turnover</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr *ngFor="let record of monthlyRecords; trackBy: trackByRecord">
-              <!-- Month -->
+              <!-- Month/Period -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-gray-900">{{ getMonthName(record.month) }}</span>
+                <span class="text-sm font-medium text-gray-900">
+                  {{ selectedYear === 'all' ? (getMonthName(record.month) + ' ' + record.year) : getMonthName(record.month) }}
+                </span>
               </td>
 
               <!-- Turnover -->
@@ -101,19 +101,12 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
         </table>
       </div>
 
-      <!-- Debug Information -->
-      <div class="px-6 py-4 bg-yellow-50 border-t text-xs text-gray-600">
-        <div><strong>Debug Info:</strong></div>
-        <div>Company ID: {{ company.id }}</div>
-        <div>Selected Year: {{ selectedYear }}</div>
-        <div>Total Records: {{ financials.length }}</div>
-        <div>Records for {{ selectedYear }}: {{ getRecordsForSelectedYear() }}</div>
-      </div>
-
       <!-- Empty State -->
       <div *ngIf="monthlyRecords.length === 0" class="px-6 py-12 text-center">
         <div class="text-gray-400 text-4xl mb-4">🏦</div>
-        <h3 class="text-sm font-medium text-gray-900 mb-2">No Bank Statement Data for {{ selectedYear }}</h3>
+        <h3 class="text-sm font-medium text-gray-900 mb-2">
+          No Bank Statement Data{{ selectedYear === 'all' ? '' : ' for ' + selectedYear }}
+        </h3>
         <p class="text-sm text-gray-500 mb-4">Start by adding your first monthly turnover record.</p>
         <button
           (click)="addNewMonth()"
@@ -139,7 +132,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  selectedYear = new Date().getFullYear();
+  selectedYear: string | number = 'all';
 
   readonly monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -167,24 +160,29 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   get monthlyRecords(): ICompanyFinancials[] {
+    if (this.selectedYear === 'all') {
+      // Return all records sorted by year (descending) then month (ascending)
+      return this.financials
+        .filter(f => Number(f.turnover) > 0) // Only show records with actual data
+        .sort((a, b) => {
+          if (a.year !== b.year) return b.year - a.year; // Sort years descending (newest first)
+          return a.month - b.month; // Sort months ascending within each year
+        });
+    }
+
     // Get records for selected year, sorted by month
     const selectedYearNum = Number(this.selectedYear);
     const yearRecords = this.financials
       .filter(f => f.year === selectedYearNum)
       .sort((a, b) => a.month - b.month);
 
-    console.log(`📋 Monthly records for ${this.selectedYear}:`, yearRecords);
-    console.log(`📈 Turnovers: ${yearRecords.map(r => `${r.month}: ${r.turnover}`).join(', ')}`);
-
     // Create placeholder records for missing months
     const completeRecords: ICompanyFinancials[] = [];
     for (let month = 1; month <= 12; month++) {
       const existingRecord = yearRecords.find(r => r.month === month);
       if (existingRecord) {
-        console.log(`✅ Found data for month ${month}: turnover = ${existingRecord.turnover}`);
         completeRecords.push(existingRecord);
       } else {
-        console.log(`➕ Creating placeholder for month ${month}`);
         // Create placeholder record
         const selectedYearNum = Number(this.selectedYear);
         completeRecords.push({
@@ -226,11 +224,9 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   async loadFinancials() {
     if (!this.company?.id) {
-      console.log('❌ No company ID provided');
       return;
     }
 
-    console.log('🔄 Loading financials for company ID:', this.company.id);
     this.loading = true;
     this.error = null;
 
@@ -241,13 +237,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
       this.financials = data || [];
 
-      console.log('✅ Loaded financials data:', this.financials);
-      console.log('📊 Years found:', [...new Set(this.financials.map(f => f.year))]);
-      const selectedYearNum = Number(this.selectedYear);
-      console.log('📅 Selected year records:', this.financials.filter(f => f.year === selectedYearNum));
-
     } catch (error) {
-      console.error('❌ Error loading financials:', error);
+      console.error('Error loading financials:', error);
       this.error = 'Failed to load financial data. Please try again.';
     } finally {
       this.loading = false;
@@ -263,6 +254,9 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   getRecordsForSelectedYear(): number {
+    if (this.selectedYear === 'all') {
+      return this.financials.filter(f => Number(f.turnover) > 0).length;
+    }
     const selectedYearNum = Number(this.selectedYear);
     return this.financials.filter(f => f.year === selectedYearNum).length;
   }
@@ -285,7 +279,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         this.recordUpdated.emit(record);
       }
     } catch (error) {
-      console.error('❌ Error updating record:', error);
+      console.error('Error updating record:', error);
       alert('Failed to save changes. Please try again.');
     }
   }
@@ -303,13 +297,20 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         this.recordDeleted.emit(record.id);
         this.loadFinancials();
       } catch (error) {
-        console.error('❌ Error deleting record:', error);
+        console.error('Error deleting record:', error);
         alert('Failed to delete record. Please try again.');
       }
     }
   }
 
   addNewMonth(): void {
+    if (this.selectedYear === 'all') {
+      // When viewing all years, default to current year for new entry
+      const currentYear = new Date().getFullYear();
+      this.selectedYear = currentYear;
+      return; // Let the user see the current year view first
+    }
+
     // Find the first month without data in the selected year
     const selectedYearNum = Number(this.selectedYear);
     const existingMonths = this.financials
@@ -350,20 +351,6 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   // Public method to refresh data from parent component
   public refreshData() {
-    this.loadFinancials();
-  }
-
-  // Debug method to check data state
-  debugData() {
-    console.log('🐛 DEBUG DATA:');
-    console.log('Company ID:', this.company?.id);
-    console.log('Selected Year:', this.selectedYear);
-    console.log('All Financials:', this.financials);
-    console.log('Available Years:', this.availableYears);
-    console.log('Monthly Records for current year:', this.monthlyRecords);
-    console.log('Total Turnover:', this.getTotalTurnover());
-
-    // Force refresh
     this.loadFinancials();
   }
 
