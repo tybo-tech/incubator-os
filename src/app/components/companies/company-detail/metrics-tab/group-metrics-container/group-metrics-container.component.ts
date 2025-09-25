@@ -245,7 +245,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
                       TOTAL
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-lg font-bold text-blue-900">
-                      {{ calculateCategoryTotal(type.id, selectedCategoryYear) | number:'1.0-2' }}
+                      {{ (calculateCategoryTotal(type.id, selectedCategoryYear) || 0) | number:'1.0-2' }}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-700">
                       Sum of all categories
@@ -400,9 +400,18 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
     // Initialize available years from records
     this.initializeAvailableYears();
 
-    // Collect all records
+    // Collect all records and ensure proper type conversion
     this.allRecords = this.group.types
-      .flatMap(type => type.records || []);
+      .flatMap(type => type.records || [])
+      .map(record => ({
+        ...record,
+        total: record.total ? parseFloat(String(record.total)) : null,
+        q1: record.q1 ? parseFloat(String(record.q1)) : null,
+        q2: record.q2 ? parseFloat(String(record.q2)) : null,
+        q3: record.q3 ? parseFloat(String(record.q3)) : null,
+        q4: record.q4 ? parseFloat(String(record.q4)) : null,
+        margin_pct: record.margin_pct ? parseFloat(String(record.margin_pct)) : null
+      }));
   }
 
   getRecordsForType(typeId: number): IMetricRecord[] {
@@ -411,22 +420,37 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
 
   onRecordUpdated(record: IMetricRecord): void {
     console.log('Updating record:', record);
-    // TODO: Call update API
-    this.metricsService.updateRecord({
+
+    // Ensure numeric values are properly converted
+    const updatePayload = {
       id: record.id,
-      q1: record.q1,
-      q2: record.q2,
-      q3: record.q3,
-      q4: record.q4,
-      total: record.total,
-      margin_pct: record.margin_pct
-    }).subscribe({
+      q1: record.q1 ? parseFloat(String(record.q1)) : null,
+      q2: record.q2 ? parseFloat(String(record.q2)) : null,
+      q3: record.q3 ? parseFloat(String(record.q3)) : null,
+      q4: record.q4 ? parseFloat(String(record.q4)) : null,
+      total: record.total ? parseFloat(String(record.total)) : null,
+      margin_pct: record.margin_pct ? parseFloat(String(record.margin_pct)) : null,
+      notes: record.notes || '',
+      category_id: record.category_id || null
+    };
+
+    this.metricsService.updateRecord(updatePayload).subscribe({
       next: (updatedRecord) => {
         console.log('Record updated successfully:', updatedRecord);
-        // Update local record
+        // Update local record with proper type conversion
         const index = this.allRecords.findIndex(r => r.id === record.id);
         if (index !== -1) {
-          this.allRecords[index] = { ...this.allRecords[index], ...updatedRecord };
+          // Ensure the updated record has proper number types
+          this.allRecords[index] = {
+            ...this.allRecords[index],
+            ...updatedRecord,
+            total: updatedRecord.total ? parseFloat(String(updatedRecord.total)) : null,
+            q1: updatedRecord.q1 ? parseFloat(String(updatedRecord.q1)) : null,
+            q2: updatedRecord.q2 ? parseFloat(String(updatedRecord.q2)) : null,
+            q3: updatedRecord.q3 ? parseFloat(String(updatedRecord.q3)) : null,
+            q4: updatedRecord.q4 ? parseFloat(String(updatedRecord.q4)) : null,
+            margin_pct: updatedRecord.margin_pct ? parseFloat(String(updatedRecord.margin_pct)) : null
+          };
         }
       },
       error: (err) => {
@@ -476,7 +500,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       next: (newRecord) => {
         console.log('✅ API returned record:', newRecord);
 
-        // Ensure the year is properly set from our request (in case API doesn't return it properly)
+        // Ensure the year is properly set from our request with proper type conversion
         const recordToAdd: IMetricRecord = {
           id: newRecord.id || Date.now(), // Fallback ID if not provided
           client_id: this.clientId,
@@ -484,13 +508,15 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
           program_id: this.programId,
           cohort_id: this.cohortId,
           metric_type_id: event.metricTypeId,
+          category_id: newRecord.category_id || null,
           year: event.year, // Force the year from our request
-          q1: newRecord.q1 || null,
-          q2: newRecord.q2 || null,
-          q3: newRecord.q3 || null,
-          q4: newRecord.q4 || null,
-          total: newRecord.total || null,
-          margin_pct: newRecord.margin_pct || null,
+          q1: newRecord.q1 ? parseFloat(String(newRecord.q1)) : null,
+          q2: newRecord.q2 ? parseFloat(String(newRecord.q2)) : null,
+          q3: newRecord.q3 ? parseFloat(String(newRecord.q3)) : null,
+          q4: newRecord.q4 ? parseFloat(String(newRecord.q4)) : null,
+          total: newRecord.total ? parseFloat(String(newRecord.total)) : null,
+          margin_pct: newRecord.margin_pct ? parseFloat(String(newRecord.margin_pct)) : null,
+          notes: newRecord.notes || '',
           unit: newRecord.unit || 'ZAR',
           created_at: newRecord.created_at,
           updated_at: newRecord.updated_at
@@ -624,7 +650,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       next: (newRecord) => {
         console.log('✅ Category record created:', newRecord);
 
-        // Add to local array
+        // Add to local array with proper type conversion
         const recordToAdd: IMetricRecord = {
           id: newRecord.id,
           client_id: this.clientId,
@@ -638,8 +664,8 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
           q2: null,
           q3: null,
           q4: null,
-          total: newRecord.total || 0,
-          margin_pct: newRecord.margin_pct || null,
+          total: newRecord.total ? parseFloat(String(newRecord.total)) : 0,
+          margin_pct: newRecord.margin_pct ? parseFloat(String(newRecord.margin_pct)) : null,
           notes: newRecord.notes || '',
           unit: newRecord.unit || 'ZAR',
           created_at: newRecord.created_at,
@@ -661,6 +687,16 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
    */
   calculateCategoryTotal(typeId: number, year: number): number {
     const records = this.getCategoryRecordsForType(typeId, year);
-    return records.reduce((sum, record) => sum + (record.total || 0), 0);
+    console.log(`Calculating total for typeId ${typeId}, year ${year}:`, records);
+
+    const result = records.reduce((sum, record) => {
+      const rawTotal = record.total;
+      const total = parseFloat(String(rawTotal || 0));
+      console.log(`Record ${record.id}: rawTotal=${rawTotal}, parsed=${total}, isNaN=${isNaN(total)}`);
+      return sum + (isNaN(total) ? 0 : total);
+    }, 0);
+
+    console.log(`Final calculated total: ${result}`);
+    return result;
   }
 }
