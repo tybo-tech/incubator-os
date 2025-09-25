@@ -144,11 +144,6 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
                     class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
                     ➕ Add Record
                   </button>
-                  <button
-                    (click)="onAddYearRequested({ metricTypeId: type.id, year: selectedCategoryYear })"
-                    class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
-                    📅 Add {{ selectedCategoryYear }}
-                  </button>
                 </div>
               </div>
 
@@ -559,17 +554,33 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
    * Handle year change for category-based metrics
    */
   onCategoryYearChange(): void {
-    console.log('Category year changed to:', this.selectedCategoryYear);
-    // The components will automatically update based on the selectedCategoryYear binding
+    // Ensure selectedCategoryYear is a number (select elements return strings)
+    this.selectedCategoryYear = Number(this.selectedCategoryYear);
+    console.log('Category year changed to:', this.selectedCategoryYear, typeof this.selectedCategoryYear);
+
+    // Force change detection and refresh the UI by triggering data processing
+    if (this.cachedHierarchy) {
+      this.processMetricsData(this.cachedHierarchy);
+    }
+
+    // Log available data for debugging
+    const recordsForYear = this.allRecords.filter(r => r.year === this.selectedCategoryYear);
+    console.log(`Records found for year ${this.selectedCategoryYear}:`, recordsForYear.length);
+
+    // Log all years in records for comparison
+    const allYears = [...new Set(this.allRecords.map(r => r.year))].sort();
+    console.log('All years in records:', allYears);
   }
 
   /**
    * Get category records for a specific type and year
    */
   getCategoryRecordsForType(typeId: number, year: number): IMetricRecord[] {
-    return this.allRecords.filter(record =>
+    const filtered = this.allRecords.filter(record =>
       record.metric_type_id === typeId && record.year === year
     );
+    console.log(`getCategoryRecordsForType(${typeId}, ${year}): found ${filtered.length} records`);
+    return filtered;
   }
 
   /**
