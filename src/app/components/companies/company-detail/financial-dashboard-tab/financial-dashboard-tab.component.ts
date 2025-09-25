@@ -31,14 +31,14 @@ export type FinancialDashboardInnerTab =
           </button>
 
           <!-- All Metrics Tab (optional) -->
-          <button
+          <!-- <button
             *ngIf="showAllMetricsTab"
             (click)="setInner('all-metrics')"
             class="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 border"
             [class]="getTabClasses(innerTab === 'all-metrics')"
           >
             📊 All Metrics
-          </button>
+          </button> -->
 
           <!-- Dynamic Group Tabs -->
           <ng-container *ngFor="let g of metricGroups">
@@ -69,13 +69,13 @@ export type FinancialDashboardInnerTab =
       ></app-financial-tab>
 
       <!-- All metrics aggregate -->
-      <app-metrics-tab
+      <!-- <app-metrics-tab
         *ngIf="innerTab === 'all-metrics'"
         [company]="company"
         [clientId]="clientId"
         [programId]="programId"
         [cohortId]="cohortId"
-      ></app-metrics-tab>
+      ></app-metrics-tab> -->
 
       <!-- Filtered metric group -->
       <app-metrics-tab

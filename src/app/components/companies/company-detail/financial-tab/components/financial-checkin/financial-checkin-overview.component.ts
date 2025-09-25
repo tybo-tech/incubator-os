@@ -55,6 +55,7 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {{ selectedYear === 'all' ? 'Period' : 'Month' }}
               </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quarter</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turnover</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -66,6 +67,19 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
                 <span class="text-sm font-medium text-gray-900">
                   {{ selectedYear === 'all' ? (getMonthName(record.month) + ' ' + record.year) : getMonthName(record.month) }}
                 </span>
+              </td>
+
+              <!-- Quarter -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <select
+                  [(ngModel)]="record.quarter"
+                  (change)="updateQuarter(record)"
+                  class="px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="1">Q1</option>
+                  <option value="2">Q2</option>
+                  <option value="3">Q3</option>
+                  <option value="4">Q4</option>
+                </select>
               </td>
 
               <!-- Turnover -->
@@ -94,6 +108,7 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
           <tfoot class="bg-gray-50 border-t-2 border-gray-300">
             <tr>
               <td class="px-6 py-3 text-sm font-bold text-gray-900">TOTAL</td>
+              <td class="px-6 py-3 text-sm font-bold text-gray-900">-</td>
               <td class="px-6 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalTurnover()) }}</td>
               <td class="px-6 py-3 text-sm font-bold text-gray-900">-</td>
             </tr>
@@ -281,6 +296,29 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     } catch (error) {
       console.error('Error updating record:', error);
       alert('Failed to save changes. Please try again.');
+    }
+  }
+
+  async updateQuarter(record: ICompanyFinancials): Promise<void> {
+    // Update the quarter_label based on the selected quarter
+    record.quarter_label = `Q${record.quarter}`;
+
+    try {
+      if (record.id === 0) {
+        // New record - create it
+        const newRecord = await this.financialService.addCompanyFinancials(record).toPromise();
+        if (newRecord) {
+          // Update the record with the new ID and refresh data
+          this.loadFinancials();
+        }
+      } else {
+        // Existing record - update it
+        await this.financialService.updateCompanyFinancials(record.id, record).toPromise();
+        this.recordUpdated.emit(record);
+      }
+    } catch (error) {
+      console.error('Error updating quarter:', error);
+      alert('Failed to save quarter changes. Please try again.');
     }
   }
 
