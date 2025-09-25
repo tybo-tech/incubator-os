@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { INode } from '../../../../../../models/schema';
 import { NodeService } from '../../../../../../services/node.service';
-import html2pdf from 'html2pdf.js';
+// Note: PDF export functionality temporarily disabled - html2pdf.js removed
 import { firstValueFrom } from 'rxjs';
 import { ICompany } from '../../../../../../models/simple.schema';
 import { CompanyService } from '../../../../../../services/company.service';
@@ -358,7 +358,9 @@ export class PdfExportPageComponent implements OnInit {
         }
       };
 
-      await html2pdf().set(options).from(element).save();
+      // TODO: Replace with alternative PDF generation (pdfmake or browser print)
+      console.warn('PDF export temporarily disabled - html2pdf.js removed');
+      alert('PDF export feature is currently being updated. Please use browser print (Ctrl+P) as an alternative.');
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('There was an error generating the PDF. Please try again.');

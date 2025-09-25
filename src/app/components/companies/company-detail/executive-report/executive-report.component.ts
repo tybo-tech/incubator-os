@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { INode } from '../../../../../models/schema';
 import { NodeService } from '../../../../../services';
-import html2pdf from 'html2pdf.js';
+// Note: PDF export functionality temporarily disabled - html2pdf.js removed
 import { CompanyReportSectionComponent } from './company-report-section.component';
 import { AssessmentReportSectionComponent } from './assessment-report-section.component';
 import { ICompany } from '../../../../../models/simple.schema';
@@ -133,7 +133,9 @@ export class ExecutiveReportComponent implements OnInit {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
       } as any;
 
-      await (html2pdf() as any).set(options).from(el).save();
+      // TODO: Replace with alternative PDF generation (pdfmake or browser print)
+      console.warn('PDF export temporarily disabled - html2pdf.js removed');
+      alert('PDF export feature is currently being updated. Please use browser print (Ctrl+P) as an alternative.');
     } catch (e) {
       console.error('PDF error:', e);
       alert('There was an error generating the PDF.');

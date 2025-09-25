@@ -910,7 +910,7 @@ export class MetricsManagementModalComponent implements OnInit {
       // Load types for all groups using enhanced endpoint that includes categories
       this.types = [];
       for (const group of this.groups) {
-        const groupTypes = await this.http.get<IMetricType[]>(`${Constants.ApiBase}/api-nodes/enhanced-metrics.php?action=get-types&group_id=${group.id}`).toPromise();
+        const groupTypes = await this.http.get<IMetricType[]>(`${Constants.ApiBase}/api-nodes/metric-type/list-metric-types.php?group_id=${group.id}`).toPromise();
         this.types = [...this.types, ...(groupTypes || [])];
       }
     } catch (error) {

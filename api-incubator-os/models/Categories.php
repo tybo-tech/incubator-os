@@ -489,4 +489,56 @@ final class Categories
         // keep other fields as-is
         return $row;
     }
+
+    /* =========================================================================
+       METRIC TYPE CATEGORY RELATIONSHIPS
+       ========================================================================= */
+
+    /**
+     * Get categories associated with a specific metric type
+     */
+    public function getMetricTypeCategories(int $metricTypeId): array
+    {
+        $sql = "SELECT c.* FROM categories c 
+                INNER JOIN metric_type_categories mtc ON c.id = mtc.category_id 
+                WHERE mtc.metric_type_id = ? 
+                ORDER BY c.name";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$metricTypeId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return array_map([$this, 'castCategory'], $rows);
+    }
+
+    /**
+     * Update categories for a metric type (replaces all existing associations)
+     */
+    public function updateMetricTypeCategories(int $metricTypeId, array $categoryIds): bool
+    {
+        try {
+            $this->conn->beginTransaction();
+            
+            // Remove existing associations
+            $sql = "DELETE FROM metric_type_categories WHERE metric_type_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$metricTypeId]);
+            
+            // Add new associations
+            if (!empty($categoryIds)) {
+                $sql = "INSERT INTO metric_type_categories (metric_type_id, category_id) VALUES (?, ?)";
+                $stmt = $this->conn->prepare($sql);
+                
+                foreach ($categoryIds as $categoryId) {
+                    $stmt->execute([$metricTypeId, $categoryId]);
+                }
+            }
+            
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            throw $e;
+        }
+    }
 }
