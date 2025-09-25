@@ -1,10 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType } from '../../../../../../models/metrics.model';
 import { ICategory } from '../../../../../../models/simple.schema';
 import { MetricsService } from '../../../../../../services/metrics.service';
 import { CategoryService } from '../../../../../../services/category.service';
+import { Constants } from '../../../../../../services/service';
 
 @Component({
   selector: 'app-metrics-management-modal',
@@ -280,6 +282,26 @@ import { CategoryService } from '../../../../../../services/category.service';
                         <span *ngIf="type.show_margin" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                           Margin
                         </span>
+
+                        <!-- Categories Display -->
+                        <span *ngIf="type.categories && type.categories.length > 0" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <i class="fas fa-tags mr-1"></i>
+                          {{ type.categories.length }} categories
+                        </span>
+                      </div>
+
+                      <!-- Categories List (if any) -->
+                      <div *ngIf="type.categories && type.categories.length > 0" class="mt-2">
+                        <div class="flex flex-wrap gap-1">
+                          <span *ngFor="let category of type.categories.slice(0, 3)"
+                                class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-50 text-gray-600 border">
+                            {{ category.name }}
+                          </span>
+                          <span *ngIf="type.categories && type.categories.length > 3"
+                                class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">
+                            +{{ type.categories.length - 3 }} more
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -551,7 +573,8 @@ export class MetricsManagementModalComponent implements OnInit {
 
   constructor(
     private metricsService: MetricsService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -884,10 +907,10 @@ export class MetricsManagementModalComponent implements OnInit {
       const groups = await this.metricsService.listGroups(this.clientId).toPromise();
       this.groups = groups || [];
 
-      // For now, we'll load types for all groups
+      // Load types for all groups using enhanced endpoint that includes categories
       this.types = [];
       for (const group of this.groups) {
-        const groupTypes = await this.metricsService.listTypes(group.id).toPromise();
+        const groupTypes = await this.http.get<IMetricType[]>(`${Constants.ApiBase}/api-nodes/enhanced-metrics.php?action=get-types&group_id=${group.id}`).toPromise();
         this.types = [...this.types, ...(groupTypes || [])];
       }
     } catch (error) {
@@ -942,14 +965,17 @@ export class MetricsManagementModalComponent implements OnInit {
     try {
       this.isLoading = true;
       this.newType.group_id = this.selectedGroup.id;
-      this.newType.category_ids = [...this.selectedCategoryIds];
 
-      const createdType = await this.metricsService.addType(this.newType).toPromise();
+      // Use enhanced metrics endpoint for better category handling
+      const createPayload = {
+        ...this.newType,
+        category_ids: [...this.selectedCategoryIds]
+      };
 
-      // Update category associations if categories were selected
-      if (createdType && this.selectedCategoryIds.length > 0) {
-        await this.categoryService.updateMetricTypeCategories(createdType.id, this.selectedCategoryIds).toPromise();
-      }
+      const createdType = await this.http.post<IMetricType>(`${Constants.ApiBase}/api-nodes/enhanced-metrics.php`, {
+        action: 'create-type',
+        ...createPayload
+      }).toPromise();
 
       await this.loadData();
       this.dataUpdated.emit();
@@ -966,13 +992,15 @@ export class MetricsManagementModalComponent implements OnInit {
 
     try {
       this.isLoading = true;
-      const updateDto = { ...this.editingType, category_ids: [...this.selectedCategoryIds] };
-      const updatedType = await this.metricsService.updateType(updateDto).toPromise();
 
-      // Update category associations
-      if (updatedType) {
-        await this.categoryService.updateMetricTypeCategories(updatedType.id, this.selectedCategoryIds).toPromise();
-      }
+      // Use enhanced metrics endpoint for category updates
+      const updatePayload = {
+        action: 'update-type',
+        ...this.editingType,
+        category_ids: [...this.selectedCategoryIds]
+      };
+
+      const updatedType = await this.http.put<IMetricType>(`${Constants.ApiBase}/api-nodes/enhanced-metrics.php`, updatePayload).toPromise();
 
       await this.loadData();
       this.dataUpdated.emit();
