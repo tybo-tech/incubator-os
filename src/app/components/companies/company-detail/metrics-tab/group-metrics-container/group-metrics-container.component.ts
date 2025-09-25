@@ -121,29 +121,162 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
         </div>
 
         <!-- Side-by-Side Layout Container -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-6">
           <div *ngFor="let type of yearlySideBySideTypes; trackBy: trackByTypeId"
                class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <!-- Temporary Category-Based Layout -->
+
+            <!-- Header Section -->
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                <span class="w-3 h-3 rounded-full mr-3"
-                      [style.background-color]="type.graph_color || '#6B7280'"></span>
-                {{ type.name }}
-              </h3>
-              <p *ngIf="type.description" class="text-sm text-gray-600 mt-1">{{ type.description }}</p>
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <span class="w-3 h-3 rounded-full mr-3"
+                          [style.background-color]="type.graph_color || '#6B7280'"></span>
+                    {{ type.name }}
+                  </h3>
+                  <p *ngIf="type.description" class="text-sm text-gray-600 mt-1">{{ type.description }}</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                  <button
+                    (click)="onAddCategoryRecord(type.id)"
+                    class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    ➕ Add Record
+                  </button>
+                  <button
+                    (click)="onAddYearRequested({ metricTypeId: type.id, year: selectedCategoryYear })"
+                    class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+                    📅 Add {{ selectedCategoryYear }}
+                  </button>
+                </div>
+              </div>
+
               <!-- Categories Display -->
-              <div class="flex flex-wrap gap-1 mt-2" *ngIf="type.categories && type.categories.length > 0">
+              <div class="flex flex-wrap gap-1 mt-3" *ngIf="type.categories && type.categories.length > 0">
                 <span *ngFor="let category of type.categories"
                       class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200">
                   🏷️ {{ category.name }}
                 </span>
               </div>
             </div>
-            <div class="p-6 text-center text-gray-500">
-              <p>📅 Year: {{ selectedCategoryYear }}</p>
-              <p class="text-sm mt-2">Category-based layout for {{ type.name }}</p>
-              <p class="text-xs mt-1">{{ type.categories?.length || 0 }} categories available</p>
+
+            <!-- Category Records Display -->
+            <div class="p-6">
+              <div class="mb-4">
+                <h4 class="text-md font-medium text-gray-900 mb-3">
+                  📅 Records for {{ selectedCategoryYear }}
+                </h4>
+
+                <!-- Records by Category -->
+                <div *ngIf="getCategoryRecordsForType(type.id, selectedCategoryYear) as categoryRecords" class="space-y-4">
+
+                  <!-- Show records grouped by category -->
+                  <div *ngIf="categoryRecords.length > 0; else noRecordsTemplate" class="space-y-3">
+                    <div *ngFor="let record of categoryRecords"
+                         class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-medium text-gray-900">
+                              🏷️ {{ getCategoryName(record.category_id, type.categories) || 'Uncategorized' }}
+                            </span>
+                            <span class="text-xs text-gray-500">ID: {{ record.id }}</span>
+                          </div>
+
+                          <!-- Quarterly Values Input -->
+                          <div class="grid grid-cols-4 gap-3 mb-3">
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Q1</label>
+                              <input type="number"
+                                     [(ngModel)]="record.q1"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="0.00"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Q2</label>
+                              <input type="number"
+                                     [(ngModel)]="record.q2"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="0.00"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Q3</label>
+                              <input type="number"
+                                     [(ngModel)]="record.q3"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="0.00"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Q4</label>
+                              <input type="number"
+                                     [(ngModel)]="record.q4"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="0.00"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                          </div>
+
+                          <!-- Total and Notes -->
+                          <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Total</label>
+                              <input type="number"
+                                     [(ngModel)]="record.total"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="Auto-calculated"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                              <label class="block text-xs font-medium text-gray-700 mb-1">Unit</label>
+                              <input type="text"
+                                     [(ngModel)]="record.unit"
+                                     (change)="onRecordUpdated(record)"
+                                     placeholder="ZAR"
+                                     class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                          </div>
+
+                          <!-- Notes Field -->
+                          <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea [(ngModel)]="record.notes"
+                                      (change)="onRecordUpdated(record)"
+                                      placeholder="Additional notes for this record..."
+                                      rows="2"
+                                      class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                          </div>
+                        </div>
+
+                        <!-- Delete Button -->
+                        <div class="ml-4">
+                          <button (click)="onRecordDeleted(record.id)"
+                                  class="text-red-600 hover:text-red-800 transition-colors">
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- No Records Template -->
+                  <ng-template #noRecordsTemplate>
+                    <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div class="text-gray-400 text-4xl mb-2">📊</div>
+                      <h4 class="text-lg font-medium text-gray-900 mb-1">No Records for {{ selectedCategoryYear }}</h4>
+                      <p class="text-gray-500 text-sm mb-4">Add your first {{ type.name.toLowerCase() }} record for this year.</p>
+                      <button (click)="onAddYearRequested({ metricTypeId: type.id, year: selectedCategoryYear })"
+                              class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                        ➕ Add {{ selectedCategoryYear }} Record
+                      </button>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -382,5 +515,106 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
   onCategoryYearChange(): void {
     console.log('Category year changed to:', this.selectedCategoryYear);
     // The components will automatically update based on the selectedCategoryYear binding
+  }
+
+  /**
+   * Get category records for a specific type and year
+   */
+  getCategoryRecordsForType(typeId: number, year: number): IMetricRecord[] {
+    return this.allRecords.filter(record =>
+      record.metric_type_id === typeId && record.year === year
+    );
+  }
+
+  /**
+   * Get category name by ID
+   */
+  getCategoryName(categoryId: number | null | undefined, categories: any[] | undefined): string {
+    if (!categoryId || !categories) return 'Uncategorized';
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Uncategorized';
+  }
+
+  /**
+   * Handle adding a new category record with category selection
+   */
+  onAddCategoryRecord(metricTypeId: number): void {
+    // Find the metric type to get its categories
+    const metricType = [...this.quarterlyTypes, ...this.yearlyTypes, ...this.yearlySideBySideTypes]
+      .find(type => type.id === metricTypeId);
+
+    if (!metricType || !metricType.categories || metricType.categories.length === 0) {
+      alert('This metric type has no categories configured. Please configure categories first.');
+      return;
+    }
+
+    // Simple prompt for category selection (you can enhance this with a modal)
+    const categoryNames = metricType.categories.map(c => `${c.id}: ${c.name}`).join('\n');
+    const selectedCategoryId = prompt(`Select a category for ${metricType.name}:\n\n${categoryNames}\n\nEnter category ID:`);
+
+    if (!selectedCategoryId) return;
+
+    const categoryId = parseInt(selectedCategoryId.trim());
+    const category = metricType.categories.find(c => c.id === categoryId);
+
+    if (!category) {
+      alert('Invalid category ID selected.');
+      return;
+    }
+
+    // Create the record with category
+    const createPayload = {
+      client_id: this.clientId,
+      company_id: this.company.id,
+      program_id: this.programId,
+      cohort_id: this.cohortId,
+      metric_type_id: metricTypeId,
+      category_id: categoryId,
+      year: this.selectedCategoryYear,
+      q1: null,
+      q2: null,
+      q3: null,
+      q4: null,
+      total: null,
+      margin_pct: null,
+      notes: `${category.name} record for ${this.selectedCategoryYear}`,
+      unit: 'ZAR'
+    };
+
+    console.log('🏷️ Creating category record:', createPayload);
+
+    this.metricsService.addRecord(createPayload).subscribe({
+      next: (newRecord) => {
+        console.log('✅ Category record created:', newRecord);
+
+        // Add to local array
+        const recordToAdd: IMetricRecord = {
+          id: newRecord.id,
+          client_id: this.clientId,
+          company_id: this.company.id,
+          program_id: this.programId,
+          cohort_id: this.cohortId,
+          metric_type_id: metricTypeId,
+          category_id: categoryId,
+          year: this.selectedCategoryYear,
+          q1: newRecord.q1 || null,
+          q2: newRecord.q2 || null,
+          q3: newRecord.q3 || null,
+          q4: newRecord.q4 || null,
+          total: newRecord.total || null,
+          margin_pct: newRecord.margin_pct || null,
+          notes: newRecord.notes,
+          unit: newRecord.unit || 'ZAR',
+          created_at: newRecord.created_at,
+          updated_at: newRecord.updated_at
+        };
+
+        this.allRecords.push(recordToAdd);
+      },
+      error: (err) => {
+        console.error('❌ Error creating category record:', err);
+        alert('Failed to add category record. Please try again.');
+      }
+    });
   }
 }
