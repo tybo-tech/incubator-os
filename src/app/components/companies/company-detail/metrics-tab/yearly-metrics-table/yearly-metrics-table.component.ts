@@ -95,6 +95,17 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
                 </div>
               </td>
 
+              <!-- Notes Input -->
+              <td class="px-6 py-4">
+                <input
+                  type="text"
+                  [(ngModel)]="record.notes"
+                  (blur)="updateRecord(record)"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Add notes..."
+                  maxlength="500" />
+              </td>
+
               <!-- Actions -->
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
@@ -173,6 +184,9 @@ export class YearlyMetricsTableComponent {
     // Always ensure values are numbers
     record.total = record.total != null ? parseFloat(String(record.total)) || null : null;
     record.margin_pct = record.margin_pct != null ? parseFloat(String(record.margin_pct)) || null : null;
+
+    // Ensure notes is properly handled
+    record.notes = record.notes ? String(record.notes).trim() : null;
 
     // Validate year only if it's set
     if (record.year !== undefined && record.year !== null) {
