@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType } from '../../../../../../models/metrics.model';
+import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, UpdateMetricGroupOrderDto, MetricPeriodType } from '../../../../../../models/metrics.model';
 import { ICategory } from '../../../../../../models/simple.schema';
 import { MetricsService } from '../../../../../../services/metrics.service';
 import { CategoryService } from '../../../../../../services/category.service';
@@ -72,16 +72,25 @@ import { Constants } from '../../../../../../services/service';
 
           <!-- Groups List View -->
           <div *ngIf="currentView === 'groups-list'">
-            <!-- Create Group Button -->
+            <!-- Header with Action Buttons -->
             <div class="mb-6 flex justify-between items-center">
               <h3 class="text-xl font-semibold text-gray-900">All Groups</h3>
-              <button
-                (click)="showCreateGroup()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
-              >
-                <i class="fas fa-plus"></i>
-                Create New Group
-              </button>
+              <div class="flex gap-3">
+                <button
+                  (click)="showOrderGroups()"
+                  class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                >
+                  <i class="fas fa-sort"></i>
+                  Order Groups
+                </button>
+                <button
+                  (click)="showCreateGroup()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                >
+                  <i class="fas fa-plus"></i>
+                  Create New Group
+                </button>
+              </div>
             </div>
 
             <!-- Groups Grid -->
@@ -128,6 +137,97 @@ import { Constants } from '../../../../../../services/service';
                       Margin
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Groups View -->
+          <div *ngIf="currentView === 'order-groups'">
+            <!-- Header with Save/Cancel Buttons -->
+            <div class="mb-6 flex justify-between items-center">
+              <div>
+                <h3 class="text-xl font-semibold text-purple-900">Order Groups</h3>
+                <p class="text-sm text-purple-600 mt-1">Drag and drop or use buttons to reorder groups</p>
+              </div>
+              <div class="flex gap-3">
+                <button
+                  (click)="cancelOrderChanges()"
+                  class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  (click)="saveGroupOrder()"
+                  [disabled]="!isDirtyOrder || isLoading"
+                  class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {{ isLoading ? 'Saving...' : 'Save Order' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Orderable Groups List -->
+            <div class="space-y-3">
+              <div *ngFor="let group of groupsForOrdering; let i = index"
+                   class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <!-- Group Info -->
+                  <div class="flex items-center gap-3 flex-1">
+                    <div class="w-6 h-6 rounded" [style.background-color]="group.graph_color || '#6B7280'"></div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <h5 class="font-semibold text-gray-900">{{ group.name }}</h5>
+                        <span class="text-sm text-gray-500">{{ group.code }}</span>
+                      </div>
+                      <p *ngIf="group.description" class="text-sm text-gray-600">{{ group.description }}</p>
+                      <p class="text-xs text-gray-500 mt-1">{{ getTypesForGroup(group.id).length }} types</p>
+                    </div>
+                  </div>
+
+                  <!-- Order Controls -->
+                  <div class="flex items-center gap-2">
+                    <!-- Current Order Display -->
+                    <span class="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                      #{{ i + 1 }}
+                    </span>
+
+                    <!-- Move Up Button -->
+                    <button
+                      (click)="moveGroupUp(i)"
+                      [disabled]="i === 0"
+                      class="p-1 text-purple-600 hover:text-purple-800 disabled:text-gray-300 rounded hover:bg-purple-50 disabled:hover:bg-transparent"
+                      title="Move Up"
+                    >
+                      <i class="fas fa-chevron-up"></i>
+                    </button>
+
+                    <!-- Move Down Button -->
+                    <button
+                      (click)="moveGroupDown(i)"
+                      [disabled]="i === groupsForOrdering.length - 1"
+                      class="p-1 text-purple-600 hover:text-purple-800 disabled:text-gray-300 rounded hover:bg-purple-50 disabled:hover:bg-transparent"
+                      title="Move Down"
+                    >
+                      <i class="fas fa-chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-6 bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-purple-600 mt-0.5"></i>
+                <div class="text-sm text-purple-800">
+                  <p class="font-medium mb-1">How to reorder groups:</p>
+                  <ul class="space-y-1 text-purple-700">
+                    <li>• Use the up/down arrow buttons to move groups one position at a time</li>
+                    <li>• The order number shown reflects the current position</li>
+                    <li>• Click "Save Order" to persist changes to the database</li>
+                    <li>• Click "Cancel" to discard changes and return to groups list</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -552,8 +652,12 @@ export class MetricsManagementModalComponent implements OnInit {
   isLoading = false;
 
   // Navigation Views
-  currentView: 'groups-list' | 'create-group' | 'edit-group' | 'types-list' | 'create-type' | 'edit-type' = 'groups-list';
+  currentView: 'groups-list' | 'create-group' | 'edit-group' | 'types-list' | 'create-type' | 'edit-type' | 'order-groups' = 'groups-list';
   navigationHistory: string[] = [];
+
+  // Order Management
+  groupsForOrdering: IMetricGroup[] = [];
+  isDirtyOrder: boolean = false;
 
   // Data
   groups: IMetricGroup[] = [];
@@ -828,6 +932,11 @@ export class MetricsManagementModalComponent implements OnInit {
         this.currentView = 'types-list';
         this.editingType = null;
         break;
+      case 'order-groups':
+        this.currentView = 'groups-list';
+        this.isDirtyOrder = false;
+        this.groupsForOrdering = [];
+        break;
       default:
         this.currentView = 'groups-list';
     }
@@ -877,8 +986,74 @@ export class MetricsManagementModalComponent implements OnInit {
         return `Create a new type in ${this.selectedGroup?.name || 'group'}`;
       case 'edit-type':
         return 'Edit metric type details';
+      case 'order-groups':
+        return 'Reorder metric groups';
       default:
         return '';
+    }
+  }
+
+  // Order Management Methods
+  showOrderGroups(): void {
+    this.currentView = 'order-groups';
+    // Create a copy of groups array sorted by order_no
+    this.groupsForOrdering = [...this.groups].sort((a, b) => (a.order_no || 0) - (b.order_no || 0));
+    this.isDirtyOrder = false;
+  }
+
+  moveGroupUp(index: number): void {
+    if (index > 0 && index < this.groupsForOrdering.length) {
+      // Swap with previous item
+      const temp = this.groupsForOrdering[index];
+      this.groupsForOrdering[index] = this.groupsForOrdering[index - 1];
+      this.groupsForOrdering[index - 1] = temp;
+      this.isDirtyOrder = true;
+    }
+  }
+
+  moveGroupDown(index: number): void {
+    if (index >= 0 && index < this.groupsForOrdering.length - 1) {
+      // Swap with next item
+      const temp = this.groupsForOrdering[index];
+      this.groupsForOrdering[index] = this.groupsForOrdering[index + 1];
+      this.groupsForOrdering[index + 1] = temp;
+      this.isDirtyOrder = true;
+    }
+  }
+
+  cancelOrderChanges(): void {
+    this.currentView = 'groups-list';
+    this.isDirtyOrder = false;
+    this.groupsForOrdering = [];
+  }
+
+  async saveGroupOrder(): Promise<void> {
+    if (!this.isDirtyOrder || this.groupsForOrdering.length === 0) return;
+
+    try {
+      this.isLoading = true;
+
+      // Create order update payload - assign order_no based on current position
+      const orderUpdates: UpdateMetricGroupOrderDto[] = this.groupsForOrdering.map((group, index) => ({
+        id: group.id,
+        order_no: index + 1
+      }));
+
+      await this.metricsService.updateGroupOrder(orderUpdates).toPromise();
+
+      // Reload data to reflect new order
+      await this.loadData();
+      this.dataUpdated.emit();
+
+      // Return to groups list
+      this.currentView = 'groups-list';
+      this.isDirtyOrder = false;
+      this.groupsForOrdering = [];
+
+    } catch (error) {
+      console.error('Failed to update group order:', error);
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -905,7 +1080,8 @@ export class MetricsManagementModalComponent implements OnInit {
       this.isLoading = true;
       // Load groups and types separately
       const groups = await this.metricsService.listGroups(this.clientId).toPromise();
-      this.groups = groups || [];
+      // Sort groups by order_no for consistent display
+      this.groups = (groups || []).sort((a, b) => (a.order_no || 0) - (b.order_no || 0));
 
       // Load types for all groups using enhanced endpoint that includes categories
       this.types = [];

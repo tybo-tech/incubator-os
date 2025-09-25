@@ -46,6 +46,13 @@ class Metrics
         return $this->deleteRow('metric_groups', $id);
     }
 
+    public function updateGroupOrder(int $id, int $orderNo): bool
+    {
+        $sql = "UPDATE metric_groups SET order_no = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$orderNo, $id]);
+    }
+
     /* ========================= TYPES ========================= */
 
     public function addType(int $groupId, string $code, string $name, string $description = '', string $unit = 'count', int $showTotal = 1, int $showMargin = 0, ?string $graphColor = null, string $periodType = 'QUARTERLY', array $categoryIds = []): array

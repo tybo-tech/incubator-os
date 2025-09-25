@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Constants } from './service';
 import {
   IMetricGroup, IMetricType, IMetricRecord, MetricsHierarchy,
-  CreateMetricGroupDto, UpdateMetricGroupDto,
+  CreateMetricGroupDto, UpdateMetricGroupDto, UpdateMetricGroupOrderDto,
   CreateMetricTypeDto, UpdateMetricTypeDto,
   CreateMetricRecordDto, UpdateMetricRecordDto
 } from '../models/metrics.model';
@@ -17,6 +17,7 @@ export class MetricsService {
   // Groups
   addGroup(dto: CreateMetricGroupDto): Observable<IMetricGroup> { return this.http.post<IMetricGroup>(`${this.apiUrl}/add-metric-group.php`, dto); }
   updateGroup(dto: UpdateMetricGroupDto): Observable<IMetricGroup> { return this.http.post<IMetricGroup>(`${this.apiUrl}/update-metric-group.php`, dto); }
+  updateGroupOrder(groupOrders: UpdateMetricGroupOrderDto[]): Observable<{success:boolean}> { return this.http.post<{success:boolean}>(`${this.apiUrl}/update-metric-group-order.php`, { orders: groupOrders }); }
   getGroup(id: number): Observable<IMetricGroup> { return this.http.get<IMetricGroup>(`${this.apiUrl}/get-metric-group.php?id=${id}`); }
   listGroups(client_id: number): Observable<IMetricGroup[]> { return this.http.get<IMetricGroup[]>(`${this.apiUrl}/list-metric-groups.php?client_id=${client_id}`); }
   deleteGroup(id: number): Observable<{success:boolean}> { return this.http.post<{success:boolean}>(`${this.apiUrl}/delete-metric-group.php`, { id }); }
