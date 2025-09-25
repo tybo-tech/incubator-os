@@ -252,6 +252,129 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
           </div>
         </div>
+
+        <!-- Category Group Summary -->
+        <div *ngIf="yearlySideBySideTypes.length > 0" class="mt-8 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg p-6 border border-gray-200">
+          <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            📊 Financial Summary for {{ selectedCategoryYear }}
+          </h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <!-- Revenue -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-blue-800">Total Revenue</p>
+                  <p class="text-2xl font-bold text-blue-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).revenue || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-blue-600 text-2xl">💵</div>
+              </div>
+            </div>
+
+            <!-- Profits -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-green-800">Total Profits</p>
+                  <p class="text-2xl font-bold text-green-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).profits || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-green-600 text-2xl">📈</div>
+              </div>
+            </div>
+
+            <!-- Assets -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-emerald-800">Total Assets</p>
+                  <p class="text-2xl font-bold text-emerald-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).assets || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-emerald-600 text-2xl">💰</div>
+              </div>
+            </div>
+
+            <!-- Liabilities -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-red-800">Total Liabilities</p>
+                  <p class="text-2xl font-bold text-red-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).liabilities || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-red-600 text-2xl">💳</div>
+              </div>
+            </div>
+
+            <!-- Direct Costs -->
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-orange-800">Direct Costs</p>
+                  <p class="text-2xl font-bold text-orange-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).directCosts || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-orange-600 text-2xl">🔧</div>
+              </div>
+            </div>
+
+            <!-- Operational Costs -->
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-purple-800">Operational Costs</p>
+                  <p class="text-2xl font-bold text-purple-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).operationalCosts || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-purple-600 text-2xl">⚙️</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Financial Ratios -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <!-- Net Position -->
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Net Position</p>
+                  <p class="text-xs text-gray-500">Assets - Liabilities</p>
+                  <p class="text-xl font-bold mt-1"
+                     [class.text-green-600]="getNetPosition(selectedCategoryYear) >= 0"
+                     [class.text-red-600]="getNetPosition(selectedCategoryYear) < 0">
+                    {{ (getNetPosition(selectedCategoryYear) || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-2xl">
+                  <span *ngIf="getNetPosition(selectedCategoryYear) >= 0">📈</span>
+                  <span *ngIf="getNetPosition(selectedCategoryYear) < 0">📉</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Costs -->
+            <div class="bg-white rounded-lg p-4 border border-gray-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Total Costs</p>
+                  <p class="text-xs text-gray-500">Direct + Operational</p>
+                  <p class="text-xl font-bold text-gray-900 mt-1">
+                    {{ (getTotalCosts(selectedCategoryYear) || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-gray-600 text-2xl">💸</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -709,5 +832,77 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
 
     console.log(`Final calculated total: ${result}`);
     return result;
+  }
+
+  /**
+   * Get category group totals based on dynamic metric classification from actual data
+   */
+  getCategoryGroupTotals(year: number): { assets: number; liabilities: number; directCosts: number; operationalCosts: number; revenue: number; profits: number; other: number } {
+    const totals = {
+      assets: 0,
+      liabilities: 0,
+      directCosts: 0,
+      operationalCosts: 0,
+      revenue: 0,
+      profits: 0,
+      other: 0
+    };
+
+    // Process all metric types from all arrays
+    const allTypes = [...this.quarterlyTypes, ...this.yearlyTypes, ...this.yearlySideBySideTypes];
+
+    allTypes.forEach(type => {
+      const yearRecords = this.getCategoryRecordsForType(type.id, year);
+
+      // Classify by type code and name - dynamic based on actual data structure
+      const typeCode = type.code?.toUpperCase() || '';
+      const typeName = type.name?.toLowerCase() || '';
+
+      yearRecords.forEach(record => {
+        const value = parseFloat(String(record.total || 0));
+
+        // Dynamic classification based on actual metric codes and names from your payload
+        if (typeCode.includes('ASSETS') || typeName.includes('total assets')) {
+          totals.assets += value;
+        }
+        else if (typeCode.includes('LIABILITIES') || typeName.includes('total liabilities')) {
+          totals.liabilities += value;
+        }
+        else if (typeCode === 'DIRECT_COSTS' || typeName.includes('direct costs')) {
+          totals.directCosts += value;
+        }
+        else if (typeCode === 'OPERATING_COSTS' || typeCode === 'OPERATIONAL_COSTS' ||
+                 typeName.includes('operational costs')) {
+          totals.operationalCosts += value;
+        }
+        else if (typeCode.includes('REVENUE') || typeName.includes('revenue')) {
+          totals.revenue += value;
+        }
+        else if (typeCode.includes('PROFIT') || typeName.includes('profit')) {
+          totals.profits += value;
+        }
+        else {
+          totals.other += value;
+        }
+      });
+    });
+
+    return totals;
+  }
+
+  /**
+   * Calculate net position (Assets - Liabilities)
+   */
+  getNetPosition(year: number): number {
+    const totals = this.getCategoryGroupTotals(year);
+    return totals.assets - totals.liabilities;
+  }
+
+  /**
+   * Calculate total costs (Direct + Operational)
+   */
+  getTotalCosts(year: number): number {
+    const totals = this.getCategoryGroupTotals(year);
+    return totals.directCosts + totals.operationalCosts;
   }
 }
