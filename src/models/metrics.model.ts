@@ -23,7 +23,15 @@ export interface IMetricType {
   show_margin: number;
   graph_color?: string | null;
   period_type: MetricPeriodType;
+  metadata?: IMetricTypeMetadata | null;
   records?: IMetricRecord[]; // included in hierarchy fetch
+}
+
+export interface IMetricTypeMetadata {
+  categories?: string[];
+  allows_categories?: boolean;
+  category_label?: string;
+  category_placeholder?: string;
 }
 
 export interface IMetricRecord {
@@ -51,7 +59,7 @@ export type MetricsHierarchy = IMetricGroup[];
 export interface CreateMetricGroupDto { client_id: number; code: string; name: string; description?: string; show_total?: number; show_margin?: number; graph_color?: string | null; }
 export interface UpdateMetricGroupDto extends Partial<CreateMetricGroupDto> { id: number; }
 
-export interface CreateMetricTypeDto { group_id: number; code: string; name: string; description?: string; unit?: string; show_total?: number; show_margin?: number; graph_color?: string | null; period_type?: MetricPeriodType; }
+export interface CreateMetricTypeDto { group_id: number; code: string; name: string; description?: string; unit?: string; show_total?: number; show_margin?: number; graph_color?: string | null; period_type?: MetricPeriodType; metadata?: IMetricTypeMetadata | null; }
 export interface UpdateMetricTypeDto extends Partial<CreateMetricTypeDto> { id: number; }
 
 export interface CreateMetricRecordDto { client_id: number; company_id: number; program_id: number; cohort_id: number; metric_type_id: number; year: number; q1?: number|null; q2?: number|null; q3?: number|null; q4?: number|null; total?: number|null; margin_pct?: number|null; unit?: string; }

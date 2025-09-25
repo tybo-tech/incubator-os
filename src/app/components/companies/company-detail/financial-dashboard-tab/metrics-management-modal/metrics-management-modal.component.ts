@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType } from '../../../../../../models/metrics.model';
+import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType, IMetricTypeMetadata } from '../../../../../../models/metrics.model';
 import { MetricsService } from '../../../../../../services/metrics.service';
 
 @Component({
@@ -401,6 +401,108 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                   />
                 </div>
 
+                <!-- Metadata Management Section -->
+                <div class="md:col-span-2">
+                  <div class="border-t border-gray-200 pt-4">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <i class="fas fa-tags text-green-600"></i>
+                      Category Management
+                    </h4>
+                    <p class="text-sm text-gray-600 mb-4">Configure category options for this metric type (e.g., Balance Sheet Assets/Liabilities).</p>
+
+                    <div class="space-y-4">
+                      <!-- Enable Categories Toggle -->
+                      <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            [(ngModel)]="currentTypeAllowsCategories"
+                            name="allows_categories"
+                            class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                          />
+                          <span class="text-sm font-medium text-gray-700">Enable Categories</span>
+                        </label>
+                        <span class="text-xs text-gray-500">Allow users to categorize records for this metric type</span>
+                      </div>
+
+                      <!-- Category Configuration (only show if categories are enabled) -->
+                      <div *ngIf="currentTypeAllowsCategories" class="bg-gray-50 p-4 rounded-lg space-y-4">
+
+                        <!-- Category Label -->
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">Category Label</label>
+                          <input
+                            type="text"
+                            [(ngModel)]="currentTypeCategoryLabel"
+                            name="category_label"
+                            placeholder="e.g., Asset Type, Liability Type"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                          />
+                          <p class="text-xs text-gray-500 mt-1">Label displayed to users when selecting categories</p>
+                        </div>
+
+                        <!-- Category Placeholder -->
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">Category Placeholder</label>
+                          <input
+                            type="text"
+                            [(ngModel)]="currentTypeCategoryPlaceholder"
+                            name="category_placeholder"
+                            placeholder="e.g., Select asset type..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                          />
+                          <p class="text-xs text-gray-500 mt-1">Placeholder text in category dropdown</p>
+                        </div>
+
+                        <!-- Categories List Management -->
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">Available Categories</label>
+
+                          <!-- Add Category Input -->
+                          <div class="flex gap-2 mb-3">
+                            <input
+                              type="text"
+                              [(ngModel)]="newCategoryInput"
+                              (keyup.enter)="addCategory()"
+                              placeholder="Add new category..."
+                              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                            />
+                            <button
+                              type="button"
+                              (click)="addCategory()"
+                              class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-1"
+                            >
+                              <i class="fas fa-plus"></i>
+                              Add
+                            </button>
+                          </div>
+
+                          <!-- Categories List -->
+                          <div *ngIf="currentTypeCategories && currentTypeCategories.length > 0" class="space-y-2">
+                            <div *ngFor="let category of currentTypeCategories; let i = index"
+                                 class="flex items-center justify-between bg-white px-3 py-2 border border-gray-200 rounded-lg">
+                              <span class="text-sm text-gray-700">{{ category }}</span>
+                              <button
+                                type="button"
+                                (click)="removeCategory(i)"
+                                class="text-red-600 hover:text-red-800 p-1"
+                                title="Remove category"
+                              >
+                                <i class="fas fa-trash text-xs"></i>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div *ngIf="!currentTypeCategories || currentTypeCategories.length === 0"
+                               class="text-sm text-gray-500 italic py-2">
+                            No categories added yet. Add categories above.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="md:col-span-2 flex justify-end gap-3">
                   <button
                     type="button"
@@ -462,6 +564,9 @@ export class MetricsManagementModalComponent implements OnInit {
   // Form Models
   newGroup: CreateMetricGroupDto = this.resetGroupForm();
   newType: CreateMetricTypeDto = this.resetTypeForm();
+
+  // Metadata Management
+  newCategoryInput: string = '';
 
   constructor(private metricsService: MetricsService) {}
 
@@ -628,6 +733,106 @@ export class MetricsManagementModalComponent implements OnInit {
       this.newType.graph_color = value;
     } else if (this.editingType) {
       this.editingType.graph_color = value;
+    }
+  }
+
+  // Metadata Getters/Setters
+  get currentTypeAllowsCategories(): boolean {
+    if (this.currentView === 'create-type') {
+      return this.newType.metadata?.allows_categories || false;
+    }
+    return this.editingType?.metadata?.allows_categories || false;
+  }
+  set currentTypeAllowsCategories(value: boolean) {
+    this.ensureMetadata();
+    if (this.currentView === 'create-type') {
+      this.newType.metadata!.allows_categories = value;
+    } else if (this.editingType) {
+      this.editingType.metadata!.allows_categories = value;
+    }
+  }
+
+  get currentTypeCategoryLabel(): string {
+    if (this.currentView === 'create-type') {
+      return this.newType.metadata?.category_label || '';
+    }
+    return this.editingType?.metadata?.category_label || '';
+  }
+  set currentTypeCategoryLabel(value: string) {
+    this.ensureMetadata();
+    if (this.currentView === 'create-type') {
+      this.newType.metadata!.category_label = value;
+    } else if (this.editingType) {
+      this.editingType.metadata!.category_label = value;
+    }
+  }
+
+  get currentTypeCategoryPlaceholder(): string {
+    if (this.currentView === 'create-type') {
+      return this.newType.metadata?.category_placeholder || '';
+    }
+    return this.editingType?.metadata?.category_placeholder || '';
+  }
+  set currentTypeCategoryPlaceholder(value: string) {
+    this.ensureMetadata();
+    if (this.currentView === 'create-type') {
+      this.newType.metadata!.category_placeholder = value;
+    } else if (this.editingType) {
+      this.editingType.metadata!.category_placeholder = value;
+    }
+  }
+
+  get currentTypeCategories(): string[] {
+    if (this.currentView === 'create-type') {
+      return this.newType.metadata?.categories || [];
+    }
+    return this.editingType?.metadata?.categories || [];
+  }
+
+  // Metadata Helper Methods
+  private ensureMetadata(): void {
+    if (this.currentView === 'create-type') {
+      if (!this.newType.metadata) {
+        this.newType.metadata = {
+          allows_categories: false,
+          categories: [],
+          category_label: '',
+          category_placeholder: ''
+        };
+      }
+    } else if (this.editingType) {
+      if (!this.editingType.metadata) {
+        this.editingType.metadata = {
+          allows_categories: false,
+          categories: [],
+          category_label: '',
+          category_placeholder: ''
+        };
+      }
+    }
+  }
+
+  addCategory(): void {
+    if (this.newCategoryInput.trim()) {
+      this.ensureMetadata();
+      const categories = this.currentView === 'create-type'
+        ? this.newType.metadata!.categories
+        : this.editingType?.metadata?.categories;
+
+      if (categories && !categories.includes(this.newCategoryInput.trim())) {
+        categories.push(this.newCategoryInput.trim());
+        this.newCategoryInput = '';
+      }
+    }
+  }
+
+  removeCategory(index: number): void {
+    const categories = this.currentView === 'create-type'
+      ? this.newType.metadata?.categories
+      : this.editingType?.metadata?.categories;
+
+    if (categories && index >= 0 && index < categories.length) {
+      categories.splice(index, 1);
     }
   }
 
@@ -842,7 +1047,13 @@ export class MetricsManagementModalComponent implements OnInit {
       show_total: 1,
       show_margin: 0,
       graph_color: '#1f77b4',
-      period_type: 'QUARTERLY'
+      period_type: 'QUARTERLY',
+      metadata: {
+        allows_categories: false,
+        categories: [],
+        category_label: '',
+        category_placeholder: ''
+      }
     };
   }
 }
