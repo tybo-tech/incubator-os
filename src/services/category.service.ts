@@ -207,4 +207,29 @@ export class CategoryService {
 
     return this.http.get<any>(`${this.apiUrl}/get-companies-for-picker.php?${params.toString()}`);
   }
+
+  // Metric Category Operations (New functionality for metrics management)
+  getMetricCategories(): Observable<ICategory[]> {
+    return this.http.get<ICategory[]>(`${this.apiUrl}/get-metric-categories.php`);
+  }
+
+  getMetricTypeCategories(metric_type_id: number): Observable<ICategory[]> {
+    return this.http.get<ICategory[]>(`${this.apiUrl}/get-metric-type-categories.php?metric_type_id=${metric_type_id}`);
+  }
+
+  updateMetricTypeCategories(metric_type_id: number, category_ids: number[]): Observable<{success: boolean}> {
+    return this.http.post<{success: boolean}>(`${this.apiUrl}/update-metric-type-categories.php`, {
+      metric_type_id,
+      category_ids
+    });
+  }
+
+  addMetricCategory(name: string, description?: string): Observable<ICategory> {
+    return this.http.post<ICategory>(`${this.apiUrl}/add-metric-category.php`, {
+      name,
+      type: 'metric',
+      description,
+      depth: 1
+    });
+  }
 }

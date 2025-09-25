@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType, IMetricTypeMetadata } from '../../../../../../models/metrics.model';
+import { IMetricGroup, IMetricType, CreateMetricGroupDto, CreateMetricTypeDto, MetricPeriodType } from '../../../../../../models/metrics.model';
+import { ICategory } from '../../../../../../models/simple.schema';
 import { MetricsService } from '../../../../../../services/metrics.service';
+import { CategoryService } from '../../../../../../services/category.service';
 
 @Component({
   selector: 'app-metrics-management-modal',
@@ -401,109 +403,86 @@ import { MetricsService } from '../../../../../../services/metrics.service';
                   />
                 </div>
 
-                <!-- Metadata Management Section -->
+                <!-- Category Management Section -->
                 <div class="md:col-span-2">
                   <div class="border-t border-gray-200 pt-4">
                     <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                       <i class="fas fa-tags text-green-600"></i>
                       Category Management
                     </h4>
-                    <p class="text-sm text-gray-600 mb-4">Configure category options for this metric type (e.g., Balance Sheet Assets/Liabilities).</p>
+                    <p class="text-sm text-gray-600 mb-4">Select categories for this metric type (e.g., Balance Sheet Assets/Liabilities).</p>
 
                     <div class="space-y-4">
-                      <!-- Enable Categories Toggle -->
-                      <div class="flex items-center gap-3">
-                        <label class="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="currentTypeAllowsCategories"
-                            name="allows_categories"
-                            class="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                          <span class="text-sm font-medium text-gray-700">Enable Categories</span>
-                        </label>
-                        <span class="text-xs text-gray-500">Allow users to categorize records for this metric type</span>
-                      </div>
+                      <!-- Available Categories Selection -->
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Available Categories</label>
 
-                      <!-- Category Configuration (only show if categories are enabled) -->
-                      <div *ngIf="currentTypeAllowsCategories" class="bg-gray-50 p-4 rounded-lg space-y-4">
-
-                        <!-- Category Label -->
-                        <div>
-                          <label class="block text-sm font-medium text-gray-700 mb-2">Category Label</label>
+                        <!-- Add New Category Input -->
+                        <div class="flex gap-2 mb-3">
                           <input
                             type="text"
-                            [(ngModel)]="currentTypeCategoryLabel"
-                            name="category_label"
-                            placeholder="e.g., Asset Type, Liability Type"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                            [(ngModel)]="newCategoryInput"
+                            (keyup.enter)="addCategory()"
+                            placeholder="Create new category..."
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
                           />
-                          <p class="text-xs text-gray-500 mt-1">Label displayed to users when selecting categories</p>
+                          <button
+                            type="button"
+                            (click)="addCategory()"
+                            class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-1"
+                          >
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </button>
                         </div>
 
-                        <!-- Category Placeholder -->
-                        <div>
-                          <label class="block text-sm font-medium text-gray-700 mb-2">Category Placeholder</label>
-                          <input
-                            type="text"
-                            [(ngModel)]="currentTypeCategoryPlaceholder"
-                            name="category_placeholder"
-                            placeholder="e.g., Select asset type..."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                          />
-                          <p class="text-xs text-gray-500 mt-1">Placeholder text in category dropdown</p>
-                        </div>
-
-                        <!-- Categories List Management -->
-                        <div>
-                          <label class="block text-sm font-medium text-gray-700 mb-2">Available Categories</label>
-
-                          <!-- Add Category Input -->
-                          <div class="flex gap-2 mb-3">
-                            <input
-                              type="text"
-                              [(ngModel)]="newCategoryInput"
-                              (keyup.enter)="addCategory()"
-                              placeholder="Add new category..."
-                              class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                            />
-                            <button
-                              type="button"
-                              (click)="addCategory()"
-                              class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-1"
-                            >
-                              <i class="fas fa-plus"></i>
-                              Add
-                            </button>
+                        <!-- Category Selection List -->
+                        <div *ngIf="availableCategories.length > 0" class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+                          <div *ngFor="let category of availableCategories"
+                               class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+                            <label class="flex items-center gap-2 flex-1 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                [checked]="selectedCategoryIds.includes(category.id)"
+                                (change)="toggleCategory(category.id)"
+                                class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              />
+                              <span class="text-sm text-gray-700">{{ category.name }}</span>
+                              <span *ngIf="category.description" class="text-xs text-gray-500">({{ category.description }})</span>
+                            </label>
                           </div>
+                        </div>
 
-                          <!-- Categories List -->
-                          <div *ngIf="currentTypeCategories && currentTypeCategories.length > 0" class="space-y-2">
-                            <div *ngFor="let category of currentTypeCategories; let i = index"
-                                 class="flex items-center justify-between bg-white px-3 py-2 border border-gray-200 rounded-lg">
-                              <span class="text-sm text-gray-700">{{ category }}</span>
+                        <!-- Selected Categories Summary -->
+                        <div *ngIf="selectedCategoryIds.length > 0" class="mt-4 p-3 bg-green-50 rounded-lg">
+                          <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            <span class="text-sm font-medium text-green-800">Selected Categories ({{ selectedCategoryIds.length }})</span>
+                          </div>
+                          <div class="flex flex-wrap gap-2">
+                            <span *ngFor="let category of currentTypeCategories"
+                                  class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                              {{ category.name }}
                               <button
                                 type="button"
-                                (click)="removeCategory(i)"
-                                class="text-red-600 hover:text-red-800 p-1"
+                                (click)="removeCategory(category.id)"
+                                class="text-green-600 hover:text-green-800"
                                 title="Remove category"
                               >
-                                <i class="fas fa-trash text-xs"></i>
+                                <i class="fas fa-times"></i>
                               </button>
-                            </div>
+                            </span>
                           </div>
+                        </div>
 
-                          <div *ngIf="!currentTypeCategories || currentTypeCategories.length === 0"
-                               class="text-sm text-gray-500 italic py-2">
-                            No categories added yet. Add categories above.
-                          </div>
+                        <div *ngIf="availableCategories.length === 0"
+                             class="text-sm text-gray-500 italic py-4 text-center bg-gray-50 rounded-lg">
+                          No categories available. Create your first category above.
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                <div class="md:col-span-2 flex justify-end gap-3">
+                </div>                <div class="md:col-span-2 flex justify-end gap-3">
                   <button
                     type="button"
                     (click)="goBack()"
@@ -565,13 +544,19 @@ export class MetricsManagementModalComponent implements OnInit {
   newGroup: CreateMetricGroupDto = this.resetGroupForm();
   newType: CreateMetricTypeDto = this.resetTypeForm();
 
-  // Metadata Management
+  // Category Management
+  availableCategories: ICategory[] = [];
+  selectedCategoryIds: number[] = [];
   newCategoryInput: string = '';
 
-  constructor(private metricsService: MetricsService) {}
+  constructor(
+    private metricsService: MetricsService,
+    private categoryService: CategoryService
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadMetricCategories();
   }
 
   // Group Form Getters/Setters
@@ -736,103 +721,62 @@ export class MetricsManagementModalComponent implements OnInit {
     }
   }
 
-  // Metadata Getters/Setters
+  // Category Management Methods
   get currentTypeAllowsCategories(): boolean {
-    if (this.currentView === 'create-type') {
-      return this.newType.metadata?.allows_categories || false;
-    }
-    return this.editingType?.metadata?.allows_categories || false;
+    return this.selectedCategoryIds.length > 0;
   }
-  set currentTypeAllowsCategories(value: boolean) {
-    this.ensureMetadata();
-    if (this.currentView === 'create-type') {
-      this.newType.metadata!.allows_categories = value;
-    } else if (this.editingType) {
-      this.editingType.metadata!.allows_categories = value;
+
+  get currentTypeCategories(): ICategory[] {
+    return this.availableCategories.filter(cat => this.selectedCategoryIds.includes(cat.id));
+  }
+
+  async loadMetricCategories(): Promise<void> {
+    try {
+      this.availableCategories = await this.categoryService.getMetricCategories().toPromise() || [];
+    } catch (error) {
+      console.error('Error loading metric categories:', error);
+      this.availableCategories = [];
     }
   }
 
-  get currentTypeCategoryLabel(): string {
-    if (this.currentView === 'create-type') {
-      return this.newType.metadata?.category_label || '';
-    }
-    return this.editingType?.metadata?.category_label || '';
-  }
-  set currentTypeCategoryLabel(value: string) {
-    this.ensureMetadata();
-    if (this.currentView === 'create-type') {
-      this.newType.metadata!.category_label = value;
-    } else if (this.editingType) {
-      this.editingType.metadata!.category_label = value;
+  async loadTypeCategories(typeId: number): Promise<void> {
+    try {
+      const typeCategories = await this.categoryService.getMetricTypeCategories(typeId).toPromise() || [];
+      this.selectedCategoryIds = typeCategories.map(cat => cat.id);
+    } catch (error) {
+      console.error('Error loading type categories:', error);
+      this.selectedCategoryIds = [];
     }
   }
 
-  get currentTypeCategoryPlaceholder(): string {
-    if (this.currentView === 'create-type') {
-      return this.newType.metadata?.category_placeholder || '';
-    }
-    return this.editingType?.metadata?.category_placeholder || '';
-  }
-  set currentTypeCategoryPlaceholder(value: string) {
-    this.ensureMetadata();
-    if (this.currentView === 'create-type') {
-      this.newType.metadata!.category_placeholder = value;
-    } else if (this.editingType) {
-      this.editingType.metadata!.category_placeholder = value;
-    }
-  }
-
-  get currentTypeCategories(): string[] {
-    if (this.currentView === 'create-type') {
-      return this.newType.metadata?.categories || [];
-    }
-    return this.editingType?.metadata?.categories || [];
-  }
-
-  // Metadata Helper Methods
-  private ensureMetadata(): void {
-    if (this.currentView === 'create-type') {
-      if (!this.newType.metadata) {
-        this.newType.metadata = {
-          allows_categories: false,
-          categories: [],
-          category_label: '',
-          category_placeholder: ''
-        };
-      }
-    } else if (this.editingType) {
-      if (!this.editingType.metadata) {
-        this.editingType.metadata = {
-          allows_categories: false,
-          categories: [],
-          category_label: '',
-          category_placeholder: ''
-        };
-      }
-    }
-  }
-
-  addCategory(): void {
+  async addCategory(): Promise<void> {
     if (this.newCategoryInput.trim()) {
-      this.ensureMetadata();
-      const categories = this.currentView === 'create-type'
-        ? this.newType.metadata!.categories
-        : this.editingType?.metadata?.categories;
+      try {
+        const newCategory = await this.categoryService.addMetricCategory(
+          this.newCategoryInput.trim(),
+          `Category for ${this.newCategoryInput.trim()}`
+        ).toPromise();
 
-      if (categories && !categories.includes(this.newCategoryInput.trim())) {
-        categories.push(this.newCategoryInput.trim());
-        this.newCategoryInput = '';
+        if (newCategory) {
+          this.availableCategories.push(newCategory);
+          this.selectedCategoryIds.push(newCategory.id);
+          this.newCategoryInput = '';
+        }
+      } catch (error) {
+        console.error('Error adding category:', error);
       }
     }
   }
 
-  removeCategory(index: number): void {
-    const categories = this.currentView === 'create-type'
-      ? this.newType.metadata?.categories
-      : this.editingType?.metadata?.categories;
+  removeCategory(categoryId: number): void {
+    this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
+  }
 
-    if (categories && index >= 0 && index < categories.length) {
-      categories.splice(index, 1);
+  toggleCategory(categoryId: number): void {
+    if (this.selectedCategoryIds.includes(categoryId)) {
+      this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
+    } else {
+      this.selectedCategoryIds.push(categoryId);
     }
   }
 
@@ -884,14 +828,16 @@ export class MetricsManagementModalComponent implements OnInit {
   showCreateType(): void {
     this.currentView = 'create-type';
     this.newType = this.resetTypeForm();
+    this.selectedCategoryIds = [];
     if (this.selectedGroup) {
       this.newType.group_id = this.selectedGroup.id;
     }
   }
 
-  showEditType(type: IMetricType): void {
+  async showEditType(type: IMetricType): Promise<void> {
     this.currentView = 'edit-type';
     this.editingType = { ...type };
+    await this.loadTypeCategories(type.id);
   }
 
   getSubtitle(): string {
@@ -996,7 +942,15 @@ export class MetricsManagementModalComponent implements OnInit {
     try {
       this.isLoading = true;
       this.newType.group_id = this.selectedGroup.id;
-      await this.metricsService.addType(this.newType).toPromise();
+      this.newType.category_ids = [...this.selectedCategoryIds];
+
+      const createdType = await this.metricsService.addType(this.newType).toPromise();
+
+      // Update category associations if categories were selected
+      if (createdType && this.selectedCategoryIds.length > 0) {
+        await this.categoryService.updateMetricTypeCategories(createdType.id, this.selectedCategoryIds).toPromise();
+      }
+
       await this.loadData();
       this.dataUpdated.emit();
       this.currentView = 'types-list';
@@ -1012,8 +966,14 @@ export class MetricsManagementModalComponent implements OnInit {
 
     try {
       this.isLoading = true;
-      const updateDto = { ...this.editingType };
-      await this.metricsService.updateType(updateDto).toPromise();
+      const updateDto = { ...this.editingType, category_ids: [...this.selectedCategoryIds] };
+      const updatedType = await this.metricsService.updateType(updateDto).toPromise();
+
+      // Update category associations
+      if (updatedType) {
+        await this.categoryService.updateMetricTypeCategories(updatedType.id, this.selectedCategoryIds).toPromise();
+      }
+
       await this.loadData();
       this.dataUpdated.emit();
       this.currentView = 'types-list';
@@ -1048,12 +1008,7 @@ export class MetricsManagementModalComponent implements OnInit {
       show_margin: 0,
       graph_color: '#1f77b4',
       period_type: 'QUARTERLY',
-      metadata: {
-        allows_categories: false,
-        categories: [],
-        category_label: '',
-        category_placeholder: ''
-      }
+      category_ids: []
     };
   }
 }
