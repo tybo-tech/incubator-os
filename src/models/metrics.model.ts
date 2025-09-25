@@ -47,6 +47,7 @@ export interface IMetricRecord {
   company_id: number;
   program_id: number;
   cohort_id: number;
+  category_id?: number | null;
   year: number; // mapped from year_
   q1?: number | null;
   q2?: number | null;
@@ -54,6 +55,7 @@ export interface IMetricRecord {
   q4?: number | null;
   total?: number | null;
   margin_pct?: number | null;
+  notes?: string | null;
   unit: string;
   created_at?: string;
   updated_at?: string;
@@ -72,5 +74,5 @@ export interface UpdateMetricTypeDto extends Partial<CreateMetricTypeDto> { id: 
 export interface CreateCategoryDto { name: string; type: 'client' | 'program' | 'cohort' | 'metric'; description?: string; image_url?: string; parent_id?: number; depth: number; }
 export interface UpdateCategoryDto extends Partial<CreateCategoryDto> { id: number; }
 
-export interface CreateMetricRecordDto { client_id: number; company_id: number; program_id: number; cohort_id: number; metric_type_id: number; year: number; q1?: number|null; q2?: number|null; q3?: number|null; q4?: number|null; total?: number|null; margin_pct?: number|null; unit?: string; }
+export interface CreateMetricRecordDto { client_id: number; company_id: number; program_id: number; cohort_id: number; metric_type_id: number; category_id?: number|null; year: number; q1?: number|null; q2?: number|null; q3?: number|null; q4?: number|null; total?: number|null; margin_pct?: number|null; notes?: string|null; unit?: string; }
 export interface UpdateMetricRecordDto extends Partial<CreateMetricRecordDto> { id: number; }

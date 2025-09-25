@@ -15,18 +15,19 @@ class MetricRecord
 
     public function add(array $data): array
     {
-        $sql = "INSERT INTO metric_records (company_id, metric_type_id, year, quarter, value, note, title, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        $sql = "INSERT INTO metric_records (company_id, metric_type_id, category_id, year, quarter, value, note, notes, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
             $data['company_id'],
             $data['metric_type_id'],
+            $data['category_id'] ?? null,
             $data['year'],
             $data['quarter'] ?? null,
             $data['value'],
             $data['note'] ?? null,
-            $data['title'] ?? null  // New title field for categories
+            $data['notes'] ?? null
         ]);
 
         return $this->getById((int)$this->conn->lastInsertId());
@@ -34,7 +35,7 @@ class MetricRecord
 
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['metric_type_id', 'year', 'quarter', 'value', 'note', 'title'];
+        $allowed = ['metric_type_id', 'category_id', 'year', 'quarter', 'value', 'note', 'notes'];
         $sets = [];
         $params = [];
 
@@ -59,9 +60,10 @@ class MetricRecord
     public function getById(int $id): ?array
     {
         $stmt = $this->conn->prepare("
-            SELECT mr.*, mt.name as metric_type_name, mt.unit
+            SELECT mr.*, mt.name as metric_type_name, mt.unit, c.name as category_name
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
+            LEFT JOIN categories c ON mr.category_id = c.id
             WHERE mr.id = ?
         ");
         $stmt->execute([$id]);
@@ -85,9 +87,10 @@ class MetricRecord
         }
 
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.period_type
+            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.period_type, c.name as category_name
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
+            LEFT JOIN categories c ON mr.category_id = c.id
             WHERE " . implode(' AND ', $conditions) . "
             ORDER BY mr.year DESC, mr.quarter DESC, mt.name ASC
         ";
@@ -110,9 +113,10 @@ class MetricRecord
         }
 
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit
+            SELECT mr.*, mt.name as metric_type_name, mt.unit, c.name as category_name
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
+            LEFT JOIN categories c ON mr.category_id = c.id
             WHERE " . implode(' AND ', $conditions) . "
             ORDER BY mr.year DESC, mr.quarter DESC
         ";
@@ -130,11 +134,12 @@ class MetricRecord
     public function getRecordsByCategory(int $companyId, int $metricTypeId, int $year): array
     {
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit
+            SELECT mr.*, mt.name as metric_type_name, mt.unit, c.name as category_name
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
+            LEFT JOIN categories c ON mr.category_id = c.id
             WHERE mr.company_id = ? AND mr.metric_type_id = ? AND mr.year = ?
-            ORDER BY mr.title ASC, mr.quarter ASC
+            ORDER BY c.name ASC, mr.quarter ASC
         ";
 
         $stmt = $this->conn->prepare($sql);
@@ -143,14 +148,14 @@ class MetricRecord
 
         $records = array_map(fn($r) => $this->castRow($r), $rows);
 
-        // Group by title (category)
+        // Group by category
         $grouped = [];
         foreach ($records as $record) {
-            $title = $record['title'] ?? 'uncategorized';
-            if (!isset($grouped[$title])) {
-                $grouped[$title] = [];
+            $categoryName = $record['category_name'] ?? 'uncategorized';
+            if (!isset($grouped[$categoryName])) {
+                $grouped[$categoryName] = [];
             }
-            $grouped[$title][] = $record;
+            $grouped[$categoryName][] = $record;
         }
 
         return $grouped;
@@ -177,7 +182,7 @@ class MetricRecord
     private function castRow(array $row): array
     {
         // Cast integers
-        foreach (['id', 'company_id', 'metric_type_id', 'year', 'quarter'] as $k) {
+        foreach (['id', 'company_id', 'metric_type_id', 'category_id', 'year', 'quarter'] as $k) {
             if (array_key_exists($k, $row) && $row[$k] !== null) {
                 $row[$k] = (int)$row[$k];
             }
@@ -187,8 +192,6 @@ class MetricRecord
         if (isset($row['value']) && $row['value'] !== null) {
             $row['value'] = (float)$row['value'];
         }
-
-
 
         return $row;
     }
@@ -222,11 +225,12 @@ class MetricRecord
             $data = [
                 'company_id' => $companyId,
                 'metric_type_id' => $metricTypeId,
+                'category_id' => $categoryData['category_id'] ?? null,
                 'year' => $year,
                 'quarter' => $categoryData['quarter'] ?? null,
                 'value' => $categoryData['value'],
                 'note' => $categoryData['note'] ?? null,
-                'title' => $categoryData['title'] ?? null
+                'notes' => $categoryData['notes'] ?? null
             ];
 
             $record = $this->add($data);

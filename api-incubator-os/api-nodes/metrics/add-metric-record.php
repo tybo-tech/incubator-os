@@ -15,7 +15,9 @@ try {
         isset($data['q4'])? (float)$data['q4']: null,
         isset($data['total'])? (float)$data['total']: null,
         isset($data['margin_pct'])? (float)$data['margin_pct']: null,
-        $data['unit'] ?? 'ZAR'
+        $data['unit'] ?? 'ZAR',
+        isset($data['category_id'])? (int)$data['category_id']: null,
+        $data['notes'] ?? null
     );
     echo json_encode($res);
 } catch (Exception $e) { http_response_code(400); echo json_encode(['error'=>$e->getMessage()]); }

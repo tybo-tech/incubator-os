@@ -2,13 +2,13 @@
 -- Add category_id (nullable) and notes fields, drop title field
 
 -- Add the new fields
-ALTER TABLE metric_records 
+ALTER TABLE metric_records
 ADD COLUMN category_id INT NULL AFTER metric_type_id,
 ADD COLUMN notes TEXT NULL AFTER unit;
 
 -- Add foreign key constraint for category_id
-ALTER TABLE metric_records 
-ADD CONSTRAINT fk_metric_records_category 
+ALTER TABLE metric_records
+ADD CONSTRAINT fk_metric_records_category
 FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL;
 
 -- Drop the title field (if it exists)
@@ -22,5 +22,5 @@ CREATE INDEX idx_metric_records_category_id ON metric_records(category_id);
 CREATE INDEX idx_metric_records_type_category ON metric_records(metric_type_id, category_id);
 
 -- Update the table comment to reflect the new structure
-ALTER TABLE metric_records 
+ALTER TABLE metric_records
 COMMENT = 'Stores metric record values. category_id NULL = traditional record, category_id set = category-specific record for YEARLY_SIDE_BY_SIDE metrics';

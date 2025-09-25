@@ -112,20 +112,20 @@ class Metrics
 
     /* ========================= RECORDS ========================= */
 
-    public function addRecord(int $clientId, int $companyId, int $programId, int $cohortId, int $metricTypeId, int $year, ?float $q1, ?float $q2, ?float $q3, ?float $q4, ?float $total, ?float $marginPct, string $unit = 'ZAR'): array
+    public function addRecord(int $clientId, int $companyId, int $programId, int $cohortId, int $metricTypeId, int $year, ?float $q1, ?float $q2, ?float $q3, ?float $q4, ?float $total, ?float $marginPct, string $unit = 'ZAR', ?int $categoryId = null, ?string $notes = null): array
     {
         $sql = "INSERT INTO metric_records
-                (client_id, company_id, program_id, cohort_id, metric_type_id, year_, q1, q2, q3, q4, total, margin_pct, unit)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                (client_id, company_id, program_id, cohort_id, metric_type_id, category_id, year_, q1, q2, q3, q4, total, margin_pct, unit, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$clientId, $companyId, $programId, $cohortId, $metricTypeId, $year, $q1, $q2, $q3, $q4, $total, $marginPct, $unit]);
+        $stmt->execute([$clientId, $companyId, $programId, $cohortId, $metricTypeId, $categoryId, $year, $q1, $q2, $q3, $q4, $total, $marginPct, $unit, $notes]);
 
         return $this->getRecordById((int)$this->conn->lastInsertId());
     }
 
     public function updateRecord(int $id, array $fields): ?array
     {
-        $allowed = ['client_id','company_id','program_id','cohort_id','metric_type_id','year_','q1','q2','q3','q4','total','margin_pct','unit'];
+        $allowed = ['client_id','company_id','program_id','cohort_id','metric_type_id','category_id','year_','q1','q2','q3','q4','total','margin_pct','unit','notes'];
         return $this->updateRow('metric_records', $id, $fields, $allowed);
     }
 
@@ -174,11 +174,15 @@ class Metrics
                 $stmt3->execute([$type['id']]);
                 $type['categories'] = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
-                // 3. Fetch records for each type (including title field)
-                $stmt2 = $this->conn->prepare("SELECT *, title FROM metric_records
-                                               WHERE metric_type_id = ? AND company_id = ?
-                                               AND program_id = ? AND cohort_id = ?
-                                               ORDER BY year_ DESC, title ASC");
+                // 3. Fetch records for each type (with category and notes)
+                $stmt2 = $this->conn->prepare("
+                    SELECT mr.*, c.name as category_name
+                    FROM metric_records mr
+                    LEFT JOIN categories c ON mr.category_id = c.id
+                    WHERE mr.metric_type_id = ? AND mr.company_id = ?
+                    AND mr.program_id = ? AND mr.cohort_id = ?
+                    ORDER BY mr.year_ DESC, c.name ASC
+                ");
                 $stmt2->execute([$type['id'], $companyId, $programId, $cohortId]);
                 $records = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
@@ -186,11 +190,11 @@ class Metrics
                 if (!empty($type['categories'])) {
                     $groupedRecords = [];
                     foreach ($records as $record) {
-                        $title = $record['title'] ?? 'uncategorized';
-                        if (!isset($groupedRecords[$title])) {
-                            $groupedRecords[$title] = [];
+                        $categoryName = $record['category_name'] ?? 'uncategorized';
+                        if (!isset($groupedRecords[$categoryName])) {
+                            $groupedRecords[$categoryName] = [];
                         }
-                        $groupedRecords[$title][] = $record;
+                        $groupedRecords[$categoryName][] = $record;
                     }
                     $type['records'] = $records; // Keep original format for backward compatibility
                     $type['records_by_category'] = $groupedRecords; // New grouped format
