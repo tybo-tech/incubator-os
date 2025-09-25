@@ -16,7 +16,14 @@ export class MetricsUtils {
    * Check if a metric type is yearly
    */
   static isYearly(type: IMetricType): boolean {
-    return type.period_type === 'YEARLY';
+    return type.period_type === 'YEARLY' || type.period_type === 'YEARLY_SIDE_BY_SIDE';
+  }
+
+  /**
+   * Check if a metric type is yearly side-by-side
+   */
+  static isYearlySideBySide(type: IMetricType): boolean {
+    return type.period_type === 'YEARLY_SIDE_BY_SIDE';
   }
 
   /**
@@ -28,6 +35,8 @@ export class MetricsUtils {
         return ['Year', 'Q1', 'Q2', 'Q3', 'Q4', 'Total', 'Margin %'];
       case 'YEARLY':
         return ['Year', 'Annual Value', 'Margin %'];
+      case 'YEARLY_SIDE_BY_SIDE':
+        return ['Category', 'Amount', 'Note', 'Actions'];
       default:
         return ['Year', 'Q1', 'Q2', 'Q3', 'Q4', 'Total', 'Margin %'];
     }
@@ -42,6 +51,8 @@ export class MetricsUtils {
         return ['q1', 'q2', 'q3', 'q4'];
       case 'YEARLY':
         return ['total']; // For yearly, we edit the total field directly
+      case 'YEARLY_SIDE_BY_SIDE':
+        return ['amount', 'note']; // Category-based fields
       default:
         return ['q1', 'q2', 'q3', 'q4'];
     }
@@ -57,10 +68,15 @@ export class MetricsUtils {
   /**
    * Group metric types by period type
    */
-  static groupByPeriodType(types: IMetricType[]): { quarterly: IMetricType[], yearly: IMetricType[] } {
+  static groupByPeriodType(types: IMetricType[]): {
+    quarterly: IMetricType[],
+    yearly: IMetricType[],
+    yearlySideBySide: IMetricType[]
+  } {
     return {
       quarterly: types.filter(type => type.period_type === 'QUARTERLY'),
-      yearly: types.filter(type => type.period_type === 'YEARLY')
+      yearly: types.filter(type => type.period_type === 'YEARLY'),
+      yearlySideBySide: types.filter(type => type.period_type === 'YEARLY_SIDE_BY_SIDE')
     };
   }
 
@@ -69,7 +85,7 @@ export class MetricsUtils {
    * For yearly metrics, total is entered directly
    */
   static calculateTotal(record: IMetricRecord, periodType: MetricPeriodType): number | null {
-    if (periodType === 'YEARLY') {
+    if (periodType === 'YEARLY' || periodType === 'YEARLY_SIDE_BY_SIDE') {
       return record.total ?? null; // Yearly total is entered directly
     }
 

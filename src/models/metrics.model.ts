@@ -10,7 +10,7 @@ export interface IMetricGroup {
   types?: IMetricType[]; // included in hierarchy fetch
 }
 
-export type MetricPeriodType = 'QUARTERLY' | 'YEARLY';
+export type MetricPeriodType = 'QUARTERLY' | 'YEARLY' | 'YEARLY_SIDE_BY_SIDE';
 
 export interface IMetricType {
   id: number;

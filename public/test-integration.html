@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Category-Based Metrics Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <h1 class="text-2xl font-bold mb-6">🧪 Testing YEARLY_SIDE_BY_SIDE Integration</h1>
+
+        <div class="space-y-4">
+            <!-- Test Period Type Logic -->
+            <div class="bg-white p-6 rounded-lg border">
+                <h2 class="text-lg font-semibold mb-4">Period Type Detection Test</h2>
+
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">QUARTERLY</span>
+                        <span>→ Shows quarterly table (Q1, Q2, Q3, Q4)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">YEARLY</span>
+                        <span>→ Shows yearly table (Annual Value)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">YEARLY_SIDE_BY_SIDE</span>
+                        <span>→ Shows category-based side-by-side layout</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Update Test -->
+            <div class="bg-white p-6 rounded-lg border">
+                <h2 class="text-lg font-semibold mb-4">API Update Commands</h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    To test the new period type, you can update the Direct Costs and Operational Costs:
+                </p>
+
+                <div class="bg-gray-100 p-4 rounded text-sm font-mono">
+                    <p class="mb-2"># SQL Command to update existing types:</p>
+                    <p class="text-blue-600">UPDATE metric_types SET period_type = 'YEARLY_SIDE_BY_SIDE' WHERE code IN ('DIRECT_COSTS', 'OPERATING_COSTS');</p>
+                </div>
+            </div>
+
+            <!-- Architecture Summary -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
+                <h2 class="text-lg font-semibold mb-4">✅ Implementation Summary</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <h3 class="font-semibold text-blue-800">Backend Changes:</h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Added YEARLY_SIDE_BY_SIDE enum</li>
+                            <li>Extended MetricPeriodType type</li>
+                            <li>Updated MetricsUtils logic</li>
+                            <li>Database migration ready</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-purple-800">Frontend Changes:</h3>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Enhanced GroupMetricsContainer</li>
+                            <li>Added yearlySideBySideTypes array</li>
+                            <li>Global year selector</li>
+                            <li>Side-by-side grid layout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+                <h2 class="text-lg font-semibold mb-4 text-yellow-800">🚀 Next Steps</h2>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li><strong>Database Update:</strong> Run the migration to add YEARLY_SIDE_BY_SIDE to enum</li>
+                    <li><strong>Update Test Types:</strong> Change Direct Costs & Operational Costs to new period type</li>
+                    <li><strong>Enhance YearlyMetricsTable:</strong> Add category-based display mode</li>
+                    <li><strong>Test in App:</strong> Navigate to metrics with categories</li>
+                    <li><strong>Implement Category CRUD:</strong> Add/edit/delete category records</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

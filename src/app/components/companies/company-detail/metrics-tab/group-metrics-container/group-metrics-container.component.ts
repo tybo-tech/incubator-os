@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ICompany } from '../../../../../../models/simple.schema';
 import { IMetricGroup, IMetricType, IMetricRecord, MetricsHierarchy } from '../../../../../../models/metrics.model';
 import { MetricsService } from '../../../../../../services/metrics.service';
@@ -10,7 +11,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
 @Component({
   selector: 'app-group-metrics-container',
   standalone: true,
-  imports: [CommonModule, QuarterlyMetricsTableComponent, YearlyMetricsTableComponent],
+  imports: [CommonModule, FormsModule, QuarterlyMetricsTableComponent, YearlyMetricsTableComponent],
   template: `
     <div class="space-y-6">
       <!-- Group Header -->
@@ -22,6 +23,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             <div class="flex items-center gap-4 mt-3 text-sm text-gray-500">
               <span>{{ quarterlyTypes.length }} Quarterly Metrics</span>
               <span>{{ yearlyTypes.length }} Annual Metrics</span>
+              <span *ngIf="yearlySideBySideTypes.length > 0">{{ yearlySideBySideTypes.length }} Category-Based Metrics</span>
               <span>{{ totalRecords }} Total Records</span>
             </div>
           </div>
@@ -91,8 +93,64 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
         </div>
       </div>
 
+      <!-- Category-Based Side-by-Side Metrics Section -->
+      <div *ngIf="yearlySideBySideTypes.length > 0">
+        <div class="flex items-center gap-2 mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">🏷️ Category-Based Metrics</h3>
+          <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+            {{ yearlySideBySideTypes.length }} metrics
+          </span>
+        </div>
+
+        <!-- Global Year Selector for Category Metrics -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <h4 class="text-md font-semibold text-gray-900">
+              📅 Category Metrics Overview
+            </h4>
+            <div class="flex items-center space-x-4">
+              <label class="text-sm font-medium text-gray-700">Year:</label>
+              <select
+                [(ngModel)]="selectedCategoryYear"
+                (change)="onCategoryYearChange()"
+                class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side-by-Side Layout Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div *ngFor="let type of yearlySideBySideTypes; trackBy: trackByTypeId"
+               class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <!-- Temporary Category-Based Layout -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <span class="w-3 h-3 rounded-full mr-3"
+                      [style.background-color]="type.graph_color || '#6B7280'"></span>
+                {{ type.name }}
+              </h3>
+              <p *ngIf="type.description" class="text-sm text-gray-600 mt-1">{{ type.description }}</p>
+              <!-- Categories Display -->
+              <div class="flex flex-wrap gap-1 mt-2" *ngIf="type.categories && type.categories.length > 0">
+                <span *ngFor="let category of type.categories"
+                      class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200">
+                  🏷️ {{ category.name }}
+                </span>
+              </div>
+            </div>
+            <div class="p-6 text-center text-gray-500">
+              <p>📅 Year: {{ selectedCategoryYear }}</p>
+              <p class="text-sm mt-2">Category-based layout for {{ type.name }}</p>
+              <p class="text-xs mt-1">{{ type.categories?.length || 0 }} categories available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Empty State -->
-      <div *ngIf="!loading && !error && quarterlyTypes.length === 0 && yearlyTypes.length === 0"
+      <div *ngIf="!loading && !error && quarterlyTypes.length === 0 && yearlyTypes.length === 0 && yearlySideBySideTypes.length === 0"
            class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <div class="text-gray-400 text-6xl mb-4">📈</div>
         <h3 class="text-lg font-medium text-gray-900 mb-2">No Metrics Configured</h3>
@@ -111,9 +169,14 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
   group: IMetricGroup | null = null;
   quarterlyTypes: IMetricType[] = [];
   yearlyTypes: IMetricType[] = [];
+  yearlySideBySideTypes: IMetricType[] = [];
   allRecords: IMetricRecord[] = [];
   loading = false;
   error: string | null = null;
+
+  // Category-based metrics properties
+  selectedCategoryYear: number = new Date().getFullYear();
+  availableYears: number[] = [];
 
   private cachedHierarchy: MetricsHierarchy | null = null;
 
@@ -170,14 +233,19 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
     if (!this.group || !this.group.types) {
       this.quarterlyTypes = [];
       this.yearlyTypes = [];
+      this.yearlySideBySideTypes = [];
       this.allRecords = [];
       return;
     }
 
-    // Separate quarterly and yearly types
+    // Separate quarterly, yearly, and yearly side-by-side types
     const typeGroups = MetricsUtils.groupByPeriodType(this.group.types);
     this.quarterlyTypes = typeGroups.quarterly;
     this.yearlyTypes = typeGroups.yearly;
+    this.yearlySideBySideTypes = typeGroups.yearlySideBySide;
+
+    // Initialize available years from records
+    this.initializeAvailableYears();
 
     // Collect all records
     this.allRecords = this.group.types
@@ -287,5 +355,32 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
         alert('Failed to add new year. Please try again.');
       }
     });
+  }
+
+  /**
+   * Initialize available years for category-based metrics
+   */
+  initializeAvailableYears(): void {
+    const currentYear = new Date().getFullYear();
+    const recordYears = [...new Set(this.allRecords.map(r => r.year))];
+
+    // Combine current year, next year, and years from records
+    const allYears = new Set([currentYear, currentYear + 1, ...recordYears]);
+    this.availableYears = Array.from(allYears).sort((a, b) => b - a);
+
+    // Set selected year to current if available
+    if (!this.selectedCategoryYear || !this.availableYears.includes(this.selectedCategoryYear)) {
+      this.selectedCategoryYear = this.availableYears.includes(currentYear)
+        ? currentYear
+        : this.availableYears[0] || currentYear;
+    }
+  }
+
+  /**
+   * Handle year change for category-based metrics
+   */
+  onCategoryYearChange(): void {
+    console.log('Category year changed to:', this.selectedCategoryYear);
+    // The components will automatically update based on the selectedCategoryYear binding
   }
 }
