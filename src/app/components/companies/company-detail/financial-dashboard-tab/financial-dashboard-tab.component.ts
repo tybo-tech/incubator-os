@@ -16,7 +16,13 @@ export type FinancialDashboardInnerTab =
 @Component({
   selector: 'app-financial-dashboard-tab',
   standalone: true,
-  imports: [CommonModule, MetricsTabComponent, FinancialTabComponent, MetricsManagementModalComponent, SettingsButtonComponent],
+  imports: [
+    CommonModule,
+    MetricsTabComponent,
+    FinancialTabComponent,
+    MetricsManagementModalComponent,
+    SettingsButtonComponent,
+  ],
   template: `
     <div class="space-y-6">
       <!-- Enhanced Tab Navigation -->
@@ -130,7 +136,8 @@ export class FinancialDashboardTabComponent {
    * Get CSS classes for tab styling based on active state
    */
   getTabClasses(isActive: boolean): string {
-    const baseClasses = 'border-gray-300 text-gray-700 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50';
+    const baseClasses =
+      'border-gray-300 text-gray-700 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50';
     const activeClasses = 'border-blue-500 text-blue-600 bg-blue-50 shadow-sm';
 
     return isActive ? activeClasses : baseClasses;
