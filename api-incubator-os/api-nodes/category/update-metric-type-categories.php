@@ -25,7 +25,7 @@ try {
     $categories = new Categories($db);
 
     $success = $categories->updateMetricTypeCategories((int)$metric_type_id, $category_ids);
-    
+
     echo json_encode(['success' => $success]);
 } catch (Exception $e) {
     http_response_code(400);

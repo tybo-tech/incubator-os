@@ -18,7 +18,7 @@ try {
 
     // Get categories associated with a specific metric type
     $result = $categories->getMetricTypeCategories((int)$metric_type_id);
-    
+
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);

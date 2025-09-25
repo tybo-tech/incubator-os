@@ -12,7 +12,7 @@ try {
     // This returns categories that can be associated with metric types
     $filters = ['type' => 'metric'];
     $result = $categories->listCategories($filters);
-    
+
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);
