@@ -14,10 +14,10 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
       <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div class="flex justify-between items-center">
           <div>
-            <h3 class="text-lg font-semibold text-gray-900">Financial Check-ins</h3>
-            <p class="text-sm text-gray-600 mt-1">Monthly financial data tracking</p>
+            <h3 class="text-lg font-semibold text-gray-900">Bank Statement</h3>
+            <p class="text-sm text-gray-600 mt-1">Monthly turnover tracking</p>
           </div>
-          
+
           <!-- Year Selector -->
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
@@ -29,7 +29,7 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
                 <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
               </select>
             </div>
-            
+
             <div class="flex gap-2">
               <button
                 (click)="addNewMonth()"
@@ -41,6 +41,11 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
                 class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 transition-colors">
                 View Trends
               </button>
+              <button
+                (click)="debugData()"
+                class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded hover:bg-yellow-700 transition-colors">
+                Debug
+              </button>
             </div>
           </div>
         </div>
@@ -51,94 +56,31 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turnover</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost of Sales</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Expenses</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Profit</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Profit</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GP %</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NP %</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash</th>
-              <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turnover</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr *ngFor="let record of monthlyRecords; trackBy: trackByRecord">
               <!-- Month -->
-              <td class="px-3 py-4 whitespace-nowrap">
+              <td class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm font-medium text-gray-900">{{ getMonthName(record.month) }}</span>
               </td>
 
               <!-- Turnover -->
-              <td class="px-3 py-4 whitespace-nowrap">
+              <td class="px-6 py-4 whitespace-nowrap">
                 <input
                   type="number"
                   [(ngModel)]="record.turnover"
-                  (input)="onFinancialValueChange(record)"
                   (blur)="updateRecord(record)"
-                  class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                  step="0.01" />
-              </td>
-
-              <!-- Cost of Sales -->
-              <td class="px-3 py-4 whitespace-nowrap">
-                <input
-                  type="number"
-                  [(ngModel)]="record.cost_of_sales"
-                  (input)="onFinancialValueChange(record)"
-                  (blur)="updateRecord(record)"
-                  class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                  step="0.01" />
-              </td>
-
-              <!-- Business Expenses -->
-              <td class="px-3 py-4 whitespace-nowrap">
-                <input
-                  type="number"
-                  [(ngModel)]="record.business_expenses"
-                  (input)="onFinancialValueChange(record)"
-                  (blur)="updateRecord(record)"
-                  class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                  step="0.01" />
-              </td>
-
-              <!-- Calculated Gross Profit -->
-              <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ formatCurrency(getGrossProfit(record)) }}
-              </td>
-
-              <!-- Calculated Net Profit -->
-              <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ formatCurrency(getNetProfit(record)) }}
-              </td>
-
-              <!-- Calculated GP % -->
-              <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ formatPercentage(getGPMargin(record)) }}
-              </td>
-
-              <!-- Calculated NP % -->
-              <td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {{ formatPercentage(getNPMargin(record)) }}
-              </td>
-
-              <!-- Cash on Hand -->
-              <td class="px-3 py-4 whitespace-nowrap">
-                <input
-                  type="number"
-                  [(ngModel)]="record.cash_on_hand"
-                  (blur)="updateRecord(record)"
-                  class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
+                  class="w-32 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
                   step="0.01" />
               </td>
 
               <!-- Actions -->
-              <td class="px-3 py-4 whitespace-nowrap text-sm">
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <button
                   (click)="deleteRecord(record)"
                   class="text-red-600 hover:text-red-900 transition-colors">
@@ -147,34 +89,36 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
               </td>
             </tr>
           </tbody>
-          
+
           <!-- Totals Row -->
           <tfoot class="bg-gray-50 border-t-2 border-gray-300">
             <tr>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">TOTAL</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalTurnover()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalCostOfSales()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalBusinessExpenses()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalGrossProfit()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalNetProfit()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatPercentage(getTotalGPMargin()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">{{ formatPercentage(getTotalNPMargin()) }}</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">-</td>
-              <td class="px-3 py-3 text-sm font-bold text-gray-900">-</td>
+              <td class="px-6 py-3 text-sm font-bold text-gray-900">TOTAL</td>
+              <td class="px-6 py-3 text-sm font-bold text-gray-900">{{ formatCurrency(getTotalTurnover()) }}</td>
+              <td class="px-6 py-3 text-sm font-bold text-gray-900">-</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
+      <!-- Debug Information -->
+      <div class="px-6 py-4 bg-yellow-50 border-t text-xs text-gray-600">
+        <div><strong>Debug Info:</strong></div>
+        <div>Company ID: {{ company.id }}</div>
+        <div>Selected Year: {{ selectedYear }}</div>
+        <div>Total Records: {{ financials.length }}</div>
+        <div>Records for {{ selectedYear }}: {{ getRecordsForSelectedYear() }}</div>
+      </div>
+
       <!-- Empty State -->
       <div *ngIf="monthlyRecords.length === 0" class="px-6 py-12 text-center">
-        <div class="text-gray-400 text-4xl mb-4">💰</div>
-        <h3 class="text-sm font-medium text-gray-900 mb-2">No Financial Data for {{ selectedYear }}</h3>
-        <p class="text-sm text-gray-500 mb-4">Start by adding your first monthly financial record.</p>
+        <div class="text-gray-400 text-4xl mb-4">🏦</div>
+        <h3 class="text-sm font-medium text-gray-900 mb-2">No Bank Statement Data for {{ selectedYear }}</h3>
+        <p class="text-sm text-gray-500 mb-4">Start by adding your first monthly turnover record.</p>
         <button
           (click)="addNewMonth()"
           class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors">
-          Add Monthly Data
+          Add Monthly Turnover
         </button>
       </div>
     </div>
@@ -185,7 +129,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   @Output() recordUpdated = new EventEmitter<ICompanyFinancials>();
   @Output() recordDeleted = new EventEmitter<number>();
   @Output() addMonthRequested = new EventEmitter<{ month: number; year: number }>();
-  
+
   // Legacy events for compatibility with parent component
   @Output() onNewCheckInClick = new EventEmitter<void>();
   @Output() onViewTrendsClick = new EventEmitter<void>();
@@ -196,7 +140,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   error: string | null = null;
 
   selectedYear = new Date().getFullYear();
-  
+
   readonly monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -211,35 +155,43 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   get availableYears(): number[] {
     const years = new Set(this.financials.map(f => f.year));
     const yearArray = Array.from(years).sort((a, b) => b - a);
-    
+
     // Ensure current year is always available
-    if (!yearArray.includes(this.selectedYear)) {
-      yearArray.unshift(this.selectedYear);
+    const selectedYearNum = Number(this.selectedYear);
+    if (!yearArray.includes(selectedYearNum)) {
+      yearArray.unshift(selectedYearNum);
       yearArray.sort((a, b) => b - a);
     }
-    
+
     return yearArray;
   }
 
   get monthlyRecords(): ICompanyFinancials[] {
     // Get records for selected year, sorted by month
+    const selectedYearNum = Number(this.selectedYear);
     const yearRecords = this.financials
-      .filter(f => f.year === this.selectedYear)
+      .filter(f => f.year === selectedYearNum)
       .sort((a, b) => a.month - b.month);
-    
+
+    console.log(`📋 Monthly records for ${this.selectedYear}:`, yearRecords);
+    console.log(`📈 Turnovers: ${yearRecords.map(r => `${r.month}: ${r.turnover}`).join(', ')}`);
+
     // Create placeholder records for missing months
     const completeRecords: ICompanyFinancials[] = [];
     for (let month = 1; month <= 12; month++) {
       const existingRecord = yearRecords.find(r => r.month === month);
       if (existingRecord) {
+        console.log(`✅ Found data for month ${month}: turnover = ${existingRecord.turnover}`);
         completeRecords.push(existingRecord);
       } else {
+        console.log(`➕ Creating placeholder for month ${month}`);
         // Create placeholder record
+        const selectedYearNum = Number(this.selectedYear);
         completeRecords.push({
           id: 0, // Temporary ID for new records
           company_id: this.company.id,
-          period_date: `${this.selectedYear}-${month.toString().padStart(2, '0')}-01`,
-          year: this.selectedYear,
+          period_date: `${selectedYearNum}-${month.toString().padStart(2, '0')}-01`,
+          year: selectedYearNum,
           month: month,
           quarter: Math.ceil(month / 3),
           quarter_label: `Q${Math.ceil(month / 3)}`,
@@ -264,7 +216,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         });
       }
     }
-    
+
     return completeRecords;
   }
 
@@ -273,8 +225,12 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   async loadFinancials() {
-    if (!this.company?.id) return;
+    if (!this.company?.id) {
+      console.log('❌ No company ID provided');
+      return;
+    }
 
+    console.log('🔄 Loading financials for company ID:', this.company.id);
     this.loading = true;
     this.error = null;
 
@@ -284,6 +240,12 @@ export class FinancialCheckinOverviewComponent implements OnInit {
         .toPromise();
 
       this.financials = data || [];
+
+      console.log('✅ Loaded financials data:', this.financials);
+      console.log('📊 Years found:', [...new Set(this.financials.map(f => f.year))]);
+      const selectedYearNum = Number(this.selectedYear);
+      console.log('📅 Selected year records:', this.financials.filter(f => f.year === selectedYearNum));
+
     } catch (error) {
       console.error('❌ Error loading financials:', error);
       this.error = 'Failed to load financial data. Please try again.';
@@ -300,38 +262,14 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     return this.monthNames[month - 1] || 'Unknown';
   }
 
-  onFinancialValueChange(record: ICompanyFinancials): void {
-    // Recalculate derived values when financial inputs change
-    this.updateCalculatedFields(record);
-  }
-
-  private updateCalculatedFields(record: ICompanyFinancials): void {
-    const turnover = record.turnover || 0;
-    const costOfSales = record.cost_of_sales || 0;
-    const businessExpenses = record.business_expenses || 0;
-
-    // Calculate gross profit
-    record.gross_profit = turnover - costOfSales;
-
-    // Calculate net profit
-    record.net_profit = record.gross_profit - businessExpenses;
-
-    // Calculate margins
-    if (turnover > 0) {
-      record.gp_margin = (record.gross_profit / turnover) * 100;
-      record.np_margin = (record.net_profit / turnover) * 100;
-    } else {
-      record.gp_margin = 0;
-      record.np_margin = 0;
-    }
-
-    // Set turnover_monthly_avg same as turnover for now
-    record.turnover_monthly_avg = record.turnover;
+  getRecordsForSelectedYear(): number {
+    const selectedYearNum = Number(this.selectedYear);
+    return this.financials.filter(f => f.year === selectedYearNum).length;
   }
 
   async updateRecord(record: ICompanyFinancials): Promise<void> {
-    // Ensure calculated fields are up to date
-    this.updateCalculatedFields(record);
+    // Set turnover_monthly_avg same as turnover for bank statement
+    record.turnover_monthly_avg = record.turnover;
 
     try {
       if (record.id === 0) {
@@ -373,10 +311,11 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   addNewMonth(): void {
     // Find the first month without data in the selected year
+    const selectedYearNum = Number(this.selectedYear);
     const existingMonths = this.financials
-      .filter(f => f.year === this.selectedYear)
+      .filter(f => f.year === selectedYearNum)
       .map(f => f.month);
-    
+
     let targetMonth = 1;
     for (let month = 1; month <= 12; month++) {
       if (!existingMonths.includes(month)) {
@@ -387,62 +326,20 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     this.addMonthRequested.emit({
       month: targetMonth,
-      year: this.selectedYear
+      year: Number(this.selectedYear)
     });
   }
 
-  // Calculation methods for display
-  getGrossProfit(record: ICompanyFinancials): number {
-    return (record.turnover || 0) - (record.cost_of_sales || 0);
-  }
-
-  getNetProfit(record: ICompanyFinancials): number {
-    return this.getGrossProfit(record) - (record.business_expenses || 0);
-  }
-
-  getGPMargin(record: ICompanyFinancials): number {
-    const turnover = record.turnover || 0;
-    return turnover > 0 ? (this.getGrossProfit(record) / turnover) * 100 : 0;
-  }
-
-  getNPMargin(record: ICompanyFinancials): number {
-    const turnover = record.turnover || 0;
-    return turnover > 0 ? (this.getNetProfit(record) / turnover) * 100 : 0;
-  }
-
-  // Total calculation methods
+  // Total calculation method
   getTotalTurnover(): number {
-    return this.monthlyRecords.reduce((sum, r) => sum + (r.turnover || 0), 0);
-  }
-
-  getTotalCostOfSales(): number {
-    return this.monthlyRecords.reduce((sum, r) => sum + (r.cost_of_sales || 0), 0);
-  }
-
-  getTotalBusinessExpenses(): number {
-    return this.monthlyRecords.reduce((sum, r) => sum + (r.business_expenses || 0), 0);
-  }
-
-  getTotalGrossProfit(): number {
-    return this.getTotalTurnover() - this.getTotalCostOfSales();
-  }
-
-  getTotalNetProfit(): number {
-    return this.getTotalGrossProfit() - this.getTotalBusinessExpenses();
-  }
-
-  getTotalGPMargin(): number {
-    const totalTurnover = this.getTotalTurnover();
-    return totalTurnover > 0 ? (this.getTotalGrossProfit() / totalTurnover) * 100 : 0;
-  }
-
-  getTotalNPMargin(): number {
-    const totalTurnover = this.getTotalTurnover();
-    return totalTurnover > 0 ? (this.getTotalNetProfit() / totalTurnover) * 100 : 0;
+    return this.monthlyRecords.reduce((sum, r) => {
+      const turnover = Number(r.turnover) || 0;
+      return sum + turnover;
+    }, 0);
   }
 
   formatCurrency(value: number): string {
-    if (value === 0) return '-';
+    if (isNaN(value) || value === 0) return '-';
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
@@ -451,13 +348,22 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }).format(value);
   }
 
-  formatPercentage(value: number): string {
-    if (value === 0) return '-';
-    return `${value.toFixed(1)}%`;
-  }
-
   // Public method to refresh data from parent component
   public refreshData() {
+    this.loadFinancials();
+  }
+
+  // Debug method to check data state
+  debugData() {
+    console.log('🐛 DEBUG DATA:');
+    console.log('Company ID:', this.company?.id);
+    console.log('Selected Year:', this.selectedYear);
+    console.log('All Financials:', this.financials);
+    console.log('Available Years:', this.availableYears);
+    console.log('Monthly Records for current year:', this.monthlyRecords);
+    console.log('Total Turnover:', this.getTotalTurnover());
+
+    // Force refresh
     this.loadFinancials();
   }
 
