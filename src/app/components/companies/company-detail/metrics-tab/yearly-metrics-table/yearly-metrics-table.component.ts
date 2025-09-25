@@ -47,6 +47,7 @@ import { AddYearButtonComponent } from '../../../../shared/add-year-button/add-y
               <th *ngIf="metricType.show_margin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Margin %
               </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>

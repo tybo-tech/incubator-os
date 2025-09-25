@@ -259,9 +259,20 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             📊 Financial Summary for {{ selectedCategoryYear }}
           </h4>
 
+          <!-- Check if we have any non-zero totals to display -->
+          <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).revenue > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).profits > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).assets > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).liabilities > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).directCosts > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).operationalCosts > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).funds > 0 ||
+                      getCategoryGroupTotals(selectedCategoryYear).other > 0; else noFinancialData"
+               class="space-y-6">
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <!-- Revenue -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).revenue > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-blue-800">Total Revenue</p>
@@ -274,7 +285,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
 
             <!-- Profits -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).profits > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-green-800">Total Profits</p>
@@ -287,7 +298,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
 
             <!-- Assets -->
-            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).assets > 0" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-emerald-800">Total Assets</p>
@@ -300,7 +311,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
 
             <!-- Liabilities -->
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).liabilities > 0" class="bg-red-50 border border-red-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-red-800">Total Liabilities</p>
@@ -313,7 +324,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
 
             <!-- Direct Costs -->
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).directCosts > 0" class="bg-orange-50 border border-orange-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-orange-800">Direct Costs</p>
@@ -326,7 +337,7 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
             </div>
 
             <!-- Operational Costs -->
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).operationalCosts > 0" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-purple-800">Operational Costs</p>
@@ -337,12 +348,41 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
                 <div class="text-purple-600 text-2xl">⚙️</div>
               </div>
             </div>
+
+            <!-- Funds Received -->
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).funds > 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-yellow-800">Funds Received</p>
+                  <p class="text-2xl font-bold text-yellow-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).funds || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-yellow-600 text-2xl">🏦</div>
+              </div>
+            </div>
+
+            <!-- Other Metrics -->
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).other > 0" class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-800">Other Metrics</p>
+                  <p class="text-2xl font-bold text-gray-900">
+                    {{ (getCategoryGroupTotals(selectedCategoryYear).other || 0) | number:'1.0-2' }}
+                  </p>
+                </div>
+                <div class="text-gray-600 text-2xl">📊</div>
+              </div>
+            </div>
           </div>
 
           <!-- Key Financial Ratios -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-            <!-- Net Position -->
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
+          <div *ngIf="getNetPosition(selectedCategoryYear) !== 0 || getTotalCosts(selectedCategoryYear) > 0"
+               class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+
+            <!-- Net Position (only show if we have assets or liabilities) -->
+            <div *ngIf="getCategoryGroupTotals(selectedCategoryYear).assets > 0 || getCategoryGroupTotals(selectedCategoryYear).liabilities > 0"
+                 class="bg-white rounded-lg p-4 border border-gray-200">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-gray-600">Net Position</p>
@@ -360,8 +400,9 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
               </div>
             </div>
 
-            <!-- Total Costs -->
-            <div class="bg-white rounded-lg p-4 border border-gray-200">
+            <!-- Total Costs (only show if we have costs) -->
+            <div *ngIf="getTotalCosts(selectedCategoryYear) > 0"
+                 class="bg-white rounded-lg p-4 border border-gray-200">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-gray-600">Total Costs</p>
@@ -374,6 +415,16 @@ import { MetricsUtils } from '../../../../../../utils/metrics.utils';
               </div>
             </div>
           </div>
+          </div>
+
+          <!-- No Financial Data Template -->
+          <ng-template #noFinancialData>
+            <div class="text-center py-8">
+              <div class="text-gray-400 text-4xl mb-4">📊</div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No Financial Data for {{ selectedCategoryYear }}</h3>
+              <p class="text-gray-500 text-sm">Add category records to see financial summaries here.</p>
+            </div>
+          </ng-template>
         </div>
       </div>
 
@@ -835,9 +886,9 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Get category group totals based on dynamic metric classification from actual data
+   * Get category group totals based on dynamic metric classification from actual data structure
    */
-  getCategoryGroupTotals(year: number): { assets: number; liabilities: number; directCosts: number; operationalCosts: number; revenue: number; profits: number; other: number } {
+  getCategoryGroupTotals(year: number): { assets: number; liabilities: number; directCosts: number; operationalCosts: number; revenue: number; profits: number; funds: number; other: number } {
     const totals = {
       assets: 0,
       liabilities: 0,
@@ -845,45 +896,70 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       operationalCosts: 0,
       revenue: 0,
       profits: 0,
+      funds: 0,
       other: 0
     };
 
-    // Process all metric types from all arrays
-    const allTypes = [...this.quarterlyTypes, ...this.yearlyTypes, ...this.yearlySideBySideTypes];
+    // If we don't have cached hierarchy data, return empty totals
+    if (!this.cachedHierarchy || !Array.isArray(this.cachedHierarchy)) {
+      return totals;
+    }
 
-    allTypes.forEach(type => {
-      const yearRecords = this.getCategoryRecordsForType(type.id, year);
+    // Process each group from the hierarchy to classify metrics dynamically
+    this.cachedHierarchy.forEach((group: IMetricGroup) => {
+      const groupCode = group.code?.toUpperCase() || '';
 
-      // Classify by type code and name - dynamic based on actual data structure
-      const typeCode = type.code?.toUpperCase() || '';
-      const typeName = type.name?.toLowerCase() || '';
+      // Process each metric type in this group
+      group.types?.forEach((type: IMetricType) => {
+        const yearRecords = this.getCategoryRecordsForType(type.id, year);
+        const typeCode = type.code?.toUpperCase() || '';
 
-      yearRecords.forEach(record => {
-        const value = parseFloat(String(record.total || 0));
+        yearRecords.forEach(record => {
+          const value = parseFloat(String(record.total || 0));
 
-        // Dynamic classification based on actual metric codes and names from your payload
-        if (typeCode.includes('ASSETS') || typeName.includes('total assets')) {
-          totals.assets += value;
-        }
-        else if (typeCode.includes('LIABILITIES') || typeName.includes('total liabilities')) {
-          totals.liabilities += value;
-        }
-        else if (typeCode === 'DIRECT_COSTS' || typeName.includes('direct costs')) {
-          totals.directCosts += value;
-        }
-        else if (typeCode === 'OPERATING_COSTS' || typeCode === 'OPERATIONAL_COSTS' ||
-                 typeName.includes('operational costs')) {
-          totals.operationalCosts += value;
-        }
-        else if (typeCode.includes('REVENUE') || typeName.includes('revenue')) {
-          totals.revenue += value;
-        }
-        else if (typeCode.includes('PROFIT') || typeName.includes('profit')) {
-          totals.profits += value;
-        }
-        else {
-          totals.other += value;
-        }
+          // Classify based on group code first, then type code for more specific classification
+          switch (groupCode) {
+            case 'REVENUE':
+              totals.revenue += value;
+              break;
+
+            case 'PROFITS':
+              totals.profits += value;
+              break;
+
+            case 'COST_STRUCTURE':
+              if (typeCode === 'DIRECT_COSTS') {
+                totals.directCosts += value;
+              } else if (typeCode === 'OPERATING_COSTS' || typeCode === 'OPERATIONAL_COSTS') {
+                totals.operationalCosts += value;
+              } else {
+                totals.other += value;
+              }
+              break;
+
+            case 'BALANCE_SHEET':
+              if (typeCode.includes('ASSETS')) {
+                totals.assets += value;
+              } else if (typeCode.includes('LIABILITIES')) {
+                totals.liabilities += value;
+              } else {
+                totals.other += value;
+              }
+              break;
+
+            case 'FUNDS_RECEIVED':
+              totals.funds += value;
+              break;
+
+            case 'RATIOS':
+              // Ratios typically aren't summed, so we'll skip them
+              break;
+
+            default:
+              totals.other += value;
+              break;
+          }
+        });
       });
     });
 
