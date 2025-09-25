@@ -309,6 +309,18 @@ import { Constants } from '../../../../../../services/service';
                   />
                 </div>
 
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Order</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="currentOrder"
+                    name="order_no"
+                    min="1"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., 1, 2, 3..."
+                  />
+                </div>
+
                 <div class="md:col-span-2 flex justify-end gap-3">
                   <button
                     type="button"
@@ -670,6 +682,9 @@ export class MetricsManagementModalComponent implements OnInit {
   newGroup: CreateMetricGroupDto = this.resetGroupForm();
   newType: CreateMetricTypeDto = this.resetTypeForm();
 
+  // Simple Order Property
+  currentOrder: number = 1;
+
   // Category Management
   availableCategories: ICategory[] = [];
   selectedCategoryIds: number[] = [];
@@ -752,6 +767,8 @@ export class MetricsManagementModalComponent implements OnInit {
       this.editingGroup.graph_color = value;
     }
   }
+
+
 
   // Type Form Getters/Setters
   get currentTypeCode(): string {
@@ -945,11 +962,13 @@ export class MetricsManagementModalComponent implements OnInit {
   showCreateGroup(): void {
     this.currentView = 'create-group';
     this.newGroup = this.resetGroupForm();
+    this.currentOrder = 1; // Default order for new groups
   }
 
   showEditGroup(group: IMetricGroup): void {
     this.currentView = 'edit-group';
     this.editingGroup = { ...group };
+    this.currentOrder = group.order_no || 1; // Load existing order
   }
 
   showGroupTypes(group: IMetricGroup): void {
@@ -1106,6 +1125,8 @@ export class MetricsManagementModalComponent implements OnInit {
 
     try {
       this.isLoading = true;
+      // Set the order value from the form
+      this.newGroup.order_no = this.currentOrder;
       await this.metricsService.addGroup(this.newGroup).toPromise();
       await this.loadData();
       this.dataUpdated.emit();
@@ -1122,6 +1143,8 @@ export class MetricsManagementModalComponent implements OnInit {
 
     try {
       this.isLoading = true;
+      // Set the order value from the form
+      this.editingGroup.order_no = this.currentOrder;
       const updateDto = { ...this.editingGroup };
       await this.metricsService.updateGroup(updateDto).toPromise();
       await this.loadData();

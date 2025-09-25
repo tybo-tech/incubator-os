@@ -25,7 +25,7 @@ class Metrics
 
     public function updateGroup(int $id, array $fields): ?array
     {
-        $allowed = ['code','name','description','show_total','show_margin','graph_color'];
+        $allowed = ['code','name','description','show_total','show_margin','graph_color','order_no'];
         return $this->updateRow('metric_groups', $id, $fields, $allowed);
     }
 
