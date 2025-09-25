@@ -59,7 +59,7 @@ class MetricRecord
     public function getById(int $id): ?array
     {
         $stmt = $this->conn->prepare("
-            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.metadata
+            SELECT mr.*, mt.name as metric_type_name, mt.unit
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
             WHERE mr.id = ?
@@ -85,7 +85,7 @@ class MetricRecord
         }
 
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.metadata, mt.period_type
+            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.period_type
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
             WHERE " . implode(' AND ', $conditions) . "
@@ -110,7 +110,7 @@ class MetricRecord
         }
 
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.metadata
+            SELECT mr.*, mt.name as metric_type_name, mt.unit
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
             WHERE " . implode(' AND ', $conditions) . "
@@ -125,12 +125,12 @@ class MetricRecord
     }
 
     /**
-     * Get records grouped by categories (for metric types with metadata categories)
+     * Get records grouped by categories (for metric types with categories)
      */
     public function getRecordsByCategory(int $companyId, int $metricTypeId, int $year): array
     {
         $sql = "
-            SELECT mr.*, mt.name as metric_type_name, mt.unit, mt.metadata
+            SELECT mr.*, mt.name as metric_type_name, mt.unit
             FROM metric_records mr
             LEFT JOIN metric_types mt ON mr.metric_type_id = mt.id
             WHERE mr.company_id = ? AND mr.metric_type_id = ? AND mr.year = ?
@@ -188,13 +188,7 @@ class MetricRecord
             $row['value'] = (float)$row['value'];
         }
 
-        // Parse metadata JSON if present
-        if (isset($row['metadata']) && $row['metadata']) {
-            $decoded = json_decode($row['metadata'], true);
-            $row['metadata'] = $decoded !== null ? $decoded : null;
-        } else {
-            $row['metadata'] = null;
-        }
+
 
         return $row;
     }
@@ -206,8 +200,15 @@ class MetricRecord
      */
     public function getCategoryOptions(int $metricTypeId): array
     {
-        $metricType = new MetricType($this->conn);
-        return $metricType->getCategories($metricTypeId);
+        $stmt = $this->conn->prepare("
+            SELECT c.id, c.name, c.description
+            FROM categories c
+            JOIN metric_type_categories mc ON mc.category_id = c.id
+            WHERE mc.metric_type_id = ?
+            ORDER BY c.name ASC
+        ");
+        $stmt->execute([$metricTypeId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

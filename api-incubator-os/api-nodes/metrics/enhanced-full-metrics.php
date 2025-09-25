@@ -141,16 +141,15 @@ function handlePutRequest($m) {
     $action = $input['action'] ?? '';
 
     switch ($action) {
-        case 'update-type-metadata':
+        case 'update-type-categories':
             $typeId = intval($input['type_id'] ?? 0);
-            $metadata = $input['metadata'] ?? [];
+            $categoryIds = $input['category_ids'] ?? [];
 
             if (!$typeId) {
                 throw new Exception('type_id is required');
             }
 
-            $fields = ['metadata' => $metadata];
-            $result = $m->updateType($typeId, $fields);
+            $result = $m->updateTypeCategories($typeId, $categoryIds);
             echo json_encode(['success' => true, 'data' => $result]);
             break;
 

@@ -48,32 +48,61 @@ class Metrics
 
     /* ========================= TYPES ========================= */
 
-    public function addType(int $groupId, string $code, string $name, string $description = '', string $unit = 'count', int $showTotal = 1, int $showMargin = 0, ?string $graphColor = null, string $periodType = 'QUARTERLY'): array
+    public function addType(int $groupId, string $code, string $name, string $description = '', string $unit = 'count', int $showTotal = 1, int $showMargin = 0, ?string $graphColor = null, string $periodType = 'QUARTERLY', array $categoryIds = []): array
     {
         $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$groupId, $code, $name, $description, $unit, $showTotal, $showMargin, $graphColor, $periodType]);
 
-        return $this->getTypeById((int)$this->conn->lastInsertId());
+        $typeId = (int)$this->conn->lastInsertId();
+
+        // Handle categories if provided
+        if (!empty($categoryIds)) {
+            $this->updateTypeCategories($typeId, $categoryIds);
+        }
+
+        return $this->getTypeById($typeId);
     }
 
     public function updateType(int $id, array $fields): ?array
     {
         $allowed = ['group_id','code','name','description','unit','show_total','show_margin','graph_color','period_type'];
-        return $this->updateRow('metric_types', $id, $fields, $allowed);
+
+        // Handle categories separately
+        if (array_key_exists('categories', $fields) || array_key_exists('category_ids', $fields)) {
+            $categoryIds = $fields['categories'] ?? $fields['category_ids'] ?? [];
+            $this->updateTypeCategories($id, $categoryIds);
+            unset($fields['categories'], $fields['category_ids']);
+        }
+
+        $result = $this->updateRow('metric_types', $id, $fields, $allowed);
+
+        // Load the type with categories
+        return $this->getTypeById($id);
     }
 
     public function getTypeById(int $id): ?array
     {
-        return $this->getRowById('metric_types', $id);
+        $type = $this->getRowById('metric_types', $id);
+        if ($type) {
+            $type['categories'] = $this->getTypeCategories($id);
+        }
+        return $type;
     }
 
     public function listTypesByGroup(int $groupId): array
     {
         $stmt = $this->conn->prepare("SELECT * FROM metric_types WHERE group_id = ? ORDER BY name ASC");
         $stmt->execute([$groupId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $types = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Load categories for each type
+        foreach ($types as &$type) {
+            $type['categories'] = $this->getTypeCategories($type['id']);
+        }
+
+        return $types;
     }
 
     public function deleteType(int $id): bool
@@ -128,21 +157,24 @@ class Metrics
         $groups = $this->listGroups($clientId);
 
         foreach ($groups as &$group) {
-            // 2. Fetch types for each group (now including metadata and period_type)
-            $stmt = $this->conn->prepare("SELECT *, metadata, period_type FROM metric_types WHERE group_id = ? ORDER BY name ASC");
+            // 2. Fetch types for each group
+            $stmt = $this->conn->prepare("SELECT * FROM metric_types WHERE group_id = ? ORDER BY name ASC");
             $stmt->execute([$group['id']]);
             $types = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($types as &$type) {
-                // Parse metadata JSON if present
-                if (isset($type['metadata']) && $type['metadata']) {
-                    $decoded = json_decode($type['metadata'], true);
-                    $type['metadata'] = $decoded !== null ? $decoded : null;
-                } else {
-                    $type['metadata'] = null;
-                }
+                // Load categories for this metric type
+                $stmt3 = $this->conn->prepare("
+                    SELECT c.id, c.name, c.description
+                    FROM categories c
+                    JOIN metric_type_categories mc ON mc.category_id = c.id
+                    WHERE mc.metric_type_id = ?
+                    ORDER BY c.name ASC
+                ");
+                $stmt3->execute([$type['id']]);
+                $type['categories'] = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
-                // 3. Fetch records for each type (now including title field)
+                // 3. Fetch records for each type (including title field)
                 $stmt2 = $this->conn->prepare("SELECT *, title FROM metric_records
                                                WHERE metric_type_id = ? AND company_id = ?
                                                AND program_id = ? AND cohort_id = ?
@@ -150,8 +182,8 @@ class Metrics
                 $stmt2->execute([$type['id'], $companyId, $programId, $cohortId]);
                 $records = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-                // Group records by categories if metadata has categories
-                if ($type['metadata'] && isset($type['metadata']['categories'])) {
+                // Group records by categories if categories exist
+                if (!empty($type['categories'])) {
                     $groupedRecords = [];
                     foreach ($records as $record) {
                         $title = $record['title'] ?? 'uncategorized';
@@ -173,44 +205,42 @@ class Metrics
         return $groups;
     }
 
-    /* ========================= METADATA & CATEGORIES ========================= */
+    /* ========================= CATEGORIES ========================= */
 
     /**
      * Get categories for a specific metric type
      */
     public function getTypeCategories(int $typeId): array
     {
-        $stmt = $this->conn->prepare("SELECT metadata FROM metric_types WHERE id = ?");
+        $stmt = $this->conn->prepare("
+            SELECT c.id, c.name, c.description
+            FROM categories c
+            JOIN metric_type_categories mc ON mc.category_id = c.id
+            WHERE mc.metric_type_id = ?
+            ORDER BY c.name ASC
+        ");
         $stmt->execute([$typeId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($row && $row['metadata']) {
-            $metadata = json_decode($row['metadata'], true);
-            return $metadata['categories'] ?? [];
-        }
-
-        return [];
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
      * Update categories for a metric type
      */
-    public function updateTypeCategories(int $typeId, array $categories): ?array
+    public function updateTypeCategories(int $typeId, array $categoryIds): ?array
     {
-        $stmt = $this->conn->prepare("SELECT metadata FROM metric_types WHERE id = ?");
+        // Delete old links
+        $stmt = $this->conn->prepare("DELETE FROM metric_type_categories WHERE metric_type_id = ?");
         $stmt->execute([$typeId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $metadata = [];
-        if ($row && $row['metadata']) {
-            $metadata = json_decode($row['metadata'], true) ?? [];
+        // Insert new category IDs
+        if (!empty($categoryIds)) {
+            $stmt = $this->conn->prepare("INSERT INTO metric_type_categories (metric_type_id, category_id) VALUES (?, ?)");
+            foreach ($categoryIds as $categoryId) {
+                if (is_numeric($categoryId)) {
+                    $stmt->execute([$typeId, (int)$categoryId]);
+                }
+            }
         }
-
-        $metadata['categories'] = $categories;
-        $metadataJson = json_encode($metadata);
-
-        $stmt = $this->conn->prepare("UPDATE metric_types SET metadata = ?, updated_at = NOW() WHERE id = ?");
-        $stmt->execute([$metadataJson, $typeId]);
 
         return $this->getTypeById($typeId);
     }
@@ -221,22 +251,19 @@ class Metrics
     public function getTypesWithCategories(int $clientId): array
     {
         $stmt = $this->conn->prepare("
-            SELECT mt.*, mg.name as group_name
+            SELECT DISTINCT mt.*, mg.name as group_name
             FROM metric_types mt
             LEFT JOIN metric_groups mg ON mt.group_id = mg.id
+            JOIN metric_type_categories mc ON mt.id = mc.metric_type_id
             WHERE mg.client_id = ?
-            AND mt.metadata IS NOT NULL
-            AND JSON_EXTRACT(mt.metadata, '$.categories') IS NOT NULL
             ORDER BY mg.name ASC, mt.name ASC
         ");
         $stmt->execute([$clientId]);
         $types = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Parse metadata for each type
+        // Load categories for each type
         foreach ($types as &$type) {
-            if ($type['metadata']) {
-                $type['metadata'] = json_decode($type['metadata'], true);
-            }
+            $type['categories'] = $this->getTypeCategories($type['id']);
         }
 
         return $types;

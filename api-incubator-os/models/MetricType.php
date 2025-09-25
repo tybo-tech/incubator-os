@@ -4,6 +4,7 @@ declare(strict_types=1);
 class MetricType
 {
     private PDO $conn;
+    public array $categories = [];
 
     public function __construct(PDO $db)
     {
@@ -15,10 +16,8 @@ class MetricType
 
     public function add(array $data): array
     {
-        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        $metadata = isset($data['metadata']) ? json_encode($data['metadata']) : null;
+        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
@@ -30,37 +29,43 @@ class MetricType
             $data['show_total'] ?? 1,
             $data['show_margin'] ?? 0,
             $data['graph_color'] ?? null,
-            $data['period_type'] ?? 'QUARTERLY',
-            $metadata
+            $data['period_type'] ?? 'QUARTERLY'
         ]);
 
-        return $this->getById((int)$this->conn->lastInsertId());
+        $metricTypeId = (int)$this->conn->lastInsertId();
+
+        // Handle categories if provided
+        if (isset($data['categories']) && is_array($data['categories'])) {
+            $this->saveCategories($metricTypeId, $data['categories']);
+        }
+
+        return $this->getById($metricTypeId);
     }
 
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['group_id', 'code', 'name', 'description', 'unit', 'show_total', 'show_margin', 'graph_color', 'period_type', 'metadata'];
+        $allowed = ['group_id', 'code', 'name', 'description', 'unit', 'show_total', 'show_margin', 'graph_color', 'period_type'];
         $sets = [];
         $params = [];
 
         foreach ($allowed as $k) {
             if (array_key_exists($k, $fields)) {
-                if ($k === 'metadata') {
-                    // Convert metadata to JSON string
-                    $sets[] = "$k = ?";
-                    $params[] = is_array($fields[$k]) ? json_encode($fields[$k]) : $fields[$k];
-                } else {
-                    $sets[] = "$k = ?";
-                    $params[] = $fields[$k];
-                }
+                $sets[] = "$k = ?";
+                $params[] = $fields[$k];
             }
         }
-        if (!$sets) return $this->getById($id);
 
-        $params[] = $id;
-        $sql = "UPDATE metric_types SET " . implode(', ', $sets) . ", updated_at = NOW() WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute($params);
+        if ($sets) {
+            $params[] = $id;
+            $sql = "UPDATE metric_types SET " . implode(', ', $sets) . ", updated_at = NOW() WHERE id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
+        }
+
+        // Handle categories if provided
+        if (array_key_exists('categories', $fields) && is_array($fields['categories'])) {
+            $this->saveCategories($id, $fields['categories']);
+        }
 
         return $this->getById($id);
     }
@@ -111,44 +116,70 @@ class MetricType
             }
         }
 
-        // Parse metadata JSON
-        if (isset($row['metadata']) && $row['metadata']) {
-            $decoded = json_decode($row['metadata'], true);
-            $row['metadata'] = $decoded !== null ? $decoded : null;
-        } else {
-            $row['metadata'] = null;
+        // Load categories for this metric type
+        if (isset($row['id'])) {
+            $row['categories'] = $this->loadCategories((int)$row['id']);
         }
 
         return $row;
     }
 
-    /* ============================= Metadata Helpers ============================= */
+    /* ============================= Category Management ============================= */
 
     /**
-     * Get categories from metadata for a specific metric type
+     * Load categories for a specific metric type
      */
-    public function getCategories(int $id): array
+    private function loadCategories(int $metricTypeId): array
     {
-        $metricType = $this->getById($id);
-        if (!$metricType || !$metricType['metadata'] || !isset($metricType['metadata']['categories'])) {
-            return [];
-        }
-
-        return $metricType['metadata']['categories'];
+        $stmt = $this->conn->prepare("
+            SELECT c.id, c.name, c.description
+            FROM categories c
+            JOIN metric_type_categories mc ON mc.category_id = c.id
+            WHERE mc.metric_type_id = ?
+            ORDER BY c.name ASC
+        ");
+        $stmt->execute([$metricTypeId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Add or update categories in metadata
+     * Save categories for a metric type (replace existing)
      */
-    public function updateCategories(int $id, array $categories): ?array
+    private function saveCategories(int $metricTypeId, array $categoryIds): void
+    {
+        // Delete old links
+        $stmt = $this->conn->prepare("DELETE FROM metric_type_categories WHERE metric_type_id = ?");
+        $stmt->execute([$metricTypeId]);
+
+        // Insert new category IDs
+        if (!empty($categoryIds)) {
+            $stmt = $this->conn->prepare("INSERT INTO metric_type_categories (metric_type_id, category_id) VALUES (?, ?)");
+            foreach ($categoryIds as $categoryId) {
+                if (is_numeric($categoryId)) {
+                    $stmt->execute([$metricTypeId, (int)$categoryId]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get categories for a specific metric type (public interface)
+     */
+    public function getCategories(int $id): array
+    {
+        return $this->loadCategories($id);
+    }
+
+    /**
+     * Update categories for a metric type (public interface)
+     */
+    public function updateCategories(int $id, array $categoryIds): ?array
     {
         $metricType = $this->getById($id);
         if (!$metricType) return null;
 
-        $metadata = $metricType['metadata'] ?? [];
-        $metadata['categories'] = $categories;
-
-        return $this->update($id, ['metadata' => $metadata]);
+        $this->saveCategories($id, $categoryIds);
+        return $this->getById($id);
     }
 
     /**
@@ -157,10 +188,10 @@ class MetricType
     public function getTypesWithCategories(): array
     {
         $stmt = $this->conn->query("
-            SELECT * FROM metric_types
-            WHERE metadata IS NOT NULL
-            AND JSON_EXTRACT(metadata, '$.categories') IS NOT NULL
-            ORDER BY name ASC
+            SELECT DISTINCT mt.*
+            FROM metric_types mt
+            JOIN metric_type_categories mc ON mt.id = mc.metric_type_id
+            ORDER BY mt.name ASC
         ");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
