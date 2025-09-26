@@ -8,10 +8,8 @@ try {
     $db = $database->connect();
     $categories = new Categories($db);
 
-    // Get categories specifically for metrics
-    // This returns categories that can be associated with metric types
-    $filters = ['type' => 'metric'];
-    $result = $categories->listCategories($filters);
+    // Get categories specifically for metrics using the convenience method
+    $result = $categories->listMetricCategories();
 
     echo json_encode($result);
 } catch (Exception $e) {

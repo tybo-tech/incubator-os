@@ -10,16 +10,13 @@ try {
     $db = $database->connect();
     $categories = new Categories($db);
 
-    // Create metric category with default values
-    $result = $categories->addCategory(
+    // Create metric category using convenience method
+    $result = $categories->ensureMetricCategory(
         $data['name'],
-        'metric', // Force type to be 'metric'
-        null, // parent_id - metric categories are typically top-level
         $data['description'] ?? '',
-        null, // image_url - not needed for metric categories
-        $data['depth'] ?? 1 // depth - metric categories are typically depth 1
+        null // image_url - not needed for metric categories
     );
-    
+
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);

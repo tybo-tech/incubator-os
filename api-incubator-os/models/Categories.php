@@ -16,12 +16,12 @@ final class Categories
        ========================================================================= */
 
     /**
-     * Create a category node (client/program/cohort).
+     * Create a category node (client/program/cohort/metric).
      * Enforces depth and parent rules in-app (DB has no FKs/UNIQUE now).
      */
     public function addCategory(
         string $name,
-        string $type,                           // 'client' | 'program' | 'cohort'
+        string $type,                           // 'client' | 'program' | 'cohort' | 'metric'
         ?int $parentId = null,
         ?string $description = null,
         ?string $imageUrl = null
@@ -193,6 +193,11 @@ final class Categories
         return $this->listCategories(['parent_id' => $programId, 'type' => 'cohort', 'depth' => 3]);
     }
 
+    public function listMetricCategories(): array
+    {
+        return $this->listCategories(['type' => 'metric', 'depth' => 1]);
+    }
+
     /* =========================================================================
        MEMBERSHIPS (companies <-> categories_item)
        ========================================================================= */
@@ -318,6 +323,13 @@ final class Categories
         return $this->addCategory($name, 'cohort', $programId, $description, $imageUrl);
     }
 
+    public function ensureMetricCategory(string $name, ?string $description = null, ?string $imageUrl = null): array
+    {
+        $existing = $this->getByNameUnderParent($name, 'metric', null);
+        if ($existing) return $existing;
+        return $this->addCategory($name, 'metric', null, $description, $imageUrl);
+    }
+
     /**
      * Breadcrumb for top bar chips: [client, program, cohort]
      */
@@ -361,6 +373,7 @@ final class Categories
             'client'  => 1,
             'program' => 2,
             'cohort'  => 3,
+            'metric'  => 1,  // Metric categories are top-level like clients
             default   => throw new InvalidArgumentException("Unknown category type: $type")
         };
     }
@@ -370,6 +383,13 @@ final class Categories
         if ($type === 'client') {
             if ($parentId !== null || $depth !== 1) {
                 throw new InvalidArgumentException("Client must have no parent and depth=1");
+            }
+            return;
+        }
+
+        if ($type === 'metric') {
+            if ($parentId !== null || $depth !== 1) {
+                throw new InvalidArgumentException("Metric must have no parent and depth=1");
             }
             return;
         }
