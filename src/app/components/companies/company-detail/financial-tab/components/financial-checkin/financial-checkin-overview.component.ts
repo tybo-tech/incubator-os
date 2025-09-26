@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ICompany } from '../../../../../../../models/simple.schema';
 import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../../services/company-financials.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-financial-checkin-overview',
@@ -32,6 +33,17 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../
             </div>
 
             <div class="flex gap-2">
+              <button
+                (click)="exportBankStatement()"
+                [disabled]="isExporting || monthlyRecords.length === 0"
+                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                <i *ngIf="!isExporting" class="fas fa-file-invoice-dollar mr-2"></i>
+                <svg *ngIf="isExporting" class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ isExporting ? 'Exporting...' : 'Export Bank Statement' }}
+              </button>
               <button
                 (click)="addNewMonth()"
                 class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors">
@@ -154,7 +166,13 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  constructor(private financialService: CompanyFinancialsService) {}
+  // Export state
+  isExporting = false;
+
+  constructor(
+    private financialService: CompanyFinancialsService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit() {
     this.loadFinancials();
@@ -405,5 +423,234 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   // But if needed, this could emit when clicking on a record
   onEditRecord(record: ICompanyFinancials) {
     this.onEditCheckIn.emit(record);
+  }
+
+  /**
+   * Export bank statement as PDF
+   */
+  exportBankStatement(): void {
+    if (this.isExporting || this.monthlyRecords.length === 0) return;
+
+    this.isExporting = true;
+
+    // Filter records with actual data
+    const validRecords = this.monthlyRecords.filter(record =>
+      record.id > 0 && (record.turnover !== null && Number(record.turnover) > 0)
+    );
+
+    // Generate simple HTML for the bank statement
+    const html = this.generateBankStatementHtml(validRecords);
+
+    // Send to PDF service
+    const formData = new FormData();
+    formData.append('html', html);
+    formData.append('options', JSON.stringify({
+      format: 'A4',
+      margin: { top: '0.5cm', right: '1cm', bottom: '0.5cm', left: '1cm' },
+      printBackground: true,
+      preferCSSPageSize: true
+    }));
+
+    this.http.post('https://docs.tybo.co.za/pdf.php', formData, {
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob: Blob) => {
+        // Download the PDF
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const filename = `${this.company.name.replace(/[^a-zA-Z0-9]/g, '_')}_Bank_Statement_${new Date().toISOString().split('T')[0]}.pdf`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log('Bank statement export completed successfully');
+        this.isExporting = false;
+      },
+      error: (error: any) => {
+        console.error('Export failed:', error);
+        alert('Export failed. Please try again.');
+        this.isExporting = false;
+      }
+    });
+  }
+
+  /**
+   * Generate HTML for bank statement PDF
+   */
+  private generateBankStatementHtml(records: ICompanyFinancials[]): string {
+    const reportDate = new Date().toLocaleDateString();
+    const totalTurnover = records.reduce((sum, r) => sum + (Number(r.turnover) || 0), 0);
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Bank Statement Report - ${this.company.name}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 12px;
+            color: #333;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 20px;
+          }
+          .header h1 {
+            color: #1f2937;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+          }
+          .header h2 {
+            color: #2563eb;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+          }
+          .company-info {
+            color: #6b7280;
+            margin-bottom: 10px;
+          }
+          .summary {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+          }
+          .summary h3 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+          }
+          .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+          }
+          .summary-card {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+          }
+          .summary-card .label {
+            color: #6b7280;
+            font-size: 11px;
+            margin-bottom: 5px;
+          }
+          .summary-card .value {
+            color: #1f2937;
+            font-size: 16px;
+            font-weight: bold;
+          }
+          .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background: white;
+          }
+          .data-table th, .data-table td {
+            border: 1px solid #d1d5db;
+            padding: 12px 8px;
+            text-align: left;
+          }
+          .data-table th {
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+            font-size: 11px;
+          }
+          .data-table td {
+            font-size: 11px;
+          }
+          .currency {
+            text-align: right;
+            font-weight: 500;
+          }
+          .total-row {
+            background: #f9fafb;
+            border-top: 2px solid #374151;
+          }
+          .total-row td {
+            font-weight: bold;
+            color: #1f2937;
+          }
+          .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 10px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${this.company.name}</h1>
+          <h2>Bank Statement Report</h2>
+          <div class="company-info">
+            Generated on ${reportDate} | Company ID: ${this.company.id}
+          </div>
+        </div>
+
+        <div class="summary">
+          <h3>📊 Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="label">Total Records</div>
+              <div class="value">${records.length}</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Total Turnover</div>
+              <div class="value">${this.formatCurrency(totalTurnover)}</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Average Monthly</div>
+              <div class="value">${this.formatCurrency(totalTurnover / Math.max(records.length, 1))}</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>💼 Monthly Turnover Data</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Quarter</th>
+              <th>Monthly Turnover</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${records.map(record => `
+              <tr>
+                <td>${this.getMonthName(record.month)} ${record.year}</td>
+                <td>${record.quarter_label || `Q${record.quarter}`}</td>
+                <td class="currency">${this.formatCurrency(Number(record.turnover) || 0)}</td>
+              </tr>
+            `).join('')}
+            <tr class="total-row">
+              <td><strong>TOTAL</strong></td>
+              <td>-</td>
+              <td class="currency"><strong>${this.formatCurrency(totalTurnover)}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This bank statement report was generated from verified business data.</p>
+          <p>Generated on ${reportDate} | Business Incubator System</p>
+        </div>
+      </body>
+      </html>
+    `;
   }
 }
