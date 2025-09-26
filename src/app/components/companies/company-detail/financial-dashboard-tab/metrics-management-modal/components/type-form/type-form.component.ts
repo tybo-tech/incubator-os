@@ -2,16 +2,15 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IMetricType, CreateMetricTypeDto, UpdateMetricTypeDto, MetricPeriodType } from '../../../../../../../../models/metrics.model';
-import { ICategory } from '../../../../../../../../models/simple.schema';
 import { MetricsService } from '../../../../../../../../services/metrics.service';
-import { CategoryService } from '../../../../../../../../services/category.service';
+import { CategoryManagementComponent } from '../category-management/category-management.component';
 
 @Component({
   selector: 'app-type-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CategoryManagementComponent],
   template: `
-    <div class="bg-green-50 rounded-lg p-6 border border-green-200">
+    <div class="bg-white-50 rounded-lg p-6 border border-green-200">
       <h3 class="text-xl font-semibold text-green-900 mb-6 flex items-center gap-2">
         <i class="fas text-lg" [class.fa-plus]="!editingType" [class.fa-edit]="editingType"></i>
         {{ editingType ? 'Edit Type' : 'Create New Type' }}
@@ -118,79 +117,11 @@ import { CategoryService } from '../../../../../../../../services/category.servi
 
         <!-- Category Management Section -->
         <div class="md:col-span-2">
-          <div class="border-t border-gray-200 pt-4">
-            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <i class="fas fa-tags text-green-600"></i>
-              Category Management
-            </h4>
-            <p class="text-sm text-gray-600 mb-4">Select categories for this metric type (e.g., Balance Sheet Assets/Liabilities).</p>
-
-            <div class="space-y-4">
-              <!-- Add New Category Input -->
-              <div class="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  [(ngModel)]="newCategoryInput"
-                  (keyup.enter)="addCategory()"
-                  placeholder="Create new category..."
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                />
-                <button
-                  type="button"
-                  (click)="addCategory()"
-                  [disabled]="isLoading"
-                  class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-1 disabled:opacity-50"
-                >
-                  <i class="fas fa-plus"></i>
-                  Create
-                </button>
-              </div>
-
-              <!-- Category Selection List -->
-              <div *ngIf="availableCategories.length > 0" class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
-                <div *ngFor="let category of availableCategories"
-                     class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
-                  <label class="flex items-center gap-2 flex-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      [checked]="selectedCategoryIds.includes(category.id)"
-                      (change)="toggleCategory(category.id)"
-                      class="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                    />
-                    <span class="text-sm text-gray-700">{{ category.name }}</span>
-                    <span *ngIf="category.description" class="text-xs text-gray-500">({{ category.description }})</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Selected Categories Summary -->
-              <div *ngIf="selectedCategoryIds.length > 0" class="mt-4 p-3 bg-green-50 rounded-lg">
-                <div class="flex items-center gap-2 mb-2">
-                  <i class="fas fa-check-circle text-green-600"></i>
-                  <span class="text-sm font-medium text-green-800">Selected Categories ({{ selectedCategoryIds.length }})</span>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let category of getSelectedCategories()"
-                        class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                    {{ category.name }}
-                    <button
-                      type="button"
-                      (click)="removeCategory(category.id)"
-                      class="text-green-600 hover:text-green-800"
-                      title="Remove category"
-                    >
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </span>
-                </div>
-              </div>
-
-              <div *ngIf="availableCategories.length === 0"
-                   class="text-sm text-gray-500 italic py-4 text-center bg-gray-50 rounded-lg">
-                No categories available. Create your first category above.
-              </div>
-            </div>
-          </div>
+          <app-category-management
+            [selectedCategoryIds]="selectedCategoryIds"
+            [metricTypeId]="editingType?.id"
+            (categoriesChanged)="onCategoriesChanged($event)"
+          ></app-category-management>
         </div>
 
         <div class="md:col-span-2 flex justify-end gap-3">
@@ -222,20 +153,13 @@ export class TypeFormComponent implements OnInit {
 
   isLoading = false;
   typeData: CreateMetricTypeDto = this.initTypeData();
-
-  // Category Management
-  availableCategories: ICategory[] = [];
   selectedCategoryIds: number[] = [];
-  newCategoryInput: string = '';
 
   constructor(
-    private metricsService: MetricsService,
-    private categoryService: CategoryService
+    private metricsService: MetricsService
   ) {}
 
   async ngOnInit(): Promise<void> {
-    await this.loadCategories();
-
     if (this.editingType) {
       this.typeData = {
         group_id: this.editingType.group_id,
@@ -274,51 +198,8 @@ export class TypeFormComponent implements OnInit {
     };
   }
 
-  async loadCategories(): Promise<void> {
-    try {
-      this.availableCategories = await this.categoryService.getMetricCategories().toPromise() || [];
-    } catch (error) {
-      console.error('Error loading categories:', error);
-      this.availableCategories = [];
-    }
-  }
-
-  async addCategory(): Promise<void> {
-    if (this.newCategoryInput.trim()) {
-      try {
-        this.isLoading = true;
-        const newCategory = await this.categoryService.addMetricCategory(
-          this.newCategoryInput.trim(),
-          ''
-        ).toPromise();
-
-        if (newCategory) {
-          this.availableCategories.push(newCategory);
-          this.selectedCategoryIds.push(newCategory.id);
-          this.newCategoryInput = '';
-        }
-      } catch (error) {
-        console.error('Error creating category:', error);
-      } finally {
-        this.isLoading = false;
-      }
-    }
-  }
-
-  toggleCategory(categoryId: number): void {
-    if (this.selectedCategoryIds.includes(categoryId)) {
-      this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
-    } else {
-      this.selectedCategoryIds.push(categoryId);
-    }
-  }
-
-  removeCategory(categoryId: number): void {
-    this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
-  }
-
-  getSelectedCategories(): ICategory[] {
-    return this.availableCategories.filter(cat => this.selectedCategoryIds.includes(cat.id));
+  onCategoriesChanged(categoryIds: number[]): void {
+    this.selectedCategoryIds = categoryIds;
   }
 
   isValid(): boolean {
