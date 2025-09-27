@@ -123,43 +123,40 @@ export class PdfExportService {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 25px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
           }
 
           .summary-table td {
             width: 33.33%;
             text-align: center;
             padding: 25px 15px;
-            border: none;
-            position: relative;
-          }
-
-          .summary-card-blue {
-            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border: 1px solid #ffffff;
+            vertical-align: middle;
+          }          .summary-card-blue {
+            background-color: #2563eb !important;
+            background: #2563eb;
             color: white;
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: 2px solid #ffffff;
           }
 
           .summary-card-green {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background-color: #16a34a !important;
+            background: #16a34a;
             color: white;
-            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: 2px solid #ffffff;
           }
 
-          .summary-card-purple {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          .summary-card-orange {
+            background-color: #ea580c !important;
+            background: #ea580c;
             color: white;
-          }
-
-          .summary-label {
+          }          .summary-label {
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 10px;
-            opacity: 0.9;
+            color: white !important;
             display: block;
           }
 
@@ -167,6 +164,7 @@ export class PdfExportService {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.025em;
+            color: white !important;
             display: block;
           }
 
@@ -307,7 +305,7 @@ export class PdfExportService {
                   <div class="summary-label">Total Turnover</div>
                   <div class="summary-value">${this.formatCurrency(totalTurnover)}</div>
                 </td>
-                <td class="summary-card-purple">
+                <td class="summary-card-orange">
                   <div class="summary-label">Average Monthly</div>
                   <div class="summary-value">${this.formatCurrency(averageMonthly)}</div>
                 </td>
