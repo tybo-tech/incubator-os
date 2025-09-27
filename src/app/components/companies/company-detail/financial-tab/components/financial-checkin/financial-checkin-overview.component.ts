@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ICompany } from '../../../../../../../models/simple.schema';
 import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../../../services/company-financials.service';
 import { HttpClient } from '@angular/common/http';
+import { PdfExportService } from '../../../../../../../services/pdf-export.service';
 
 @Component({
   selector: 'app-financial-checkin-overview',
@@ -171,7 +172,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   constructor(
     private financialService: CompanyFinancialsService,
-    private http: HttpClient
+    private http: HttpClient,
+    private pdfExportService: PdfExportService
   ) {}
 
   ngOnInit() {
@@ -438,8 +440,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       record.id > 0 && (record.turnover !== null && Number(record.turnover) > 0)
     );
 
-    // Generate simple HTML for the bank statement
-    const html = this.generateBankStatementHtml(validRecords);
+    // Generate HTML using the service
+    const html = this.pdfExportService.generateBankStatementHtml(this.company, validRecords);
 
     // Send to PDF service
     const formData = new FormData();
@@ -477,180 +479,4 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     });
   }
 
-  /**
-   * Generate HTML for bank statement PDF
-   */
-  private generateBankStatementHtml(records: ICompanyFinancials[]): string {
-    const reportDate = new Date().toLocaleDateString();
-    const totalTurnover = records.reduce((sum, r) => sum + (Number(r.turnover) || 0), 0);
-
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Bank Statement Report - ${this.company.name}</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            font-size: 12px;
-            color: #333;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 20px;
-          }
-          .header h1 {
-            color: #1f2937;
-            margin: 0 0 10px 0;
-            font-size: 24px;
-          }
-          .header h2 {
-            color: #2563eb;
-            margin: 0 0 15px 0;
-            font-size: 18px;
-          }
-          .company-info {
-            color: #6b7280;
-            margin-bottom: 10px;
-          }
-          .summary {
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-          }
-          .summary h3 {
-            margin: 0 0 15px 0;
-            color: #1f2937;
-          }
-          .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-          }
-          .summary-card {
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-          }
-          .summary-card .label {
-            color: #6b7280;
-            font-size: 11px;
-            margin-bottom: 5px;
-          }
-          .summary-card .value {
-            color: #1f2937;
-            font-size: 16px;
-            font-weight: bold;
-          }
-          .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background: white;
-          }
-          .data-table th, .data-table td {
-            border: 1px solid #d1d5db;
-            padding: 12px 8px;
-            text-align: left;
-          }
-          .data-table th {
-            background: #f3f4f6;
-            color: #374151;
-            font-weight: 600;
-            font-size: 11px;
-          }
-          .data-table td {
-            font-size: 11px;
-          }
-          .currency {
-            text-align: right;
-            font-weight: 500;
-          }
-          .total-row {
-            background: #f9fafb;
-            border-top: 2px solid #374151;
-          }
-          .total-row td {
-            font-weight: bold;
-            color: #1f2937;
-          }
-          .footer {
-            margin-top: 40px;
-            text-align: center;
-            color: #6b7280;
-            font-size: 10px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 15px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>${this.company.name}</h1>
-          <h2>Bank Statement Report</h2>
-          <div class="company-info">
-            Generated on ${reportDate} | Company ID: ${this.company.id}
-          </div>
-        </div>
-
-        <div class="summary">
-          <h3>📊 Summary</h3>
-          <div class="summary-grid">
-            <div class="summary-card">
-              <div class="label">Total Records</div>
-              <div class="value">${records.length}</div>
-            </div>
-            <div class="summary-card">
-              <div class="label">Total Turnover</div>
-              <div class="value">${this.formatCurrency(totalTurnover)}</div>
-            </div>
-            <div class="summary-card">
-              <div class="label">Average Monthly</div>
-              <div class="value">${this.formatCurrency(totalTurnover / Math.max(records.length, 1))}</div>
-            </div>
-          </div>
-        </div>
-
-        <h3>💼 Monthly Turnover Data</h3>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>Quarter</th>
-              <th>Monthly Turnover</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${records.map(record => `
-              <tr>
-                <td>${this.getMonthName(record.month)} ${record.year}</td>
-                <td>${record.quarter_label || `Q${record.quarter}`}</td>
-                <td class="currency">${this.formatCurrency(Number(record.turnover) || 0)}</td>
-              </tr>
-            `).join('')}
-            <tr class="total-row">
-              <td><strong>TOTAL</strong></td>
-              <td>-</td>
-              <td class="currency"><strong>${this.formatCurrency(totalTurnover)}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="footer">
-          <p>This bank statement report was generated from verified business data.</p>
-          <p>Generated on ${reportDate} | Business Incubator System</p>
-        </div>
-      </body>
-      </html>
-    `;
-  }
 }
