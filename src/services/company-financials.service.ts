@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 // Company Financials interface
 export interface ICompanyFinancials {
@@ -54,27 +54,34 @@ import { Constants } from './service';
 @Injectable({ providedIn: 'root' })
 export class CompanyFinancialsService {
   private apiUrl = `${Constants.ApiBase}/api-nodes/company-financials`;
+  
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
+  };
 
   constructor(private http: HttpClient) {}
 
   addCompanyFinancials(data: Partial<ICompanyFinancials>): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/add-company-financials.php`, data);
+    console.log('Sending data to API:', data);
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/add-company-financials.php`, data, this.httpOptions);
   }
 
   upsertCompanyFinancials(data: Partial<ICompanyFinancials>): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/upsert-company-financials.php`, data);
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/upsert-company-financials.php`, data, this.httpOptions);
   }
 
   updateCompanyFinancials(id: number, data: Partial<ICompanyFinancials>): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/update-company-financials.php`, { id, ...data });
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/update-company-financials.php`, { id, ...data }, this.httpOptions);
   }
 
   getCompanyFinancialsById(id: number): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/get-company-financials.php`, { id });
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/get-company-financials.php`, { id }, this.httpOptions);
   }
 
   getCompanyFinancialsByPeriod(company_id: number, period_date: string): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/get-company-financials-by-period.php`, { company_id, period_date });
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/get-company-financials-by-period.php`, { company_id, period_date }, this.httpOptions);
   }
 
   /**
@@ -82,7 +89,7 @@ export class CompanyFinancialsService {
    * @param filters Filtering and sorting options
    */
   listCompanyFinancials(filters: ICompanyFinancialsFilters): Observable<ICompanyFinancials[]> {
-    return this.http.post<ICompanyFinancials[]>(`${this.apiUrl}/list-company-financials.php`, filters);
+    return this.http.post<ICompanyFinancials[]>(`${this.apiUrl}/list-company-financials.php`, filters, this.httpOptions);
   }
 
   /**

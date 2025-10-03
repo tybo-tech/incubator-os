@@ -60,6 +60,84 @@ import { PdfExportService } from '../../../../../../../services/pdf-export.servi
         </div>
       </div>
 
+      <!-- Add New Record Modal -->
+      <div *ngIf="showAddForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h4 class="text-lg font-semibold text-gray-900">Add New Monthly Record</h4>
+          </div>
+
+          <div class="px-6 py-4">
+            <div class="space-y-4">
+              <!-- Year Selection -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                <select
+                  [(ngModel)]="newRecordForm.year"
+                  class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option [value]="year" *ngFor="let year of [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]">{{ year }}</option>
+                </select>
+              </div>
+
+              <!-- Month Selection -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                <select
+                  [(ngModel)]="newRecordForm.month"
+                  (change)="onNewRecordMonthChange()"
+                  class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option [value]="1">January</option>
+                  <option [value]="2">February</option>
+                  <option [value]="3">March</option>
+                  <option [value]="4">April</option>
+                  <option [value]="5">May</option>
+                  <option [value]="6">June</option>
+                  <option [value]="7">July</option>
+                  <option [value]="8">August</option>
+                  <option [value]="9">September</option>
+                  <option [value]="10">October</option>
+                  <option [value]="11">November</option>
+                  <option [value]="12">December</option>
+                </select>
+              </div>
+
+              <!-- Quarter (auto-calculated) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
+                <input
+                  [value]="'Q' + newRecordForm.quarter"
+                  readonly
+                  class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500">
+              </div>
+
+              <!-- Turnover -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Turnover (Optional)</label>
+                <input
+                  type="number"
+                  [(ngModel)]="newRecordForm.turnover"
+                  class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0.00"
+                  step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              (click)="cancelAddForm()"
+              class="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button
+              (click)="saveNewRecord()"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+              Add Record
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Financial Data Table -->
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -118,7 +196,7 @@ import { PdfExportService } from '../../../../../../../services/pdf-export.servi
           </tbody>
 
           <!-- Totals Row -->
-          <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+          <tfoot *ngIf="monthlyRecords.length > 0" class="bg-gray-50 border-t-2 border-gray-300">
             <tr>
               <td class="px-6 py-3 text-sm font-bold text-gray-900">TOTAL</td>
               <td class="px-6 py-3 text-sm font-bold text-gray-900">-</td>
@@ -256,22 +334,17 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   async updateRecord(record: ICompanyFinancials): Promise<void> {
+    // Only update existing records (id > 0)
+    if (record.id === 0) {
+      return;
+    }
+
     // Set turnover_monthly_avg same as turnover for bank statement
     record.turnover_monthly_avg = record.turnover;
 
     try {
-      if (record.id === 0) {
-        // New record - create it
-        const newRecord = await this.financialService.addCompanyFinancials(record).toPromise();
-        if (newRecord) {
-          // Update the record with the new ID and refresh data
-          this.loadFinancials();
-        }
-      } else {
-        // Existing record - update it
-        await this.financialService.updateCompanyFinancials(record.id, record).toPromise();
-        this.recordUpdated.emit(record);
-      }
+      await this.financialService.updateCompanyFinancials(record.id, record).toPromise();
+      this.recordUpdated.emit(record);
     } catch (error) {
       console.error('Error updating record:', error);
       alert('Failed to save changes. Please try again.');
@@ -279,22 +352,17 @@ export class FinancialCheckinOverviewComponent implements OnInit {
   }
 
   async updateQuarter(record: ICompanyFinancials): Promise<void> {
+    // Only update existing records (id > 0)
+    if (record.id === 0) {
+      return;
+    }
+
     // Update the quarter_label based on the selected quarter
     record.quarter_label = `Q${record.quarter}`;
 
     try {
-      if (record.id === 0) {
-        // New record - create it
-        const newRecord = await this.financialService.addCompanyFinancials(record).toPromise();
-        if (newRecord) {
-          // Update the record with the new ID and refresh data
-          this.loadFinancials();
-        }
-      } else {
-        // Existing record - update it
-        await this.financialService.updateCompanyFinancials(record.id, record).toPromise();
-        this.recordUpdated.emit(record);
-      }
+      await this.financialService.updateCompanyFinancials(record.id, record).toPromise();
+      this.recordUpdated.emit(record);
     } catch (error) {
       console.error('Error updating quarter:', error);
       alert('Failed to save quarter changes. Please try again.');
@@ -303,8 +371,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
   async deleteRecord(record: ICompanyFinancials): Promise<void> {
     if (record.id === 0) {
-      // It's a placeholder record, just refresh to remove the values
-      this.loadFinancials();
+      // This shouldn't happen with the new logic, but just in case
       return;
     }
 
@@ -357,8 +424,8 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
 
     // Check if record already exists for this month/year
-    const existingRecord = this.financials.find(f => 
-      f.month === this.newRecordForm.month && 
+    const existingRecord = this.financials.find(f =>
+      f.month === this.newRecordForm.month &&
       f.year === this.newRecordForm.year
     );
 
@@ -401,7 +468,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
       if (savedRecord) {
         this.showAddForm = false;
         this.loadFinancials();
-        
+
         // Switch to the year of the new record if not already viewing it
         if (this.selectedYear !== this.newRecordForm.year && this.selectedYear !== 'all') {
           this.selectedYear = this.newRecordForm.year;

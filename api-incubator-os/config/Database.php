@@ -13,11 +13,11 @@ class Database
     public function __construct()
     {
         // Default to server config
-        // $this->setServer();
+        $this->setServer();
 
         // Collect locally
         // Comment out before deploying
-        $this->setLocal();
+        // $this->setLocal();
     }
 
     public function setLocal()
@@ -39,7 +39,7 @@ class Database
     public function connect()
     {
         $this->conn = null;
-        $this->setLocal();
+        // Remove the duplicate setLocal() call - use constructor config
         try {
             $dsn = "mysql:host={$this->host};dbname={$this->db_name}";
             $this->conn = new PDO($dsn, $this->username, $this->password);
