@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
 import { OverviewGridComponent } from '../overview/components/overview-grid.component';
+import { OverviewHeaderComponent, OverviewStats } from '../overview/components/overview-header.component';
+import { CategoryCompanyPickerComponent } from '../../components/category-company-picker/category-company-picker.component';
 import { ICompany } from '../../../models/simple.schema';
 import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom } from 'rxjs';
 
@@ -29,7 +31,7 @@ interface BreadcrumbInfo {
 @Component({
   selector: 'app-cohorts-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, OverviewGridComponent],
+  imports: [CommonModule, FormsModule, OverviewGridComponent, OverviewHeaderComponent, CategoryCompanyPickerComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -71,32 +73,37 @@ interface BreadcrumbInfo {
 
         <!-- Header -->
         <div class="mb-8">
-          <div class="flex items-center justify-between">
-            <div>
-              <!-- Back button when viewing companies -->
-              <div *ngIf="isViewingCompanies()" class="flex items-center mb-4">
-                <button
-                  (click)="backToCohorts()"
-                  class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                  </svg>
-                  Back to Cohorts
-                </button>
+          <!-- Back button when viewing companies -->
+          <div *ngIf="isViewingCompanies()" class="flex items-center mb-4">
+            <button
+              (click)="backToCohorts()"
+              class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              Back to Cohorts
+            </button>
+          </div>
+
+          <!-- Use Overview Header for companies view -->
+          <div *ngIf="isViewingCompanies()">
+            <app-overview-header
+              [currentLevel]="'cohort'"
+              [showSearch]="companies().length > 5"
+              [searchQuery]="searchQuery()"
+              [stats]="currentLevelStats()"
+              (openCompanyModal)="openCompanyModal()"
+              (searchChange)="onSearchChange($event)"
+            ></app-overview-header>
+          </div>
+
+          <!-- Custom header for cohorts view -->
+          <div *ngIf="!isViewingCompanies()">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900">Cohorts</h1>
+                <p class="text-gray-600 mt-2">Manage cohorts for {{ breadcrumbInfo()?.programName }}</p>
               </div>
-
-              <h1 class="text-3xl font-bold text-gray-900">
-                <span *ngIf="!isViewingCompanies()">Cohorts</span>
-                <span *ngIf="isViewingCompanies()">Companies in {{ selectedCohort()?.name }}</span>
-              </h1>
-              <p class="text-gray-600 mt-2">
-                <span *ngIf="!isViewingCompanies()">Manage cohorts for {{ breadcrumbInfo()?.programName }}</span>
-                <span *ngIf="isViewingCompanies()">Manage companies in this cohort</span>
-              </p>
-            </div>
-
-            <!-- Action buttons -->
-            <div *ngIf="!isViewingCompanies()">
               <button
                 (click)="openCreateModal()"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
@@ -106,20 +113,18 @@ interface BreadcrumbInfo {
                 Add Cohort
               </button>
             </div>
-          </div>
 
-          <!-- Search -->
-          <div *ngIf="!isViewingCompanies() && cohorts().length > 5" class="mt-6">
-            <input
-              type="text"
-              placeholder="Search cohorts..."
-              [(ngModel)]="searchQuery"
-              (input)="onSearchChange()"
-              class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <!-- Search for cohorts -->
+            <div *ngIf="cohorts().length > 5" class="mt-6">
+              <input
+                type="text"
+                placeholder="Search cohorts..."
+                [value]="searchQuery()"
+                (input)="onSearchChange($any($event).target.value)"
+                class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
           </div>
-        </div>
-
-        <!-- Cohorts View -->
+        </div>        <!-- Cohorts View -->
         <div *ngIf="!isViewingCompanies()">
           <!-- Loading State -->
           <div *ngIf="isLoading()" class="flex justify-center items-center py-12">
@@ -209,6 +214,17 @@ interface BreadcrumbInfo {
           ></app-overview-grid>
         </div>
 
+        <!-- Company Picker Modal -->
+        <div *ngIf="showCompanyModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <app-category-company-picker
+            [cohortId]="selectedCohort()?.id || 0"
+            [programId]="getProgramId()"
+            [clientId]="getClientId()"
+            (close)="closeCompanyModal()"
+            (companiesChanged)="onCompaniesChanged()"
+          ></app-category-company-picker>
+        </div>
+
         <!-- Create Cohort Modal -->
         <div *ngIf="showCreateModal()"
              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -267,10 +283,11 @@ export class CohortsListComponent implements OnInit {
   isLoadingCompanies = signal(false);
   error = signal<string | null>(null);
   companiesError = signal<string | null>(null);
-  searchQuery = '';
+  searchQuery = signal('');
 
   // Modal state
   showCreateModal = signal(false);
+  showCompanyModal = signal(false);
   isCreating = signal(false);
   createForm = {
     name: '',
@@ -283,23 +300,56 @@ export class CohortsListComponent implements OnInit {
   // Computed
   filteredCohorts = computed(() => {
     const cohorts = this.cohorts();
-    if (!this.searchQuery.trim()) return cohorts;
+    const query = this.searchQuery();
+    if (!query.trim()) return cohorts;
 
-    const query = this.searchQuery.toLowerCase();
+    const queryLower = query.toLowerCase();
     return cohorts.filter(cohort =>
-      cohort.name.toLowerCase().includes(query) ||
-      cohort.description?.toLowerCase().includes(query)
+      cohort.name.toLowerCase().includes(queryLower) ||
+      cohort.description?.toLowerCase().includes(queryLower)
     );
   });
 
   // Check if we're viewing companies within a cohort
   isViewingCompanies = computed(() => this.selectedCohort() !== null);
 
+  // Statistics for the overview header
+  currentLevelStats = computed((): OverviewStats | undefined => {
+    if (this.isViewingCompanies()) {
+      const companies = this.companies();
+      if (companies.length === 0) return undefined;
+
+      // For companies, we could calculate active/completed status
+      // For now, just return total count
+      return {
+        totalItems: companies.length,
+        activeItems: companies.length, // Placeholder - would need real status logic
+        completedItems: 0 // Placeholder - would need real status logic
+      };
+    } else {
+      const cohorts = this.cohorts();
+      if (cohorts.length === 0) return undefined;
+
+      return {
+        totalItems: cohorts.length
+      };
+    }
+  });
+
   constructor(
     private categoryService: CategoryService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
+
+  // Getters for template access
+  getClientId(): number | undefined {
+    return this.clientId || undefined;
+  }
+
+  getProgramId(): number | undefined {
+    return this.programId || undefined;
+  }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -457,13 +507,31 @@ export class CohortsListComponent implements OnInit {
       });
   }
 
+  // Company modal methods
+  openCompanyModal(): void {
+    this.showCompanyModal.set(true);
+  }
+
+  closeCompanyModal(): void {
+    this.showCompanyModal.set(false);
+  }
+
+  onCompaniesChanged(): void {
+    // Reload companies when companies are added/removed
+    if (this.selectedCohort()) {
+      this.loadCompaniesInCohort(this.selectedCohort()!.id);
+    }
+    this.closeCompanyModal();
+  }
+
+  // Search methods
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+  }
+
   navigateToCompanies(cohort: Cohort): void {
     // This method is now replaced by selectCohort
     this.selectCohort(cohort);
-  }
-
-  onSearchChange(): void {
-    // Triggering change detection for computed signal
   }
 
   openCreateModal(): void {
