@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
+import { OverviewGridComponent } from '../overview/components/overview-grid.component';
+import { ICompany } from '../../../models/simple.schema';
 import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom } from 'rxjs';
 
 interface Cohort {
@@ -27,7 +29,7 @@ interface BreadcrumbInfo {
 @Component({
   selector: 'app-cohorts-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, OverviewGridComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -57,6 +59,13 @@ interface BreadcrumbInfo {
               </svg>
               <span class="text-gray-900 font-medium">{{ breadcrumbInfo()?.programName || 'Program' }}</span>
             </li>
+            <!-- Show cohort name if viewing companies -->
+            <li *ngIf="isViewingCompanies()" class="flex items-center">
+              <svg class="w-5 h-5 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+              </svg>
+              <span class="text-gray-900 font-medium">{{ selectedCohort()?.name || 'Cohort' }}</span>
+            </li>
           </ol>
         </nav>
 
@@ -64,21 +73,43 @@ interface BreadcrumbInfo {
         <div class="mb-8">
           <div class="flex items-center justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900">Cohorts</h1>
-              <p class="text-gray-600 mt-2">Manage cohorts for {{ breadcrumbInfo()?.programName }}</p>
+              <!-- Back button when viewing companies -->
+              <div *ngIf="isViewingCompanies()" class="flex items-center mb-4">
+                <button
+                  (click)="backToCohorts()"
+                  class="flex items-center text-blue-600 hover:text-blue-800 transition-colors">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                  Back to Cohorts
+                </button>
+              </div>
+
+              <h1 class="text-3xl font-bold text-gray-900">
+                <span *ngIf="!isViewingCompanies()">Cohorts</span>
+                <span *ngIf="isViewingCompanies()">Companies in {{ selectedCohort()?.name }}</span>
+              </h1>
+              <p class="text-gray-600 mt-2">
+                <span *ngIf="!isViewingCompanies()">Manage cohorts for {{ breadcrumbInfo()?.programName }}</span>
+                <span *ngIf="isViewingCompanies()">Manage companies in this cohort</span>
+              </p>
             </div>
-            <button
-              (click)="openCreateModal()"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              Add Cohort
-            </button>
+
+            <!-- Action buttons -->
+            <div *ngIf="!isViewingCompanies()">
+              <button
+                (click)="openCreateModal()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Cohort
+              </button>
+            </div>
           </div>
 
           <!-- Search -->
-          <div *ngIf="cohorts().length > 5" class="mt-6">
+          <div *ngIf="!isViewingCompanies() && cohorts().length > 5" class="mt-6">
             <input
               type="text"
               placeholder="Search cohorts..."
@@ -88,78 +119,94 @@ interface BreadcrumbInfo {
           </div>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="isLoading()" class="flex justify-center items-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span class="ml-3 text-gray-600">Loading cohorts...</span>
-        </div>
+        <!-- Cohorts View -->
+        <div *ngIf="!isViewingCompanies()">
+          <!-- Loading State -->
+          <div *ngIf="isLoading()" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">Loading cohorts...</span>
+          </div>
 
-        <!-- Error State -->
-        <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <div class="text-red-600 text-lg font-medium mb-2">Failed to load cohorts</div>
-          <p class="text-red-500 mb-4">{{ error() }}</p>
-          <button
-            (click)="loadCohorts()"
-            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
-            Try Again
-          </button>
-        </div>
+          <!-- Error State -->
+          <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <div class="text-red-600 text-lg font-medium mb-2">Failed to load cohorts</div>
+            <p class="text-red-500 mb-4">{{ error() }}</p>
+            <button
+              (click)="loadCohorts()"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+              Try Again
+            </button>
+          </div>
 
-        <!-- Empty State -->
-        <div *ngIf="!isLoading() && !error() && filteredCohorts().length === 0"
-             class="text-center py-12">
-          <div class="text-gray-400 text-6xl mb-4">👥</div>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">
-            {{ cohorts().length === 0 ? 'No cohorts yet' : 'No cohorts found' }}
-          </h3>
-          <p class="text-gray-500 mb-6">
-            {{ cohorts().length === 0 ? 'Create your first cohort to get started.' : 'Try adjusting your search criteria.' }}
-          </p>
-          <button
-            *ngIf="cohorts().length === 0"
-            (click)="openCreateModal()"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            Create First Cohort
-          </button>
-        </div>
+          <!-- Empty State -->
+          <div *ngIf="!isLoading() && !error() && filteredCohorts().length === 0"
+               class="text-center py-12">
+            <div class="text-gray-400 text-6xl mb-4">👥</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              {{ cohorts().length === 0 ? 'No cohorts yet' : 'No cohorts found' }}
+            </h3>
+            <p class="text-gray-500 mb-6">
+              {{ cohorts().length === 0 ? 'Create your first cohort to get started.' : 'Try adjusting your search criteria.' }}
+            </p>
+            <button
+              *ngIf="cohorts().length === 0"
+              (click)="openCreateModal()"
+              class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Create First Cohort
+            </button>
+          </div>
 
-        <!-- Cohorts Grid -->
-        <div *ngIf="!isLoading() && !error() && filteredCohorts().length > 0"
-             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div *ngFor="let cohort of filteredCohorts()"
-               class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-               (click)="navigateToCompanies(cohort)">
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">{{ cohort.name }}</h3>
-                <div class="text-blue-600">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
+          <!-- Cohorts Grid -->
+          <div *ngIf="!isLoading() && !error() && filteredCohorts().length > 0"
+               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngFor="let cohort of filteredCohorts()"
+                 class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                 (click)="selectCohort(cohort)">
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900">{{ cohort.name }}</h3>
+                  <div class="text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
                 </div>
-              </div>
 
-              <p *ngIf="cohort.description" class="text-gray-600 text-sm mb-4">
-                {{ cohort.description }}
-              </p>
+                <p *ngIf="cohort.description" class="text-gray-600 text-sm mb-4">
+                  {{ cohort.description }}
+                </p>
 
-              <!-- Statistics -->
-              <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-purple-600">{{ cohort.stats?.companyCount || 0 }}</div>
-                  <div class="text-xs text-gray-500">Total</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-green-600">{{ cohort.stats?.activeCompanies || 0 }}</div>
-                  <div class="text-xs text-gray-500">Active</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-blue-600">{{ cohort.stats?.completedCompanies || 0 }}</div>
-                  <div class="text-xs text-gray-500">Completed</div>
+                <!-- Statistics -->
+                <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ cohort.stats?.companyCount || 0 }}</div>
+                    <div class="text-xs text-gray-500">Total</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ cohort.stats?.activeCompanies || 0 }}</div>
+                    <div class="text-xs text-gray-500">Active</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">{{ cohort.stats?.completedCompanies || 0 }}</div>
+                    <div class="text-xs text-gray-500">Completed</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Companies View (using overview grid) -->
+        <div *ngIf="isViewingCompanies()">
+          <app-overview-grid
+            [items]="companies()"
+            [currentLevel]="'cohort'"
+            [isLoading]="isLoadingCompanies()"
+            [error]="companiesError()"
+            (companyClick)="navigateToCompany($event)"
+            (removeCompany)="removeCompanyFromCohort($event)"
+            (retryClick)="loadCompaniesInCohort(selectedCohort()!.id)"
+          ></app-overview-grid>
         </div>
 
         <!-- Create Cohort Modal -->
@@ -213,9 +260,13 @@ interface BreadcrumbInfo {
 })
 export class CohortsListComponent implements OnInit {
   cohorts = signal<Cohort[]>([]);
+  companies = signal<ICompany[]>([]);
   breadcrumbInfo = signal<BreadcrumbInfo | null>(null);
+  selectedCohort = signal<Cohort | null>(null);
   isLoading = signal(false);
+  isLoadingCompanies = signal(false);
   error = signal<string | null>(null);
+  companiesError = signal<string | null>(null);
   searchQuery = '';
 
   // Modal state
@@ -240,6 +291,9 @@ export class CohortsListComponent implements OnInit {
       cohort.description?.toLowerCase().includes(query)
     );
   });
+
+  // Check if we're viewing companies within a cohort
+  isViewingCompanies = computed(() => this.selectedCohort() !== null);
 
   constructor(
     private categoryService: CategoryService,
@@ -332,6 +386,24 @@ export class CohortsListComponent implements OnInit {
       });
   }
 
+  loadCompaniesInCohort(cohortId: number): void {
+    this.isLoadingCompanies.set(true);
+    this.companiesError.set(null);
+
+    this.categoryService.listCompaniesInCohort(cohortId)
+      .pipe(
+        catchError(error => {
+          this.companiesError.set(error.message || 'Failed to load companies');
+          this.isLoadingCompanies.set(false);
+          return EMPTY;
+        })
+      )
+      .subscribe(companies => {
+        this.companies.set(companies);
+        this.isLoadingCompanies.set(false);
+      });
+  }
+
   navigateToClients(): void {
     this.router.navigate(['/admin/clients']);
   }
@@ -340,12 +412,24 @@ export class CohortsListComponent implements OnInit {
     this.router.navigate(['/admin/clients', this.clientId, 'programs']);
   }
 
-  navigateToCompanies(cohort: Cohort): void {
-    const info = this.breadcrumbInfo();
-    if (!info) return;
+  selectCohort(cohort: Cohort): void {
+    this.selectedCohort.set(cohort);
+    this.loadCompaniesInCohort(cohort.id);
+  }
 
-    // Navigate to companies with full context
-    this.router.navigate(['/companies'], {
+  backToCohorts(): void {
+    this.selectedCohort.set(null);
+    this.companies.set([]);
+    this.companiesError.set(null);
+  }
+
+  navigateToCompany(company: ICompany): void {
+    const info = this.breadcrumbInfo();
+    const cohort = this.selectedCohort();
+    if (!info || !cohort) return;
+
+    // Navigate to company detail with full context
+    this.router.navigate(['/companies', company.id], {
       queryParams: {
         clientId: info.clientId,
         clientName: info.clientName,
@@ -355,6 +439,27 @@ export class CohortsListComponent implements OnInit {
         cohortName: cohort.name
       }
     });
+  }
+
+  removeCompanyFromCohort(company: ICompany): void {
+    const cohort = this.selectedCohort();
+    if (!cohort || !confirm(`Remove ${company.name} from ${cohort.name}?`)) return;
+
+    this.categoryService.detachCompany(cohort.id, company.id)
+      .pipe(
+        catchError(error => {
+          console.error('Failed to remove company:', error);
+          return EMPTY;
+        })
+      )
+      .subscribe(() => {
+        this.loadCompaniesInCohort(cohort.id); // Refresh companies list
+      });
+  }
+
+  navigateToCompanies(cohort: Cohort): void {
+    // This method is now replaced by selectCohort
+    this.selectCohort(cohort);
   }
 
   onSearchChange(): void {
