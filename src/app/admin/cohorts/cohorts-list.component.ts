@@ -95,6 +95,37 @@ interface BreadcrumbInfo {
               (openCompanyModal)="openCompanyModal()"
               (searchChange)="onSearchChange($event)"
             ></app-overview-header>
+
+            <!-- Sorting Controls for Companies -->
+            <div *ngIf="companies().length > 1" class="flex items-center justify-between mt-4 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-gray-700">Sort by:</span>
+                <select
+                  [value]="sortBy()"
+                  (change)="onSortChange($any($event).target.value)"
+                  class="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                  <option value="name">Company Name</option>
+                  <option value="location">Location</option>
+                  <option value="turnover">Turnover</option>
+                  <option value="compliance">Compliance Score</option>
+                </select>
+
+                <button
+                  (click)="toggleSortDirection()"
+                  class="p-1 text-gray-600 hover:text-gray-800 transition-colors"
+                  [title]="sortDirection() === 'asc' ? 'Sort Descending' : 'Sort Ascending'">
+                  <svg class="w-4 h-4 transform transition-transform"
+                       [class.rotate-180]="sortDirection() === 'desc'"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="text-sm text-gray-600">
+                Showing {{ filteredAndSortedCompanies().length }} of {{ companies().length }} companies
+              </div>
+            </div>
           </div>
 
           <!-- Custom header for cohorts view -->
@@ -204,7 +235,7 @@ interface BreadcrumbInfo {
         <!-- Companies View (using overview grid) -->
         <div *ngIf="isViewingCompanies()">
           <app-overview-grid
-            [items]="companies()"
+            [items]="filteredAndSortedCompanies()"
             [currentLevel]="'cohort'"
             [isLoading]="isLoadingCompanies()"
             [error]="companiesError()"
@@ -284,6 +315,8 @@ export class CohortsListComponent implements OnInit {
   error = signal<string | null>(null);
   companiesError = signal<string | null>(null);
   searchQuery = signal('');
+  sortBy = signal<'name' | 'location' | 'turnover' | 'compliance'>('name');
+  sortDirection = signal<'asc' | 'desc'>('asc');
 
   // Modal state
   showCreateModal = signal(false);
@@ -310,6 +343,65 @@ export class CohortsListComponent implements OnInit {
     );
   });
 
+  // Filtered and sorted companies
+  filteredAndSortedCompanies = computed(() => {
+    const companies = this.companies();
+    const query = this.searchQuery().toLowerCase().trim();
+    const sortBy = this.sortBy();
+    const sortDirection = this.sortDirection();
+
+    // First filter the companies
+    let filtered = companies;
+    if (query) {
+      filtered = companies.filter(company =>
+        company.name.toLowerCase().includes(query) ||
+        company.email_address?.toLowerCase().includes(query) ||
+        company.contact_person?.toLowerCase().includes(query) ||
+        company.city?.toLowerCase().includes(query) ||
+        company.business_location?.toLowerCase().includes(query) ||
+        company.registration_no?.toLowerCase().includes(query) ||
+        company.description?.toLowerCase().includes(query)
+      );
+    }
+
+    // Then sort the filtered results
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'location':
+          const locationA = a.business_location || a.city || '';
+          const locationB = b.business_location || b.city || '';
+          comparison = locationA.localeCompare(locationB);
+          break;
+        case 'turnover':
+          const turnoverA = a.turnover_estimated || 0;
+          const turnoverB = b.turnover_estimated || 0;
+          comparison = turnoverA - turnoverB;
+          break;
+        case 'compliance':
+          // Calculate compliance score inline
+          const checksA = [a.has_cipc_registration, a.has_tax_clearance, a.has_valid_bbbbee];
+          const passedChecksA = checksA.filter(check => check).length;
+          const scoreA = Math.round((passedChecksA / checksA.length) * 100);
+
+          const checksB = [b.has_cipc_registration, b.has_tax_clearance, b.has_valid_bbbbee];
+          const passedChecksB = checksB.filter(check => check).length;
+          const scoreB = Math.round((passedChecksB / checksB.length) * 100);
+
+          comparison = scoreA - scoreB;
+          break;
+      }
+
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
+
+    return sorted;
+  });
+
   // Check if we're viewing companies within a cohort
   isViewingCompanies = computed(() => this.selectedCohort() !== null);
 
@@ -319,12 +411,21 @@ export class CohortsListComponent implements OnInit {
       const companies = this.companies();
       if (companies.length === 0) return undefined;
 
-      // For companies, we could calculate active/completed status
-      // For now, just return total count
+      // Calculate active/completed status based on cipc_status like in RichCompanyCardComponent
+      const activeCount = companies.filter(c =>
+        c.cipc_status?.toLowerCase() === 'in business' ||
+        c.cipc_status?.toLowerCase() === 'active' ||
+        !c.cipc_status
+      ).length;
+      const completedCount = companies.filter(c =>
+        c.cipc_status?.toLowerCase() === 'deregistered' ||
+        c.cipc_status?.toLowerCase() === 'inactive'
+      ).length;
+
       return {
         totalItems: companies.length,
-        activeItems: companies.length, // Placeholder - would need real status logic
-        completedItems: 0 // Placeholder - would need real status logic
+        activeItems: activeCount,
+        completedItems: completedCount
       };
     } else {
       const cohorts = this.cohorts();
@@ -349,6 +450,17 @@ export class CohortsListComponent implements OnInit {
 
   getProgramId(): number | undefined {
     return this.programId || undefined;
+  }
+
+  // Helper method for compliance score calculation
+  calculateComplianceScore(company: ICompany): number {
+    const checks = [
+      company.has_cipc_registration,
+      company.has_tax_clearance,
+      company.has_valid_bbbbee
+    ];
+    const passedChecks = checks.filter(check => check).length;
+    return Math.round((passedChecks / checks.length) * 100);
   }
 
   ngOnInit(): void {
@@ -440,7 +552,7 @@ export class CohortsListComponent implements OnInit {
     this.isLoadingCompanies.set(true);
     this.companiesError.set(null);
 
-    this.categoryService.listCompaniesInCohort(cohortId)
+    this.categoryService.listCompaniesInCohortDetailed(cohortId)
       .pipe(
         catchError(error => {
           this.companiesError.set(error.message || 'Failed to load companies');
@@ -527,6 +639,15 @@ export class CohortsListComponent implements OnInit {
   // Search methods
   onSearchChange(query: string): void {
     this.searchQuery.set(query);
+  }
+
+  // Sorting methods
+  onSortChange(sortBy: 'name' | 'location' | 'turnover' | 'compliance'): void {
+    this.sortBy.set(sortBy);
+  }
+
+  toggleSortDirection(): void {
+    this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
   }
 
   navigateToCompanies(cohort: Cohort): void {
