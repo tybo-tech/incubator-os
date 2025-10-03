@@ -198,7 +198,7 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     if (this.selectedYear === 'all') {
       // Return all records sorted by year (descending) then month (ascending)
       return this.financials
-        .filter(f => Number(f.turnover) > 0) // Only show records with actual data
+        .filter(f => f.id > 0) // Only show saved records
         .sort((a, b) => {
           if (a.year !== b.year) return b.year - a.year; // Sort years descending (newest first)
           return a.month - b.month; // Sort months ascending within each year
@@ -207,50 +207,9 @@ export class FinancialCheckinOverviewComponent implements OnInit {
 
     // Get records for selected year, sorted by month
     const selectedYearNum = Number(this.selectedYear);
-    const yearRecords = this.financials
-      .filter(f => f.year === selectedYearNum)
+    return this.financials
+      .filter(f => f.year === selectedYearNum && f.id > 0) // Only show saved records for the selected year
       .sort((a, b) => a.month - b.month);
-
-    // Create placeholder records for missing months
-    const completeRecords: ICompanyFinancials[] = [];
-    for (let month = 1; month <= 12; month++) {
-      const existingRecord = yearRecords.find(r => r.month === month);
-      if (existingRecord) {
-        completeRecords.push(existingRecord);
-      } else {
-        // Create placeholder record
-        const selectedYearNum = Number(this.selectedYear);
-        completeRecords.push({
-          id: 0, // Temporary ID for new records
-          company_id: this.company.id,
-          period_date: `${selectedYearNum}-${month.toString().padStart(2, '0')}-01`,
-          year: selectedYearNum,
-          month: month,
-          quarter: Math.ceil(month / 3),
-          quarter_label: `Q${Math.ceil(month / 3)}`,
-          is_pre_ignition: false,
-          turnover_monthly_avg: null,
-          turnover: null,
-          cost_of_sales: null,
-          business_expenses: null,
-          gross_profit: null,
-          net_profit: null,
-          gp_margin: null,
-          np_margin: null,
-          cash_on_hand: null,
-          debtors: null,
-          creditors: null,
-          inventory_on_hand: null,
-          working_capital_ratio: null,
-          net_assets: null,
-          notes: null,
-          created_at: '',
-          updated_at: ''
-        });
-      }
-    }
-
-    return completeRecords;
   }
 
   trackByRecord(index: number, record: ICompanyFinancials): number {
@@ -361,32 +320,97 @@ export class FinancialCheckinOverviewComponent implements OnInit {
     }
   }
 
+  // Add new record form state
+  showAddForm = false;
+  newRecordForm = {
+    month: new Date().getMonth() + 1,
+    year: new Date().getFullYear(),
+    quarter: Math.ceil((new Date().getMonth() + 1) / 3),
+    turnover: null as number | null
+  };
+
   addNewMonth(): void {
-    if (this.selectedYear === 'all') {
-      // When viewing all years, default to current year for new entry
-      const currentYear = new Date().getFullYear();
-      this.selectedYear = currentYear;
-      return; // Let the user see the current year view first
+    // Reset form with current date defaults
+    this.newRecordForm = {
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      quarter: Math.ceil((new Date().getMonth() + 1) / 3),
+      turnover: null
+    };
+    this.showAddForm = true;
+  }
+
+  onNewRecordMonthChange(): void {
+    // Update quarter when month changes
+    this.newRecordForm.quarter = Math.ceil(this.newRecordForm.month / 3);
+  }
+
+  cancelAddForm(): void {
+    this.showAddForm = false;
+  }
+
+  async saveNewRecord(): Promise<void> {
+    // Validate form
+    if (!this.newRecordForm.month || !this.newRecordForm.year) {
+      alert('Please select a month and year.');
+      return;
     }
 
-    // Find the first month without data in the selected year
-    const selectedYearNum = Number(this.selectedYear);
-    const existingMonths = this.financials
-      .filter(f => f.year === selectedYearNum)
-      .map(f => f.month);
+    // Check if record already exists for this month/year
+    const existingRecord = this.financials.find(f => 
+      f.month === this.newRecordForm.month && 
+      f.year === this.newRecordForm.year
+    );
 
-    let targetMonth = 1;
-    for (let month = 1; month <= 12; month++) {
-      if (!existingMonths.includes(month)) {
-        targetMonth = month;
-        break;
+    if (existingRecord) {
+      alert(`A record for ${this.getMonthName(this.newRecordForm.month)} ${this.newRecordForm.year} already exists.`);
+      return;
+    }
+
+    // Create new record
+    const newRecord: ICompanyFinancials = {
+      id: 0,
+      company_id: this.company.id,
+      period_date: `${this.newRecordForm.year}-${this.newRecordForm.month.toString().padStart(2, '0')}-01`,
+      year: this.newRecordForm.year,
+      month: this.newRecordForm.month,
+      quarter: this.newRecordForm.quarter,
+      quarter_label: `Q${this.newRecordForm.quarter}`,
+      is_pre_ignition: false,
+      turnover_monthly_avg: this.newRecordForm.turnover,
+      turnover: this.newRecordForm.turnover,
+      cost_of_sales: null,
+      business_expenses: null,
+      gross_profit: null,
+      net_profit: null,
+      gp_margin: null,
+      np_margin: null,
+      cash_on_hand: null,
+      debtors: null,
+      creditors: null,
+      inventory_on_hand: null,
+      working_capital_ratio: null,
+      net_assets: null,
+      notes: null,
+      created_at: '',
+      updated_at: ''
+    };
+
+    try {
+      const savedRecord = await this.financialService.addCompanyFinancials(newRecord).toPromise();
+      if (savedRecord) {
+        this.showAddForm = false;
+        this.loadFinancials();
+        
+        // Switch to the year of the new record if not already viewing it
+        if (this.selectedYear !== this.newRecordForm.year && this.selectedYear !== 'all') {
+          this.selectedYear = this.newRecordForm.year;
+        }
       }
+    } catch (error) {
+      console.error('Error creating new record:', error);
+      alert('Failed to create new record. Please try again.');
     }
-
-    this.addMonthRequested.emit({
-      month: targetMonth,
-      year: Number(this.selectedYear)
-    });
   }
 
   // Total calculation method

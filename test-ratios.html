@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratios API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .ratio-group { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .ratio-item { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+        .status-excellent { border-left: 5px solid #4CAF50; }
+        .status-good { border-left: 5px solid #FF9800; }
+        .status-below-target { border-left: 5px solid #f44336; }
+        .status-neutral { border-left: 5px solid #9E9E9E; }
+        .formula { font-family: monospace; background: #f0f0f0; padding: 5px; border-radius: 3px; }
+        .targets { color: #666; font-size: 0.9em; }
+        .error { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; }
+        .loading { color: blue; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input[type="number"] { padding: 5px; margin: 0 5px; width: 80px; }
+    </style>
+</head>
+<body>
+    <h1>Ratios API Test</h1>
+
+    <div>
+        <h3>Test Parameters</h3>
+        <label>Client ID: <input type="number" id="clientId" value="1"></label>
+        <label>Company ID: <input type="number" id="companyId" value="11"></label>
+        <label>Program ID: <input type="number" id="programId" value="2"></label>
+        <label>Cohort ID: <input type="number" id="cohortId" value="3"></label>
+        <label>Year: <input type="number" id="year" value="2025"></label>
+        <br><br>
+        <button onclick="fetchRatios()">Fetch Ratios</button>
+        <button onclick="fetchRatiosGrouped()">Fetch Grouped Ratios</button>
+    </div>
+
+    <div id="loading" class="loading" style="display:none;">Loading ratios...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost/api-incubator-os/api-nodes';
+
+        async function fetchRatios() {
+            const params = getParams();
+            const url = `${API_BASE}/ratios/?${params}`;
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayRatios(data.data, false);
+                } else {
+                    showError('API Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Network Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function fetchRatiosGrouped() {
+            const params = getParams() + '&grouped=true';
+            const url = `${API_BASE}/ratios/?${params}`;
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayRatios(data.data, true);
+                } else {
+                    showError('API Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Network Error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function getParams() {
+            const clientId = document.getElementById('clientId').value;
+            const companyId = document.getElementById('companyId').value;
+            const programId = document.getElementById('programId').value;
+            const cohortId = document.getElementById('cohortId').value;
+            const year = document.getElementById('year').value;
+
+            return `client_id=${clientId}&company_id=${companyId}&program_id=${programId}&cohort_id=${cohortId}&year=${year}`;
+        }
+
+        function displayRatios(data, isGrouped) {
+            const resultsDiv = document.getElementById('results');
+
+            if (isGrouped) {
+                displayGroupedRatios(data, resultsDiv);
+            } else {
+                displayFlatRatios(data, resultsDiv);
+            }
+        }
+
+        function displayFlatRatios(ratios, container) {
+            container.innerHTML = '<h2>Ratios Results</h2>';
+
+            if (ratios.length === 0) {
+                container.innerHTML += '<p>No ratios found for the specified parameters.</p>';
+                return;
+            }
+
+            ratios.forEach(ratio => {
+                container.appendChild(createRatioElement(ratio));
+            });
+        }
+
+        function displayGroupedRatios(groups, container) {
+            container.innerHTML = '<h2>Grouped Ratios Results</h2>';
+
+            Object.keys(groups).forEach(groupName => {
+                const ratios = groups[groupName];
+                if (ratios.length > 0) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'ratio-group';
+                    groupDiv.innerHTML = `<h3>${groupName.charAt(0).toUpperCase() + groupName.slice(1)} Ratios</h3>`;
+
+                    ratios.forEach(ratio => {
+                        groupDiv.appendChild(createRatioElement(ratio));
+                    });
+
+                    container.appendChild(groupDiv);
+                }
+            });
+        }
+
+        function createRatioElement(ratio) {
+            const div = document.createElement('div');
+            div.className = `ratio-item status-${ratio.status}`;
+
+            const value = ratio.calculated_value;
+            const display = ratio.display || {};
+            const decimals = display.decimals || 2;
+            const unit = display.unit || ratio.unit;
+
+            let formattedValue = value.toFixed(decimals);
+            if (unit === '%') {
+                formattedValue += '%';
+            } else if (unit === 'ratio') {
+                formattedValue += ':1';
+            }
+
+            div.innerHTML = `
+                <h4>${ratio.name}</h4>
+                <div class="formula">Formula: ${ratio.formula}</div>
+                <p><strong>Value:</strong> ${formattedValue}</p>
+                <div class="targets">
+                    Min Target: ${ratio.min_target || 'Not set'} |
+                    Ideal Target: ${ratio.ideal_target || 'Not set'} |
+                    Status: ${ratio.status}
+                </div>
+                <p><strong>Variables:</strong></p>
+                <ul>
+                    ${Object.keys(ratio.variable_values).map(key =>
+                        `<li>${key}: ${ratio.variable_values[key].toLocaleString()}</li>`
+                    ).join('')}
+                </ul>
+            `;
+
+            return div;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Update ratio targets
+        async function updateTargets(ratioId, minTarget, idealTarget) {
+            const url = `${API_BASE}/ratios/`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ratio_id: ratioId,
+                        min_target: minTarget,
+                        ideal_target: idealTarget
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Targets updated successfully!');
+                    fetchRatios(); // Refresh the display
+                } else {
+                    alert('Error updating targets: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

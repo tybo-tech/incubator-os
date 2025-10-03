@@ -16,8 +16,8 @@ class MetricType
 
     public function add(array $data): array
     {
-        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO metric_types (group_id, code, name, description, unit, show_total, show_margin, graph_color, period_type, min_target, ideal_target, formula_metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
@@ -29,7 +29,10 @@ class MetricType
             $data['show_total'] ?? 1,
             $data['show_margin'] ?? 0,
             $data['graph_color'] ?? null,
-            $data['period_type'] ?? 'QUARTERLY'
+            $data['period_type'] ?? 'QUARTERLY',
+            $data['min_target'] ?? null,
+            $data['ideal_target'] ?? null,
+            isset($data['formula_metadata']) ? json_encode($data['formula_metadata']) : null
         ]);
 
         $metricTypeId = (int)$this->conn->lastInsertId();
@@ -44,14 +47,18 @@ class MetricType
 
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['group_id', 'code', 'name', 'description', 'unit', 'show_total', 'show_margin', 'graph_color', 'period_type'];
+        $allowed = ['group_id', 'code', 'name', 'description', 'unit', 'show_total', 'show_margin', 'graph_color', 'period_type', 'min_target', 'ideal_target', 'formula_metadata'];
         $sets = [];
         $params = [];
 
         foreach ($allowed as $k) {
             if (array_key_exists($k, $fields)) {
                 $sets[] = "$k = ?";
-                $params[] = $fields[$k];
+                if ($k === 'formula_metadata' && is_array($fields[$k])) {
+                    $params[] = json_encode($fields[$k]);
+                } else {
+                    $params[] = $fields[$k];
+                }
             }
         }
 
@@ -114,6 +121,18 @@ class MetricType
             if (array_key_exists($k, $row)) {
                 $row[$k] = (int)$row[$k];
             }
+        }
+
+        // Cast decimals
+        foreach (['min_target', 'ideal_target'] as $k) {
+            if (array_key_exists($k, $row) && $row[$k] !== null) {
+                $row[$k] = (float)$row[$k];
+            }
+        }
+
+        // Parse JSON metadata
+        if (array_key_exists('formula_metadata', $row) && $row['formula_metadata'] !== null) {
+            $row['formula_metadata'] = json_decode($row['formula_metadata'], true);
         }
 
         // Load categories for this metric type
