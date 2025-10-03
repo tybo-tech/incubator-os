@@ -1,7 +1,15 @@
 @forward "tailwindcss";
 
-.bg-opacity-50{
-    background-color: rgba(0, 0, 0, 0.404);
-    //blur
-    backdrop-filter: blur(4px);
+.bg-opacity-50 {
+  background-color: rgba(0, 0, 0, 0.404);
+  //blur
+  backdrop-filter: blur(4px);
+}
+
+input,
+textarea {
+  &::placeholder {
+    color: #9ca3af; // Tailwind's gray-400
+    opacity: 1; // Ensure full opacity for placeholder text
+  }
 }

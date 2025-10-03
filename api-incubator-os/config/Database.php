@@ -13,11 +13,11 @@ class Database
     public function __construct()
     {
         // Default to server config
-        $this->setServer();
+        // $this->setServer();
 
         // Collect locally
         // Comment out before deploying
-        // $this->setLocal();
+        $this->setLocal();
     }
 
     public function setLocal()

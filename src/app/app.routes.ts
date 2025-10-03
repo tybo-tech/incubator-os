@@ -8,6 +8,10 @@ import { ExecutiveReportComponent } from './components/companies/company-detail/
 import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
 import { OverviewPageComponent } from './admin/overview/overview-page.component';
+import { ClientsListComponent } from './admin/clients/clients-list.component';
+import { ProgramsListComponent } from './admin/programs/programs-list.component';
+import { CohortsListComponent } from './admin/cohorts/cohorts-list.component';
+import { CompaniesListComponent } from './components/companies/companies-list.component';
 
 export const routes: Routes = [
   {
@@ -62,6 +66,22 @@ export const routes: Routes = [
       {
         path: 'admin/grouping',
         children: groupingRoutes,
+      },
+      {
+        path: 'admin/clients',
+        component: ClientsListComponent,
+      },
+      {
+        path: 'admin/clients/:clientId/programs',
+        component: ProgramsListComponent,
+      },
+      {
+        path: 'admin/clients/:clientId/programs/:programId/cohorts',
+        component: CohortsListComponent,
+      },
+      {
+        path: 'companies',
+        component: CompaniesListComponent,
       },
     ],
   },

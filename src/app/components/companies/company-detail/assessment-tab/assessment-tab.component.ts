@@ -38,7 +38,7 @@ import { ToastService } from '../../../../services/toast.service';
               ✓ Last saved: {{ getLastSavedText() }}
             </div>
             <div *ngIf="formData.is_dirty" class="text-xs text-amber-600 mt-1">
-              ⏳ Changes pending...
+              ⚠ You have unsaved changes
             </div>
           </div>
           <div class="text-right">
@@ -324,10 +324,11 @@ import { ToastService } from '../../../../services/toast.service';
               </button>
               <div></div>
               <div class="flex space-x-3">
-                <!-- Auto-save indicator -->
-                <div *ngIf="autoSaveStatus" class="text-xs text-gray-500 flex items-center px-2">
-                  <span>{{ autoSaveStatus }}</span>
+                <!-- Form dirty indicator -->
+                <div *ngIf="formData.is_dirty" class="text-xs text-amber-600 flex items-center px-2">
+                  <span>⚠ Unsaved changes</span>
                 </div>
+                <!-- Save button -->
                 <button
                   (click)="saveProgress()"
                   [disabled]="formData.is_submitting"
@@ -335,20 +336,23 @@ import { ToastService } from '../../../../services/toast.service';
                 >
                   {{ formData.is_submitting ? 'Saving...' : 'Save Progress' }}
                 </button>
+                <!-- Save and Next button (for non-final sections) -->
                 <button
                   *ngIf="currentSectionIndex < (questionnaire?.sections?.length || 0) - 1"
-                  (click)="nextSection()"
-                  class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  (click)="saveAndNext()"
+                  [disabled]="formData.is_submitting"
+                  class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  Next Section
+                  {{ formData.is_submitting ? 'Saving...' : 'Save & Next Section' }}
                 </button>
+                <!-- Final save button (for last section) -->
                 <button
                   *ngIf="currentSectionIndex === (questionnaire?.sections?.length || 0) - 1"
                   (click)="submitAssessment()"
                   [disabled]="formData.is_submitting"
                   class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                 >
-                  {{ formData.is_submitting ? 'Submitting...' : 'Complete Assessment' }}
+                  {{ formData.is_submitting ? 'Submitting...' : 'Save & Complete Assessment' }}
                 </button>
               </div>
             </div>
@@ -439,8 +443,11 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
           // Load all responses
           this.formData.responses = { ...assessment.responses };
 
-          // Set current section from metadata
-          this.setCurrentSection(assessment.metadata.current_section_index || 0);
+          // Only set current section from metadata if we're loading for the first time
+          // Don't override user's current position during updates
+          if (this.currentSectionIndex === 0 && this.currentSection === null) {
+            this.setCurrentSection(assessment.metadata.current_section_index || 0);
+          }
 
           // Update progress
           this.updateProgress();
@@ -497,8 +504,8 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
           this.autoSaveStatus = success ? 'Saved ✓' : 'Error ✗';
 
           if (success) {
-            // Reload consolidated data to get updated metadata
-            this.loadConsolidatedData();
+            // Update progress without reloading entire data (to avoid jumping to step 1)
+            this.updateProgress();
             this.showSuccessMessage('Progress saved successfully!');
           }
 
@@ -515,30 +522,59 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Enhanced auto-save with consolidated data
+  // Save and navigate to next section
+  saveAndNext(): void {
+    if (!this.company?.id || !this.questionnaire?.id || !this.currentSection) return;
+
+    this.formData.is_submitting = true;
+
+    // Get responses for current section only
+    const sectionResponses: { [questionId: string]: any } = {};
+    this.currentSection.questions.forEach(question => {
+      const value = this.formData.responses[question.id];
+      if (value !== undefined && value !== null && value !== '') {
+        sectionResponses[question.id] = value;
+      }
+    });
+
+    // Save to consolidated assessment
+    this.questionnaireService.savePartialResponse(
+      this.company.id,
+      sectionResponses,
+      this.currentSection.id
+    ).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (success) => {
+          this.formData.is_submitting = false;
+          this.formData.is_dirty = false;
+
+          if (success) {
+            this.updateProgress();
+            this.showSuccessMessage('Progress saved successfully!');
+
+            // Navigate to next section
+            if (this.currentSectionIndex < (this.questionnaire?.sections?.length || 0) - 1) {
+              this.nextSection();
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error saving progress:', error);
+          this.formData.is_submitting = false;
+          this.showErrorMessage('Failed to save progress. Please try again.');
+        }
+      });
+  }
+
+  // Simplified form change handler - removed autosave
   onFormDataChange(): void {
     this.formData.is_dirty = true;
     this.updateProgress();
 
-    // Update current section in metadata
-    if (this.company?.id && this.currentSection) {
-      this.questionnaireService.updateCurrentSection(
-        this.company.id,
-        this.currentSection.id
-      ).subscribe();
-    }
-
-    // Auto-save after 2 seconds of inactivity
+    // Clear any existing autosave timeout to prevent autosave
     if (this.autoSaveTimeout) {
       clearTimeout(this.autoSaveTimeout);
     }
-
-    this.autoSaveTimeout = setTimeout(() => {
-      if (this.formData.is_dirty && !this.formData.is_submitting) {
-        this.autoSaveStatus = 'Auto-saving...';
-        this.saveProgress();
-      }
-    }, 2000);
   }
 
   // New helper methods for enhanced UI
@@ -683,21 +719,20 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.formData.is_submitting = false;
-          this.loadConsolidatedData(); // Refresh data
+
+          // Update progress without reloading data (to prevent jumping to step 1)
+          this.updateProgress();
 
           if (this.isAssessmentComplete()) {
             this.showSuccessMessage('Assessment completed successfully!');
           } else {
             this.showSuccessMessage('Section completed! Continue with the next section.');
-            // Auto-advance to next section
-            if (this.currentSectionIndex < (this.questionnaire?.sections?.length || 0) - 1) {
-              setTimeout(() => this.nextSection(), 1000);
-            }
           }
         },
         error: (error) => {
           console.error('Error marking section complete:', error);
           this.formData.is_submitting = false;
+          this.showErrorMessage('Failed to complete section. Please try again.');
         }
       });
   }

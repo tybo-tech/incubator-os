@@ -178,38 +178,13 @@ export class OverviewPageComponent implements OnInit {
   });
 
   // Flag to prevent navigation loops
-  private isNavigatingFromUrl = false;
+  private isUpdatingUrl = false;
 
   ngOnInit(): void {
-    // Check URL parameters first (they should take precedence)
-    const params = this.route.snapshot.queryParams;
-    console.log('🚀 ngOnInit - Query params:', params);
-
-    if (params['clientId'] || params['programId'] || params['cohortId']) {
-      console.log('📍 Loading from URL parameters:', {
-        clientId: params['clientId'],
-        programId: params['programId'],
-        cohortId: params['cohortId']
-      });
-      this.isNavigatingFromUrl = true;
-      // Don't call loadCurrentLevel() here - let loadFromUrlParams handle it
-      this.loadFromUrlParams(params);
-    } else {
-      console.log('💾 Loading from sessionStorage');
-      // Only load from storage if no URL parameters are present
-      this.loadFromStorage();
-      // Call loadCurrentLevel() here since loadFromStorage() is synchronous
-      this.loadCurrentLevel();
-    }
-
-    // Listen to route changes for back/forward navigation
+    // Always prioritize URL parameters over session storage
     this.route.queryParams.subscribe(params => {
       console.log('🔄 Route params changed:', params);
-      if ((params['clientId'] || params['programId'] || params['cohortId']) && !this.isNavigatingFromUrl) {
-        console.log('🔄 Loading from URL parameter change:', params);
-        this.isNavigatingFromUrl = true;
-        this.loadFromUrlParams(params);
-      }
+      this.loadFromUrlParams(params);
     });
   }  // Navigation methods
   navigateToRoot(): void {
@@ -542,8 +517,8 @@ export class OverviewPageComponent implements OnInit {
     };
     sessionStorage.setItem(this.storageKey, JSON.stringify(state));
 
-    // Only update URL if we're not currently navigating from URL to prevent loops
-    if (!this.isNavigatingFromUrl) {
+    // Update URL with current state
+    if (!this.isUpdatingUrl) {
       this.updateUrl();
     }
   }  private loadFromStorage(): void {
@@ -560,34 +535,33 @@ export class OverviewPageComponent implements OnInit {
   }
 
   private loadFromUrlParams(params: any): void {
-    try {
-      console.log('🔍 Parsing URL parameters:', params);
+    console.log('🔍 Loading from URL parameters:', params);
 
-      const clientId = params['clientId'] ? parseInt(params['clientId'], 10) : null;
-      const programId = params['programId'] ? parseInt(params['programId'], 10) : null;
-      const cohortId = params['cohortId'] ? parseInt(params['cohortId'], 10) : null;
+    const clientId = params['clientId'] ? parseInt(params['clientId'], 10) : null;
+    const programId = params['programId'] ? parseInt(params['programId'], 10) : null;
+    const cohortId = params['cohortId'] ? parseInt(params['cohortId'], 10) : null;
 
-      console.log('📊 Parsed IDs:', { clientId, programId, cohortId });
+    console.log('📊 Parsed IDs:', { clientId, programId, cohortId });
 
-      // Build breadcrumb based on the deepest level provided
-      if (cohortId) {
-        // Full path: Client → Program → Cohort
-        this.loadBreadcrumbFromIds({ clientId, programId, cohortId });
-      } else if (programId) {
-        // Partial path: Client → Program
-        this.loadBreadcrumbFromIds({ clientId, programId });
-      } else if (clientId) {
-        // Single level: Client
-        this.loadBreadcrumbFromIds({ clientId });
-      } else {
-        // No valid IDs, go to root
-        this.isNavigatingFromUrl = false;
-        this.navigateToRoot();
-      }
-    } catch (error) {
-      console.warn('Failed to load from URL parameters:', error);
-      this.isNavigatingFromUrl = false;
-      this.navigateToRoot();
+    // If no parameters, go to root
+    if (!clientId && !programId && !cohortId) {
+      console.log('🏠 No parameters, navigating to root');
+      this.currentCategoryId.set(null);
+      this.breadcrumb.set([]);
+      this.loadCurrentLevel();
+      return;
+    }
+
+    // Build breadcrumb and set current category based on deepest level
+    if (cohortId) {
+      console.log('👥 Loading cohort level');
+      this.loadBreadcrumbFromIds({ clientId, programId, cohortId });
+    } else if (programId) {
+      console.log('📚 Loading program level');
+      this.loadBreadcrumbFromIds({ clientId, programId });
+    } else if (clientId) {
+      console.log('🏢 Loading client level');
+      this.loadBreadcrumbFromIds({ clientId });
     }
   }
 
@@ -612,7 +586,6 @@ export class OverviewPageComponent implements OnInit {
           }
         } catch (error) {
           console.warn(`Failed to load client ${ids.clientId}:`, error);
-          this.isNavigatingFromUrl = false;
           this.navigateToRoot();
           return;
         }
@@ -632,7 +605,6 @@ export class OverviewPageComponent implements OnInit {
           }
         } catch (error) {
           console.warn(`Failed to load program ${ids.programId}:`, error);
-          this.isNavigatingFromUrl = false;
           this.navigateToRoot();
           return;
         }
@@ -652,7 +624,6 @@ export class OverviewPageComponent implements OnInit {
           }
         } catch (error) {
           console.warn(`Failed to load cohort ${ids.cohortId}:`, error);
-          this.isNavigatingFromUrl = false;
           this.navigateToRoot();
           return;
         }
@@ -664,19 +635,19 @@ export class OverviewPageComponent implements OnInit {
       this.breadcrumb.set(breadcrumbItems);
       this.currentCategoryId.set(currentCategoryId);
 
-      // Save to storage for consistency
-      this.saveToStorage();
+      // Save to storage for consistency (but don't update URL to prevent loops)
+      const state: OverviewState = {
+        currentCategoryId: this.currentCategoryId(),
+        breadcrumb: this.breadcrumb()
+      };
+      sessionStorage.setItem(this.storageKey, JSON.stringify(state));
 
-      // Reset the navigation flag
-      this.isNavigatingFromUrl = false;
-
-      // Now that breadcrumb is built, load the current level data
+      // Load the current level data
       console.log('📊 Loading current level data after breadcrumb is ready');
       this.loadCurrentLevel();
 
     } catch (error) {
       console.warn('Failed to load breadcrumb from IDs:', error);
-      this.isNavigatingFromUrl = false;
       this.navigateToRoot();
     }
   }
