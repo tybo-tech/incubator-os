@@ -54,7 +54,7 @@ import { Constants } from './service';
 @Injectable({ providedIn: 'root' })
 export class CompanyFinancialsService {
   private apiUrl = `${Constants.ApiBase}/api-nodes/company-financials`;
-  
+
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
