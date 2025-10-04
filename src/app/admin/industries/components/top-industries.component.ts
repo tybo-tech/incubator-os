@@ -1,7 +1,9 @@
 import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CompanyListPopupComponent } from './company-list-popup.component';
 
 interface IndustryData {
+  id?: number;        // Added industry ID
   industry: string;
   total: number;
   [key: string]: any; // Allow for additional properties
@@ -10,7 +12,7 @@ interface IndustryData {
 @Component({
   selector: 'app-top-industries',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CompanyListPopupComponent],
   template: `
     <!-- Modern Top Industries Component -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
@@ -106,6 +108,16 @@ interface IndustryData {
         </div>
       </div>
     </div>
+
+    <!-- Company List Popup -->
+    <app-company-list-popup
+      *ngIf="showCompanyPopup() && selectedIndustryId() !== null"
+      [industryId]="selectedIndustryId()!"
+      [industryName]="selectedIndustryName()"
+      [totalCompanies]="selectedIndustryCount()"
+      (close)="closeCompanyPopup()"
+      (companySelected)="onCompanySelected($event)">
+    </app-company-list-popup>
   `,
 })
 export class TopIndustriesComponent {
@@ -137,6 +149,12 @@ export class TopIndustriesComponent {
 
   // Internal state
   private _industries = signal<IndustryData[]>([]);
+
+  // Popup state management
+  showCompanyPopup = signal(false);
+  selectedIndustryId = signal<number | null>(null);
+  selectedIndustryName = signal<string>('');
+  selectedIndustryCount = signal<number>(0);
 
   // Computed properties for smart processing
   processedIndustries = computed(() => {
@@ -171,8 +189,28 @@ export class TopIndustriesComponent {
   // Event handlers
   onIndustryClick(industry: any): void {
     console.log('Industry clicked:', industry);
-    // You can emit events here if needed
-    // this.industryClick.emit(industry);
+
+    // Set popup data - use the industry ID from the original data
+    this.selectedIndustryId.set(industry.originalData.id || null);
+    this.selectedIndustryName.set(industry.name);
+    this.selectedIndustryCount.set(industry.count);
+
+    // Show popup
+    this.showCompanyPopup.set(true);
+  }
+
+  closeCompanyPopup(): void {
+    this.showCompanyPopup.set(false);
+    this.selectedIndustryId.set(null);
+    this.selectedIndustryName.set('');
+    this.selectedIndustryCount.set(0);
+  }
+
+  onCompanySelected(company: any): void {
+    console.log('Company selected:', company);
+    this.closeCompanyPopup();
+    // You could emit an event here to notify parent component
+    // this.companySelected.emit(company);
   }
 
   // Utility method for accessing Math in template

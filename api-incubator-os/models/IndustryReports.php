@@ -93,6 +93,7 @@ class IndustryReports
     {
         $sql = "
             SELECT
+                i.id,
                 i.name AS industry,
                 COUNT(c.id) AS total
             FROM industries i

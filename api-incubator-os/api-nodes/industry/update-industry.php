@@ -31,6 +31,19 @@ try {
         $updateFields['tags'] = json_encode($updateFields['tags']);
     }
 
+    // Handle boolean fields - convert to proper integer values for MySQL
+    if (array_key_exists('is_active', $updateFields)) {
+        $updateFields['is_active'] = $updateFields['is_active'] ? 1 : 0;
+    }
+
+    // Handle integer fields - ensure they are proper integers
+    $integerFields = ['parent_id', 'display_order', 'created_by'];
+    foreach ($integerFields as $field) {
+        if (array_key_exists($field, $updateFields)) {
+            $updateFields[$field] = $updateFields[$field] === null ? null : (int)$updateFields[$field];
+        }
+    }
+
     $result = $industry->update($id, $updateFields);
 
     if (!$result) {
