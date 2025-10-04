@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Chart } from 'chart.js';
-import { IDoughnutChart, initDoughnutChart } from 'src/models/Charts';
+import { Chart } from '../../../utils/chart-setup';
+import { IDoughnutChart, initDoughnutChart } from '../../../models/Charts';
 @Component({
   selector: 'app-doughnut',
   templateUrl: './doughnut.component.html',

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { Chart } from 'chart.js';
-import { ILineChart, initLineChart } from 'src/models/Charts';
+import { Chart } from '../../../utils/chart-setup';
+import { ILineChart, initLineChart } from '../../../models/Charts';
 
 @Component({
   selector: 'app-line-chart',

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { Chart } from 'chart.js';
-import { IBarChart, initBarChart } from 'src/models/Charts';
+import { Chart } from '../../../utils/chart-setup';
+import { IBarChart, initBarChart } from '../../../models/Charts';
 
 @Component({
   selector: 'app-bar-chart',

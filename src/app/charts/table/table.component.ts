@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { IKeyValue } from 'src/models/IKeyValue';
+import { IKeyValue } from '../../../models/IKeyValue';
 
 @Component({
   selector: 'app-table',
