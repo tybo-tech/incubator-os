@@ -543,7 +543,6 @@ final class CategoryItem
             'industry_id' => $row['industry_id'] ? (int)$row['industry_id'] : null,
 
             'contact_person' => $row['contact_person'],
-            'sector_name' => $row['sector_name'],
 
             // Assignment specific fields
             'assignment_id' => (int)$row['assignment_id'],
@@ -567,7 +566,6 @@ final class CategoryItem
             'contact_person' => $row['contact_person'],
             'contact_number' => $row['contact_number'],
             'city' => $row['city'],
-            'industry' => $row['sector_name'],
             // Assignment specific fields
             'assignment_id' => (int)$row['assignment_id'],
             'status' => $row['status'],

@@ -201,6 +201,46 @@ class Company
         return $out;
     }
 
+    /** Get total count of search results (for pagination) */
+    public function getSearchCount(array $filters = []): int
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $where[] = "(name LIKE ? OR registration_no LIKE ? OR city LIKE ?)";
+            $q = '%' . $filters['q'] . '%';
+            array_push($params, $q, $q, $q);
+        }
+        if (!empty($filters['industry_id'])) {
+            $where[] = "industry_id = ?";
+            $params[] = (int)$filters['industry_id'];
+        }
+        if (isset($filters['city'])) {
+            $where[] = "city = ?";
+            $params[] = $filters['city'];
+        }
+        if (isset($filters['bbbee_level'])) {
+            $where[] = "bbbee_level = ?";
+            $params[] = $filters['bbbee_level'];
+        }
+        if (isset($filters['has_tax_clearance'])) {
+            $where[] = "has_tax_clearance = ?";
+            $params[] = $filters['has_tax_clearance'] ? 1 : 0;
+        }
+
+        $sql = "SELECT COUNT(*) FROM companies";
+        if ($where) $sql .= " WHERE " . implode(' AND ', $where);
+
+        $stmt = $this->conn->prepare($sql);
+        foreach ($params as $i => $v) {
+            $stmt->bindValue($i + 1, $v);
+        }
+        $stmt->execute();
+
+        return (int)$stmt->fetchColumn();
+    }
+
     /** Simple list (paged) */
     public function list(int $limit = 50, int $offset = 0): array
     {

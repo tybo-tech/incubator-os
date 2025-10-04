@@ -100,9 +100,6 @@ try {
 
         // Only generate SET clauses for non-null values
         $sets = [];
-        if ($row['sector'] !== null) {
-            $sets[] = "sector_name=" . $db->quote($row['sector']);
-        }
         if ($row['contact'] !== null) {
             $sets[] = "contact_person=" . $db->quote($row['contact']);
         }

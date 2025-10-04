@@ -13,6 +13,7 @@ import { ProgramsListComponent } from './admin/programs/programs-list.component'
 import { CohortsListComponent } from './admin/cohorts/cohorts-list.component';
 import { CompaniesListComponent } from './components/companies/companies-list.component';
 import { IndustriesListComponent } from './admin/industries/industries-list.component';
+import { UsersListComponent } from './admin/users/users-list.component';
 
 export const routes: Routes = [
   {
@@ -83,6 +84,10 @@ export const routes: Routes = [
       {
         path: 'industries',
         component: IndustriesListComponent,
+      },
+      {
+        path: 'users',
+        component: UsersListComponent,
       },
       {
         path: 'companies',

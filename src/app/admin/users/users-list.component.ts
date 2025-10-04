@@ -1,9 +1,9 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UserService } from '../../../services/user.service';
-import { catchError, EMPTY } from 'rxjs';
+import { UserService, UserListResponse } from '../../../services/user.service';
+import { catchError, EMPTY, debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { User, UserRole, UserStatus } from '../../../models/simple.schema';
 import { INode } from '../../../models/schema';
 
@@ -178,6 +178,61 @@ interface UserWithCompany extends User {
           </div>
         </div>
 
+        <!-- Pagination Controls -->
+        <div *ngIf="!isLoading() && !error() && users().length > 0"
+             class="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+              <span class="text-sm text-gray-700">Show:</span>
+              <select
+                [(ngModel)]="pageSize"
+                (ngModelChange)="onPageSizeChange()"
+                class="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <span class="text-sm text-gray-700">per page</span>
+            </div>
+            <div class="text-sm text-gray-500" *ngIf="pagination()">
+              Showing {{ ((pagination()!.current_page - 1) * pagination()!.per_page) + 1 }} to
+              {{ Math.min(pagination()!.current_page * pagination()!.per_page, pagination()!.total) }}
+              of {{ pagination()!.total }} users
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-1" *ngIf="pagination()">
+            <!-- Previous Page -->
+            <button
+              (click)="goToPage(pagination()!.current_page - 1)"
+              [disabled]="!pagination()!.has_prev"
+              class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="flex space-x-1">
+              <button
+                *ngFor="let page of getVisiblePages()"
+                (click)="goToPage(page)"
+                [class]="page === pagination()!.current_page
+                  ? 'px-3 py-1 bg-blue-600 text-white rounded text-sm'
+                  : 'px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50'">
+                {{ page }}
+              </button>
+            </div>
+
+            <!-- Next Page -->
+            <button
+              (click)="goToPage(pagination()!.current_page + 1)"
+              [disabled]="!pagination()!.has_more"
+              class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+          </div>
+        </div>
+
         <!-- Create/Edit User Modal -->
         <div *ngIf="showModal()"
              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -339,9 +394,19 @@ export class UsersListComponent implements OnInit {
   users = signal<UserWithCompany[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
+
+  // Pagination state
+  pagination = signal<UserListResponse['pagination'] | null>(null);
+  currentPage = signal(1);
+  pageSize = 20;
+
+  // Filter state
   searchQuery = '';
   statusFilter = '';
   roleFilter = '';
+
+  // Search debouncing
+  private searchSubject = new Subject<string>();
 
   // Modal state
   showModal = signal(false);
@@ -366,36 +431,27 @@ export class UsersListComponent implements OnInit {
 
   // Computed
   filteredUsers = computed(() => {
-    let users = this.users();
-
-    // Search filter
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      users = users.filter(user =>
-        user.fullName?.toLowerCase().includes(query) ||
-        user.username.toLowerCase().includes(query) ||
-        user.email?.toLowerCase().includes(query) ||
-        user.companyName?.toLowerCase().includes(query)
-      );
-    }
-
-    // Status filter
-    if (this.statusFilter) {
-      users = users.filter(user => user.status === this.statusFilter);
-    }
-
-    // Role filter
-    if (this.roleFilter) {
-      users = users.filter(user => user.role === this.roleFilter);
-    }
-
-    return users;
+    // With pagination, we don't filter on the frontend anymore
+    // The backend handles all filtering
+    return this.users();
   });
+
+  // Expose Math for template
+  Math = Math;
 
   constructor(
     private userService: UserService,
     private router: Router
-  ) {}
+  ) {
+    // Setup search debouncing
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentPage.set(1); // Reset to first page on search
+      this.loadUsers();
+    });
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -405,8 +461,20 @@ export class UsersListComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Use searchUsers with empty filters to get all users
-    this.userService.searchUsers({}, 1000, 0)
+    const options = {
+      page: this.currentPage(),
+      per_page: this.pageSize,
+      q: this.searchQuery.trim() || undefined,
+      role: this.roleFilter || undefined,
+      status: this.statusFilter || undefined
+    };
+
+    // Remove undefined values
+    Object.keys(options).forEach(key =>
+      options[key as keyof typeof options] === undefined && delete options[key as keyof typeof options]
+    );
+
+    this.userService.searchUsersAdvanced(options)
       .pipe(
         catchError(error => {
           this.error.set(error.message || 'Failed to load users');
@@ -414,26 +482,58 @@ export class UsersListComponent implements OnInit {
           return EMPTY;
         })
       )
-      .subscribe((userNodes: INode<User>[]) => {
-        const users: UserWithCompany[] = userNodes.map(node => {
-          const user = node.data;
+      .subscribe((response: UserListResponse) => {
+        const users: UserWithCompany[] = response.data.map(user => {
           return {
-            ...user,
-            companyName: user.company?.name || undefined
+            ...user.data,
+            companyName: undefined
           };
         });
 
         this.users.set(users);
+        this.pagination.set(response.pagination);
         this.isLoading.set(false);
       });
   }
 
   onSearchChange(): void {
-    // Triggering change detection for computed signal
+    this.searchSubject.next(this.searchQuery);
   }
 
   onFilterChange(): void {
-    // Triggering change detection for computed signal
+    this.currentPage.set(1); // Reset to first page on filter change
+    this.loadUsers();
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage.set(1); // Reset to first page when changing page size
+    this.loadUsers();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= (this.pagination()?.pages || 1)) {
+      this.currentPage.set(page);
+      this.loadUsers();
+    }
+  }
+
+  getVisiblePages(): number[] {
+    const current = this.pagination()?.current_page || 1;
+    const total = this.pagination()?.pages || 1;
+    const visible: number[] = [];
+
+    // Always show first page
+    if (total > 0) visible.push(1);
+
+    // Show pages around current
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+      if (!visible.includes(i)) visible.push(i);
+    }
+
+    // Always show last page
+    if (total > 1 && !visible.includes(total)) visible.push(total);
+
+    return visible.sort((a, b) => a - b);
   }
 
   openCreateModal(): void {

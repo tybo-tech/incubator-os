@@ -134,8 +134,7 @@ try {
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'industry_id' => $row['industry_id'] ? (int)$row['industry_id'] : null,
-            'contact_person' => $row['contact_person'],
-            'sector_name' => $row['sector_name'] ?? null // Legacy field, might be null
+            'contact_person' => $row['contact_person']
         ];
 
         // Add industry information

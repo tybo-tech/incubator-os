@@ -143,6 +143,42 @@ class User
         return $out;
     }
 
+    /** Get total count of search results (for pagination) */
+    public function getSearchCount(array $filters = []): int
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $q = '%' . $filters['q'] . '%';
+            $where[] = "(full_name LIKE ? OR email LIKE ? OR username LIKE ? OR phone LIKE ?)";
+            array_push($params, $q, $q, $q, $q);
+        }
+        if (!empty($filters['company_id'])) {
+            $where[] = "company_id = ?";
+            $params[] = (int)$filters['company_id'];
+        }
+        if (!empty($filters['role'])) {
+            $where[] = "role = ?";
+            $params[] = $filters['role'];
+        }
+        if (!empty($filters['status'])) {
+            $where[] = "status = ?";
+            $params[] = $filters['status'];
+        }
+
+        $sql = "SELECT COUNT(*) FROM users";
+        if ($where) $sql .= " WHERE " . implode(' AND ', $where);
+
+        $stmt = $this->conn->prepare($sql);
+        foreach ($params as $i => $v) {
+            $stmt->bindValue($i + 1, $v);
+        }
+        $stmt->execute();
+
+        return (int)$stmt->fetchColumn();
+    }
+
     /* ------------------ Helpers aligned to your defaults ------------------ */
 
     /**

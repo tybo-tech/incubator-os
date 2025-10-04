@@ -64,30 +64,37 @@ export class CompaniesComponent implements OnInit {
     this.error.set(null);
 
     const params = new URLSearchParams();
+    params.append('page', this.currentPage().toString());
+    params.append('limit', this.pageSize.toString());
+
     if (this.searchQuery()) {
       params.append('q', this.searchQuery());
     }
     if (this.selectedIndustry()) {
       params.append('industry_id', this.selectedIndustry()!.toString());
     }
-    params.append('limit', this.pageSize.toString());
-    params.append('offset', ((this.currentPage() - 1) * this.pageSize).toString());
 
     const url = `http://localhost:8080/api-nodes/company/search-companies.php?${params.toString()}`;
 
-    // Use native fetch instead of the service for now
+    // Use native fetch with enhanced pagination response
     fetch(url)
       .then(response => response.json())
-      .then((companies: any[]) => {
+      .then((apiResponse: any) => {
         // Map the API response to match the expected interface
-        const mappedCompanies: ICompany[] = companies.map(company => ({
+        const mappedCompanies: ICompany[] = apiResponse.data.map((company: any) => ({
           ...company,
           sector_name: company.service_offering, // Map service_offering to sector_name for display
         }));
+
         this.companies.set(mappedCompanies);
-        // For now, set basic pagination (in real app, backend would provide total count)
-        this.totalCompanies.set(mappedCompanies.length);
-        this.totalPages.set(Math.max(1, Math.ceil(mappedCompanies.length / this.pageSize)));
+
+        // Update pagination state with real backend data
+        if (apiResponse.pagination) {
+          this.totalPages.set(apiResponse.pagination.pages);
+          this.totalCompanies.set(apiResponse.pagination.total);
+          this.currentPage.set(apiResponse.pagination.current_page);
+        }
+
         this.isLoading.set(false);
       })
       .catch(err => {
@@ -112,6 +119,13 @@ export class CompaniesComponent implements OnInit {
     const industryId = event.target.value ? parseInt(event.target.value) : null;
     this.selectedIndustry.set(industryId);
     this.currentPage.set(1);
+    this.loadCompanies();
+  }
+
+  // Page size handling
+  onPageSizeChange(event: any) {
+    this.pageSize = parseInt(event.target.value);
+    this.currentPage.set(1); // Reset to first page when changing page size
     this.loadCompanies();
   }
 
@@ -232,6 +246,13 @@ export class CompaniesComponent implements OnInit {
     }
 
     return rangeWithDots.filter((v, i, a) => a.indexOf(v) === i && v !== -1);
+  }
+
+  // Get displayed range text (e.g., "1-20" or "21-40")
+  getDisplayedRange(): string {
+    const start = (this.currentPage() - 1) * this.pageSize + 1;
+    const end = Math.min(this.currentPage() * this.pageSize, this.totalCompanies());
+    return `${start}-${end}`;
   }
 
   // Rich company card event handlers
