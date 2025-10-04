@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IndustryService, IndustryListOptions } from '../../../services/industry.service';
+import { IndustryService, IndustryListOptions, CreateIndustryRequest, UpdateIndustryRequest } from '../../../services/industry.service';
 import { catchError, EMPTY, switchMap } from 'rxjs';
 import { Industry } from '../../../models/simple.schema';
 
@@ -604,11 +604,19 @@ export class IndustriesListComponent implements OnInit {
     const modalParent = this.modalParent();
 
     const operation = editingIndustry
-      ? this.industryService.updateIndustry(editingIndustry.id, { name: this.modalForm.name.trim() })
-      : this.industryService.addIndustry(
-          this.modalForm.name.trim(),
-          modalParent?.id || this.modalForm.parentId || undefined
-        );
+      ? this.industryService.updateIndustry(editingIndustry.id, {
+          name: this.modalForm.name.trim(),
+          description: this.modalForm.description?.trim() || undefined,
+          is_active: this.modalForm.is_active,
+          display_order: this.modalForm.display_order
+        } as UpdateIndustryRequest)
+      : this.industryService.addIndustry({
+          name: this.modalForm.name.trim(),
+          parent_id: modalParent?.id || this.modalForm.parentId || undefined,
+          description: this.modalForm.description?.trim() || undefined,
+          is_active: this.modalForm.is_active,
+          display_order: this.modalForm.display_order
+        } as CreateIndustryRequest);
 
     operation.pipe(
       catchError(error => {

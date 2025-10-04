@@ -146,9 +146,7 @@ class Industry
         $limit = max(1, min(1000, (int)($opts['limit'] ?? 50))); // Max 1000 per page
         $offset = ($page - 1) * $limit;
 
-        $sql .= " LIMIT ? OFFSET ?";
-        $params[] = $limit;
-        $params[] = $offset;
+        $sql .= " LIMIT $limit OFFSET $offset";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -216,13 +214,20 @@ class Industry
     }
 
     /** Get depth level in hierarchy (0 = root, 1 = first level child, etc.) */
-    public function getDepth(int $industryId): int
+    public function getDepth(int $industryId, array $visited = []): int
     {
+        // Prevent infinite recursion
+        if (in_array($industryId, $visited) || count($visited) > 10) {
+            return count($visited); // Return current depth to avoid infinite loop
+        }
+
         $industry = $this->getById($industryId);
         if (!$industry || !$industry['parent_id']) {
             return 0;
         }
-        return 1 + $this->getDepth($industry['parent_id']);
+
+        $visited[] = $industryId;
+        return 1 + $this->getDepth($industry['parent_id'], $visited);
     }
 
     /** Simple in-memory tree: [{id,name,parent_id,children:[...]}] */

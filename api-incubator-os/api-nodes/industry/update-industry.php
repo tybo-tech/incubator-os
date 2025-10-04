@@ -9,7 +9,8 @@ try {
     $db = $database->connect();
     $industry = new Industry($db);
 
-    $id = $data['id'] ?? throw new Exception('ID is required');
+    // Get ID from query parameter or JSON body
+    $id = $_GET['id'] ?? $data['id'] ?? throw new Exception('ID is required');
 
     // Extract updateable fields
     $updateFields = [];
