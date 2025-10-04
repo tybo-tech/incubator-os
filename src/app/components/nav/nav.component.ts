@@ -28,6 +28,11 @@ export class NavComponent {
       route: '/admin/clients'
     },
     {
+      icon: 'companies',
+      label: 'All Companies',
+      route: '/companies'
+    },
+    {
       icon: 'tasks',
       label: 'Tasks',
       route: '/tasks'
