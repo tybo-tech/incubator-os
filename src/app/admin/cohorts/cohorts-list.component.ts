@@ -563,7 +563,8 @@ export class CohortsListComponent implements OnInit {
 
       items.push({
         label: breadcrumb.programName,
-        clickable: false
+        clickable: true,
+        action: () => this.backToCohorts()
       });
 
       // Show cohort name if viewing companies
