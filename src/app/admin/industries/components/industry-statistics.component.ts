@@ -161,20 +161,56 @@ import { DoughnutComponent } from '../../../charts/doughnut/doughnut.component';
           </div>
         </div>
 
-        <!-- Industry Distribution Chart Placeholder -->
+      <!-- Top Industries -->
+      <div
+        *ngIf="!isLoading() && !error() && topIndustries().length > 0"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        <!-- Top Industries by Company Count -->
         <div class="bg-gray-50 rounded-lg p-4">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">
-            Industry Distribution
+            Top Industries by Companies
           </h3>
-          <div
-            class="flex items-center justify-center h-40 bg-white rounded-lg border border-gray-200"
-          >
-            <app-doughnut
-              *ngIf="industryDistributionChart()"
-              [componentTitle]="'Industry Distribution'"
-              [data]="industryDistributionChart()!">
-            </app-doughnut>
-            <div *ngIf="!industryDistributionChart()" class="text-center">
+          <div class="space-y-3">
+            <div
+              *ngFor="
+                let industry of topIndustries().slice(0, 5);
+                let i = index
+              "
+              class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                  [style.background-color]="getIndustryColor(i)"
+                >
+                  {{ i + 1 }}
+                </div>
+                <span class="ml-3 font-medium text-gray-900">{{
+                  industry.industry
+                }}</span>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-semibold text-gray-900">
+                  {{ industry.total }}
+                </div>
+                <div class="text-xs text-gray-500">companies</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Industry Distribution Chart -->
+        <app-doughnut
+          *ngIf="industryDistributionChart()"
+          [componentTitle]="'Industry Distribution'"
+          [data]="industryDistributionChart()!">
+        </app-doughnut>
+
+        <!-- Loading state for chart -->
+        <div *ngIf="!industryDistributionChart()" class="bg-gray-50 rounded-lg p-4">
+          <div class="flex items-center justify-center h-40 bg-white rounded-lg border border-gray-200">
+            <div class="text-center">
               <i class="fa-solid fa-chart-pie text-4xl text-gray-400 mb-2"></i>
               <p class="text-gray-600">Loading Chart...</p>
             </div>
