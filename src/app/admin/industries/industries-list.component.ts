@@ -24,7 +24,12 @@ interface IndustryWithStats extends Industry {
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Header -->
+
+
+        <!-- Industry Statistics Dashboard -->
+        <app-industry-statistics></app-industry-statistics>
+
+           <!-- Header -->
         <div class="mb-8">
           <div class="flex items-center justify-between">
             <div>
@@ -91,9 +96,6 @@ interface IndustryWithStats extends Industry {
             </div>
           </div>
         </div>
-
-        <!-- Industry Statistics Dashboard -->
-        <app-industry-statistics></app-industry-statistics>
 
         <!-- Loading State -->
         <div *ngIf="isLoading()" class="flex justify-center items-center py-12">

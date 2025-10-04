@@ -13,11 +13,12 @@ import {
 } from '../../../../models/Charts';
 import { catchError, EMPTY } from 'rxjs';
 import { DoughnutComponent } from '../../../charts/doughnut/doughnut.component';
+import { TopIndustriesComponent } from './top-industries.component';
 
 @Component({
   selector: 'app-industry-statistics',
   standalone: true,
-  imports: [CommonModule, DoughnutComponent],
+  imports: [CommonModule, DoughnutComponent, TopIndustriesComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <!-- Header -->
@@ -122,83 +123,20 @@ import { DoughnutComponent } from '../../../charts/doughnut/doughnut.component';
         </div>
       </div>
 
-      <!-- Top Industries -->
+      <!-- Charts Section -->
       <div
         *ngIf="!isLoading() && !error() && topIndustries().length > 0"
         class="grid grid-cols-1 lg:grid-cols-2 gap-6"
       >
-        <!-- Top Industries by Company Count -->
-        <div class="bg-gray-50 rounded-lg p-4">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">
-            Top Industries by Companies
-          </h3>
-          <div class="space-y-3">
-            <div
-              *ngFor="
-                let industry of topIndustries().slice(0, 5);
-                let i = index
-              "
-              class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
-            >
-              <div class="flex items-center">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white"
-                  [style.background-color]="getIndustryColor(i)"
-                >
-                  {{ i + 1 }}
-                </div>
-                <span class="ml-3 font-medium text-gray-900">{{
-                  industry.industry
-                }}</span>
-              </div>
-              <div class="text-right">
-                <div class="text-lg font-semibold text-gray-900">
-                  {{ industry.total }}
-                </div>
-                <div class="text-xs text-gray-500">companies</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <!-- Top Industries -->
-      <div
-        *ngIf="!isLoading() && !error() && topIndustries().length > 0"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
-      >
-        <!-- Top Industries by Company Count -->
-        <div class="bg-gray-50 rounded-lg p-4">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">
-            Top Industries by Companies
-          </h3>
-          <div class="space-y-3">
-            <div
-              *ngFor="
-                let industry of topIndustries().slice(0, 5);
-                let i = index
-              "
-              class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
-            >
-              <div class="flex items-center">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white"
-                  [style.background-color]="getIndustryColor(i)"
-                >
-                  {{ i + 1 }}
-                </div>
-                <span class="ml-3 font-medium text-gray-900">{{
-                  industry.industry
-                }}</span>
-              </div>
-              <div class="text-right">
-                <div class="text-lg font-semibold text-gray-900">
-                  {{ industry.total }}
-                </div>
-                <div class="text-xs text-gray-500">companies</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Top Industries Component -->
+        <app-top-industries
+          [industries]="topIndustries()"
+          [title]="'Top Industries by Companies'"
+          [subtitle]="'Leading industries ranked by company count'"
+          [valueLabel]="'companies'"
+          [maxItems]="5"
+          [showSummary]="true">
+        </app-top-industries>
 
         <!-- Industry Distribution Chart -->
         <app-doughnut
@@ -208,10 +146,17 @@ import { DoughnutComponent } from '../../../charts/doughnut/doughnut.component';
         </app-doughnut>
 
         <!-- Loading state for chart -->
-        <div *ngIf="!industryDistributionChart()" class="bg-gray-50 rounded-lg p-4">
-          <div class="flex items-center justify-center h-40 bg-white rounded-lg border border-gray-200">
+        <div
+          *ngIf="!industryDistributionChart()"
+          class="bg-gray-50 rounded-lg p-4"
+        >
+          <div
+            class="flex items-center justify-center h-40 bg-white rounded-lg border border-gray-200"
+          >
             <div class="text-center">
-              <i class="fa-solid fa-chart-pie text-4xl text-gray-400 mb-2"></i>
+              <i
+                class="fa-solid fa-chart-pie text-4xl text-gray-400 mb-2"
+              ></i>
               <p class="text-gray-600">Loading Chart...</p>
             </div>
           </div>
@@ -276,19 +221,5 @@ export class IndustryStatisticsComponent implements OnInit {
 
   refreshData(): void {
     this.loadData();
-  }
-
-  getIndustryColor(index: number): string {
-    const colors = [
-      '#3B82F6', // Blue
-      '#10B981', // Green
-      '#8B5CF6', // Purple
-      '#F59E0B', // Yellow
-      '#EF4444', // Red
-      '#EC4899', // Pink
-      '#6B7280', // Gray
-      '#14B8A6', // Teal
-    ];
-    return colors[index % colors.length];
   }
 }
