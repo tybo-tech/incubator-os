@@ -5,11 +5,11 @@
 export interface Industry {
   id: number;
   name: string;
-  parentId?: number | null;
+  parent_id?: number | null;
 
   // Timestamps (ISO 8601, e.g. "2025-08-18T00:15:10Z")
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 
   // Optional when you load hierarchies
   parent?: Industry | null;
