@@ -6,6 +6,7 @@ import { IndustryService, IndustryListOptions, CreateIndustryRequest, UpdateIndu
 import { catchError, EMPTY, switchMap } from 'rxjs';
 import { Industry } from '../../../models/simple.schema';
 import { CompanyListPopupComponent } from './components/company-list-popup.component';
+import { IndustryStatisticsComponent } from './components/industry-statistics.component';
 import { ICompany } from '../../../models/simple.schema';
 
 interface IndustryWithStats extends Industry {
@@ -19,7 +20,7 @@ interface IndustryWithStats extends Industry {
 @Component({
   selector: 'app-industries-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, CompanyListPopupComponent],
+  imports: [CommonModule, FormsModule, CompanyListPopupComponent, IndustryStatisticsComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -90,6 +91,9 @@ interface IndustryWithStats extends Industry {
             </div>
           </div>
         </div>
+
+        <!-- Industry Statistics Dashboard -->
+        <app-industry-statistics></app-industry-statistics>
 
         <!-- Loading State -->
         <div *ngIf="isLoading()" class="flex justify-center items-center py-12">

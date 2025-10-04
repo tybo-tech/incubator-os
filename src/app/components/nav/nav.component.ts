@@ -34,8 +34,8 @@ export class NavComponent {
     },
     {
       icon: 'sectors',
-      label: 'Sectors',
-      route: '/sectors'
+      label: 'Industries',
+      route: '/industries'
     },
     {
       icon: 'users',

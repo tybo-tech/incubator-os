@@ -81,7 +81,7 @@ export const routes: Routes = [
         component: CohortsListComponent,
       },
       {
-        path: 'sectors',
+        path: 'industries',
         component: IndustriesListComponent,
       },
       {

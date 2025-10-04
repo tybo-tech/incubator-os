@@ -99,11 +99,9 @@ class IndustryReports
             JOIN companies c ON c.industry_id = i.id
             GROUP BY i.id, i.name
             ORDER BY total DESC
-            LIMIT ?
-        ";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            LIMIT " . (int)$limit;
+
+        return $this->fetchAll($sql);
     }
 
     /* =====================================================
