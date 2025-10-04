@@ -101,7 +101,7 @@ import { ReportsService, DashboardData } from '../../../services/reports.service
                       <td class="py-3 text-sm text-right">{{ formatCurrency(cohort.avg_turnover) }}</td>
                       <td class="py-3 text-sm text-right">
                         <span [class]="getComplianceClass(cohort.full_compliance_rate)">
-                          {{ cohort.full_compliance_rate.toFixed(1) || 0 }}%
+                          {{ safeToFixed(cohort.full_compliance_rate) }}%
                         </span>
                       </td>
                     </tr>
@@ -197,9 +197,11 @@ export class ReportsOverviewComponent implements OnInit {
     // Combine performance and compliance data
     const cohorts = this.dashboard.cohort_performance.map(cohort => {
       const compliance = this.dashboard?.compliance_summary?.find(c => c.cohort_id === cohort.cohort_id);
+      const complianceRate = compliance?.full_compliance_rate;
+
       return {
         ...cohort,
-        full_compliance_rate: compliance?.full_compliance_rate || 0
+        full_compliance_rate: this.toNumber(complianceRate)
       };
     });
 
@@ -208,13 +210,27 @@ export class ReportsOverviewComponent implements OnInit {
       .slice(0, 10);
   }
 
-  formatCurrency(amount: number): string {
-    if (!amount) return 'R0';
-    return this.reportsService.formatCurrency(amount);
+  formatCurrency(amount: number | string | null | undefined): string {
+    const numAmount = this.toNumber(amount);
+    if (numAmount === 0) return 'R0';
+    return this.reportsService.formatCurrency(numAmount);
   }
 
-  getComplianceClass(rate: number): string {
-    const status = this.reportsService.getComplianceStatus(rate);
+  safeToFixed(value: number | string | null | undefined, decimals: number = 1): string {
+    const numValue = this.toNumber(value);
+    return numValue.toFixed(decimals);
+  }
+
+  // Utility method to safely convert string/number to number
+  private toNumber(value: number | string | null | undefined): number {
+    if (!value) return 0;
+    const num = parseFloat(value.toString());
+    return isNaN(num) ? 0 : num;
+  }
+
+  getComplianceClass(rate: number | string | null | undefined): string {
+    const safeRate = this.toNumber(rate);
+    const status = this.reportsService.getComplianceStatus(safeRate);
     const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium';
 
     switch (status.color) {

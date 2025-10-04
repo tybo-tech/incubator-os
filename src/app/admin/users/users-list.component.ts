@@ -128,12 +128,12 @@ interface UserWithCompany extends User {
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
                         <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                          {{ getInitials(user.fullName || user.username) }}
+                          {{ getInitials(user.fullName || user.username || user.email || 'User') }}
                         </div>
                       </div>
                       <div class="ml-4">
                         <div class="text-sm font-medium text-gray-900">
-                          {{ user.fullName || user.username }}
+                          {{ user.fullName || user.username || user.email || 'Unknown User' }}
                         </div>
                         <div class="text-sm text-gray-500">{{ '@' + user.username }}</div>
                         <div class="text-xs text-gray-400">ID: {{ user.id }}</div>
@@ -484,9 +484,25 @@ export class UsersListComponent implements OnInit {
       )
       .subscribe((response: UserListResponse) => {
         const users: UserWithCompany[] = response.data.map(user => {
+          // Handle both INode format and direct user data
+          const userData = (user.data || user) as any;
+
           return {
-            ...user.data,
-            companyName: undefined
+            id: userData.id,
+            idType: userData.id_type || userData.idType || '',
+            idNumber: userData.id_number || userData.idNumber || '',
+            companyId: userData.company_id || userData.companyId || 0,
+            fullName: userData.full_name || userData.fullName || null,
+            email: userData.email || null,
+            phone: userData.phone || null,
+            username: userData.username,
+            role: userData.role,
+            race: userData.race || null,
+            gender: userData.gender || null,
+            status: userData.status,
+            createdAt: userData.created_at || userData.createdAt,
+            updatedAt: userData.updated_at || userData.updatedAt,
+            companyName: undefined // Will be populated later if needed
           };
         });
 
@@ -641,8 +657,31 @@ export class UsersListComponent implements OnInit {
       });
   }
 
-  getInitials(name: string): string {
-    return name
+  getInitials(name: string | null | undefined): string {
+    if (!name || name.trim() === '') {
+      return '??'; // Default when no name available
+    }
+
+    const cleanName = name.trim();
+
+    // If it looks like an email, use the part before @
+    if (cleanName.includes('@')) {
+      const emailPart = cleanName.split('@')[0];
+      // If email part has dots, treat as first.last
+      if (emailPart.includes('.')) {
+        return emailPart
+          .split('.')
+          .map(part => part.charAt(0))
+          .join('')
+          .substring(0, 2)
+          .toUpperCase();
+      }
+      // Otherwise just use first 2 characters
+      return emailPart.substring(0, 2).toUpperCase();
+    }
+
+    // For regular names, split by space
+    return cleanName
       .split(' ')
       .map(part => part.charAt(0))
       .join('')
