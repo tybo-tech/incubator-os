@@ -9,7 +9,10 @@ import {
   ArcElement,
   PointElement,
   LineElement,
-  Filler
+  Filler,
+  DoughnutController,
+  BarController,
+  LineController
 } from 'chart.js';
 
 // Register Chart.js components
@@ -23,7 +26,10 @@ ChartJS.register(
   ArcElement,
   PointElement,
   LineElement,
-  Filler
+  Filler,
+  DoughnutController,
+  BarController,
+  LineController
 );
 
 export { ChartJS as Chart };

@@ -4,6 +4,8 @@ import { IBarChart, initBarChart } from '../../../models/Charts';
 
 @Component({
   selector: 'app-bar-chart',
+  standalone: true,
+  imports: [],
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.scss'],
 })

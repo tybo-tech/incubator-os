@@ -1,8 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IKeyValue } from '../../../models/IKeyValue';
 
 @Component({
   selector: 'app-numbers-chart',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './numbers-chart.component.html',
   styleUrls: ['./numbers-chart.component.scss'],
 })
@@ -23,4 +26,9 @@ export class NumbersChartComponent {
   ];
 
   @Output() itemClicked = new EventEmitter<IKeyValue>();
+
+  // TrackBy function for performance
+  trackByKey(index: number, item: IKeyValue): string {
+    return item.key;
+  }
 }

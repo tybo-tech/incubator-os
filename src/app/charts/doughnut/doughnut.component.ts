@@ -1,8 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Chart } from '../../../utils/chart-setup';
 import { IDoughnutChart, initDoughnutChart } from '../../../models/Charts';
+
 @Component({
   selector: 'app-doughnut',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './doughnut.component.html',
   styleUrls: ['./doughnut.component.scss'],
 })

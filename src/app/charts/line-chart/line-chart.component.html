@@ -1,11 +1,23 @@
-<div class="card text-bg-dark">
-    <div class="card-body">
-      <h5 class="mb-4">
-          {{ componentTitle }}
-        </h5>
-      <div class="chart-container">
-        <canvas id="line-chart"></canvas>
+<!-- Modern Tailwind Line Chart Component -->
+<div class="bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+  <div class="p-6">
+    <!-- Chart Header -->
+    <div class="mb-6">
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">
+        {{ componentTitle }}
+      </h3>
+      <div class="w-12 h-1 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full"></div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="relative">
+      <div class="chart-container bg-gray-50 rounded-lg p-4 border border-gray-100">
+        <canvas
+          id="line-chart"
+          class="max-w-full h-auto"
+          style="max-height: 400px;"
+        ></canvas>
       </div>
     </div>
   </div>
-  
+</div>

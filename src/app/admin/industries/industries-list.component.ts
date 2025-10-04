@@ -249,7 +249,7 @@ interface IndustryWithStats extends Industry {
                   </svg>
                 </button>
 
-                <ng-container *ngFor="let pageNum of getPageNumbers(); track pageNum">
+                <ng-container *ngFor="let pageNum of getPageNumbers(); trackBy: trackByPageNum">
                   <button
                     (click)="goToPage(pageNum)"
                     [class]="pageNum === pagination()!.page ?
@@ -704,5 +704,10 @@ export class IndustriesListComponent implements OnInit {
         this.loadIndustries();
         this.loadAvailableParents(); // Refresh parent list
       });
+  }
+
+  // TrackBy function for pagination numbers
+  trackByPageNum(index: number, pageNum: number): number {
+    return pageNum;
   }
 }
