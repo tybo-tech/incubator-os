@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanyModalComponent } from './company-modal/company-modal.component';
 import { CompanyFormModalComponent } from './company-form-modal/company-form-modal.component';
+import { RichCompanyCardComponent } from '../../admin/overview/components/rich-company-card.component';
 import { CompanyService, CompanyListOptions, CompanyListResponse } from '../../../services/company.service';
 import { ICompany } from '../../../models/simple.schema';
 import { Router } from '@angular/router';
@@ -12,7 +13,7 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'app-companies',
   standalone: true,
-  imports: [CommonModule, FormsModule, CompanyModalComponent, CompanyFormModalComponent],
+  imports: [CommonModule, FormsModule, CompanyModalComponent, CompanyFormModalComponent, RichCompanyCardComponent],
   templateUrl: './companies.component.html',
   styleUrl: './companies.component.scss',
 })
@@ -62,28 +63,38 @@ export class CompaniesComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const options: CompanyListOptions = {
-      page: this.currentPage(),
-      limit: this.pageSize,
-      search: this.searchQuery() || undefined,
-      industry_id: this.selectedIndustry() || undefined
-    };
+    const params = new URLSearchParams();
+    if (this.searchQuery()) {
+      params.append('q', this.searchQuery());
+    }
+    if (this.selectedIndustry()) {
+      params.append('industry_id', this.selectedIndustry()!.toString());
+    }
+    params.append('limit', this.pageSize.toString());
+    params.append('offset', ((this.currentPage() - 1) * this.pageSize).toString());
 
-    this.companyService.searchCompaniesAdvanced(options).subscribe({
-      next: (response: CompanyListResponse) => {
-        this.companies.set(response.data);
-        if (response.pagination) {
-          this.totalPages.set(response.pagination.pages);
-          this.totalCompanies.set(response.pagination.total);
-        }
+    const url = `http://localhost:8080/api-nodes/company/search-companies.php?${params.toString()}`;
+
+    // Use native fetch instead of the service for now
+    fetch(url)
+      .then(response => response.json())
+      .then((companies: any[]) => {
+        // Map the API response to match the expected interface
+        const mappedCompanies: ICompany[] = companies.map(company => ({
+          ...company,
+          sector_name: company.service_offering, // Map service_offering to sector_name for display
+        }));
+        this.companies.set(mappedCompanies);
+        // For now, set basic pagination (in real app, backend would provide total count)
+        this.totalCompanies.set(mappedCompanies.length);
+        this.totalPages.set(Math.max(1, Math.ceil(mappedCompanies.length / this.pageSize)));
         this.isLoading.set(false);
-      },
-      error: (err) => {
+      })
+      .catch(err => {
         console.error('Error fetching companies:', err);
         this.error.set('Failed to load companies. Please try again.');
         this.isLoading.set(false);
-      },
-    });
+      });
   }
 
   // Search handling
@@ -221,5 +232,19 @@ export class CompaniesComponent implements OnInit {
     }
 
     return rangeWithDots.filter((v, i, a) => a.indexOf(v) === i && v !== -1);
+  }
+
+  // Rich company card event handlers
+  onCompanyCardClick(company: ICompany) {
+    this.selectedCompany = company;
+    this.isModalOpen = true;
+  }
+
+  onCompanyViewClick(company: ICompany) {
+    this.router.navigate(['/companies', company.id]);
+  }
+
+  onCompanyEditClick(company: ICompany) {
+    this.openEditCompanyModal(company);
   }
 }
