@@ -1,8 +1,28 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Constants } from './service';
 import { ICompany } from '../models/simple.schema';
+
+export interface CompanyListOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  industry_id?: number;
+  city?: string;
+  bbbee_level?: string;
+  has_tax_clearance?: boolean;
+}
+
+export interface CompanyListResponse {
+  data: ICompany[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class CompanyService {
@@ -37,6 +57,66 @@ export class CompanyService {
 
   listCompanies(limit: number = 50, offset: number = 0): Observable<ICompany[]> {
     return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies.php?limit=${limit}&offset=${offset}`);
+  }
+
+  /**
+   * Get companies by industry with pagination
+   */
+  getCompaniesByIndustry(industryId: number, options: CompanyListOptions = {}): Observable<CompanyListResponse> {
+    let params = new HttpParams();
+
+    params = params.set('industry_id', industryId.toString());
+
+    if (options.page !== undefined) {
+      params = params.set('page', Math.max(1, options.page).toString());
+    }
+
+    if (options.limit !== undefined) {
+      params = params.set('limit', Math.max(1, Math.min(1000, options.limit)).toString());
+    }
+
+    if (options.search?.trim()) {
+      params = params.set('search', options.search.trim());
+    }
+
+    return this.http.get<CompanyListResponse>(`${this.apiUrl}/list-companies.php`, { params });
+  }
+
+  /**
+   * Enhanced search with better filtering
+   */
+  searchCompaniesAdvanced(options: CompanyListOptions = {}): Observable<CompanyListResponse> {
+    let params = new HttpParams();
+
+    if (options.page !== undefined) {
+      params = params.set('page', Math.max(1, options.page).toString());
+    }
+
+    if (options.limit !== undefined) {
+      params = params.set('limit', Math.max(1, Math.min(1000, options.limit)).toString());
+    }
+
+    if (options.search?.trim()) {
+      params = params.set('search', options.search.trim());
+    }
+
+    if (options.industry_id !== undefined) {
+      params = params.set('industry_id', options.industry_id.toString());
+    }
+
+    if (options.city?.trim()) {
+      params = params.set('city', options.city.trim());
+    }
+
+    if (options.bbbee_level?.trim()) {
+      params = params.set('bbbee_level', options.bbbee_level.trim());
+    }
+
+    if (options.has_tax_clearance !== undefined) {
+      params = params.set('has_tax_clearance', options.has_tax_clearance ? '1' : '0');
+    }
+
+    return this.http.get<CompanyListResponse>(`${this.apiUrl}/search-companies.php`, { params });
   }
 
   deleteCompany(id: number): Observable<any> {

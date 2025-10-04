@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { IndustryService, IndustryListOptions, CreateIndustryRequest, UpdateIndustryRequest } from '../../../services/industry.service';
 import { catchError, EMPTY, switchMap } from 'rxjs';
 import { Industry } from '../../../models/simple.schema';
+import { CompanyListPopupComponent } from './components/company-list-popup.component';
+import { ICompany } from '../../../models/simple.schema';
 
 interface IndustryWithStats extends Industry {
   stats: {
@@ -17,7 +19,7 @@ interface IndustryWithStats extends Industry {
 @Component({
   selector: 'app-industries-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CompanyListPopupComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -149,7 +151,11 @@ interface IndustryWithStats extends Industry {
                           {{ industry.stats.childrenCount }} subcategories
                         </span>
                         <span *ngIf="industry.stats.companyCount > 0">
-                          {{ industry.stats.companyCount }} companies
+                          <button
+                            (click)="showCompaniesInIndustry(industry)"
+                            class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
+                            {{ industry.stats.companyCount }} companies
+                          </button>
                         </span>
                         <span class="text-xs text-gray-400">
                           ID: {{ industry.id }}
@@ -359,6 +365,17 @@ interface IndustryWithStats extends Industry {
         </div>
       </div>
     </div>
+
+    <!-- Company List Popup -->
+    @if (showCompanyPopup()) {
+      <app-company-list-popup
+        [industryId]="selectedIndustryForCompanies()!.id"
+        [industryName]="selectedIndustryForCompanies()!.name"
+        [totalCompanies]="selectedIndustryForCompanies()!.stats.companyCount"
+        (closePopup)="closeCompanyPopup()"
+        (companySelected)="onCompanySelected($event)">
+      </app-company-list-popup>
+    }
   `
 })
 export class IndustriesListComponent implements OnInit {
@@ -396,10 +413,12 @@ export class IndustriesListComponent implements OnInit {
   isSaving = signal(false);
   isDeleting = signal(false);
 
-  // Math for template
-  Math = Math;
+  // Company popup state
+  showCompanyPopup = signal(false);
+  selectedIndustryForCompanies = signal<IndustryWithStats | null>(null);
 
-  // Computed
+  // Math for template
+  Math = Math;  // Computed
   filteredIndustries = computed(() => {
     const industries = this.industries();
     if (!this.searchQuery.trim()) return industries;
@@ -641,6 +660,24 @@ export class IndustriesListComponent implements OnInit {
     this.showDeleteModal.set(false);
     this.deleteTarget.set(null);
     this.isDeleting.set(false);
+  }
+
+  showCompaniesInIndustry(industry: IndustryWithStats): void {
+    this.selectedIndustryForCompanies.set(industry);
+    this.showCompanyPopup.set(true);
+  }
+
+  closeCompanyPopup(): void {
+    this.showCompanyPopup.set(false);
+    this.selectedIndustryForCompanies.set(null);
+  }
+
+  onCompanySelected(company: ICompany): void {
+    // Handle company selection - could navigate to company details or close popup
+    console.log('Company selected:', company);
+    this.closeCompanyPopup();
+    // You could navigate to company details here:
+    // this.router.navigate(['/admin/companies', company.id]);
   }
 
   deleteIndustry(): void {
