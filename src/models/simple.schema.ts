@@ -5,7 +5,18 @@
 export interface Industry {
   id: number;
   name: string;
+  slug?: string; // Generated field
   parent_id?: number | null;
+  description?: string | null;
+  notes?: string | null;
+  image_url?: string | null;
+  icon_class?: string | null;
+  color_theme?: string | null;
+  background_theme?: string | null;
+  tags?: any[] | null; // JSON field
+  is_active?: boolean;
+  display_order?: number;
+  created_by?: number | null;
 
   // Timestamps (ISO 8601, e.g. "2025-08-18T00:15:10Z")
   created_at: string;
@@ -14,6 +25,11 @@ export interface Industry {
   // Optional when you load hierarchies
   parent?: Industry | null;
   children?: Industry[];
+
+  // Optional hierarchy stats (when loaded with hierarchy)
+  children_count?: number;
+  companies_count?: number;
+  depth?: number;
 }
 
 export type CategoryType = 'client' | 'program' | 'cohort';

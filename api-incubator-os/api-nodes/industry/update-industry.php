@@ -9,8 +9,39 @@ try {
     $db = $database->connect();
     $industry = new Industry($db);
 
-    $result = $industry->update($data['id'], $data);
-    echo json_encode($result);
+    $id = $data['id'] ?? throw new Exception('ID is required');
+
+    // Extract updateable fields
+    $updateFields = [];
+    $allowedFields = [
+        'name', 'parent_id', 'description', 'notes', 'image_url',
+        'icon_class', 'color_theme', 'background_theme', 'tags',
+        'is_active', 'display_order', 'created_by'
+    ];
+
+    foreach ($allowedFields as $field) {
+        if (array_key_exists($field, $data)) {
+            $updateFields[$field] = $data[$field];
+        }
+    }
+
+    // Handle JSON fields
+    if (isset($updateFields['tags']) && is_array($updateFields['tags'])) {
+        $updateFields['tags'] = json_encode($updateFields['tags']);
+    }
+
+    $result = $industry->update($id, $updateFields);
+
+    if (!$result) {
+        throw new Exception('Industry not found');
+    }
+
+    // Return in INode format
+    echo json_encode([
+        'id' => $result['id'],
+        'type' => 'industry',
+        'data' => $result
+    ]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

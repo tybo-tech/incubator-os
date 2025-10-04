@@ -2,10 +2,9 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IndustryService } from '../../../services/industry.service';
-import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
+import { IndustryService, IndustryListOptions } from '../../../services/industry.service';
+import { catchError, EMPTY, switchMap } from 'rxjs';
 import { Industry } from '../../../models/simple.schema';
-import { INode } from '../../../models/schema';
 
 interface IndustryWithStats extends Industry {
   stats: {
@@ -52,14 +51,41 @@ interface IndustryWithStats extends Industry {
             <span class="font-medium text-gray-900">{{ currentParent()?.name }}</span>
           </div>
 
-          <!-- Search -->
-          <div *ngIf="industries().length > 5" class="mt-6">
-            <input
-              type="text"
-              placeholder="Search industries..."
-              [(ngModel)]="searchQuery"
-              (input)="onSearchChange()"
-              class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <!-- Search and Filters -->
+          <div *ngIf="industries().length > 5 || searchQuery || statusFilter !== 'all'" class="mt-6">
+            <div class="flex flex-wrap gap-4">
+              <!-- Search -->
+              <div class="flex-1 min-w-64">
+                <input
+                  type="text"
+                  placeholder="Search industries..."
+                  [(ngModel)]="searchQuery"
+                  (input)="onSearchChange()"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+
+              <!-- Status Filter -->
+              <select
+                [(ngModel)]="statusFilter"
+                (ngModelChange)="onFilterChange()"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="all">All Status</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+
+              <!-- Page Size -->
+              <select
+                #pageSizeSelect
+                [value]="pageSize()"
+                (change)="onPageSizeChange(+pageSizeSelect.value)"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="10">10 per page</option>
+                <option value="20">20 per page</option>
+                <option value="50">50 per page</option>
+                <option value="100">100 per page</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -169,6 +195,76 @@ interface IndustryWithStats extends Industry {
           </div>
         </div>
 
+        <!-- Pagination -->
+        <div *ngIf="!isLoading() && !error() && pagination() && pagination()!.pages > 1"
+             class="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+          <div class="flex flex-1 justify-between sm:hidden">
+            <button
+              [disabled]="pagination()!.page <= 1"
+              (click)="goToPage(pagination()!.page - 1)"
+              [class]="pagination()!.page <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+              Previous
+            </button>
+            <button
+              [disabled]="pagination()!.page >= pagination()!.pages"
+              (click)="goToPage(pagination()!.page + 1)"
+              [class]="pagination()!.page >= pagination()!.pages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Showing
+                <span class="font-medium">{{ ((pagination()!.page - 1) * pagination()!.limit) + 1 }}</span>
+                to
+                <span class="font-medium">{{ Math.min(pagination()!.page * pagination()!.limit, pagination()!.total) }}</span>
+                of
+                <span class="font-medium">{{ pagination()!.total }}</span>
+                results
+              </p>
+            </div>
+            <div>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  [disabled]="pagination()!.page <= 1"
+                  (click)="goToPage(pagination()!.page - 1)"
+                  [class]="pagination()!.page <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0">
+                  <span class="sr-only">Previous</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+
+                <ng-container *ngFor="let pageNum of getPageNumbers(); track pageNum">
+                  <button
+                    (click)="goToPage(pageNum)"
+                    [class]="pageNum === pagination()!.page ?
+                      'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' :
+                      'text-gray-900 hover:bg-gray-50 focus:outline-offset-0'"
+                    class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20">
+                    {{ pageNum }}
+                  </button>
+                </ng-container>
+
+                <button
+                  [disabled]="pagination()!.page >= pagination()!.pages"
+                  (click)="goToPage(pagination()!.page + 1)"
+                  [class]="pagination()!.page >= pagination()!.pages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0">
+                  <span class="sr-only">Next</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+
         <!-- Create/Edit Industry Modal -->
         <div *ngIf="showModal()"
              class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -271,22 +367,37 @@ export class IndustriesListComponent implements OnInit {
   currentParent = signal<Industry | null>(null);
   isLoading = signal(false);
   error = signal<string | null>(null);
+
+  // Pagination
+  pagination = signal<{ page: number; limit: number; total: number; pages: number } | null>(null);
+  pageSize = signal(20);
+
+  // Filtering
   searchQuery = '';
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
 
   // Modal state
   showModal = signal(false);
   editingIndustry = signal<IndustryWithStats | null>(null);
   modalParent = signal<Industry | null>(null);
-  isSaving = signal(false);
   modalForm = {
     name: '',
-    parentId: null as number | null
+    parentId: null as number | null,
+    description: '',
+    is_active: true,
+    display_order: 0
   };
 
-  // Delete modal state
+  // Delete modal
   showDeleteModal = signal(false);
   deleteTarget = signal<IndustryWithStats | null>(null);
+
+  // Loading states
+  isSaving = signal(false);
   isDeleting = signal(false);
+
+  // Math for template
+  Math = Math;
 
   // Computed
   filteredIndustries = computed(() => {
@@ -315,21 +426,48 @@ export class IndustriesListComponent implements OnInit {
 
     const currentParentId = this.currentParent()?.id;
 
-    this.industryService.listIndustries(currentParentId)
+    const options: IndustryListOptions = {
+      parent_id: currentParentId,
+      with_hierarchy: true,
+      page: this.pagination()?.page || 1,
+      limit: this.pageSize(),
+      order_by: 'display_order',
+      order_dir: 'ASC'
+    };
+
+    // Add filtering
+    if (this.statusFilter !== 'all') {
+      options.is_active = this.statusFilter === 'active';
+    }
+
+    // Add search
+    if (this.searchQuery.trim()) {
+      options.search = this.searchQuery.trim();
+    }
+
+    this.industryService.listIndustries(options)
       .pipe(
-        switchMap((industryNodes: INode<Industry>[]) => {
-          if (industryNodes.length === 0) {
+        switchMap((response) => {
+          // Update pagination info
+          this.pagination.set({
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.pagination.total,
+            pages: response.pagination.pages
+          });
+
+          if (response.data.length === 0) {
             this.industries.set([]);
             this.isLoading.set(false);
             return EMPTY;
           }
 
-          // Transform nodes to industries and add basic stats
-          const industries: IndustryWithStats[] = industryNodes.map(node => ({
+          // Transform nodes to industries and use hierarchy data
+          const industries: IndustryWithStats[] = response.data.map(node => ({
             ...node.data,
             stats: {
-              childrenCount: 0, // We'll load this separately if needed
-              companyCount: 0
+              childrenCount: node.data.children_count || 0,
+              companyCount: node.data.companies_count || 0
             },
             level: currentParentId ? 1 : 0
           }));
@@ -345,39 +483,25 @@ export class IndustriesListComponent implements OnInit {
       .subscribe(industries => {
         this.industries.set(industries);
         this.isLoading.set(false);
-
-        // Load children counts for each industry
-        this.loadChildrenCounts();
       });
   }
 
-  loadChildrenCounts(): void {
-    const industries = this.industries();
-
-    industries.forEach(industry => {
-      this.industryService.listIndustryChildren(industry.id)
-        .pipe(
-          catchError(() => [])
-        )
-        .subscribe(children => {
-          // Update the industry's stats
-          const updated = this.industries().map(ind =>
-            ind.id === industry.id
-              ? { ...ind, stats: { ...ind.stats, childrenCount: children.length } }
-              : ind
-          );
-          this.industries.set(updated);
-        });
-    });
-  }
-
   loadAvailableParents(): void {
-    this.industryService.listIndustries() // Get all root level industries
+    const options: IndustryListOptions = {
+      parent_id: null, // Get root level industries
+      is_active: true,
+      limit: 1000
+    };
+
+    this.industryService.listIndustries(options)
       .pipe(
-        catchError(() => [])
+        catchError(() => {
+          this.availableParents.set([]);
+          return EMPTY;
+        })
       )
-      .subscribe(industryNodes => {
-        const parents = industryNodes.map(node => node.data);
+      .subscribe(response => {
+        const parents = response.data.map(node => node.data);
         this.availableParents.set(parents);
       });
   }
@@ -393,11 +517,61 @@ export class IndustriesListComponent implements OnInit {
   }
 
   onSearchChange(): void {
-    // Triggering change detection for computed signal
+    // Reset to first page when searching
+    this.pagination.update(p => p ? { ...p, page: 1 } : { page: 1, limit: this.pageSize(), total: 0, pages: 0 });
+    this.loadIndustries();
+  }
+
+  onFilterChange(): void {
+    // Reset to first page when filtering
+    this.pagination.update(p => p ? { ...p, page: 1 } : { page: 1, limit: this.pageSize(), total: 0, pages: 0 });
+    this.loadIndustries();
+  }
+
+  goToPage(page: number): void {
+    this.pagination.update(p => p ? { ...p, page } : { page, limit: this.pageSize(), total: 0, pages: 0 });
+    this.loadIndustries();
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize.set(pageSize);
+    this.pagination.update(p => p ? { ...p, page: 1, limit: pageSize } : { page: 1, limit: pageSize, total: 0, pages: 0 });
+    this.loadIndustries();
+  }
+
+  getPageNumbers(): number[] {
+    const pagination = this.pagination();
+    if (!pagination) return [];
+
+    const pages: number[] = [];
+    const maxVisible = 5;
+    const current = pagination.page;
+    const total = pagination.pages;
+
+    if (total <= maxVisible) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      const start = Math.max(1, current - Math.floor(maxVisible / 2));
+      const end = Math.min(total, start + maxVisible - 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
   }
 
   openCreateModal(parent?: IndustryWithStats): void {
-    this.modalForm = { name: '', parentId: parent?.id || null };
+    this.modalForm = {
+      name: '',
+      parentId: parent?.id || null,
+      description: '',
+      is_active: true,
+      display_order: 0
+    };
     this.modalParent.set(parent || null);
     this.editingIndustry.set(null);
     this.showModal.set(true);
@@ -406,14 +580,15 @@ export class IndustriesListComponent implements OnInit {
   openEditModal(industry: IndustryWithStats): void {
     this.modalForm = {
       name: industry.name,
-      parentId: industry.parent_id || null
+      parentId: industry.parent_id || null,
+      description: industry.description || '',
+      is_active: industry.is_active ?? true,
+      display_order: industry.display_order || 0
     };
     this.modalParent.set(null);
     this.editingIndustry.set(industry);
     this.showModal.set(true);
-  }
-
-  closeModal(): void {
+  }  closeModal(): void {
     this.showModal.set(false);
     this.editingIndustry.set(null);
     this.modalParent.set(null);
