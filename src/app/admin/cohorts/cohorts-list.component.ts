@@ -7,7 +7,7 @@ import { OverviewGridComponent } from '../overview/components/overview-grid.comp
 import { OverviewHeaderComponent, OverviewStats } from '../overview/components/overview-header.component';
 import { CategoryCompanyPickerComponent } from '../../components/category-company-picker/category-company-picker.component';
 import { ICompany } from '../../../models/simple.schema';
-import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom } from 'rxjs';
+import { catchError, EMPTY, forkJoin, switchMap, firstValueFrom, combineLatest } from 'rxjs';
 
 interface Cohort {
   id: number;
@@ -168,7 +168,7 @@ interface BreadcrumbInfo {
             <div class="text-red-600 text-lg font-medium mb-2">Failed to load cohorts</div>
             <p class="text-red-500 mb-4">{{ error() }}</p>
             <button
-              (click)="loadCohorts()"
+              (click)="refreshCohorts()"
               class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
               Try Again
             </button>
@@ -463,38 +463,30 @@ export class CohortsListComponent implements OnInit {
     return Math.round((passedChecks / checks.length) * 100);
   }
 
+  // Method to refresh cohorts list (for error retry and after creating new cohorts)
+  refreshCohorts(): void {
+    if (this.programId) {
+      this.loadCohortsAndHandleSelection();
+    }
+  }
+
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    // Combine route params and query params to handle both navigation and refresh scenarios
+    combineLatest([
+      this.route.params,
+      this.route.queryParams
+    ]).subscribe(([params, queryParams]) => {
       this.clientId = +params['clientId'];
       this.programId = +params['programId'];
+      
       if (this.clientId && this.programId) {
         this.loadBreadcrumbInfo();
-        this.loadCohorts();
+        this.loadCohortsAndHandleSelection(queryParams['cohortId']);
       }
     });
   }
 
-  async loadBreadcrumbInfo(): Promise<void> {
-    if (!this.clientId || !this.programId) return;
-
-    try {
-      const [client, program] = await Promise.all([
-        firstValueFrom(this.categoryService.getCategoryById(this.clientId)),
-        firstValueFrom(this.categoryService.getCategoryById(this.programId))
-      ]);
-
-      this.breadcrumbInfo.set({
-        clientId: client.id,
-        clientName: client.name,
-        programId: program.id,
-        programName: program.name
-      });
-    } catch (error) {
-      console.error('Failed to load breadcrumb info:', error);
-    }
-  }
-
-  loadCohorts(): void {
+  private loadCohortsAndHandleSelection(cohortId?: string): void {
     if (!this.programId) return;
 
     this.isLoading.set(true);
@@ -545,7 +537,36 @@ export class CohortsListComponent implements OnInit {
       .subscribe(cohorts => {
         this.cohorts.set(cohorts);
         this.isLoading.set(false);
+        
+        // Check if we should auto-select a cohort from query parameters
+        if (cohortId) {
+          const cohort = cohorts.find(c => c.id === +cohortId);
+          if (cohort) {
+            this.selectedCohort.set(cohort);
+            this.loadCompaniesInCohort(cohort.id);
+          }
+        }
       });
+  }
+
+  async loadBreadcrumbInfo(): Promise<void> {
+    if (!this.clientId || !this.programId) return;
+
+    try {
+      const [client, program] = await Promise.all([
+        firstValueFrom(this.categoryService.getCategoryById(this.clientId)),
+        firstValueFrom(this.categoryService.getCategoryById(this.programId))
+      ]);
+
+      this.breadcrumbInfo.set({
+        clientId: client.id,
+        clientName: client.name,
+        programId: program.id,
+        programName: program.name
+      });
+    } catch (error) {
+      console.error('Failed to load breadcrumb info:', error);
+    }
   }
 
   loadCompaniesInCohort(cohortId: number): void {
@@ -577,12 +598,26 @@ export class CohortsListComponent implements OnInit {
   selectCohort(cohort: Cohort): void {
     this.selectedCohort.set(cohort);
     this.loadCompaniesInCohort(cohort.id);
+    
+    // Update URL with cohort ID to persist selection on refresh
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cohortId: cohort.id },
+      queryParamsHandling: 'merge'
+    });
   }
 
   backToCohorts(): void {
     this.selectedCohort.set(null);
     this.companies.set([]);
     this.companiesError.set(null);
+    
+    // Remove cohort ID from URL query parameters
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cohortId: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   navigateToCompany(company: ICompany): void {
@@ -684,7 +719,7 @@ export class CohortsListComponent implements OnInit {
     ).subscribe(() => {
       this.isCreating.set(false);
       this.closeCreateModal();
-      this.loadCohorts(); // Refresh the list
+      this.refreshCohorts(); // Refresh the list
     });
   }
 }
