@@ -14,6 +14,7 @@ import { CohortsListComponent } from './admin/cohorts/cohorts-list.component';
 import { CompaniesListComponent } from './components/companies/companies-list.component';
 import { IndustriesListComponent } from './admin/industries/industries-list.component';
 import { UsersListComponent } from './admin/users/users-list.component';
+import { ReportsOverviewComponent } from './admin/reports/reports-overview.component';
 
 export const routes: Routes = [
   {
@@ -22,11 +23,11 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: OverviewPageComponent,
+        component: ReportsOverviewComponent,
       },
       {
         path: 'overview',
-        component: OverviewPageComponent, // Placeholder for now
+        component: ReportsOverviewComponent, // Placeholder for now
       },
       {
         path: 'companies',
@@ -58,7 +59,7 @@ export const routes: Routes = [
       },
       {
         path: 'analytics',
-        component: CompaniesComponent, // Placeholder for now
+        component: ReportsOverviewComponent,
       },
       {
         path: 'team',
