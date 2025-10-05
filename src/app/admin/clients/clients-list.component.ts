@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
+import { CreateModalComponent, CreateModalConfig } from '../../shared/components';
 import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
 
 interface Client {
@@ -20,7 +21,7 @@ interface Client {
 @Component({
   selector: 'app-clients-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CreateModalComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="max-w-7xl mx-auto px-6 py-8">
@@ -127,50 +128,13 @@ interface Client {
         </div>
 
         <!-- Create Client Modal -->
-        <div *ngIf="showCreateModal()"
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900">Create New Client</h3>
-            </div>
-
-            <div class="px-6 py-4">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="createForm.name"
-                    placeholder="Enter client name"
-                    class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-                  <textarea
-                    [(ngModel)]="createForm.description"
-                    placeholder="Enter client description"
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </textarea>
-                </div>
-              </div>
-            </div>
-
-            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-              <button
-                (click)="closeCreateModal()"
-                class="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                Cancel
-              </button>
-              <button
-                (click)="createClient()"
-                [disabled]="isCreating() || !createForm.name.trim()"
-                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50">
-                {{ isCreating() ? 'Creating...' : 'Create Client' }}
-              </button>
-            </div>
-          </div>
-        </div>
+        <app-create-modal
+          [show]="showCreateModal()"
+          [config]="createModalConfig"
+          [isSubmitting]="isCreating"
+          (cancel)="closeCreateModal()"
+          (submit)="onCreateSubmit($event)">
+        </app-create-modal>
       </div>
     </div>
   `
@@ -184,9 +148,27 @@ export class ClientsListComponent implements OnInit {
   // Modal state
   showCreateModal = signal(false);
   isCreating = signal(false);
-  createForm = {
-    name: '',
-    description: ''
+
+  // Modal configuration
+  createModalConfig: CreateModalConfig = {
+    title: 'Create New Client',
+    submitLabel: 'Create Client',
+    fields: [
+      {
+        key: 'name',
+        label: 'Client Name',
+        type: 'text',
+        placeholder: 'Enter client name',
+        required: true
+      },
+      {
+        key: 'description',
+        label: 'Description (Optional)',
+        type: 'textarea',
+        placeholder: 'Enter client description',
+        rows: 3
+      }
+    ]
   };
 
   // Computed
@@ -271,7 +253,6 @@ export class ClientsListComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.createForm = { name: '', description: '' };
     this.showCreateModal.set(true);
   }
 
@@ -280,14 +261,12 @@ export class ClientsListComponent implements OnInit {
     this.isCreating.set(false);
   }
 
-  createClient(): void {
-    if (!this.createForm.name.trim()) return;
-
+  onCreateSubmit(formData: any): void {
     this.isCreating.set(true);
 
     this.categoryService.addCategory({
-      name: this.createForm.name.trim(),
-      description: this.createForm.description.trim() || undefined,
+      name: formData.name,
+      description: formData.description || undefined,
       type: 'client',
       parent_id: null
     }).pipe(
