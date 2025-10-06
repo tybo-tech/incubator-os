@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -6,6 +6,7 @@ interface NavItem {
   icon: string;
   label: string;
   route: string;
+  badge?: string;
 }
 
 @Component({
@@ -15,6 +16,7 @@ interface NavItem {
   styleUrl: './nav.component.scss'
 })
 export class NavComponent {
+  @Output() onQuickTaskClick = new EventEmitter<void>();
 
   navItems: NavItem[] = [
     {
@@ -48,5 +50,13 @@ export class NavComponent {
       route: '/users'
     }
   ];
+
+  onNavAction(action: string) {
+    switch (action) {
+      case 'quickTask':
+        this.onQuickTaskClick.emit();
+        break;
+    }
+  }
 
 }

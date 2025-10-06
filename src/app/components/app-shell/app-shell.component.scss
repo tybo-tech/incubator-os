@@ -1,0 +1,53 @@
+// Mobile-first responsive design for app shell
+
+// Ensure proper mobile menu slide animation
+.mobile-menu-slide {
+  transition: transform 0.3s ease-in-out;
+}
+
+// Mobile header styling
+.mobile-header {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+// Adjust main content for mobile
+@media (max-width: 1023px) {
+  main {
+    width: 100%;
+  }
+
+  // Ensure content doesn't get hidden behind mobile header
+  .mobile-content {
+    padding-top: 0;
+  }
+}
+
+// Desktop adjustments
+@media (min-width: 1024px) {
+  // Ensure sidebar doesn't interfere with content
+  .desktop-layout {
+    margin-left: 0;
+  }
+}
+
+// Floating action button responsive positioning
+.floating-action-btn {
+  // Ensure it doesn't interfere with mobile UI
+  @media (max-width: 1023px) {
+    display: none !important;
+  }
+
+  @media (min-width: 1024px) {
+    display: flex !important;
+  }
+}
+
+// Mobile overlay z-index management
+.mobile-overlay {
+  backdrop-filter: blur(2px);
+}
+
+// Smooth transitions for mobile menu
+.nav-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

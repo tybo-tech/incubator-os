@@ -24,17 +24,17 @@ interface Client {
   imports: [CommonModule, FormsModule, CreateModalComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
-      <div class="max-w-7xl mx-auto px-6 py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <!-- Header -->
-        <div class="mb-8">
-          <div class="flex items-center justify-between">
+        <div class="mb-6 sm:mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900">Clients</h1>
-              <p class="text-gray-600 mt-2">Manage your client organizations</p>
+              <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Clients</h1>
+              <p class="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">Manage your client organizations</p>
             </div>
             <button
               (click)="openCreateModal()"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
@@ -43,7 +43,7 @@ interface Client {
           </div>
 
           <!-- Search -->
-          <div *ngIf="clients().length > 5" class="mt-6">
+          <div *ngIf="clients().length > 5" class="mt-4 sm:mt-6">
             <input
               type="text"
               placeholder="Search clients..."
@@ -90,15 +90,15 @@ interface Client {
 
         <!-- Clients Grid -->
         <div *ngIf="!isLoading() && !error() && filteredClients().length > 0"
-             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div *ngFor="let client of filteredClients()"
                class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">{{ client.name }}</h3>
+            <div class="p-4 sm:p-6">
+              <div class="flex items-start justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 flex-1 pr-3">{{ client.name }}</h3>
 
                 <!-- Action Buttons -->
-                <div class="flex space-x-2">
+                <div class="flex space-x-1 flex-shrink-0">
                   <button
                     (click)="editClient(client)"
                     class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -119,18 +119,18 @@ interface Client {
                 </div>
               </div>
 
-              <p *ngIf="client.description" class="text-gray-600 text-sm mb-4">
+              <p *ngIf="client.description" class="text-gray-600 text-sm mb-4 line-clamp-2">
                 {{ client.description }}
               </p>
 
               <!-- Statistics -->
-              <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 mb-4">
+              <div class="grid grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-gray-100 mb-4">
                 <div class="text-center">
-                  <div class="text-2xl font-bold text-blue-600">{{ client.stats?.programCount || 0 }}</div>
+                  <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ client.stats?.programCount || 0 }}</div>
                   <div class="text-xs text-gray-500">Programs</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-2xl font-bold text-purple-600">{{ client.stats?.companyCount || 0 }}</div>
+                  <div class="text-xl sm:text-2xl font-bold text-purple-600">{{ client.stats?.companyCount || 0 }}</div>
                   <div class="text-xs text-gray-500">Companies</div>
                 </div>
               </div>

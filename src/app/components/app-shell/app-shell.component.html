@@ -1,16 +1,56 @@
 <div class="flex h-screen bg-gray-100">
+  <!-- Mobile Overlay -->
+  <div *ngIf="isMobileMenuOpen"
+       class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+       (click)="toggleMobileMenu()"></div>
+
   <!-- Sidebar Navigation -->
-  <app-nav class="flex-shrink-0" (onQuickTaskClick)="openGlobalTaskModal()" />
+  <app-nav
+    class="flex-shrink-0 fixed lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out z-40"
+    [class.translate-x-0]="isMobileMenuOpen"
+    [class.-translate-x-full]="!isMobileMenuOpen"
+    (onQuickTaskClick)="openGlobalTaskModal()" />
 
   <!-- Main Content Area -->
   <main class="flex-1 overflow-hidden relative">
-    <div class="h-full overflow-y-auto">
+    <!-- Mobile Header Bar -->
+    <div class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <button
+        (click)="toggleMobileMenu()"
+        class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        <span class="sr-only">Open menu</span>
+      </button>
+
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+        </div>
+        <span class="text-lg font-semibold text-gray-900">incubator-os</span>
+      </div>
+
+      <button
+        (click)="openGlobalTaskModal()"
+        class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <span class="sr-only">Create Task</span>
+      </button>
+    </div>
+
+    <!-- Main Content with Responsive Padding -->
+    <div class="h-full overflow-y-auto pt-0 lg:pt-0">
       <router-outlet />
     </div>
 
-    <!-- Global Floating Task Button -->
+    <!-- Desktop Floating Task Button (hidden on mobile) -->
     <button (click)="openGlobalTaskModal()"
-            class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40">
+            class="hidden lg:flex fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 items-center justify-center">
       <i class="fas fa-plus text-xl"></i>
       <span class="sr-only">Create Task</span>
     </button>
