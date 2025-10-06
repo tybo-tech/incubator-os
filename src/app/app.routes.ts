@@ -3,6 +3,9 @@ import { CompaniesComponent } from './components/companies/companies.component';
 import { CompanyDetailComponent } from './components/companies/company-detail/company-detail.component';
 import { DynamicCompanyDetailComponent } from './components/dynamic-company-detail/dynamic-company-detail.component';
 import { AppShellComponent } from './components/app-shell/app-shell.component';
+import { CompanyShellComponent } from './components/company-shell/company-shell.component';
+import { CompanyOverviewComponent } from './components/company-shell/company-overview/company-overview.component';
+import { CompanyFinancialsComponent } from './components/company-shell/company-financials/company-financials.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
@@ -39,6 +42,45 @@ export const routes: Routes = [
       },
       {
         path: 'company/:id',
+        component: CompanyShellComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'overview',
+            pathMatch: 'full'
+          },
+          {
+            path: 'overview',
+            component: CompanyOverviewComponent,
+          },
+          {
+            path: 'financials',
+            component: CompanyFinancialsComponent,
+          },
+          {
+            path: 'strategy',
+            component: CompanyOverviewComponent, // Placeholder - will create later
+          },
+          {
+            path: 'assessment',
+            component: CompanyOverviewComponent, // Placeholder - will create later
+          },
+          {
+            path: 'compliance',
+            component: CompanyOverviewComponent, // Placeholder - will create later
+          },
+          {
+            path: 'documents',
+            component: CompanyOverviewComponent, // Placeholder - will create later
+          },
+          {
+            path: 'tasks',
+            component: CompanyOverviewComponent, // Placeholder - will create later
+          }
+        ]
+      },
+      {
+        path: 'legacy-company/:id',
         component: DynamicCompanyDetailComponent,
       },
       {

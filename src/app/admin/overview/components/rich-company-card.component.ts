@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { ICompany } from '../../../../models/simple.schema';
 
 @Component({
@@ -387,7 +388,14 @@ export class RichCompanyCardComponent {
   @Output() removeClick = new EventEmitter<ICompany>();
   @Output() moreClick = new EventEmitter<ICompany>();
 
+  constructor(private router: Router) {}
+
   onCardClick(): void {
+    // Navigate to Company Shell instead of emitting event
+    if (this.company.id) {
+      this.router.navigate(['/company', this.company.id]);
+    }
+    // Still emit for backward compatibility
     this.cardClick.emit(this.company);
   }
 
