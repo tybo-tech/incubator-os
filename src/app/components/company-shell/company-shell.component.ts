@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { CompanyService } from '../../../services/company.service';
+import { ICompany } from '../../../models/simple.schema';
 
 @Component({
   selector: 'app-company-shell',
@@ -31,8 +33,10 @@ import { filter } from 'rxjs/operators';
                   {{ companyInitial }}
                 </div>
                 <div class="hidden sm:block">
-                  <h1 class="text-lg font-semibold text-gray-900">{{ companyName }}</h1>
-                  <p class="text-sm text-gray-500">{{ companyId ? 'ID: ' + companyId : 'Company Management' }}</p>
+                  <h1 class="text-lg font-semibold text-gray-900">{{ company?.name || companyName }}</h1>
+                  <p class="text-sm text-gray-500">
+                    {{ company?.registration_no || (companyId ? 'ID: ' + companyId : 'Company Management') }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -87,6 +91,7 @@ import { filter } from 'rxjs/operators';
 })
 export class CompanyShellComponent implements OnInit {
   companyId: string | null = null;
+  company: ICompany | null = null;
   companyName = 'Company Management';
   companyInitial = 'C';
   currentRoute = '';
@@ -131,7 +136,8 @@ export class CompanyShellComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
@@ -155,10 +161,27 @@ export class CompanyShellComponent implements OnInit {
   }
 
   loadCompanyInfo(): void {
-    // TODO: Load actual company data from service
-    // For now, use mock data
-    this.companyName = `Company ${this.companyId}`;
-    this.companyInitial = this.companyName.charAt(0);
+    if (!this.companyId) return;
+
+    const companyIdNumber = parseInt(this.companyId, 10);
+    if (isNaN(companyIdNumber)) {
+      this.companyName = `Company ${this.companyId}`;
+      this.companyInitial = this.companyName.charAt(0);
+      return;
+    }
+
+    this.companyService.getCompanyById(companyIdNumber).subscribe({
+      next: (company) => {
+        this.company = company;
+        this.companyName = company.name;
+        this.companyInitial = company.name.charAt(0).toUpperCase();
+      },
+      error: (error) => {
+        console.error('Error loading company:', error);
+        this.companyName = `Company ${this.companyId}`;
+        this.companyInitial = this.companyName.charAt(0);
+      }
+    });
   }
 
   updateCurrentRoute(url: string): void {
