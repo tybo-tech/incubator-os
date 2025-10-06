@@ -92,15 +92,30 @@ interface Client {
         <div *ngIf="!isLoading() && !error() && filteredClients().length > 0"
              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div *ngFor="let client of filteredClients()"
-               class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-               (click)="navigateToPrograms(client)">
+               class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div class="p-6">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">{{ client.name }}</h3>
-                <div class="text-blue-600">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-2">
+                  <button
+                    (click)="editClient(client)"
+                    class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit Client">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+
+                  <button
+                    (click)="deleteClient(client)"
+                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete Client">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
@@ -109,20 +124,26 @@ interface Client {
               </p>
 
               <!-- Statistics -->
-              <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+              <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 mb-4">
                 <div class="text-center">
                   <div class="text-2xl font-bold text-blue-600">{{ client.stats?.programCount || 0 }}</div>
                   <div class="text-xs text-gray-500">Programs</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-green-600">{{ client.stats?.cohortCount || 0 }}</div>
-                  <div class="text-xs text-gray-500">Cohorts</div>
                 </div>
                 <div class="text-center">
                   <div class="text-2xl font-bold text-purple-600">{{ client.stats?.companyCount || 0 }}</div>
                   <div class="text-xs text-gray-500">Companies</div>
                 </div>
               </div>
+
+              <!-- Action Button -->
+              <button
+                (click)="navigateToPrograms(client)"
+                class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                View Programs
+              </button>
             </div>
           </div>
         </div>
@@ -246,6 +267,33 @@ export class ClientsListComponent implements OnInit {
 
   navigateToPrograms(client: Client): void {
     this.router.navigate(['/admin/clients', client.id, 'programs']);
+  }
+
+  editClient(client: Client): void {
+    // TODO: Implement edit functionality
+    // This could open an edit modal or navigate to an edit form
+    console.log('Edit client:', client);
+
+    // For now, let's show an alert - you can implement this later
+    alert(`Edit functionality for "${client.name}" will be implemented soon!`);
+  }
+
+  deleteClient(client: Client): void {
+    if (confirm(`Are you sure you want to delete "${client.name}"? This action cannot be undone.`)) {
+      // TODO: Implement delete functionality
+      this.isLoading.set(true);
+
+      this.categoryService.deleteCategory(client.id).pipe(
+        catchError(error => {
+          console.error('Failed to delete client:', error);
+          alert('Failed to delete client. Please try again.');
+          this.isLoading.set(false);
+          return EMPTY;
+        })
+      ).subscribe(() => {
+        this.loadClients(); // Refresh the list
+      });
+    }
   }
 
   onSearchChange(): void {
