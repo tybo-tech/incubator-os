@@ -5,7 +5,9 @@ import { DynamicCompanyDetailComponent } from './components/dynamic-company-deta
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { CompanyShellComponent } from './components/company-shell/company-shell.component';
 import { CompanyOverviewComponent } from './components/company-shell/company-overview/company-overview.component';
-import { CompanyFinancialsComponent } from './components/company-shell/company-financials/company-financials.component';
+import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
+import { FinancialDashboardComponent } from './components/company-shell/financial-shell/financial-dashboard/financial-dashboard.component';
+import { ProfitLossComponent } from './components/company-shell/financial-shell/profit-loss/profit-loss.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
@@ -55,7 +57,42 @@ export const routes: Routes = [
           },
           {
             path: 'financials',
-            component: CompanyFinancialsComponent,
+            component: FinancialShellComponent,
+            children: [
+              {
+                path: '',
+                redirectTo: 'dashboard',
+                pathMatch: 'full'
+              },
+              {
+                path: 'dashboard',
+                component: FinancialDashboardComponent,
+              },
+              {
+                path: 'profit-loss',
+                component: ProfitLossComponent,
+              },
+              {
+                path: 'balance-sheet',
+                component: FinancialDashboardComponent, // Placeholder
+              },
+              {
+                path: 'cash-flow',
+                component: FinancialDashboardComponent, // Placeholder
+              },
+              {
+                path: 'ratios',
+                component: FinancialDashboardComponent, // Placeholder
+              },
+              {
+                path: 'budgets',
+                component: FinancialDashboardComponent, // Placeholder
+              },
+              {
+                path: 'forecasts',
+                component: FinancialDashboardComponent, // Placeholder
+              }
+            ]
           },
           {
             path: 'strategy',
