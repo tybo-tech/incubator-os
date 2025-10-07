@@ -15,7 +15,7 @@ try {
     $category = new FinancialCategories($db);
 
     $success = $category->delete($id);
-    
+
     if ($success) {
         echo json_encode(['success' => true, 'message' => 'Financial category deleted successfully']);
     } else {

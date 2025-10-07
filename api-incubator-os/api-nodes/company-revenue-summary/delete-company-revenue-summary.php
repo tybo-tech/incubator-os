@@ -15,7 +15,7 @@ try {
     $revenueSummary = new CompanyRevenueSummary($db);
 
     $success = $revenueSummary->delete($id);
-    
+
     if ($success) {
         echo json_encode(['success' => true, 'message' => 'Revenue summary deleted successfully']);
     } else {

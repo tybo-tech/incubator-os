@@ -15,7 +15,7 @@ try {
     $financialItem = new CompanyFinancialItems($db);
 
     $success = $financialItem->delete($id);
-    
+
     if ($success) {
         echo json_encode(['success' => true, 'message' => 'Financial item deleted successfully']);
     } else {

@@ -15,7 +15,7 @@ try {
     $category = new FinancialCategories($db);
 
     $result = $category->getById($id);
-    
+
     if ($result) {
         echo json_encode($result);
     } else {

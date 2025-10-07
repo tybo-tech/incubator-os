@@ -15,7 +15,7 @@ try {
     $profitSummary = new CompanyProfitSummary($db);
 
     $success = $profitSummary->delete($id);
-    
+
     if ($success) {
         echo json_encode(['success' => true, 'message' => 'Profit summary deleted successfully']);
     } else {

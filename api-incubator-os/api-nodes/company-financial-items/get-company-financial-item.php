@@ -15,7 +15,7 @@ try {
     $financialItem = new CompanyFinancialItems($db);
 
     $result = $financialItem->getById($id);
-    
+
     if ($result) {
         echo json_encode($result);
     } else {

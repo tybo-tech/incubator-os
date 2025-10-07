@@ -15,7 +15,7 @@ try {
     $revenueSummary = new CompanyRevenueSummary($db);
 
     $result = $revenueSummary->getById($id);
-    
+
     if ($result) {
         echo json_encode($result);
     } else {
