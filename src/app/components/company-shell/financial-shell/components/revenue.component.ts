@@ -35,7 +35,7 @@ interface RevenueDisplayRow {
           <i class="fas fa-chart-line text-green-600 text-2xl mr-3"></i>
           <h2 class="text-xl font-bold text-gray-900">Revenue</h2>
         </div>
-        <button 
+        <button
           (click)="addYear()"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
           <i class="fas fa-plus mr-2"></i>
@@ -50,7 +50,7 @@ interface RevenueDisplayRow {
 
       <!-- Revenue Tables -->
       <div *ngIf="!loading" class="space-y-8">
-        
+
         <!-- Revenue Section -->
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
@@ -80,7 +80,7 @@ interface RevenueDisplayRow {
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index" 
+              <tr *ngFor="let row of revenueRows; let i = index"
                   [class.bg-blue-50]="row.isEditing"
                   [class.bg-green-50]="row.isNew">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -91,7 +91,7 @@ interface RevenueDisplayRow {
                     </span>
                   </div>
                 </td>
-                
+
                 <!-- Q1 -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <input
@@ -164,13 +164,13 @@ interface RevenueDisplayRow {
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                   <div class="flex justify-center space-x-2">
                     <ng-container *ngIf="row.isEditing || row.isNew">
-                      <button 
+                      <button
                         (click)="saveRow(row)"
                         class="text-green-600 hover:text-green-900"
                         title="Save">
                         <i class="fas fa-check"></i>
                       </button>
-                      <button 
+                      <button
                         (click)="cancelEdit(row, i)"
                         class="text-gray-600 hover:text-gray-900"
                         title="Cancel">
@@ -178,13 +178,13 @@ interface RevenueDisplayRow {
                       </button>
                     </ng-container>
                     <ng-container *ngIf="!(row.isEditing || row.isNew)">
-                      <button 
+                      <button
                         (click)="editRow(row)"
                         class="text-blue-600 hover:text-blue-900"
                         title="Edit">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button 
+                      <button
                         (click)="deleteRow(row, i)"
                         class="text-red-600 hover:text-red-900"
                         title="Delete">
@@ -230,7 +230,7 @@ interface RevenueDisplayRow {
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index" 
+              <tr *ngFor="let row of revenueRows; let i = index"
                   [class.bg-blue-50]="row.isEditing"
                   [class.bg-green-50]="row.isNew">
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -238,7 +238,7 @@ interface RevenueDisplayRow {
                     <span class="text-sm font-medium text-gray-900">{{ row.year }}</span>
                   </div>
                 </td>
-                
+
                 <!-- Export Q1 -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <input
@@ -332,7 +332,7 @@ interface RevenueDisplayRow {
         <i class="fas fa-chart-line text-gray-400 text-4xl mb-4"></i>
         <h3 class="text-lg font-medium text-gray-900 mb-2">No Revenue Data</h3>
         <p class="text-gray-600 mb-4">Start by adding your first year of revenue data.</p>
-        <button 
+        <button
           (click)="addYear()"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
           <i class="fas fa-plus mr-2"></i>
@@ -402,7 +402,7 @@ export class RevenueComponent implements OnInit {
     const currentYear = new Date().getFullYear();
     const existingYears = this.revenueRows.map(row => row.year);
     let newYear = currentYear;
-    
+
     // Find the next available year
     while (existingYears.includes(newYear)) {
       newYear++;
@@ -453,7 +453,7 @@ export class RevenueComponent implements OnInit {
       };
 
       let savedData: CompanyRevenueSummary;
-      
+
       if (row.isNew) {
         savedData = await this.revenueService.addCompanyRevenueSummary(data).toPromise() as CompanyRevenueSummary;
       } else {
@@ -503,10 +503,10 @@ export class RevenueComponent implements OnInit {
   calculateRowTotals(row: RevenueDisplayRow) {
     // Calculate revenue total
     row.total = (row.q1 || 0) + (row.q2 || 0) + (row.q3 || 0) + (row.q4 || 0);
-    
+
     // Calculate export total
     row.export_total = (row.export_q1 || 0) + (row.export_q2 || 0) + (row.export_q3 || 0) + (row.export_q4 || 0);
-    
+
     // Calculate ratio (export / revenue * 100)
     row.ratio = row.total && row.total > 0 ? (row.export_total || 0) / row.total * 100 : 0;
   }
