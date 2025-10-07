@@ -98,9 +98,9 @@ export class CompanyProfitSummaryService {
    * @param companyId The ID of the company
    */
   getLatestProfitSummary(companyId: number): Observable<CompanyProfitSummary> {
-    return this.http.post<CompanyProfitSummary>(`${this.apiUrl}/get-company-profit-summary.php`, { 
+    return this.http.post<CompanyProfitSummary>(`${this.apiUrl}/get-company-profit-summary.php`, {
       company_id: companyId,
-      latest: true 
+      latest: true
     }, this.httpOptions);
   }
 

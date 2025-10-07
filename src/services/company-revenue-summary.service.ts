@@ -83,9 +83,9 @@ export class CompanyRevenueSummaryService {
    * @param companyId The ID of the company
    */
   getLatestRevenueSummary(companyId: number): Observable<CompanyRevenueSummary> {
-    return this.http.post<CompanyRevenueSummary>(`${this.apiUrl}/get-company-revenue-summary.php`, { 
+    return this.http.post<CompanyRevenueSummary>(`${this.apiUrl}/get-company-revenue-summary.php`, {
       company_id: companyId,
-      latest: true 
+      latest: true
     }, this.httpOptions);
   }
 
