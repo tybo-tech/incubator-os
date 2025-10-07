@@ -355,7 +355,7 @@ export class CompanyProfitSummaryService {
    * @param filters Filtering and sorting options
    */
   listCompanyProfitSummary(filters: ICompanyProfitSummaryFilters): Observable<ProfitDisplayRow[]> {
-    return this.http.post<CompanyProfitSummary[] | ApiResponse<CompanyProfitSummary>>(`${this.apiUrl}/list-company-profit-summary.php`, filters, this.httpOptions)
+    return this.http.post<CompanyProfitSummary[] | ApiResponse<CompanyProfitSummary>>(`${this.apiUrl}/list-company-profit-summary.php?company_id=${filters.company_id}`, filters, this.httpOptions)
       .pipe(
         map(response => {
           const data = this.processApiResponse(response);
