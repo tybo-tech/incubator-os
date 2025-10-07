@@ -403,10 +403,27 @@ export class RevenueComponent implements OnInit {
   async loadRevenueData() {
     this.loading = true;
     try {
-      const data = await this.revenueService.listAllCompanyRevenueSummary(this.companyId).toPromise();
-      this.revenueRows = (data || []).map(item => this.mapToDisplayRow(item));
+      const response = await this.revenueService.listAllCompanyRevenueSummary(this.companyId).toPromise();
+      console.log('Revenue API response:', response);
+
+      // Handle different response formats
+      let data: any[];
+      if (Array.isArray(response)) {
+        data = response;
+      } else if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) {
+        data = (response as any).data;
+      } else if (response && typeof response === 'object') {
+        // If response is an object, try to find an array property
+        const possibleArrays = Object.values(response).filter(val => Array.isArray(val));
+        data = possibleArrays.length > 0 ? possibleArrays[0] as any[] : [];
+      } else {
+        data = [];
+      }
+
+      this.revenueRows = data.map(item => this.mapToDisplayRow(item));
     } catch (error) {
       console.error('Error loading revenue data:', error);
+      this.revenueRows = []; // Set empty array on error
     } finally {
       this.loading = false;
     }
