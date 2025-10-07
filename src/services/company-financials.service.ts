@@ -73,7 +73,9 @@ export class CompanyFinancialsService {
   }
 
   updateCompanyFinancials(id: number, data: Partial<ICompanyFinancials>): Observable<ICompanyFinancials> {
-    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/update-company-financials.php`, { id, ...data }, this.httpOptions);
+    const payload = { id, ...data };
+    console.log('CompanyFinancialsService - updateCompanyFinancials called with:', { id, data, payload });
+    return this.http.post<ICompanyFinancials>(`${this.apiUrl}/update-company-financials.php`, payload, this.httpOptions);
   }
 
   getCompanyFinancialsById(id: number): Observable<ICompanyFinancials> {

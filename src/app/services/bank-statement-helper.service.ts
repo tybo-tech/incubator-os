@@ -180,18 +180,23 @@ export class BankStatementHelperService {
    * Prepare record for update
    */
   prepareRecordForUpdate(row: any, field: string): any {
+    console.log('Helper - prepareRecordForUpdate called with:', { row, field });
+
     const updatedRow = { ...row };
 
     // Special handling for quarter changes
     if (field === 'quarter') {
       updatedRow.quarter_label = `Q${updatedRow.quarter}`;
+      console.log('Helper - Updated quarter_label:', updatedRow.quarter_label);
     }
 
     // For turnover, also update turnover_monthly_avg
     if (field === 'turnover') {
       updatedRow.turnover_monthly_avg = updatedRow.turnover;
+      console.log('Helper - Updated turnover_monthly_avg:', updatedRow.turnover_monthly_avg);
     }
 
+    console.log('Helper - Final prepared row:', updatedRow);
     return updatedRow;
   }
 

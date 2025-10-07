@@ -160,12 +160,18 @@ export class BankStatementsComponent implements OnInit {
   }
 
   async onCellEdit(event: { row: any; field: string; index: number; value: any }) {
-    const { row, field } = event;
+    const { row, field, value } = event;
+
+    console.log('Cell edit event:', { field, value, row: row });
 
     if (row.id && row.id > 0) {
       try {
         const updatedRow = this.helper.prepareRecordForUpdate(row, field);
+        console.log('Prepared row for update:', updatedRow);
+        console.log('Sending to API:', { id: updatedRow.id, updatedRow });
+
         await firstValueFrom(this.financialsService.updateCompanyFinancials(updatedRow.id, updatedRow));
+        console.log('Update successful');
       } catch (error) {
         console.error('Error updating record:', error);
 

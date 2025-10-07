@@ -12,7 +12,7 @@ class CompanyFinancials
     private const WRITABLE = [
         'company_id','period_date','year','month',
         'turnover_monthly_avg',
-        'is_pre_ignition',
+        'is_pre_ignition', 'quarter', 'quarter_label',
         'turnover','cost_of_sales','business_expenses',
         'gross_profit','net_profit',
         'gp_margin','np_margin',

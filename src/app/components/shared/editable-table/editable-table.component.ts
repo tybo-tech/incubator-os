@@ -120,7 +120,7 @@ export interface EditableTableAction {
                   *ngIf="column.editable && column.type === 'text'"
                   type="text"
                   [(ngModel)]="row[column.key]"
-                  (blur)="onCellEdit(row, column.key, i)"
+                  (blur)="onCellEdit(row, column.key, i, $event)"
                   [placeholder]="column.placeholder || ''"
                   [required]="column.required || false"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
@@ -130,7 +130,7 @@ export interface EditableTableAction {
                   *ngIf="column.editable && (column.type === 'number' || column.type === 'currency' || column.type === 'percentage')"
                   type="number"
                   [(ngModel)]="row[column.key]"
-                  (blur)="onCellEdit(row, column.key, i)"
+                  (blur)="onCellEdit(row, column.key, i, $event)"
                   [placeholder]="column.placeholder || '0'"
                   [required]="column.required || false"
                   [min]="column.min || null"
@@ -142,7 +142,7 @@ export interface EditableTableAction {
                 <select
                   *ngIf="column.editable && column.type === 'select'"
                   [(ngModel)]="row[column.key]"
-                  (change)="onCellEdit(row, column.key, i)"
+                  (change)="onCellEdit(row, column.key, i, $event)"
                   [required]="column.required || false"
                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Select...</option>
@@ -237,8 +237,24 @@ export class EditableTableComponent implements OnInit {
     return item.id || index;
   }
 
-  onCellEdit(row: any, field: string, index: number): void {
-    const value = row[field];
+  onCellEdit(row: any, field: string, index: number, event?: Event): void {
+    let value = row[field];
+
+    // If we have an event (from input or select), get the value directly from the element
+    if (event && event.target) {
+      const element = event.target as HTMLInputElement | HTMLSelectElement;
+      value = element.value;
+
+      // For number inputs, convert to number if it's not empty
+      if (element.type === 'number' && value !== '' && value !== null) {
+        value = Number(value);
+      }
+
+      // Update the row data immediately to ensure consistency
+      row[field] = value;
+    }
+
+    console.log('EditableTable - onCellEdit:', { field, value, rowValue: row[field], hasEvent: !!event, eventType: event?.target?.constructor.name });
     this.cellEdit.emit({ row, field, index, value });
   }
 
