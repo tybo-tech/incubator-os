@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterOutlet, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router, ActivatedRoute, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
 import { CompanyService } from '../../../services/company.service';
 import { ICompany } from '../../../models/simple.schema';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-company-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Company Shell Header -->
@@ -65,18 +65,18 @@ import { ICompany } from '../../../models/simple.schema';
 
           <!-- Company Navigation Tabs -->
           <div class="flex space-x-8 overflow-x-auto">
-            <button
+            <a
               *ngFor="let tab of companyTabs"
-              (click)="navigateToTab(tab.route)"
-              [class]="getTabClasses(tab.route)"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+              [routerLink]="[tab.route]"
+              [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' + 
+                      (isTabActive(tab.route) ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
               <span class="flex items-center space-x-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"></path>
                 </svg>
                 <span class="hidden sm:inline">{{ tab.label }}</span>
               </span>
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ export class CompanyShellComponent implements OnInit {
   company: ICompany | null = null;
   companyName = 'Company Management';
   companyInitial = 'C';
-  currentRoute = '';
+  currentUrl = '';
 
   companyTabs = [
     {
@@ -149,15 +149,20 @@ export class CompanyShellComponent implements OnInit {
       }
     });
 
-    // Track current route for active tab highlighting
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.updateCurrentRoute(event.url);
-      });
+    // Track route changes for active tab highlighting
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.currentUrl = event.url;
+    });
 
-    // Initialize current route
-    this.updateCurrentRoute(this.router.url);
+    // Set initial URL
+    this.currentUrl = this.router.url;
+
+    // Load company info if we have an ID
+    if (this.companyId) {
+      this.loadCompanyInfo();
+    }
   }
 
   loadCompanyInfo(): void {
@@ -184,29 +189,13 @@ export class CompanyShellComponent implements OnInit {
     });
   }
 
-  updateCurrentRoute(url: string): void {
-    // Extract the tab route from the URL
-    const urlParts = url.split('/');
-    const lastPart = urlParts[urlParts.length - 1];
-    this.currentRoute = this.companyTabs.some(tab => tab.route === lastPart) ? lastPart : 'overview';
-  }
-
-  navigateToTab(route: string): void {
-    if (this.companyId) {
-      this.router.navigate(['/company', this.companyId, route]);
-    } else {
-      this.router.navigate(['/company', route]);
-    }
-  }
-
   navigateBack(): void {
     this.router.navigate(['/companies']);
   }
 
-  getTabClasses(route: string): string {
-    const isActive = this.currentRoute === route;
-    return isActive
-      ? 'border-blue-500 text-blue-600'
-      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+  isTabActive(tabRoute: string): boolean {
+    if (!this.companyId) return false;
+    const expectedPath = `/company/${this.companyId}/${tabRoute}`;
+    return this.currentUrl.startsWith(expectedPath);
   }
 }

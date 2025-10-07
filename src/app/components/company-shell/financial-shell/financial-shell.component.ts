@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute, RouterLink, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-financial-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Financial Shell Header with Navigation -->
@@ -21,69 +22,14 @@ import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
         <!-- Financial Navigation Tabs -->
         <div class="px-6">
           <div class="flex space-x-8 overflow-x-auto">
-            <button
-              (click)="navigateToTab('bank-statements')"
-              [class]="getTabClasses('bank-statements')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-university mr-2"></i>
-              Bank Statements
-            </button>
-
-            <button
-              (click)="navigateToTab('revenue')"
-              [class]="getTabClasses('revenue')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-chart-line mr-2"></i>
-              Revenue
-            </button>
-
-            <button
-              (click)="navigateToTab('profits')"
-              [class]="getTabClasses('profits')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-coins mr-2"></i>
-              Profits
-            </button>
-
-            <button
-              (click)="navigateToTab('cost-structure')"
-              [class]="getTabClasses('cost-structure')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-chart-pie mr-2"></i>
-              Cost Structure
-            </button>
-
-            <button
-              (click)="navigateToTab('balance-sheet')"
-              [class]="getTabClasses('balance-sheet')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-balance-scale mr-2"></i>
-              Balance Sheet
-            </button>
-
-            <button
-              (click)="navigateToTab('ratios')"
-              [class]="getTabClasses('ratios')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-calculator mr-2"></i>
-              Ratios
-            </button>
-
-            <button
-              (click)="navigateToTab('funds-received')"
-              [class]="getTabClasses('funds-received')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-hand-holding-usd mr-2"></i>
-              Funds Received
-            </button>
-
-            <button
-              (click)="navigateToTab('employee-count')"
-              [class]="getTabClasses('employee-count')"
-              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-users mr-2"></i>
-              Employee Count
-            </button>
+            <a
+              *ngFor="let tab of financialTabs"
+              [routerLink]="[tab.route]"
+              [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' + 
+                      (isTabActive(tab.route) ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
+              <i [class]="tab.icon + ' mr-2'"></i>
+              {{ tab.label }}
+            </a>
           </div>
         </div>
       </div>
@@ -95,34 +41,70 @@ import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
     </div>
   `
 })
-export class FinancialShellComponent {
-  currentRoute = '';
+export class FinancialShellComponent implements OnInit {
+  currentUrl = '';
+
+  financialTabs = [
+    {
+      label: 'Bank Statements',
+      route: 'bank-statements',
+      icon: 'fas fa-university'
+    },
+    {
+      label: 'Revenue',
+      route: 'revenue',
+      icon: 'fas fa-chart-line'
+    },
+    {
+      label: 'Profits',
+      route: 'profits',
+      icon: 'fas fa-coins'
+    },
+    {
+      label: 'Cost Structure',
+      route: 'cost-structure',
+      icon: 'fas fa-chart-pie'
+    },
+    {
+      label: 'Balance Sheet',
+      route: 'balance-sheet',
+      icon: 'fas fa-balance-scale'
+    },
+    {
+      label: 'Ratios',
+      route: 'ratios',
+      icon: 'fas fa-calculator'
+    },
+    {
+      label: 'Funds Received',
+      route: 'funds-received',
+      icon: 'fas fa-hand-holding-usd'
+    },
+    {
+      label: 'Employee Count',
+      route: 'employee-count',
+      icon: 'fas fa-users'
+    }
+  ];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute
-  ) {
-    // Track current route for tab highlighting
-    this.router.events.subscribe(() => {
-      this.currentRoute = this.router.url.split('/').pop() || '';
+  ) {}
+
+  ngOnInit(): void {
+    // Track route changes for active tab highlighting
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.currentUrl = event.url;
     });
+
+    // Set initial URL
+    this.currentUrl = this.router.url;
   }
 
-  navigateToTab(route: string): void {
-    // Get company ID from parent route
-    const companyId = this.route.parent?.snapshot.params['id'];
-    if (companyId) {
-      this.router.navigate([`/company/${companyId}/financials/${route}`]);
-    }
-  }
-
-  getTabClasses(route: string): string {
-    const isActive = this.currentRoute === route;
-
-    if (isActive) {
-      return 'border-green-500 text-green-600';
-    } else {
-      return 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
-    }
+  isTabActive(tabRoute: string): boolean {
+    return this.currentUrl.includes(`/financials/${tabRoute}`);
   }
 }
