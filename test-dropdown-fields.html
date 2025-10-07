@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Year/Month/Quarter Dropdown Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-form { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .field-group { margin: 10px 0; }
+        label { display: inline-block; width: 120px; font-weight: bold; }
+        select, input { margin: 5px; padding: 8px; width: 150px; }
+        button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
+        .current-data { background: #e7f3ff; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Year/Month/Quarter Dropdown Test</h1>
+
+    <div class="test-form">
+        <h3>Test Record ID 461 - All Date Fields Editable</h3>
+
+        <div class="field-group">
+            <label>Year:</label>
+            <select id="year">
+                <!-- Years from 2018 to 2030 (7 back, 5 forward from 2025) -->
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Month:</label>
+            <select id="month">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Quarter:</label>
+            <select id="quarter">
+                <option value="1">Q1</option>
+                <option value="2">Q2</option>
+                <option value="3">Q3</option>
+                <option value="4">Q4</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label>Quarter Label:</label>
+            <input type="text" id="quarterLabel" placeholder="Q1, Q2, FY, H1..." maxlength="10">
+        </div>
+
+        <div class="field-group">
+            <label>Turnover:</label>
+            <input type="number" id="turnover" placeholder="0" min="0">
+        </div>
+
+        <button onclick="updateRecord()">Update Record</button>
+        <button onclick="loadCurrentData()">Load Current Data</button>
+        <button onclick="testScenarios()">Test Scenarios</button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        // Generate year options (2018-2030)
+        function initializeYearOptions() {
+            const yearSelect = document.getElementById('year');
+            const currentYear = new Date().getFullYear();
+
+            for (let year = currentYear + 5; year >= currentYear - 7; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+        }
+
+        async function updateRecord() {
+            const resultDiv = document.getElementById('result');
+
+            const data = {
+                id: 461,
+                year: parseInt(document.getElementById('year').value),
+                month: parseInt(document.getElementById('month').value),
+                quarter: parseInt(document.getElementById('quarter').value),
+                quarter_label: document.getElementById('quarterLabel').value,
+                period_date: generatePeriodDate()
+            };
+
+            const turnover = document.getElementById('turnover').value;
+            if (turnover) data.turnover = parseFloat(turnover);
+
+            try {
+                console.log('Updating with data:', data);
+
+                const response = await fetch('http://localhost:8080/api-nodes/company-financials/update-company-financials.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ Update Successful</h4>
+                        <div class="current-data">
+                            <p><strong>Period Date:</strong> ${result.period_date}</p>
+                            <p><strong>Year:</strong> ${result.year}</p>
+                            <p><strong>Month:</strong> ${result.month} (${getMonthName(result.month)})</p>
+                            <p><strong>Quarter:</strong> ${result.quarter}</p>
+                            <p><strong>Quarter Label:</strong> ${result.quarter_label}</p>
+                            <p><strong>Turnover:</strong> ${result.turnover || 'N/A'}</p>
+                        </div>
+                        <details>
+                            <summary>Full Response</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Update failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h4>❌ Update Failed</h4><p>${error.message}</p>`;
+            }
+        }
+
+        function generatePeriodDate() {
+            const year = document.getElementById('year').value;
+            const month = document.getElementById('month').value.padStart(2, '0');
+            return `${year}-${month}-01`;
+        }
+
+        async function loadCurrentData() {
+            try {
+                const response = await fetch('http://localhost:8080/api-nodes/company-financials/get-company-financials.php?id=461');
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('year').value = result.year;
+                    document.getElementById('month').value = result.month;
+                    document.getElementById('quarter').value = result.quarter;
+                    document.getElementById('quarterLabel').value = result.quarter_label || '';
+                    document.getElementById('turnover').value = result.turnover || '';
+
+                    document.getElementById('result').className = 'result current-data';
+                    document.getElementById('result').innerHTML = `
+                        <h4>📋 Loaded Current Data</h4>
+                        <p>Year: ${result.year}, Month: ${getMonthName(result.month)}, Quarter: ${result.quarter} (${result.quarter_label})</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').className = 'result error';
+                document.getElementById('result').innerHTML = `<h4>❌ Load Failed</h4><p>${error.message}</p>`;
+            }
+        }
+
+        function getMonthName(month) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[month - 1] || 'Unknown';
+        }
+
+        async function testScenarios() {
+            const scenarios = [
+                { name: 'Financial Year Q1 (July)', year: 2025, month: 7, quarter: 1, quarter_label: 'Q1' },
+                { name: 'Financial Year Q2 (October)', year: 2025, month: 10, quarter: 2, quarter_label: 'Q2' },
+                { name: 'Custom Label (FY)', year: 2025, month: 1, quarter: 1, quarter_label: 'FY' },
+                { name: 'Half Year (H1)', year: 2025, month: 4, quarter: 2, quarter_label: 'H1' }
+            ];
+
+            document.getElementById('result').className = 'result';
+            document.getElementById('result').innerHTML = '<h4>🧪 Running Test Scenarios...</h4>';
+
+            for (let i = 0; i < scenarios.length; i++) {
+                const scenario = scenarios[i];
+                console.log(`Testing scenario: ${scenario.name}`);
+
+                // Set form values
+                document.getElementById('year').value = scenario.year;
+                document.getElementById('month').value = scenario.month;
+                document.getElementById('quarter').value = scenario.quarter;
+                document.getElementById('quarterLabel').value = scenario.quarter_label;
+
+                // Wait a moment then update
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await updateRecord();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            document.getElementById('result').innerHTML += '<p>✅ All test scenarios completed!</p>';
+        }
+
+        // Initialize on page load
+        window.onload = () => {
+            initializeYearOptions();
+            loadCurrentData();
+        };
+    </script>
+</body>
+</html>

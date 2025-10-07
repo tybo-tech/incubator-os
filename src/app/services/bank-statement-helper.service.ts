@@ -10,6 +10,10 @@ export class BankStatementHelperService {
    * Get the table configuration for bank statements
    */
   getTableConfig(): EditableTableConfig {
+    const currentYear = new Date().getFullYear();
+    const yearOptions = this.generateYearOptions(currentYear);
+    const monthOptions = this.generateMonthOptions();
+
     return {
       columns: [
         {
@@ -18,6 +22,22 @@ export class BankStatementHelperService {
           type: 'readonly',
           editable: false,
           width: '200px'
+        },
+        {
+          key: 'year',
+          label: 'Year',
+          type: 'select',
+          editable: true,
+          options: yearOptions,
+          width: '100px'
+        },
+        {
+          key: 'month',
+          label: 'Month',
+          type: 'select',
+          editable: true,
+          options: monthOptions,
+          width: '120px'
         },
         {
           key: 'quarter',
@@ -30,7 +50,15 @@ export class BankStatementHelperService {
             { value: 3, label: 'Q3' },
             { value: 4, label: 'Q4' }
           ],
-          width: '120px'
+          width: '100px'
+        },
+        {
+          key: 'quarter_label',
+          label: 'Quarter Label',
+          type: 'text',
+          editable: true,
+          width: '120px',
+          placeholder: 'Q1, Q2, FY, H1...'
         },
         {
           key: 'turnover',
@@ -50,6 +78,36 @@ export class BankStatementHelperService {
       striped: true,
       loading: false
     };
+  }
+
+  /**
+   * Generate year options (7 years back, 5 years forward)
+   */
+  private generateYearOptions(currentYear: number): { value: number; label: string }[] {
+    const years: { value: number; label: string }[] = [];
+    const startYear = currentYear - 7;
+    const endYear = currentYear + 5;
+
+    for (let year = startYear; year <= endYear; year++) {
+      years.push({ value: year, label: year.toString() });
+    }
+
+    return years.reverse(); // Most recent years first
+  }
+
+  /**
+   * Generate month options
+   */
+  private generateMonthOptions(): { value: number; label: string }[] {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    return months.map((month, index) => ({
+      value: index + 1,
+      label: month
+    }));
   }
 
   /**
@@ -184,9 +242,27 @@ export class BankStatementHelperService {
 
     const updatedRow = { ...row };
 
+    // Handle month or year changes - update period_date
+    if (field === 'month' || field === 'year') {
+      const year = updatedRow.year;
+      const month = updatedRow.month;
+
+      if (year && month) {
+        updatedRow.period_date = `${year}-${month.toString().padStart(2, '0')}-01`;
+        console.log('Helper - Updated period_date:', updatedRow.period_date);
+
+        // Update period_display for immediate UI feedback
+        updatedRow.period_display = `${this.getMonthName(month)} ${year}`;
+        console.log('Helper - Updated period_display:', updatedRow.period_display);
+      }
+    }
+
     // Special handling for quarter changes
     if (field === 'quarter') {
-      updatedRow.quarter_label = `Q${updatedRow.quarter}`;
+      // Only auto-update quarter_label if it follows the standard Qx pattern
+      if (!updatedRow.quarter_label || updatedRow.quarter_label.match(/^Q[1-4]$/)) {
+        updatedRow.quarter_label = `Q${updatedRow.quarter}`;
+      }
       console.log('Helper - Updated quarter_label:', updatedRow.quarter_label);
     }
 
