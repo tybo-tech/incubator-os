@@ -22,43 +22,67 @@ import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
         <div class="px-6">
           <div class="flex space-x-8 overflow-x-auto">
             <button
-              (click)="navigateToTab('statement')"
-              [class]="getTabClasses('statement')"
+              (click)="navigateToTab('bank-statements')"
+              [class]="getTabClasses('bank-statements')"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-file-invoice-dollar mr-2"></i>
-              Financial Statement
+              <i class="fas fa-university mr-2"></i>
+              Bank Statements
             </button>
 
             <button
-              (click)="navigateToTab('cashflow')"
-              [class]="getTabClasses('cashflow')"
+              (click)="navigateToTab('revenue')"
+              [class]="getTabClasses('revenue')"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-exchange-alt mr-2"></i>
-              Cash Flow
+              <i class="fas fa-chart-line mr-2"></i>
+              Revenue
             </button>
 
             <button
-              (click)="navigateToTab('budgets')"
-              [class]="getTabClasses('budgets')"
+              (click)="navigateToTab('profits')"
+              [class]="getTabClasses('profits')"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+              <i class="fas fa-coins mr-2"></i>
+              Profits
+            </button>
+
+            <button
+              (click)="navigateToTab('cost-structure')"
+              [class]="getTabClasses('cost-structure')"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+              <i class="fas fa-chart-pie mr-2"></i>
+              Cost Structure
+            </button>
+
+            <button
+              (click)="navigateToTab('balance-sheet')"
+              [class]="getTabClasses('balance-sheet')"
+              class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+              <i class="fas fa-balance-scale mr-2"></i>
+              Balance Sheet
+            </button>
+
+            <button
+              (click)="navigateToTab('ratios')"
+              [class]="getTabClasses('ratios')"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
               <i class="fas fa-calculator mr-2"></i>
-              Budget Planning
+              Ratios
             </button>
 
             <button
-              (click)="navigateToTab('analytics')"
-              [class]="getTabClasses('analytics')"
+              (click)="navigateToTab('funds-received')"
+              [class]="getTabClasses('funds-received')"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-chart-bar mr-2"></i>
-              Analytics
+              <i class="fas fa-hand-holding-usd mr-2"></i>
+              Funds Received
             </button>
 
             <button
-              (click)="navigateToTab('reports')"
-              [class]="getTabClasses('reports')"
+              (click)="navigateToTab('employee-count')"
+              [class]="getTabClasses('employee-count')"
               class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-              <i class="fas fa-file-export mr-2"></i>
-              Reports
+              <i class="fas fa-users mr-2"></i>
+              Employee Count
             </button>
           </div>
         </div>

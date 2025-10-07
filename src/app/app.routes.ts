@@ -8,6 +8,16 @@ import { CompanyOverviewComponent } from './components/company-shell/company-ove
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { FinancialTabComponent } from './components/companies/company-detail/financial-tab/financial-tab.component';
 import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
+import {
+  BankStatementsComponent,
+  RevenueComponent,
+  ProfitsComponent,
+  CostStructureComponent,
+  BalanceSheetComponent,
+  RatiosComponent,
+  FundsReceivedComponent,
+  EmployeeCountComponent
+} from './components/company-shell/financial-shell/components';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
@@ -80,28 +90,56 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
-                redirectTo: 'statement',
+                redirectTo: 'bank-statements',
                 pathMatch: 'full'
               },
               {
+                path: 'bank-statements',
+                component: BankStatementsComponent,
+              },
+              {
+                path: 'revenue',
+                component: RevenueComponent,
+              },
+              {
+                path: 'profits',
+                component: ProfitsComponent,
+              },
+              {
+                path: 'cost-structure',
+                component: CostStructureComponent,
+              },
+              {
+                path: 'balance-sheet',
+                component: BalanceSheetComponent,
+              },
+              {
+                path: 'ratios',
+                component: RatiosComponent,
+              },
+              {
+                path: 'funds-received',
+                component: FundsReceivedComponent,
+              },
+              {
+                path: 'employee-count',
+                component: EmployeeCountComponent,
+              },
+              // Legacy route redirects for compatibility
+              {
                 path: 'statement',
-                component: FinancialTabComponent,
-              },
-              {
-                path: 'cashflow',
-                component: FinancialTabComponent, // Placeholder - will create later
-              },
-              {
-                path: 'budgets',
-                component: FinancialTabComponent, // Placeholder - will create later
+                redirectTo: 'bank-statements',
+                pathMatch: 'full'
               },
               {
                 path: 'analytics',
-                component: FinancialTabComponent, // Placeholder - will create later
+                redirectTo: 'revenue',
+                pathMatch: 'full'
               },
               {
-                path: 'reports',
-                component: FinancialTabComponent, // Placeholder - will create later
+                path: 'budgets',
+                redirectTo: 'cost-structure',
+                pathMatch: 'full'
               }
             ]
           }
