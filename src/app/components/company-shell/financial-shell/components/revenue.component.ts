@@ -360,6 +360,9 @@ export class RevenueComponent implements OnInit {
   @ViewChild('yearModal') yearModal!: YearModalComponent;
 
   companyId!: number;
+  clientId!: number;
+  programId!: number;
+  cohortId!: number;
   revenueRows: RevenueDisplayRow[] = [];
   loading = false;
   originalRowData: RevenueDisplayRow | null = null;
@@ -372,13 +375,28 @@ export class RevenueComponent implements OnInit {
   ngOnInit() {
     // Get companyId from route params (two levels up: /company/:id/financial/revenue)
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
+
+    // Get query parameters
+    const queryParams = this.route.parent?.parent?.snapshot.queryParams;
+
     if (companyId) {
       this.companyId = parseInt(companyId, 10);
+
+      // Extract required query parameters
+      this.clientId = queryParams?.['clientId'] ? parseInt(queryParams['clientId'], 10) : 0;
+      this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
+      this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
+
+      console.log('Revenue Component - IDs:', {
+        companyId: this.companyId,
+        clientId: this.clientId,
+        programId: this.programId,
+        cohortId: this.cohortId
+      });
+
       this.loadRevenueData();
     }
-  }
-
-  get existingYears(): number[] {
+  }  get existingYears(): number[] {
     return this.revenueRows.map(row => row.year);
   }
 
@@ -472,6 +490,9 @@ export class RevenueComponent implements OnInit {
     try {
       const data: Partial<CompanyRevenueSummary> = {
         company_id: this.companyId,
+        client_id: this.clientId,
+        program_id: this.programId,
+        cohort_id: this.cohortId,
         year_: row.year,
         q1: row.q1,
         q2: row.q2,
@@ -485,6 +506,8 @@ export class RevenueComponent implements OnInit {
         export_total: row.export_total,
         margin_pct: row.ratio
       };
+
+      console.log('Saving revenue data:', data);
 
       let savedData: CompanyRevenueSummary;
 

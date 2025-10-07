@@ -389,36 +389,24 @@ export class DynamicCompanyDetailComponent implements OnInit, OnDestroy {
     const context = this.companyContext();
     const queryParams: any = {};
 
-    // Include context based on the navigation target
+    // Include context based on the navigation target (IDs only)
     if (item.type === 'client') {
       queryParams.clientId = item.id;
-      if (item.name !== `Client ${item.id}`) {
-        queryParams.clientName = item.name;
-      }
     } else if (item.type === 'program') {
       // Include client context if available
       if (context.clientId) {
         queryParams.clientId = context.clientId;
-        if (context.clientName) queryParams.clientName = context.clientName;
       }
       queryParams.programId = item.id;
-      if (item.name !== `Program ${item.id}`) {
-        queryParams.programName = item.name;
-      }
     } else if (item.type === 'cohort') {
       // Include client and program context if available
       if (context.clientId) {
         queryParams.clientId = context.clientId;
-        if (context.clientName) queryParams.clientName = context.clientName;
       }
       if (context.programId) {
         queryParams.programId = context.programId;
-        if (context.programName) queryParams.programName = context.programName;
       }
       queryParams.cohortId = item.id;
-      if (item.name !== `Cohort ${item.id}`) {
-        queryParams.cohortName = item.name;
-      }
     }
 
     this.router.navigate(['/', 'overview'], { queryParams });
