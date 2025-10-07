@@ -14,12 +14,13 @@ import {
   EditableTableAction,
 } from '../../../shared';
 import { BankStatementHelperService } from '../../../../../app/services/bank-statement-helper.service';
+import { BankStatementSummaryComponent } from './bank-statement-summary.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-bank-statements',
   standalone: true,
-  imports: [CommonModule, FormsModule, EditableTableComponent],
+  imports: [CommonModule, FormsModule, EditableTableComponent, BankStatementSummaryComponent],
   template: `
     <div class="space-y-6">
       <!-- Page Header -->
@@ -62,6 +63,13 @@ import { firstValueFrom } from 'rxjs';
           </select>
         </div>
       </div>
+
+      <!-- Financial Summary -->
+      <app-bank-statement-summary
+        [company]="company"
+        [financials]="financials"
+        [selectedYear]="selectedYear">
+      </app-bank-statement-summary>
 
       <!-- Editable Table -->
       <app-editable-table
