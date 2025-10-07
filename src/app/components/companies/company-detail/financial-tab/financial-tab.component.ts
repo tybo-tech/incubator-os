@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   FinancialOverviewComponent,
   FinancialCheckinModalComponent,
@@ -9,6 +9,7 @@ import {
 import { FinancialCheckinQuarterlyViewComponent } from './components/financial-checkin-quarterly-view.component';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../services/company-financials.service';
+import { CompanyService } from '../../../../../services/company.service';
 
 @Component({
   selector: 'app-financial-tab',
@@ -23,9 +24,13 @@ import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../ser
   templateUrl: './financial-tab.component.html'
 })
 export class FinancialTabComponent implements OnInit {
-  @Input() company!: ICompany;
+  @Input() company?: ICompany; // Made optional since it might come from route or input
   @ViewChild(FinancialCheckinOverviewComponent) checkinOverview!: FinancialCheckinOverviewComponent;
   @ViewChild(FinancialCheckinModalComponent) checkinModal!: FinancialCheckinModalComponent;
+
+  // Company loading state
+  loadingCompany = false;
+  companyError: string | null = null;
 
   // Financial Check-ins data
   financialCheckIns: ICompanyFinancials[] = [];
@@ -39,16 +44,53 @@ export class FinancialTabComponent implements OnInit {
 
   constructor(
     private checkInService: CompanyFinancialsService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit() {
-    if (this.company?.id) {
+    // If company is not provided as input, load it from route parameters
+    if (!this.company) {
+      this.loadCompanyFromRoute();
+    } else {
       this.loadFinancialCheckIns();
     }
   }
 
+  loadCompanyFromRoute() {
+    // Get company ID from parent route (company/:id)
+    this.route.parent?.params.subscribe(params => {
+      const companyId = params['id'];
+      if (companyId) {
+        this.loadCompanyData(parseInt(companyId, 10));
+      }
+    });
+  }
+
+  loadCompanyData(companyId: number) {
+    this.loadingCompany = true;
+    this.companyError = null;
+
+    this.companyService.getCompanyById(companyId).subscribe({
+      next: (company) => {
+        this.company = company;
+        this.loadingCompany = false;
+        this.loadFinancialCheckIns();
+      },
+      error: (error) => {
+        console.error('Error loading company:', error);
+        this.companyError = 'Failed to load company information';
+        this.loadingCompany = false;
+      }
+    });
+  }
+
   loadFinancialCheckIns() {
+    if (!this.company?.id) {
+      return;
+    }
+
     this.loadingCheckIns = true;
     this.checkInsError = null;
 
@@ -57,7 +99,7 @@ export class FinancialTabComponent implements OnInit {
       next: (checkIns: ICompanyFinancials[]) => {
         // Filter check-ins for this company
         this.financialCheckIns = checkIns
-          .filter((checkIn: ICompanyFinancials) => checkIn.company_id === this.company.id)
+          .filter((checkIn: ICompanyFinancials) => checkIn.company_id === this.company!.id)
           .sort((a: ICompanyFinancials, b: ICompanyFinancials) => {
             // Sort by year and month descending (newest first)
             if (a.year !== b.year) {
@@ -80,6 +122,8 @@ export class FinancialTabComponent implements OnInit {
   // ===== PDF EXPORT METHODS =====
 
   onExportPDF() {
+    if (!this.company?.id) return;
+
     // Navigate to the dedicated PDF export page in a new tab
     const url = this.router.serializeUrl(
       this.router.createUrlTree(['/companies', this.company.id, 'pdf-export'])
@@ -128,6 +172,8 @@ export class FinancialTabComponent implements OnInit {
       });
     } else {
       // Create new check-in
+      if (!this.company?.id) return;
+
       const newCheckIn: Partial<ICompanyFinancials> = {
         company_id: this.company.id,
       };

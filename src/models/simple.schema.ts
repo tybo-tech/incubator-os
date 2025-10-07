@@ -169,6 +169,43 @@ export function initCompany(): ICompany{
   }
 }
 
+// Financial Records Interface for monthly/quarterly financial data
+export interface IFinancialRecord {
+  id: number;
+  company_id: number;
+  period_date: string; // format: YYYY-MM-DD
+  year: number;
+  month: number;
+  turnover_monthly_avg: string; // decimal as string
+  quarter: number;
+  is_pre_ignition: boolean;
+  quarter_label: string; // e.g., "Q1", "Q2", etc.
+
+  // Financial metrics (nullable fields from your data)
+  turnover: string | null; // decimal as string
+  cost_of_sales: string | null;
+  business_expenses: string | null;
+  gross_profit: string | null;
+  net_profit: string | null;
+  gp_margin: string | null; // gross profit margin
+  np_margin: string | null; // net profit margin
+
+  // Balance sheet items
+  cash_on_hand: string | null;
+  debtors: string | null;
+  creditors: string | null;
+  inventory_on_hand: string | null;
+  working_capital_ratio: string | null;
+  net_assets: string | null;
+
+  // Additional notes
+  notes: string | null;
+
+  // Timestamps
+  created_at: string; // format: YYYY-MM-DD HH:mm:ss
+  updated_at: string; // format: YYYY-MM-DD HH:mm:ss
+}
+
 export type UserRole = 'Director' | 'Advisor' | 'Admin' | 'Staff' | string;
 export type Race =
   | 'Black'

@@ -5,10 +5,9 @@ import { DynamicCompanyDetailComponent } from './components/dynamic-company-deta
 import { AppShellComponent } from './components/app-shell/app-shell.component';
 import { CompanyShellComponent } from './components/company-shell/company-shell.component';
 import { CompanyOverviewComponent } from './components/company-shell/company-overview/company-overview.component';
-import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
-import { FinancialDashboardComponent } from './components/company-shell/financial-shell/financial-dashboard/financial-dashboard.component';
-import { ProfitLossComponent } from './components/company-shell/financial-shell/profit-loss/profit-loss.component';
 import { TasksListComponent } from './components/tasks/tasks-list.component';
+import { FinancialTabComponent } from './components/companies/company-detail/financial-tab/financial-tab.component';
+import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
 import { ActionPlanExportComponent } from './components/action-plan-export/action-plan-export.component';
 import { groupingRoutes } from './admin/grouping/grouping.routes';
@@ -56,45 +55,6 @@ export const routes: Routes = [
             component: CompanyOverviewComponent,
           },
           {
-            path: 'financials',
-            component: FinancialShellComponent,
-            children: [
-              {
-                path: '',
-                redirectTo: 'dashboard',
-                pathMatch: 'full'
-              },
-              {
-                path: 'dashboard',
-                component: FinancialDashboardComponent,
-              },
-              {
-                path: 'profit-loss',
-                component: ProfitLossComponent,
-              },
-              {
-                path: 'balance-sheet',
-                component: FinancialDashboardComponent, // Placeholder
-              },
-              {
-                path: 'cash-flow',
-                component: FinancialDashboardComponent, // Placeholder
-              },
-              {
-                path: 'ratios',
-                component: FinancialDashboardComponent, // Placeholder
-              },
-              {
-                path: 'budgets',
-                component: FinancialDashboardComponent, // Placeholder
-              },
-              {
-                path: 'forecasts',
-                component: FinancialDashboardComponent, // Placeholder
-              }
-            ]
-          },
-          {
             path: 'strategy',
             component: CompanyOverviewComponent, // Placeholder - will create later
           },
@@ -113,6 +73,37 @@ export const routes: Routes = [
           {
             path: 'tasks',
             component: CompanyOverviewComponent, // Placeholder - will create later
+          },
+          {
+            path: 'financials',
+            component: FinancialShellComponent,
+            children: [
+              {
+                path: '',
+                redirectTo: 'statement',
+                pathMatch: 'full'
+              },
+              {
+                path: 'statement',
+                component: FinancialTabComponent,
+              },
+              {
+                path: 'cashflow',
+                component: FinancialTabComponent, // Placeholder - will create later
+              },
+              {
+                path: 'budgets',
+                component: FinancialTabComponent, // Placeholder - will create later
+              },
+              {
+                path: 'analytics',
+                component: FinancialTabComponent, // Placeholder - will create later
+              },
+              {
+                path: 'reports',
+                component: FinancialTabComponent, // Placeholder - will create later
+              }
+            ]
           }
         ]
       },

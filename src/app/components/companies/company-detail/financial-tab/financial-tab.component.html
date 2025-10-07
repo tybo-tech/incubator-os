@@ -1,14 +1,31 @@
 <div class="space-y-8">
-  <div class="bg-white rounded-lg shadow-sm p-6">
+  <!-- Loading state for company data -->
+  <div *ngIf="loadingCompany" class="text-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+    <p class="text-gray-500 mt-2">Loading company information...</p>
+  </div>
+
+  <!-- Error state for company data -->
+  <div *ngIf="companyError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <p class="text-red-600">{{ companyError }}</p>
+    <button
+      (click)="loadCompanyFromRoute()"
+      class="mt-2 px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">
+      Try Again
+    </button>
+  </div>
+
+  <!-- Main content when company is loaded -->
+  <div *ngIf="company && !loadingCompany && !companyError" class="bg-white rounded-lg shadow-sm p-6">
     <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
 
     <!-- Financial Overview Component -->
-    <app-financial-overview [company]="company"></app-financial-overview>
+    <app-financial-overview [company]="company!"></app-financial-overview>
 
     <!-- Financial Check-ins Section -->
     <div class="border-t pt-6">
       <app-financial-checkin-overview
-        [company]="company"
+        [company]="company!"
         (onNewCheckInClick)="onNewCheckIn()"
         (onViewTrendsClick)="onViewTrends()"
         (onEditCheckIn)="onEditCheckIn($event)">
@@ -61,7 +78,7 @@
   <!-- Financial Check-in Modal Component -->
   <app-financial-checkin-modal
     [isVisible]="showCheckInModal"
-    [company]="company"
+    [company]="company!"
     [editMode]="isCheckInEditMode"
     [checkInData]="editingCheckIn || undefined"
     (onCloseModal)="onCheckInModalClose()"
