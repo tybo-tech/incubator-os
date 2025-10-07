@@ -2,27 +2,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { CompanyRevenueSummaryService } from '../../../../../services/company-revenue-summary.service';
+import { CompanyRevenueSummaryService, RevenueDisplayRow } from '../../../../../services/company-revenue-summary.service';
 import { CompanyRevenueSummary } from '../../../../../models/financial.models';
 import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
-
-interface RevenueDisplayRow {
-  id?: number;
-  year: number;
-  q1: number | null;
-  q2: number | null;
-  q3: number | null;
-  q4: number | null;
-  total: number | null;
-  export_q1: number | null;
-  export_q2: number | null;
-  export_q3: number | null;
-  export_q4: number | null;
-  export_total: number | null;
-  ratio: number | null;
-  isEditing?: boolean;
-  isNew?: boolean;
-}
 
 @Component({
   selector: 'app-revenue',
@@ -372,7 +354,7 @@ export class RevenueComponent implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     // Get companyId from route params (two levels up: /company/:id/financial/revenue)
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
     // Get query parameters
@@ -395,92 +377,41 @@ export class RevenueComponent implements OnInit {
 
       this.loadRevenueData();
     }
-  }  get existingYears(): number[] {
+  }
+
+  get existingYears(): number[] {
     return this.revenueRows.map(row => row.year);
   }
 
-  async loadRevenueData() {
+  async loadRevenueData(): Promise<void> {
     this.loading = true;
     try {
-      const response = await this.revenueService.listAllCompanyRevenueSummary(this.companyId).toPromise();
-      console.log('Revenue API response:', response);
-
-      // Handle different response formats
-      let data: any[];
-      if (Array.isArray(response)) {
-        data = response;
-      } else if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) {
-        data = (response as any).data;
-      } else if (response && typeof response === 'object') {
-        // If response is an object, try to find an array property
-        const possibleArrays = Object.values(response).filter(val => Array.isArray(val));
-        data = possibleArrays.length > 0 ? possibleArrays[0] as any[] : [];
-      } else {
-        data = [];
-      }
-
-      this.revenueRows = data.map(item => this.mapToDisplayRow(item));
+      const revenueRows = await this.revenueService.listAllCompanyRevenueSummary(this.companyId).toPromise();
+      this.revenueRows = revenueRows || [];
     } catch (error) {
       console.error('Error loading revenue data:', error);
-      this.revenueRows = []; // Set empty array on error
+      this.revenueRows = [];
     } finally {
       this.loading = false;
     }
   }
 
-  mapToDisplayRow(item: CompanyRevenueSummary): RevenueDisplayRow {
-    const revenue_total = (item.q1 || 0) + (item.q2 || 0) + (item.q3 || 0) + (item.q4 || 0);
-    const export_total = (item.export_q1 || 0) + (item.export_q2 || 0) + (item.export_q3 || 0) + (item.export_q4 || 0);
-    const ratio = revenue_total > 0 ? (export_total / revenue_total) * 100 : 0;
-
-    return {
-      id: item.id,
-      year: item.year_,
-      q1: item.q1 ?? null,
-      q2: item.q2 ?? null,
-      q3: item.q3 ?? null,
-      q4: item.q4 ?? null,
-      total: revenue_total,
-      export_q1: item.export_q1 ?? null,
-      export_q2: item.export_q2 ?? null,
-      export_q3: item.export_q3 ?? null,
-      export_q4: item.export_q4 ?? null,
-      export_total: export_total,
-      ratio: ratio
-    };
-  }
-
-  openYearModal() {
+  openYearModal(): void {
     this.yearModal.open();
   }
 
-  onYearSelected(year: number) {
+  onYearSelected(year: number): void {
     this.addYearWithValue(year);
   }
 
-  onModalClosed() {
+  onModalClosed(): void {
     // Handle modal close if needed
   }
 
-  addYearWithValue(year: number) {
-    const newRow: RevenueDisplayRow = {
-      year: year,
-      q1: null,
-      q2: null,
-      q3: null,
-      q4: null,
-      total: 0,
-      export_q1: null,
-      export_q2: null,
-      export_q3: null,
-      export_q4: null,
-      export_total: 0,
-      ratio: 0,
-      isNew: true,
-      isEditing: true
-    };
+  addYearWithValue(year: number): void {
+    const newRow = this.revenueService.createNewRevenueRow(year);
 
-    // Insert in year order (newest first)
+    // Insert in year order (newest first) using service method
     const insertIndex = this.revenueRows.findIndex(row => row.year < year);
     if (insertIndex === -1) {
       this.revenueRows.push(newRow);
@@ -489,58 +420,52 @@ export class RevenueComponent implements OnInit {
     }
   }
 
-  editRow(row: RevenueDisplayRow) {
+  editRow(row: RevenueDisplayRow): void {
     // Store original data for cancel functionality
     this.originalRowData = { ...row };
     row.isEditing = true;
   }
 
-  async saveRow(row: RevenueDisplayRow) {
-    // Check for duplicate years
-    const duplicateYear = this.revenueRows.find(r => r !== row && r.year === row.year);
-    if (duplicateYear) {
+  async saveRow(row: RevenueDisplayRow): Promise<void> {
+    // Validate the row using service method
+    const validation = this.revenueService.validateRevenueRow(row);
+    if (!validation.isValid) {
+      alert(`Validation errors:\n${validation.errors.join('\n')}`);
+      return;
+    }
+
+    // Check for duplicate years using service method
+    if (this.revenueService.checkForDuplicateYear(this.revenueRows, row, row.year)) {
       alert(`Year ${row.year} already exists. Please choose a different year.`);
       return;
     }
 
     try {
-      const data: Partial<CompanyRevenueSummary> = {
-        company_id: this.companyId,
-        client_id: this.clientId,
-        program_id: this.programId,
-        cohort_id: this.cohortId,
-        year_: row.year,
-        q1: row.q1,
-        q2: row.q2,
-        q3: row.q3,
-        q4: row.q4,
-        export_q1: row.export_q1,
-        export_q2: row.export_q2,
-        export_q3: row.export_q3,
-        export_q4: row.export_q4,
-        total: row.total,
-        export_total: row.export_total,
-        margin_pct: row.ratio
-      };
+      const saveData = this.revenueService.mapToSaveData(row, this.companyId, this.clientId, this.programId, this.cohortId);
 
-      console.log('Saving revenue data:', data);
+      console.log('Saving revenue data:', saveData);
+      console.log('Row totals before saving:', {
+        revenue_total: row.total,
+        export_total: row.export_total,
+        ratio: row.ratio
+      });
 
       let savedData: CompanyRevenueSummary;
 
       if (row.isNew) {
-        savedData = await this.revenueService.addCompanyRevenueSummary(data).toPromise() as CompanyRevenueSummary;
+        savedData = await this.revenueService.addCompanyRevenueSummary(saveData).toPromise() as CompanyRevenueSummary;
       } else {
-        savedData = await this.revenueService.updateCompanyRevenueSummary(row.id!, data).toPromise() as CompanyRevenueSummary;
+        savedData = await this.revenueService.updateCompanyRevenueSummary(row.id!, saveData).toPromise() as CompanyRevenueSummary;
       }
 
-      // Update the row with saved data
-      Object.assign(row, this.mapToDisplayRow(savedData));
+      // Update the row with saved data using service method
+      Object.assign(row, this.revenueService.mapToDisplayRow(savedData));
       row.isEditing = false;
       row.isNew = false;
       this.originalRowData = null;
 
-      // Sort rows by year (newest first)
-      this.revenueRows.sort((a, b) => b.year - a.year);
+      // Sort rows using service method
+      this.revenueRows = this.revenueService.sortRowsByYear(this.revenueRows);
 
     } catch (error) {
       console.error('Error saving revenue data:', error);
@@ -548,7 +473,7 @@ export class RevenueComponent implements OnInit {
     }
   }
 
-  cancelEdit(row: RevenueDisplayRow, index: number) {
+  cancelEdit(row: RevenueDisplayRow, index: number): void {
     if (row.isNew) {
       // Remove the new row
       this.revenueRows.splice(index, 1);
@@ -562,7 +487,7 @@ export class RevenueComponent implements OnInit {
     }
   }
 
-  async deleteRow(row: RevenueDisplayRow, index: number) {
+  async deleteRow(row: RevenueDisplayRow, index: number): Promise<void> {
     if (confirm(`Are you sure you want to delete the revenue data for ${row.year}?`)) {
       try {
         if (row.id) {
@@ -576,27 +501,16 @@ export class RevenueComponent implements OnInit {
     }
   }
 
-  calculateRowTotals(row: RevenueDisplayRow) {
-    // Calculate revenue total
-    row.total = (row.q1 || 0) + (row.q2 || 0) + (row.q3 || 0) + (row.q4 || 0);
-
-    // Calculate export total
-    row.export_total = (row.export_q1 || 0) + (row.export_q2 || 0) + (row.export_q3 || 0) + (row.export_q4 || 0);
-
-    // Calculate ratio (export / revenue * 100)
-    row.ratio = row.total && row.total > 0 ? (row.export_total || 0) / row.total * 100 : 0;
+  calculateRowTotals(row: RevenueDisplayRow): void {
+    // Use service method for calculations
+    this.revenueService.updateRowTotals(row);
   }
 
   formatCurrency(value: number | null): string {
-    if (value === null || value === undefined) return '-';
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
+    return this.revenueService.formatCurrency(value);
   }
 
   formatPercentage(value: number | null): string {
-    if (value === null || value === undefined) return '-%';
-    return `${Math.round(value)}%`;
+    return this.revenueService.formatPercentage(value);
   }
 }
