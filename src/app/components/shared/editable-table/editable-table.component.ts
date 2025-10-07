@@ -87,7 +87,7 @@ export interface EditableTableAction {
             <tr>
               <th
                 *ngFor="let column of config.columns"
-                [style.width]="column.width"
+                [style.width]="getColumnWidth(column)"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {{ column.label }}
                 <span *ngIf="column.required" class="text-red-500 ml-1">*</span>
@@ -209,6 +209,7 @@ export class EditableTableComponent implements OnInit {
   @Input() config!: EditableTableConfig;
   @Input() title?: string;
   @Input() subtitle?: string;
+  @Input() defaultWidth: string = '200px'; // Default column width for consistency
   @Input() emptyStateIcon = 'fas fa-table';
   @Input() emptyStateTitle = 'No Data';
   @Input() emptyStateMessage = 'No records found. Start by adding your first entry.';
@@ -314,5 +315,12 @@ export class EditableTableComponent implements OnInit {
       const value = Number(row[columnKey]) || 0;
       return sum + value;
     }, 0);
+  }
+
+  /**
+   * Get the effective width for a column (column.width or defaultWidth)
+   */
+  getColumnWidth(column: EditableTableColumn): string {
+    return column.width || this.defaultWidth;
   }
 }

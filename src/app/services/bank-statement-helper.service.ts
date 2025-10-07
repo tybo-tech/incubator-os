@@ -13,6 +13,7 @@ export class BankStatementHelperService {
     const currentYear = new Date().getFullYear();
     const yearOptions = this.generateYearOptions(currentYear);
     const monthOptions = this.generateMonthOptions();
+    const quarterOptions = this.generateQuarterOptions();
 
     return {
       columns: [
@@ -20,8 +21,7 @@ export class BankStatementHelperService {
           key: 'period_display',
           label: 'Period',
           type: 'readonly',
-          editable: false,
-          width: '200px'
+          editable: false
         },
         {
           key: 'year',
@@ -29,7 +29,7 @@ export class BankStatementHelperService {
           type: 'select',
           editable: true,
           options: yearOptions,
-          width: '100px'
+          width: '120px'
         },
         {
           key: 'month',
@@ -37,28 +37,15 @@ export class BankStatementHelperService {
           type: 'select',
           editable: true,
           options: monthOptions,
-          width: '120px'
+          width: '140px'
         },
         {
           key: 'quarter',
           label: 'Quarter',
           type: 'select',
           editable: true,
-          options: [
-            { value: 1, label: 'Q1' },
-            { value: 2, label: 'Q2' },
-            { value: 3, label: 'Q3' },
-            { value: 4, label: 'Q4' }
-          ],
-          width: '100px'
-        },
-        {
-          key: 'quarter_label',
-          label: 'Quarter Label',
-          type: 'text',
-          editable: true,
-          width: '120px',
-          placeholder: 'Q1, Q2, FY, H1...'
+          options: quarterOptions,
+          width: '120px'
         },
         {
           key: 'turnover',
@@ -111,6 +98,22 @@ export class BankStatementHelperService {
   }
 
   /**
+   * Generate quarter options with common business periods
+   */
+  private generateQuarterOptions(): { value: string; label: string }[] {
+    return [
+      { value: '1|Q1', label: 'Q1 - First Quarter' },
+      { value: '2|Q2', label: 'Q2 - Second Quarter' },
+      { value: '3|Q3', label: 'Q3 - Third Quarter' },
+      { value: '4|Q4', label: 'Q4 - Fourth Quarter' },
+      { value: '1|H1', label: 'H1 - First Half' },
+      { value: '2|H2', label: 'H2 - Second Half' },
+      { value: '1|FY', label: 'FY - Full Year' },
+      { value: '1|YTD', label: 'YTD - Year to Date' }
+    ];
+  }
+
+  /**
    * Get month name from month number
    */
   getMonthName(month: number): string {
@@ -145,12 +148,14 @@ export class BankStatementHelperService {
       return a.month - b.month;
     });
 
-    // Add period display for table
+    // Add period display and quarter display for table
     return filtered.map(record => ({
       ...record,
       period_display: selectedYear === 'all'
         ? `${this.getMonthName(record.month)} ${record.year}`
-        : this.getMonthName(record.month)
+        : this.getMonthName(record.month),
+      // Create combined quarter display value for the select dropdown
+      quarter: `${record.quarter}|${record.quarter_label || 'Q' + record.quarter}`
     }));
   }
 
@@ -257,8 +262,16 @@ export class BankStatementHelperService {
       }
     }
 
-    // Special handling for quarter changes
-    if (field === 'quarter') {
+    // Special handling for combined quarter value (quarter|label format)
+    if (field === 'quarter' && typeof updatedRow.quarter === 'string' && updatedRow.quarter.includes('|')) {
+      const [quarterNum, quarterLabel] = updatedRow.quarter.split('|');
+      updatedRow.quarter = parseInt(quarterNum);
+      updatedRow.quarter_label = quarterLabel;
+      console.log('Helper - Split quarter value:', { quarter: updatedRow.quarter, quarter_label: updatedRow.quarter_label });
+    }
+
+    // Special handling for individual quarter changes (legacy support)
+    else if (field === 'quarter' && typeof updatedRow.quarter === 'number') {
       // Only auto-update quarter_label if it follows the standard Qx pattern
       if (!updatedRow.quarter_label || updatedRow.quarter_label.match(/^Q[1-4]$/)) {
         updatedRow.quarter_label = `Q${updatedRow.quarter}`;

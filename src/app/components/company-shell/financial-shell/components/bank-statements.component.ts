@@ -75,6 +75,7 @@ import { firstValueFrom } from 'rxjs';
       <app-editable-table
         [data]="filteredData"
         [config]="tableConfig"
+        [defaultWidth]="'200px'"
         [title]="'Monthly Turnover Records'"
         [subtitle]="
           selectedYear === 'all' ? 'All years' : 'Year ' + selectedYear
