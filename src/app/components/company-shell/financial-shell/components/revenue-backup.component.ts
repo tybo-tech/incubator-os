@@ -1,10 +1,9 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CompanyRevenueSummaryService } from '../../../../../services/company-revenue-summary.service';
 import { CompanyRevenueSummary } from '../../../../../models/financial.models';
-import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
 
 interface RevenueDisplayRow {
   id?: number;
@@ -27,7 +26,7 @@ interface RevenueDisplayRow {
 @Component({
   selector: 'app-revenue',
   standalone: true,
-  imports: [CommonModule, FormsModule, YearModalComponent],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
@@ -37,7 +36,7 @@ interface RevenueDisplayRow {
           <h2 class="text-xl font-bold text-gray-900">Revenue</h2>
         </div>
         <button
-          (click)="openYearModal()"
+          (click)="addYear()"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
           <i class="fas fa-plus mr-2"></i>
           Year
@@ -54,28 +53,28 @@ interface RevenueDisplayRow {
 
         <!-- Revenue Section -->
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 table-fixed">
+          <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Revenue
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q1
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q2
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q3
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q4
                 </th>
-                <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Total
                 </th>
-                <th class="w-20 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Actions
                 </th>
               </tr>
@@ -84,17 +83,9 @@ interface RevenueDisplayRow {
               <tr *ngFor="let row of revenueRows; let i = index"
                   [class.bg-blue-50]="row.isEditing"
                   [class.bg-green-50]="row.isNew">
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <input
-                      *ngIf="row.isEditing || row.isNew"
-                      type="number"
-                      [(ngModel)]="row.year"
-                      [min]="2000"
-                      [max]="2030"
-                      class="w-full px-2 py-1 text-sm font-medium border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm font-medium text-gray-900">{{ row.year }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ row.year }}</span>
                     <span *ngIf="row.isEditing" class="ml-2 text-xs text-blue-600">
                       <i class="fas fa-edit"></i>
                     </span>
@@ -102,77 +93,75 @@ interface RevenueDisplayRow {
                 </td>
 
                 <!-- Q1 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.q1"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.q1) }}
                   </span>
                 </td>
 
                 <!-- Q2 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.q2"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.q2) }}
                   </span>
                 </td>
 
                 <!-- Q3 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.q3"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.q3) }}
                   </span>
                 </td>
 
                 <!-- Q4 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.q4"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.q4) }}
                   </span>
                 </td>
 
                 <!-- Total -->
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-gray-900">
-                      {{ formatCurrency(row.total) }}
-                    </span>
-                    <span class="text-xs text-gray-500 block">USD</span>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-900">
+                    {{ formatCurrency(row.total) }}
+                  </span>
+                  <span class="text-xs text-gray-500 ml-1">USD</span>
                 </td>
 
                 <!-- Actions -->
-                <td class="w-20 px-4 py-4 whitespace-nowrap text-center">
+                <td class="px-6 py-4 whitespace-nowrap text-center">
                   <div class="flex justify-center space-x-2">
                     <ng-container *ngIf="row.isEditing || row.isNew">
                       <button
@@ -211,29 +200,32 @@ interface RevenueDisplayRow {
 
         <!-- Export Revenue Section -->
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 table-fixed">
+          <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Export revenue
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q1
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q2
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q3
                 </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Q4
                 </th>
-                <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Total
                 </th>
-                <th class="w-20 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Ratio
+                </th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -241,89 +233,92 @@ interface RevenueDisplayRow {
               <tr *ngFor="let row of revenueRows; let i = index"
                   [class.bg-blue-50]="row.isEditing"
                   [class.bg-green-50]="row.isNew">
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
                     <span class="text-sm font-medium text-gray-900">{{ row.year }}</span>
                   </div>
                 </td>
 
                 <!-- Export Q1 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.export_q1"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.export_q1) }}
                   </span>
                 </td>
 
                 <!-- Export Q2 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.export_q2"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.export_q2) }}
                   </span>
                 </td>
 
                 <!-- Export Q3 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.export_q3"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.export_q3) }}
                   </span>
                 </td>
 
                 <!-- Export Q4 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="row.isEditing || row.isNew"
                     type="number"
                     [(ngModel)]="row.export_q4"
                     (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     placeholder="0"
                   />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm text-gray-900">
                     {{ formatCurrency(row.export_q4) }}
                   </span>
                 </td>
 
                 <!-- Export Total -->
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-gray-900">
-                      {{ formatCurrency(row.export_total) }}
-                    </span>
-                    <span class="text-xs text-gray-500 block">USD</span>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-gray-900">
+                    {{ formatCurrency(row.export_total) }}
+                  </span>
+                  <span class="text-xs text-gray-500 ml-1">USD</span>
                 </td>
 
                 <!-- Ratio -->
-                <td class="w-20 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-blue-600">
-                      {{ formatPercentage(row.ratio) }}
-                    </span>
-                  </div>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-semibold text-blue-600">
+                    {{ formatPercentage(row.ratio) }}
+                  </span>
+                </td>
+
+                <!-- Actions (Hidden for export section since it's controlled by revenue section) -->
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <span class="text-xs text-gray-400">
+                    <i class="fas fa-link"></i>
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -338,28 +333,19 @@ interface RevenueDisplayRow {
         <h3 class="text-lg font-medium text-gray-900 mb-2">No Revenue Data</h3>
         <p class="text-gray-600 mb-4">Start by adding your first year of revenue data.</p>
         <button
-          (click)="openYearModal()"
+          (click)="addYear()"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
           <i class="fas fa-plus mr-2"></i>
           Add Year
         </button>
       </div>
 
-      <!-- Year Modal -->
-      <app-year-modal
-        #yearModal
-        [existingYears]="existingYears"
-        (yearSelected)="onYearSelected($event)"
-        (modalClosed)="onModalClosed()">
-      </app-year-modal>
-
     </div>
   `
 })
 export class RevenueComponent implements OnInit {
-  @ViewChild('yearModal') yearModal!: YearModalComponent;
-
   companyId!: number;
+
   revenueRows: RevenueDisplayRow[] = [];
   loading = false;
   originalRowData: RevenueDisplayRow | null = null;
@@ -376,10 +362,6 @@ export class RevenueComponent implements OnInit {
       this.companyId = parseInt(companyId, 10);
       this.loadRevenueData();
     }
-  }
-
-  get existingYears(): number[] {
-    return this.revenueRows.map(row => row.year);
   }
 
   async loadRevenueData() {
@@ -416,21 +398,18 @@ export class RevenueComponent implements OnInit {
     };
   }
 
-  openYearModal() {
-    this.yearModal.open();
-  }
+  addYear() {
+    const currentYear = new Date().getFullYear();
+    const existingYears = this.revenueRows.map(row => row.year);
+    let newYear = currentYear;
 
-  onYearSelected(year: number) {
-    this.addYearWithValue(year);
-  }
+    // Find the next available year
+    while (existingYears.includes(newYear)) {
+      newYear++;
+    }
 
-  onModalClosed() {
-    // Handle modal close if needed
-  }
-
-  addYearWithValue(year: number) {
     const newRow: RevenueDisplayRow = {
-      year: year,
+      year: newYear,
       q1: null,
       q2: null,
       q3: null,
@@ -446,13 +425,7 @@ export class RevenueComponent implements OnInit {
       isEditing: true
     };
 
-    // Insert in year order (newest first)
-    const insertIndex = this.revenueRows.findIndex(row => row.year < year);
-    if (insertIndex === -1) {
-      this.revenueRows.push(newRow);
-    } else {
-      this.revenueRows.splice(insertIndex, 0, newRow);
-    }
+    this.revenueRows.unshift(newRow);
   }
 
   editRow(row: RevenueDisplayRow) {
@@ -462,13 +435,6 @@ export class RevenueComponent implements OnInit {
   }
 
   async saveRow(row: RevenueDisplayRow) {
-    // Check for duplicate years
-    const duplicateYear = this.revenueRows.find(r => r !== row && r.year === row.year);
-    if (duplicateYear) {
-      alert(`Year ${row.year} already exists. Please choose a different year.`);
-      return;
-    }
-
     try {
       const data: Partial<CompanyRevenueSummary> = {
         company_id: this.companyId,
@@ -499,9 +465,6 @@ export class RevenueComponent implements OnInit {
       row.isEditing = false;
       row.isNew = false;
       this.originalRowData = null;
-
-      // Sort rows by year (newest first)
-      this.revenueRows.sort((a, b) => b.year - a.year);
 
     } catch (error) {
       console.error('Error saving revenue data:', error);
