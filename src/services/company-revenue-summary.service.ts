@@ -49,7 +49,7 @@ export class CompanyRevenueSummaryService {
    * @param filters Filtering and sorting options
    */
   listCompanyRevenueSummary(filters: ICompanyRevenueSummaryFilters): Observable<CompanyRevenueSummary[]> {
-    return this.http.post<CompanyRevenueSummary[]>(`${this.apiUrl}/list-company-revenue-summary.php`, filters, this.httpOptions);
+    return this.http.post<CompanyRevenueSummary[]>(`${this.apiUrl}/list-company-revenue-summary.php?company_id=${filters.company_id}`, filters, this.httpOptions);
   }
 
   /**

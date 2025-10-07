@@ -375,7 +375,6 @@ export class RevenueComponent implements OnInit {
   ngOnInit() {
     // Get companyId from route params (two levels up: /company/:id/financial/revenue)
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
-
     // Get query parameters
     const queryParams = this.route.parent?.parent?.snapshot.queryParams;
 
