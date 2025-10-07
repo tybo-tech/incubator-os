@@ -97,18 +97,24 @@ export class BankStatementHelperService {
   }
 
   /**
-   * Create new record template
+   * Create new record template with duplicate checking
    */
-  createNewRecord(companyId: number): any {
+  createNewRecord(companyId: number, existingFinancials: any[] = []): any {
     const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    // Find the next available month/year combination
+    const nextPeriod = this.findNextAvailablePeriod(currentYear, currentMonth, existingFinancials);
+
     return {
       id: 0,
       company_id: companyId,
-      period_date: `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-01`,
-      year: now.getFullYear(),
-      month: now.getMonth() + 1,
-      quarter: Math.ceil((now.getMonth() + 1) / 3),
-      quarter_label: `Q${Math.ceil((now.getMonth() + 1) / 3)}`,
+      period_date: `${nextPeriod.year}-${nextPeriod.month.toString().padStart(2, '0')}-01`,
+      year: nextPeriod.year,
+      month: nextPeriod.month,
+      quarter: Math.ceil(nextPeriod.month / 3),
+      quarter_label: `Q${Math.ceil(nextPeriod.month / 3)}`,
       is_pre_ignition: false,
       turnover_monthly_avg: null,
       turnover: null,
@@ -128,6 +134,46 @@ export class BankStatementHelperService {
       created_at: '',
       updated_at: ''
     };
+  }
+
+  /**
+   * Find the next available period (month/year) that doesn't exist in the data
+   */
+  private findNextAvailablePeriod(startYear: number, startMonth: number, existingFinancials: any[]): { year: number, month: number } {
+    let year = startYear;
+    let month = startMonth;
+
+    // Create a set of existing period_dates for fast lookup
+    const existingPeriods = new Set(
+      existingFinancials.map(f => f.period_date)
+    );
+
+    // Check current month first, then go forward
+    for (let i = 0; i < 24; i++) { // Check up to 24 months ahead
+      const periodDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+
+      if (!existingPeriods.has(periodDate)) {
+        return { year, month };
+      }
+
+      // Move to next month
+      month++;
+      if (month > 12) {
+        month = 1;
+        year++;
+      }
+    }
+
+    // Fallback: if all months are taken, use current month of next year
+    return { year: startYear + 1, month: startMonth };
+  }
+
+  /**
+   * Check if a period already exists
+   */
+  isPeriodExists(year: number, month: number, existingFinancials: any[]): boolean {
+    const periodDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+    return existingFinancials.some(f => f.period_date === periodDate);
   }
 
   /**

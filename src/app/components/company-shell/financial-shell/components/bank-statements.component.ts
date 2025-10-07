@@ -168,7 +168,21 @@ export class BankStatementsComponent implements OnInit {
         await firstValueFrom(this.financialsService.updateCompanyFinancials(updatedRow.id, updatedRow));
       } catch (error) {
         console.error('Error updating record:', error);
-        alert('Failed to save changes. Please try again.');
+
+        // Check for specific error types
+        if (error && typeof error === 'object' && 'error' in error) {
+          const errorMessage = (error as any).error;
+          if (errorMessage && errorMessage.includes('Duplicate entry')) {
+            alert('This change would create a duplicate record. Please use a different date.');
+          } else {
+            alert(`Failed to save changes: ${errorMessage}`);
+          }
+        } else {
+          alert('Failed to save changes. Please try again.');
+        }
+
+        // Reload data to revert any local changes
+        this.loadFinancials();
       }
     }
   }
@@ -194,7 +208,7 @@ export class BankStatementsComponent implements OnInit {
   async addNewRecord() {
     if (!this.company) return;
 
-    const newRecord = this.helper.createNewRecord(this.company.id);
+    const newRecord = this.helper.createNewRecord(this.company.id, this.financials);
     try {
       const savedRecord = await firstValueFrom(this.financialsService.addCompanyFinancials(newRecord));
       if (savedRecord) {
@@ -205,7 +219,18 @@ export class BankStatementsComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error creating new record:', error);
-      alert('Failed to create new record. Please try again.');
+
+      // Check if it's a duplicate error
+      if (error && typeof error === 'object' && 'error' in error) {
+        const errorMessage = (error as any).error;
+        if (errorMessage && errorMessage.includes('Duplicate entry')) {
+          alert('A record for this period already exists. Please select a different month/year.');
+        } else {
+          alert(`Failed to create new record: ${errorMessage}`);
+        }
+      } else {
+        alert('Failed to create new record. Please try again.');
+      }
     }
   }
 

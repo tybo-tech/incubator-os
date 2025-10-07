@@ -6,14 +6,9 @@ include_once '../../models/CompanyFinancials.php';
 $input = file_get_contents("php://input");
 $data = json_decode($input, true);
 
-// Debug logging
-error_log("Raw input: " . $input);
-error_log("Parsed data: " . print_r($data, true));
-error_log("JSON last error: " . json_last_error_msg());
 
 // Validate input
 if ($data === null) {
-    http_response_code(400);
     echo json_encode([
         'error' => 'Invalid JSON data received',
         'raw_input' => $input,
@@ -30,6 +25,5 @@ try {
     $result = $fin->add($data);
     echo json_encode($result);
 } catch (Exception $e) {
-    http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);
 }
