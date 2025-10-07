@@ -18,12 +18,6 @@ export class BankStatementHelperService {
     return {
       columns: [
         {
-          key: 'period_display',
-          label: 'Period',
-          type: 'readonly',
-          editable: false
-        },
-        {
           key: 'year',
           label: 'Year',
           type: 'select',
@@ -148,12 +142,9 @@ export class BankStatementHelperService {
       return a.month - b.month;
     });
 
-    // Add period display and quarter display for table
+    // Create combined quarter display value for the select dropdown
     return filtered.map(record => ({
       ...record,
-      period_display: selectedYear === 'all'
-        ? `${this.getMonthName(record.month)} ${record.year}`
-        : this.getMonthName(record.month),
       // Create combined quarter display value for the select dropdown
       quarter: `${record.quarter}|${record.quarter_label || 'Q' + record.quarter}`
     }));
@@ -255,10 +246,6 @@ export class BankStatementHelperService {
       if (year && month) {
         updatedRow.period_date = `${year}-${month.toString().padStart(2, '0')}-01`;
         console.log('Helper - Updated period_date:', updatedRow.period_date);
-
-        // Update period_display for immediate UI feedback
-        updatedRow.period_display = `${this.getMonthName(month)} ${year}`;
-        console.log('Helper - Updated period_display:', updatedRow.period_display);
       }
     }
 

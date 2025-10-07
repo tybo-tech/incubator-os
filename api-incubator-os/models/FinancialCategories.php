@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-final class CostCategories
+final class FinancialCategories
 {
     private PDO $conn;
 
@@ -16,19 +16,20 @@ final class CostCategories
        ========================================================================= */
 
     /**
-     * Add a new cost category.
+     * Add a new financial category.
      */
     public function add(array $data): array
     {
-        $sql = "INSERT INTO cost_categories (
-                    name, description, is_active, created_at, updated_at
+        $sql = "INSERT INTO financial_categories (
+                    name, item_type, description, is_active, created_at, updated_at
                 ) VALUES (
-                    :name, :description, :is_active, NOW(), NOW()
+                    :name, :item_type, :description, :is_active, NOW(), NOW()
                 )";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
             ':name'        => $data['name'],
+            ':item_type'   => strtolower($data['item_type']),
             ':description' => $data['description'] ?? null,
             ':is_active'   => isset($data['is_active']) ? (int)$data['is_active'] : 1,
         ]);
@@ -37,11 +38,11 @@ final class CostCategories
     }
 
     /**
-     * Update a cost category.
+     * Update a financial category.
      */
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['name', 'description', 'is_active'];
+        $allowed = ['name', 'item_type', 'description', 'is_active'];
         $sets = [];
         $params = [];
 
@@ -55,7 +56,7 @@ final class CostCategories
         if (!$sets) return $this->getById($id);
 
         $params[':id'] = $id;
-        $sql = "UPDATE cost_categories
+        $sql = "UPDATE financial_categories
                 SET " . implode(', ', $sets) . ", updated_at = NOW()
                 WHERE id = :id";
 
@@ -69,33 +70,57 @@ final class CostCategories
        READ METHODS
        ========================================================================= */
 
+    /**
+     * Get a single category by ID.
+     */
     public function getById(int $id): ?array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM cost_categories WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM financial_categories WHERE id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->cast($row) : null;
     }
 
-    public function listAll(bool $onlyActive = false): array
+    /**
+     * Get a category by name and item_type.
+     */
+    public function getByNameAndType(string $name, string $itemType): ?array
     {
-        $sql = "SELECT * FROM cost_categories";
-        if ($onlyActive) {
-            $sql .= " WHERE is_active = 1";
-        }
-        $sql .= " ORDER BY name ASC";
-
-        $stmt = $this->conn->query($sql);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return array_map([$this, 'cast'], $rows);
-    }
-
-    public function getByName(string $name): ?array
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM cost_categories WHERE LOWER(name) = LOWER(?) LIMIT 1");
-        $stmt->execute([$name]);
+        $stmt = $this->conn->prepare("
+            SELECT * FROM financial_categories
+            WHERE LOWER(name) = LOWER(:name)
+              AND item_type = :type
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':name' => $name,
+            ':type' => strtolower($itemType)
+        ]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->cast($row) : null;
+    }
+
+    /**
+     * List all categories, optionally filtered by type or active state.
+     */
+    public function listAll(?string $itemType = null, bool $onlyActive = false): array
+    {
+        $sql = "SELECT * FROM financial_categories WHERE 1=1";
+        $params = [];
+
+        if ($itemType) {
+            $sql .= " AND item_type = :type";
+            $params[':type'] = strtolower($itemType);
+        }
+        if ($onlyActive) {
+            $sql .= " AND is_active = 1";
+        }
+
+        $sql .= " ORDER BY item_type ASC, name ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        return array_map([$this, 'cast'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /* =========================================================================
@@ -104,14 +129,18 @@ final class CostCategories
 
     public function delete(int $id): bool
     {
-        $stmt = $this->conn->prepare("DELETE FROM cost_categories WHERE id = ?");
+        $stmt = $this->conn->prepare("DELETE FROM financial_categories WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->rowCount() > 0;
     }
 
     public function setActiveStatus(int $id, bool $active): bool
     {
-        $stmt = $this->conn->prepare("UPDATE cost_categories SET is_active = ?, updated_at = NOW() WHERE id = ?");
+        $stmt = $this->conn->prepare("
+            UPDATE financial_categories
+            SET is_active = ?, updated_at = NOW()
+            WHERE id = ?
+        ");
         $stmt->execute([$active ? 1 : 0, $id]);
         return $stmt->rowCount() > 0;
     }
@@ -124,6 +153,7 @@ final class CostCategories
     {
         $row['id'] = (int)($row['id'] ?? 0);
         $row['is_active'] = (bool)($row['is_active'] ?? 0);
+        $row['item_type'] = strtolower((string)($row['item_type'] ?? ''));
         return $row;
     }
 }

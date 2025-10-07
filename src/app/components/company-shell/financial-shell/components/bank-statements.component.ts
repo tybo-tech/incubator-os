@@ -173,6 +173,8 @@ export class BankStatementsComponent implements OnInit {
 
         await firstValueFrom(this.financialsService.updateCompanyFinancials(updatedRow.id, updatedRow));
         console.log('Update successful');
+
+        // UI stays stable - no refresh needed since period column removed
       } catch (error) {
         console.error('Error updating record:', error);
 
@@ -188,7 +190,7 @@ export class BankStatementsComponent implements OnInit {
           alert('Failed to save changes. Please try again.');
         }
 
-        // Reload data to revert any local changes
+        // Reload data to revert any local changes only on error
         this.loadFinancials();
       }
     }
