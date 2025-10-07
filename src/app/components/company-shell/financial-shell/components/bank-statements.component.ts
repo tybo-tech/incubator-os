@@ -2,10 +2,18 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { CompanyFinancialsService, ICompanyFinancials } from '../../../../../services/company-financials.service';
+import {
+  CompanyFinancialsService,
+  ICompanyFinancials,
+} from '../../../../../services/company-financials.service';
 import { CompanyService } from '../../../../../services/company.service';
 import { ICompany } from '../../../../../models/simple.schema';
-import { EditableTableComponent, EditableTableColumn, EditableTableConfig, EditableTableAction } from '../../../shared';
+import {
+  EditableTableComponent,
+  EditableTableConfig,
+  EditableTableAction,
+} from '../../../shared';
+import { BankStatementHelperService } from '../../../../../app/services/bank-statement-helper.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -21,14 +29,21 @@ import { firstValueFrom } from 'rxjs';
             <i class="fas fa-university text-blue-600 text-2xl mr-3"></i>
             <div>
               <h2 class="text-xl font-bold text-gray-900">Bank Statements</h2>
-              <p class="text-gray-600">Monthly turnover tracking and analysis</p>
+              <p class="text-gray-600">
+                Monthly turnover tracking and analysis
+              </p>
             </div>
           </div>
 
           <!-- Company Info -->
           <div *ngIf="company" class="text-right">
-            <h3 class="text-lg font-semibold text-gray-900">{{ company.name }}</h3>
-            <p class="text-sm text-gray-500">ID: {{ company.id }}</p>
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ company.name }}
+            </h3>
+            @if(company.email_address){
+            <p class="text-sm text-gray-500">ID: {{ company.email_address }}</p>
+
+            }
           </div>
         </div>
 
@@ -38,9 +53,12 @@ import { firstValueFrom } from 'rxjs';
           <select
             [(ngModel)]="selectedYear"
             (change)="onYearChange()"
-            class="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            class="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
             <option value="all">All Years</option>
-            <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+            <option *ngFor="let year of availableYears" [value]="year">
+              {{ year }}
+            </option>
           </select>
         </div>
       </div>
@@ -50,13 +68,21 @@ import { firstValueFrom } from 'rxjs';
         [data]="filteredData"
         [config]="tableConfig"
         [title]="'Monthly Turnover Records'"
-        [subtitle]="selectedYear === 'all' ? 'All years' : 'Year ' + selectedYear"
+        [subtitle]="
+          selectedYear === 'all' ? 'All years' : 'Year ' + selectedYear
+        "
         [emptyStateIcon]="'fas fa-university'"
-        [emptyStateTitle]="'No Bank Statement Data' + (selectedYear === 'all' ? '' : ' for ' + selectedYear)"
-        [emptyStateMessage]="'Start by adding your first monthly turnover record.'"
+        [emptyStateTitle]="
+          'No Bank Statement Data' +
+          (selectedYear === 'all' ? '' : ' for ' + selectedYear)
+        "
+        [emptyStateMessage]="
+          'Start by adding your first monthly turnover record.'
+        "
         [emptyStateButtonText]="'Add Monthly Turnover'"
         (cellEdit)="onCellEdit($event)"
-        (action)="onTableAction($event)">
+        (action)="onTableAction($event)"
+      >
       </app-editable-table>
     </div>
   `,
@@ -65,97 +91,37 @@ export class BankStatementsComponent implements OnInit {
   private readonly financialsService = inject(CompanyFinancialsService);
   private readonly companyService = inject(CompanyService);
   private readonly route = inject(ActivatedRoute);
+  private readonly helper = inject(BankStatementHelperService);
 
   company: ICompany | null = null;
   financials: ICompanyFinancials[] = [];
   selectedYear: string | number = 'all';
-  loading = false;
+  tableConfig: EditableTableConfig;
 
-  tableConfig: EditableTableConfig = {
-    columns: [
-      {
-        key: 'period_display',
-        label: 'Period',
-        type: 'readonly',
-        editable: false,
-        width: '200px'
-      },
-      {
-        key: 'quarter',
-        label: 'Quarter',
-        type: 'select',
-        editable: true,
-        options: [
-          { value: 1, label: 'Q1' },
-          { value: 2, label: 'Q2' },
-          { value: 3, label: 'Q3' },
-          { value: 4, label: 'Q4' }
-        ],
-        width: '120px'
-      },
-      {
-        key: 'turnover',
-        label: 'Turnover',
-        type: 'currency',
-        editable: true,
-        calculateTotal: true,
-        precision: 0,
-        min: 0,
-        placeholder: '0'
-      }
-    ],
-    enableAdd: true,
-    enableDelete: true,
-    enableExport: true,
-    showTotals: true,
-    striped: true,
-    loading: false
-  };
+  constructor() {
+    this.tableConfig = this.helper.getTableConfig();
+  }
 
   ngOnInit() {
     this.loadCompany();
-    // loadFinancials() will be called from loadCompany() after company is loaded
   }
 
   get availableYears(): number[] {
-    const years = new Set(this.financials.map(f => f.year));
-    const yearArray = Array.from(years).sort((a, b) => b - a);
-    return yearArray;
+    return this.helper.getAvailableYears(this.financials);
   }
 
   get filteredData(): any[] {
-    let filtered = [...this.financials];
-
-    if (this.selectedYear !== 'all') {
-      filtered = filtered.filter(f => f.year === Number(this.selectedYear));
-    }
-
-    // Sort by year (desc) then month (asc)
-    filtered.sort((a, b) => {
-      if (a.year !== b.year) return b.year - a.year;
-      return a.month - b.month;
-    });
-
-    // Add period display for table
-    return filtered.map(record => ({
-      ...record,
-      period_display: this.selectedYear === 'all'
-        ? `${this.getMonthName(record.month)} ${record.year}`
-        : this.getMonthName(record.month)
-    }));
+    return this.helper.getFilteredData(this.financials, this.selectedYear);
   }
 
   async loadCompany() {
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
-    console.log('Loading company with ID:', companyId);
-
     if (companyId) {
       try {
-        const company = await firstValueFrom(this.companyService.getCompanyById(Number(companyId)));
+        const company = await firstValueFrom(
+          this.companyService.getCompanyById(Number(companyId))
+        );
         this.company = company || null;
-        console.log('Company loaded:', this.company);
-
-        // Load financials after company is loaded
         if (this.company) {
           await this.loadFinancials();
         }
@@ -166,18 +132,14 @@ export class BankStatementsComponent implements OnInit {
   }
 
   async loadFinancials() {
-    if (!this.company?.id) {
-      console.log('No company ID available for loading financials');
-      return;
-    }
+    if (!this.company?.id) return;
 
-    console.log('Loading financials for company ID:', this.company.id);
     this.tableConfig.loading = true;
-
     try {
-      const data = await firstValueFrom(this.financialsService.listAllCompanyFinancials(this.company.id));
+      const data = await firstValueFrom(
+        this.financialsService.listAllCompanyFinancials(this.company.id)
+      );
       this.financials = data || [];
-      console.log('Financials loaded:', this.financials.length, 'records');
     } catch (error) {
       console.error('Error loading financials:', error);
     } finally {
@@ -194,17 +156,8 @@ export class BankStatementsComponent implements OnInit {
 
     if (row.id && row.id > 0) {
       try {
-        // Special handling for quarter changes
-        if (field === 'quarter') {
-          row.quarter_label = `Q${row.quarter}`;
-        }
-
-        // For turnover, also update turnover_monthly_avg
-        if (field === 'turnover') {
-          row.turnover_monthly_avg = row.turnover;
-        }
-
-        await firstValueFrom(this.financialsService.updateCompanyFinancials(row.id, row));
+        const updatedRow = this.helper.prepareRecordForUpdate(row, field);
+        await firstValueFrom(this.financialsService.updateCompanyFinancials(updatedRow.id, updatedRow));
       } catch (error) {
         console.error('Error updating record:', error);
         alert('Failed to save changes. Please try again.');
@@ -231,42 +184,13 @@ export class BankStatementsComponent implements OnInit {
   }
 
   async addNewRecord() {
-    // Create new record with current date defaults
-    const now = new Date();
-    const newRecord: ICompanyFinancials = {
-      id: 0,
-      company_id: this.company!.id,
-      period_date: `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-01`,
-      year: now.getFullYear(),
-      month: now.getMonth() + 1,
-      quarter: Math.ceil((now.getMonth() + 1) / 3),
-      quarter_label: `Q${Math.ceil((now.getMonth() + 1) / 3)}`,
-      is_pre_ignition: false,
-      turnover_monthly_avg: null,
-      turnover: null,
-      cost_of_sales: null,
-      business_expenses: null,
-      gross_profit: null,
-      net_profit: null,
-      gp_margin: null,
-      np_margin: null,
-      cash_on_hand: null,
-      debtors: null,
-      creditors: null,
-      inventory_on_hand: null,
-      working_capital_ratio: null,
-      net_assets: null,
-      notes: null,
-      created_at: '',
-      updated_at: ''
-    };
+    if (!this.company) return;
 
+    const newRecord = this.helper.createNewRecord(this.company.id);
     try {
       const savedRecord = await firstValueFrom(this.financialsService.addCompanyFinancials(newRecord));
       if (savedRecord) {
         this.loadFinancials();
-
-        // Switch to the year of the new record if not already viewing it
         if (this.selectedYear !== newRecord.year && this.selectedYear !== 'all') {
           this.selectedYear = newRecord.year;
         }
@@ -278,7 +202,8 @@ export class BankStatementsComponent implements OnInit {
   }
 
   async deleteRecord(record: ICompanyFinancials) {
-    if (confirm(`Delete ${this.getMonthName(record.month)} ${record.year} data?`)) {
+    const confirmMessage = this.helper.getDeleteConfirmationMessage(record);
+    if (confirm(confirmMessage)) {
       try {
         await firstValueFrom(this.financialsService.deleteCompanyFinancials(record.id));
         this.loadFinancials();
@@ -290,16 +215,6 @@ export class BankStatementsComponent implements OnInit {
   }
 
   exportData() {
-    // TODO: Implement export functionality
-    console.log('Export functionality to be implemented');
     alert('Export functionality coming soon!');
-  }
-
-  getMonthName(month: number): string {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month - 1] || 'Unknown';
   }
 }
