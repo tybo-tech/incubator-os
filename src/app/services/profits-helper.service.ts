@@ -76,10 +76,11 @@ export class ProfitsHelperService {
     // Map UI display row back to database columns based on profit type
     const prefix = section.type; // 'gross', 'operating', or 'npbt'
 
-    (updateData as any)[`${prefix}_q1`] = Number(row.q1) || 0;
-    (updateData as any)[`${prefix}_q2`] = Number(row.q2) || 0;
-    (updateData as any)[`${prefix}_q3`] = Number(row.q3) || 0;
-    (updateData as any)[`${prefix}_q4`] = Number(row.q4) || 0;
+    // Preserve null values - only convert numbers, don't default to 0
+    (updateData as any)[`${prefix}_q1`] = row.q1 !== null && row.q1 !== undefined ? Number(row.q1) : null;
+    (updateData as any)[`${prefix}_q2`] = row.q2 !== null && row.q2 !== undefined ? Number(row.q2) : null;
+    (updateData as any)[`${prefix}_q3`] = row.q3 !== null && row.q3 !== undefined ? Number(row.q3) : null;
+    (updateData as any)[`${prefix}_q4`] = row.q4 !== null && row.q4 !== undefined ? Number(row.q4) : null;
     (updateData as any)[`${prefix}_total`] = row.total || 0;
     (updateData as any)[`${prefix}_margin`] = row.margin_pct || 0;
 
@@ -92,10 +93,11 @@ export class ProfitsHelperService {
    * falls back to logarithmic scaling if revenue data is not available
    */
   recalculateRowTotals(row: ProfitDisplayRow, debug = false): void {
-    const q1 = Number(row.q1) || 0;
-    const q2 = Number(row.q2) || 0;
-    const q3 = Number(row.q3) || 0;
-    const q4 = Number(row.q4) || 0;
+    // Handle null values properly - only convert to 0 for calculation, preserve original null
+    const q1 = row.q1 !== null && row.q1 !== undefined ? Number(row.q1) : 0;
+    const q2 = row.q2 !== null && row.q2 !== undefined ? Number(row.q2) : 0;
+    const q3 = row.q3 !== null && row.q3 !== undefined ? Number(row.q3) : 0;
+    const q4 = row.q4 !== null && row.q4 !== undefined ? Number(row.q4) : 0;
 
     row.total = q1 + q2 + q3 + q4;
 
@@ -109,6 +111,8 @@ export class ProfitsHelperService {
 
     if (debug) {
       console.log(`Calculating margin for ${row.type} ${row.year}:`, {
+        originalValues: { q1: row.q1, q2: row.q2, q3: row.q3, q4: row.q4 },
+        calculationValues: { q1, q2, q3, q4 },
         profit: row.total,
         revenue: revenueForYear,
         hasRevenueData: revenueForYear > 0

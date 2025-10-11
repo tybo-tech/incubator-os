@@ -263,7 +263,7 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   saving = false; // Prevent double-saves during blur events
   private saveCount = 0; // Track save operations
   private saveTimer: any; // Debounce timer for save operations
-  private readonly isDebugMode = true; // Set to true for development debugging
+  private readonly isDebugMode = false; // Set to true for development debugging
   private readonly debounceDelay = 400; // Centralized debounce timing
   private lastToastTime = 0; // Prevent toast spam
   private readonly toastCooldown = 1000; // Minimum time between toasts (ms)
@@ -377,8 +377,18 @@ export class ProfitsComponent implements OnInit, OnDestroy {
                 margin_pct: display.margin
               };
 
-              // Recalculate margins with real revenue data
-              this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
+              if (this.isDebugMode) {
+                console.log(`Creating row for ${display.type} ${record.year_}:`, {
+                  original: display,
+                  row: row
+                });
+              }
+
+              // Only recalculate margins if we have revenue data AND the margin is null/zero
+              // Otherwise preserve the existing data from database
+              if (this.profitsHelper.hasRevenueData() && (row.margin_pct === null || row.margin_pct === 0)) {
+                this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
+              }
 
               targetSection.rows.push(row);
             }
