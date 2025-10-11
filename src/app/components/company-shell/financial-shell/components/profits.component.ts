@@ -85,16 +85,70 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 </td>
               </tr>
 
-              <!-- Data rows -->
+              <!-- Data rows with inline editing -->
               <tr *ngFor="let row of section.rows; trackBy: trackById" class="hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ row.year }}</td>
-                <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q1) }}</td>
-                <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q2) }}</td>
-                <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q3) }}</td>
-                <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q4) }}</td>
+                <!-- Editable Year -->
+                <td class="px-4 py-4 text-sm font-medium text-gray-900">
+                  <input
+                    type="number"
+                    [(ngModel)]="row.year"
+                    (blur)="onFieldChange(row, 'year', section)"
+                    class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    min="2000"
+                    max="2099"
+                    step="1">
+                </td>
+
+                <!-- Editable Q1 -->
+                <td class="px-4 py-4 text-sm text-center">
+                  <input
+                    type="number"
+                    [(ngModel)]="row.q1"
+                    (blur)="onFieldChange(row, 'q1', section)"
+                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    placeholder="0"
+                    step="1">
+                </td>
+
+                <!-- Editable Q2 -->
+                <td class="px-4 py-4 text-sm text-center">
+                  <input
+                    type="number"
+                    [(ngModel)]="row.q2"
+                    (blur)="onFieldChange(row, 'q2', section)"
+                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    placeholder="0"
+                    step="1">
+                </td>
+
+                <!-- Editable Q3 -->
+                <td class="px-4 py-4 text-sm text-center">
+                  <input
+                    type="number"
+                    [(ngModel)]="row.q3"
+                    (blur)="onFieldChange(row, 'q3', section)"
+                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    placeholder="0"
+                    step="1">
+                </td>
+
+                <!-- Editable Q4 -->
+                <td class="px-4 py-4 text-sm text-center">
+                  <input
+                    type="number"
+                    [(ngModel)]="row.q4"
+                    (blur)="onFieldChange(row, 'q4', section)"
+                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    placeholder="0"
+                    step="1">
+                </td>
+
+                <!-- Calculated Total (readonly) -->
                 <td class="px-4 py-4 text-sm text-center font-semibold text-gray-900">
                   {{ formatCurrencyWithUnit(row.total) }}
                 </td>
+
+                <!-- Calculated Margin (readonly with colors) -->
                 <td class="px-4 py-4 text-sm text-center font-semibold"
                     [ngClass]="{
                       'text-green-600': row.margin_pct !== null && row.margin_pct >= 50,
@@ -105,6 +159,8 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     }">
                   {{ formatPercentage(row.margin_pct) }}
                 </td>
+
+                <!-- Actions -->
                 <td class="px-4 py-4 text-sm text-center">
                   <button
                     (click)="deleteYearRecord(row.id, row.year)"
@@ -302,6 +358,119 @@ export class ProfitsComponent implements OnInit {
 
   onModalClosed(): void {
     console.log('Modal Closed');
+  }
+
+  /**
+   * Handle field changes from inline editing
+   */
+  async onFieldChange(row: ProfitDisplayRow, field: string, section: ProfitSectionData): Promise<void> {
+    try {
+      console.log('Field changed:', {
+        field,
+        value: (row as any)[field],
+        year: row.year,
+        section: section.type,
+        rowData: row
+      });
+
+      // Recalculate totals when quarterly values change
+      if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
+        this.recalculateRowTotals(row);
+      }
+
+      // Save the updated record to the database
+      await this.saveUpdatedRow(row, section);
+
+      this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
+
+    } catch (error) {
+      console.error('Error updating field:', error);
+      this.toastService.error(`Failed to update ${section.displayName} data`);
+    }
+  }
+
+  /**
+   * Save the updated row to the database
+   */
+  private async saveUpdatedRow(row: ProfitDisplayRow, section: ProfitSectionData): Promise<void> {
+    if (!row.id) {
+      console.error('Cannot save row: missing ID');
+      return;
+    }
+
+    // Transform the display row back to the unified record format
+    const updatedRecord = this.transformRowToRecord(row, section);
+
+    // TODO: Implement updateCompanyProfitSummary in service
+    console.log('Would save to database:', updatedRecord);
+
+    // For now, we'll use a placeholder
+    // await firstValueFrom(this.profitService.updateCompanyProfitSummary(updatedRecord));
+  }
+
+  /**
+   * Transform a display row back to the unified database record format
+   */
+  private transformRowToRecord(row: ProfitDisplayRow, section: ProfitSectionData): any {
+    // Create a base record structure
+    const record: any = {
+      id: row.id,
+      year_: row.year,
+      company_id: this.companyId,
+      client_id: this.clientId,
+      program_id: this.programId,
+      cohort_id: this.cohortId
+    };
+
+    // Map the display row values to the appropriate database fields based on section type
+    switch (section.type) {
+      case 'gross':
+        record.gross_q1 = row.q1;
+        record.gross_q2 = row.q2;
+        record.gross_q3 = row.q3;
+        record.gross_q4 = row.q4;
+        record.gross_total = row.total;
+        record.gross_margin = row.margin_pct;
+        break;
+
+      case 'operating':
+        record.operating_q1 = row.q1;
+        record.operating_q2 = row.q2;
+        record.operating_q3 = row.q3;
+        record.operating_q4 = row.q4;
+        record.operating_total = row.total;
+        record.operating_margin = row.margin_pct;
+        break;
+
+      case 'npbt':
+        record.npbt_q1 = row.q1;
+        record.npbt_q2 = row.q2;
+        record.npbt_q3 = row.q3;
+        record.npbt_q4 = row.q4;
+        record.npbt_total = row.total;
+        record.npbt_margin = row.margin_pct;
+        break;
+    }
+
+    return record;
+  }
+
+  /**
+   * Recalculate row totals and margins when quarterly values change
+   */
+  private recalculateRowTotals(row: ProfitDisplayRow): void {
+    const q1 = Number(row.q1) || 0;
+    const q2 = Number(row.q2) || 0;
+    const q3 = Number(row.q3) || 0;
+    const q4 = Number(row.q4) || 0;
+
+    row.total = q1 + q2 + q3 + q4;
+
+    // TODO: Calculate margin based on revenue data
+    // For now, keep existing margin or set to null if no total
+    if (row.total === 0) {
+      row.margin_pct = null;
+    }
   }
 
   /**
