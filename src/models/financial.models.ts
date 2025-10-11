@@ -134,6 +134,7 @@ export interface ProfitDisplayRow {
   margin_pct: number | null;
   isEditing?: boolean;
   isNew?: boolean;
+  justSaved?: boolean; // Visual feedback for successful saves
 }
 
 export interface ProfitSectionData {

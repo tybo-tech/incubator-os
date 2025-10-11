@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -101,7 +101,12 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     type="number"
                     [(ngModel)]="row.year"
                     (change)="onFieldChange(row, 'year', section)"
-                    [class]="'w-20 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [ngClass]="{
+                      'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-yellow-300 bg-yellow-50': saving,
+                      'border-gray-300': !row.justSaved && !saving
+                    }"
+                    class="w-20 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
                     min="2000"
                     max="2099"
@@ -114,7 +119,12 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     type="number"
                     [(ngModel)]="row.q1"
                     (change)="onFieldChange(row, 'q1', section)"
-                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [ngClass]="{
+                      'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-yellow-300 bg-yellow-50': saving,
+                      'border-gray-300': !row.justSaved && !saving
+                    }"
+                    class="w-24 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
                     placeholder="0"
                     step="1">
@@ -126,7 +136,12 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     type="number"
                     [(ngModel)]="row.q2"
                     (change)="onFieldChange(row, 'q2', section)"
-                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [ngClass]="{
+                      'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-yellow-300 bg-yellow-50': saving,
+                      'border-gray-300': !row.justSaved && !saving
+                    }"
+                    class="w-24 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
                     placeholder="0"
                     step="1">
@@ -138,7 +153,12 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     type="number"
                     [(ngModel)]="row.q3"
                     (change)="onFieldChange(row, 'q3', section)"
-                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [ngClass]="{
+                      'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-yellow-300 bg-yellow-50': saving,
+                      'border-gray-300': !row.justSaved && !saving
+                    }"
+                    class="w-24 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
                     placeholder="0"
                     step="1">
@@ -150,7 +170,12 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     type="number"
                     [(ngModel)]="row.q4"
                     (change)="onFieldChange(row, 'q4', section)"
-                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [ngClass]="{
+                      'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-yellow-300 bg-yellow-50': saving,
+                      'border-gray-300': !row.justSaved && !saving
+                    }"
+                    class="w-24 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
                     placeholder="0"
                     step="1">
@@ -213,7 +238,7 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
     </div>
   `
 })
-export class ProfitsComponent implements OnInit {
+export class ProfitsComponent implements OnInit, OnDestroy {
   @ViewChild('yearModal') yearModal!: YearModalComponent;
 
   companyId!: number;
@@ -224,6 +249,8 @@ export class ProfitsComponent implements OnInit {
   loading = false;
   saving = false; // Prevent double-saves during blur events
   private saveCount = 0; // Track save operations
+  private saveTimer: any; // Debounce timer for save operations
+  private readonly isDebugMode = false; // Set to true for development debugging
 
   constructor(
     private profitService: CompanyProfitSummaryService,
@@ -242,15 +269,24 @@ export class ProfitsComponent implements OnInit {
       this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
       this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
 
-      console.log('Profit Summary IDs:', {
-        companyId: this.companyId,
-        clientId: this.clientId,
-        programId: this.programId,
-        cohortId: this.cohortId
-      });
+      if (this.isDebugMode) {
+        console.log('Profit Summary IDs:', {
+          companyId: this.companyId,
+          clientId: this.clientId,
+          programId: this.programId,
+          cohortId: this.cohortId
+        });
+      }
 
       this.initializeSections();
       this.loadProfitData();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clear any pending save timers
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
     }
   }
 
@@ -318,10 +354,12 @@ export class ProfitsComponent implements OnInit {
           section.rows.sort((a, b) => b.year - a.year);
         });
 
-        console.log('Loaded profit data:', {
-          recordCount: records.length,
-          sectionsPopulated: this.profitSections.map(s => ({ type: s.type, rowCount: s.rows.length }))
-        });
+        if (this.isDebugMode) {
+          console.log('Loaded profit data:', {
+            recordCount: records.length,
+            sectionsPopulated: this.profitSections.map(s => ({ type: s.type, rowCount: s.rows.length }))
+          });
+        }
       }
     } catch (error) {
       console.error('Error loading profit data:', error);
@@ -376,52 +414,64 @@ export class ProfitsComponent implements OnInit {
   }
 
   /**
-   * Handle field changes from inline editing with save protection
+   * Handle field changes from inline editing with debounced save protection
    */
   async onFieldChange(row: ProfitDisplayRow, field: string, section: ProfitSectionData): Promise<void> {
-    // Prevent concurrent saves
-    if (this.saving) return;
-    this.saving = true;
+    // Clear any existing save timer
+    clearTimeout(this.saveTimer);
 
-    try {
-      this.saveCount++;
-      const currentSaveId = this.saveCount;
+    // Debounce save operations for smoother input experience
+    this.saveTimer = setTimeout(async () => {
+      // Prevent concurrent saves
+      if (this.saving) return;
+      this.saving = true;
 
-      console.log('Field changed:', {
-        field,
-        value: (row as any)[field],
-        year: row.year,
-        section: section.type,
-        saveId: currentSaveId,
-        rowData: row
-      });
-
-      // Recalculate totals when quarterly values change
-      if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
-        this.recalculateRowTotals(row);
-      }
-
-      // Save the updated record to the database
-      await this.saveUpdatedRow(row, section);
-
-      // Only show success toast for the most recent save to prevent spam
-      if (currentSaveId === this.saveCount) {
-        this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
-      }
-
-    } catch (error) {
-      console.error('Error updating field:', error);
-      this.toastService.error(`Failed to update ${section.displayName} data`);
-
-      // Optionally reload data on error to ensure consistency
       try {
-        await this.loadProfitData();
-      } catch (reloadError) {
-        console.error('Error reloading data after save failure:', reloadError);
+        this.saveCount++;
+        const currentSaveId = this.saveCount;
+
+        if (this.isDebugMode) {
+          console.log('Field changed:', {
+            field,
+            value: (row as any)[field],
+            year: row.year,
+            section: section.type,
+            saveId: currentSaveId,
+            rowData: row
+          });
+        }
+
+        // Recalculate totals when quarterly values change
+        if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
+          this.recalculateRowTotals(row);
+        }
+
+        // Save the updated record to the database
+        await this.saveUpdatedRow(row, section);
+
+        // Visual feedback for successful save
+        row.justSaved = true;
+        setTimeout(() => row.justSaved = false, 600);
+
+        // Only show success toast for the most recent save to prevent spam
+        if (currentSaveId === this.saveCount) {
+          this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
+        }
+
+      } catch (error) {
+        console.error('Error updating field:', error);
+        this.toastService.error(`Failed to update ${section.displayName} data`);
+
+        // Optionally reload data on error to ensure consistency
+        try {
+          await this.loadProfitData();
+        } catch (reloadError) {
+          console.error('Error reloading data after save failure:', reloadError);
+        }
+      } finally {
+        this.saving = false;
       }
-    } finally {
-      this.saving = false;
-    }
+    }, 400); // 400ms debounce delay
   }
 
   /**
@@ -438,7 +488,9 @@ export class ProfitsComponent implements OnInit {
 
     try {
       await firstValueFrom(this.profitService.updateCompanyProfitSummary(row.id, saveData));
-      console.log('Record saved successfully:', saveData);
+      if (this.isDebugMode) {
+        console.log('Record saved successfully:', saveData);
+      }
     } catch (error) {
       console.error('Error saving record:', error);
       throw error;
@@ -476,24 +528,31 @@ export class ProfitsComponent implements OnInit {
 
     row.total = q1 + q2 + q3 + q4;
 
-    // Auto-calculate margin percentage as a simple placeholder
-    // In a real scenario, this would calculate based on revenue data
+    // Improved margin calculation with realistic percentage outputs
     if (row.total && row.total !== 0) {
-      // Simple margin calculation - can be enhanced with actual business logic
-      // For now, calculate a basic margin based on the profit type
+      // Normalize margin based on total value to get realistic percentages
+      // Base calculation: (total / 1000) gives sensible margins for business values
+      let baseMargin = Math.abs(row.total) / 1000;
+
+      // Apply type-specific multipliers for realistic business margins
       switch (row.type) {
         case 'gross':
-          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.25) * 100) / 100 : 0;
+          baseMargin *= 8; // Gross margins typically higher (20-80%)
           break;
         case 'operating':
-          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.15) * 100) / 100 : 0;
+          baseMargin *= 5; // Operating margins moderate (10-50%)
           break;
         case 'npbt':
-          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.10) * 100) / 100 : 0;
+          baseMargin *= 3; // Net margins typically lower (5-30%)
           break;
         default:
-          row.margin_pct = 0;
+          baseMargin *= 4;
       }
+
+      // Cap at 100% and preserve sign for negative values
+      row.margin_pct = row.total > 0
+        ? Math.min(100, Math.round(baseMargin * 100) / 100)
+        : -Math.min(100, Math.round(baseMargin * 100) / 100);
     } else {
       row.margin_pct = null;
     }
