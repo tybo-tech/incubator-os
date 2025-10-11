@@ -38,6 +38,13 @@ export class ProfitsHelperService {
   }
 
   /**
+   * Check if we have revenue data for a specific year
+   */
+  hasRevenueForYear(year: number): boolean {
+    return this.revenueCache.has(year) && this.revenueCache.get(year)! > 0;
+  }
+
+  /**
    * Check if we have any revenue data available
    */
   hasRevenueData(): boolean {
@@ -148,8 +155,7 @@ export class ProfitsHelperService {
 
   /**
    * Recalculate row totals and margins when quarterly values change
-   * Uses real revenue data for accurate margin calculations when available,
-   * falls back to logarithmic scaling if revenue data is not available
+   * Only calculates margins when revenue data is available for that specific year
    */
   recalculateRowTotals(row: ProfitDisplayRow, debug = false): void {
     // Handle null values properly - only convert to 0 for calculation, preserve original null
@@ -160,13 +166,13 @@ export class ProfitsHelperService {
 
     row.total = q1 + q2 + q3 + q4;
 
-    if (row.total === 0) {
+    // Only calculate margins if we have revenue data for this specific year
+    const revenueForYear = this.getRevenueForYear(row.year);
+
+    if (row.total === 0 || revenueForYear === 0) {
       row.margin_pct = null;
       return;
     }
-
-    // Try to get revenue data for this year for accurate margin calculation
-    const revenueForYear = this.getRevenueForYear(row.year);
 
     if (debug) {
       console.log(`Calculating margin for ${row.type} ${row.year}:`, {
@@ -178,46 +184,17 @@ export class ProfitsHelperService {
       });
     }
 
-    if (revenueForYear > 0) {
-      // Calculate real margin: (Profit / Revenue) × 100
-      row.margin_pct = Math.round((row.total / revenueForYear) * 10000) / 100;
+    // Calculate real margin using actual revenue data: (Profit / Revenue) × 100
+    row.margin_pct = Math.round((row.total / revenueForYear) * 10000) / 100;
 
-      // Cap margins at reasonable business limits (can be negative)
-      const maxMargin = this.getMaxMarginForType(row.type);
-      if (row.margin_pct > maxMargin) {
-        row.margin_pct = maxMargin;
-      }
+    // Cap margins at reasonable business limits (can be negative)
+    const maxMargin = this.getMaxMarginForType(row.type);
+    if (row.margin_pct > maxMargin) {
+      row.margin_pct = maxMargin;
+    }
 
-      if (debug) {
-        console.log(`Real margin calculated: ${row.margin_pct}%`);
-      }
-    } else {
-      // Fallback to logarithmic scaling if no revenue data available
-      // This produces believable margins that grow logarithmically with total values
-      const logScaled = Math.log10(Math.abs(row.total) + 1); // dampens large numbers
-      let marginEstimate = 0;
-
-      switch (row.type) {
-        case 'gross':
-          marginEstimate = logScaled * 15; // typical 20–80%
-          break;
-        case 'operating':
-          marginEstimate = logScaled * 10; // typical 10–50%
-          break;
-        case 'npbt':
-          marginEstimate = logScaled * 7; // typical 5–30%
-          break;
-        default:
-          marginEstimate = logScaled * 10;
-      }
-
-      // Cap at 100% and preserve sign for negative values
-      const calculatedMargin = Math.min(100, Math.round(marginEstimate * 100) / 100);
-      row.margin_pct = row.total > 0 ? calculatedMargin : -calculatedMargin;
-
-      if (debug) {
-        console.log(`Estimated margin calculated: ${row.margin_pct}%`);
-      }
+    if (debug) {
+      console.log(`Real margin calculated: ${row.margin_pct}%`);
     }
   }
 

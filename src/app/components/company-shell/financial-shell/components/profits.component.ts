@@ -38,26 +38,30 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
             <span class="text-sm font-medium">Saving...</span>
           </div>
         </div>
-        <button
-          (click)="openYearModal()"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2">
-          <i class="fas fa-plus mr-2"></i>
-          Year
-        </button>
 
-        <!-- Save button (only show when there are pending changes) -->
-        <button
-          *ngIf="hasPendingChanges"
-          (click)="saveAllChanges()"
-          [disabled]="saving"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
-          <i *ngIf="!saving" class="fas fa-save mr-2"></i>
-          <div *ngIf="saving" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-          {{ saving ? 'Saving...' : 'Save Changes' }}
-          <span *ngIf="!saving" class="ml-2 bg-green-800 text-green-100 text-xs px-2 py-1 rounded-full">
-            {{ pendingChangesCount }}
-          </span>
-        </button>
+        <!-- Buttons container -->
+        <div class="flex items-center space-x-3">
+          <button
+            (click)="openYearModal()"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+            <i class="fas fa-plus mr-2"></i>
+            Year
+          </button>
+
+          <!-- Save button (only show when there are pending changes) -->
+          <button
+            *ngIf="hasPendingChanges"
+            (click)="saveAllChanges()"
+            [disabled]="saving"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <i *ngIf="!saving" class="fas fa-save mr-2"></i>
+            <div *ngIf="saving" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+            {{ saving ? 'Saving...' : 'Save Changes' }}
+            <span *ngIf="!saving" class="ml-2 bg-green-800 text-green-100 text-xs px-2 py-1 rounded-full">
+              {{ pendingChangesCount }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -215,16 +219,21 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   {{ profitsHelper.formatCurrencyWithUnit(row.total) }}
                 </td>
 
-                <!-- Calculated Margin (readonly with colors) -->
+                <!-- Calculated Margin (readonly with colors) - only show if revenue available for this year -->
                 <td class="px-4 py-4 text-sm text-center font-semibold"
                     [ngClass]="{
-                      'text-green-600': row.margin_pct !== null && row.margin_pct >= 50,
-                      'text-yellow-600': row.margin_pct !== null && row.margin_pct >= 30 && row.margin_pct < 50,
-                      'text-red-500': row.margin_pct !== null && row.margin_pct < 30 && row.margin_pct >= 0,
-                      'text-red-600': row.margin_pct !== null && row.margin_pct < 0,
-                      'text-gray-400': row.margin_pct === null || row.margin_pct === 0
+                      'text-green-600': profitsHelper.hasRevenueForYear(row.year) && row.margin_pct !== null && row.margin_pct >= 50,
+                      'text-yellow-600': profitsHelper.hasRevenueForYear(row.year) && row.margin_pct !== null && row.margin_pct >= 30 && row.margin_pct < 50,
+                      'text-red-500': profitsHelper.hasRevenueForYear(row.year) && row.margin_pct !== null && row.margin_pct < 30 && row.margin_pct >= 0,
+                      'text-red-600': profitsHelper.hasRevenueForYear(row.year) && row.margin_pct !== null && row.margin_pct < 0,
+                      'text-gray-400': !profitsHelper.hasRevenueForYear(row.year)
                     }">
-                  {{ profitsHelper.formatPercentage(row.margin_pct) }}
+                  <span *ngIf="profitsHelper.hasRevenueForYear(row.year)">
+                    {{ profitsHelper.formatPercentage(row.margin_pct) }}
+                  </span>
+                  <span *ngIf="!profitsHelper.hasRevenueForYear(row.year)" class="text-gray-400">
+                    -
+                  </span>
                 </td>
 
                 <!-- Actions -->
