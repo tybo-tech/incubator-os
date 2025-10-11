@@ -135,6 +135,7 @@ export interface ProfitDisplayRow {
   isEditing?: boolean;
   isNew?: boolean;
   justSaved?: boolean; // Visual feedback for successful saves
+  isPendingSave?: boolean; // Indicates row has unsaved changes
 }
 
 export interface ProfitSectionData {
@@ -263,4 +264,18 @@ export interface FormatOptions {
   showPercentage?: boolean;
   decimalPlaces?: number;
   locale?: string;
+}
+
+export interface BatchUpdateResponse {
+  success: boolean;
+  message?: string;
+  updated_count?: number;
+  error?: string;
+  errors?: string[];
+  results?: Array<{
+    id: number;
+    success: boolean;
+    data?: any;
+    error?: string;
+  }>;
 }

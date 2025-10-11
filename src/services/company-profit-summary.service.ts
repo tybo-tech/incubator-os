@@ -15,7 +15,8 @@ import {
   ApiResponse,
   ValidationResult,
   FormatOptions,
-  UnifiedProfitRecord
+  UnifiedProfitRecord,
+  BatchUpdateResponse
 } from '../models/financial.models';
 import { Constants } from './service';
 
@@ -566,6 +567,16 @@ export class CompanyProfitSummaryService {
     const payload = { id, ...data };
     console.log('CompanyProfitSummaryService - updateCompanyProfitSummary called with:', { id, data, payload });
     return this.http.post<CompanyProfitSummary>(`${this.apiUrl}/update-company-profit-summary.php`, payload, this.httpOptions);
+  }
+
+  /**
+   * Batch update multiple profit summary records
+   * @param records Array of partial records to update
+   */
+  batchUpdateCompanyProfitSummary(records: Partial<UnifiedProfitRecord>[]): Observable<BatchUpdateResponse> {
+    const payload = { records };
+    console.log('CompanyProfitSummaryService - batchUpdateCompanyProfitSummary called with:', { recordCount: records.length, payload });
+    return this.http.post<BatchUpdateResponse>(`${this.apiUrl}/batch-update-company-profit-summary.php`, payload, this.httpOptions);
   }
 
   getCompanyProfitSummaryById(id: number): Observable<CompanyProfitSummary> {

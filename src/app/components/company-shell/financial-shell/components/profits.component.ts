@@ -40,9 +40,23 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
         </div>
         <button
           (click)="openYearModal()"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mr-2">
           <i class="fas fa-plus mr-2"></i>
           Year
+        </button>
+
+        <!-- Save button (only show when there are pending changes) -->
+        <button
+          *ngIf="hasPendingChanges"
+          (click)="saveAllChanges()"
+          [disabled]="saving"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i *ngIf="!saving" class="fas fa-save mr-2"></i>
+          <div *ngIf="saving" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+          <span *ngIf="!saving" class="ml-2 bg-green-800 text-green-100 text-xs px-2 py-1 rounded-full">
+            {{ pendingChangesCount }}
+          </span>
         </button>
       </div>
 
@@ -116,8 +130,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     (change)="onFieldChange(row, 'year', section)"
                     [ngClass]="{
                       'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-orange-300 bg-orange-50': row.isPendingSave,
                       'border-yellow-300 bg-yellow-50': saving,
-                      'border-gray-300': !row.justSaved && !saving
+                      'border-gray-300': !row.justSaved && !row.isPendingSave && !saving
                     }"
                     class="w-20 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
@@ -134,8 +149,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                     (change)="onFieldChange(row, 'q1', section)"
                     [ngClass]="{
                       'border-green-400 bg-green-50 transition-all duration-500': row.justSaved,
+                      'border-orange-300 bg-orange-50': row.isPendingSave,
                       'border-yellow-300 bg-yellow-50': saving,
-                      'border-gray-300': !row.justSaved && !saving
+                      'border-gray-300': !row.justSaved && !row.isPendingSave && !saving
                     }"
                     class="w-24 px-2 py-1 text-sm rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
                     [disabled]="saving"
@@ -260,13 +276,9 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   cohortId!: number;
   profitSections: ProfitSectionData[] = [];
   loading = false;
-  saving = false; // Prevent double-saves during blur events
+  saving = false; // For batch save operation
   private saveCount = 0; // Track save operations
-  private saveTimer: any; // Debounce timer for save operations
   private readonly isDebugMode = false; // Set to true for development debugging
-  private readonly debounceDelay = 400; // Centralized debounce timing
-  private lastToastTime = 0; // Prevent toast spam
-  private readonly toastCooldown = 1000; // Minimum time between toasts (ms)
 
   constructor(
     private profitService: CompanyProfitSummaryService,
@@ -302,10 +314,8 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clear any pending save timers
-    if (this.saveTimer) {
-      clearTimeout(this.saveTimer);
-    }
+    // Clear any pending changes when component is destroyed
+    this.profitsHelper.clearPendingChanges();
   }
 
   initializeSections(): void {
@@ -470,107 +480,113 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle field changes from inline editing with debounced save protection
+   * Handle field changes from inline editing - now uses manual save
    */
-  async onFieldChange(row: ProfitDisplayRow, field: string, section: ProfitSectionData): Promise<void> {
-    // Clear any existing save timer
-    clearTimeout(this.saveTimer);
+  onFieldChange(row: ProfitDisplayRow, field: string, section: ProfitSectionData): void {
+    if (this.isDebugMode) {
+      console.log('Field changed:', {
+        field,
+        value: (row as any)[field],
+        year: row.year,
+        section: section.type,
+        rowData: row
+      });
+    }
 
-    // Debounce save operations for smoother input experience
-    this.saveTimer = setTimeout(async () => {
-      // Prevent concurrent saves
-      if (this.saving) return;
-      this.saving = true;
+    // Recalculate totals when quarterly values change
+    if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
+      this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
+    }
 
-      try {
-        this.saveCount++;
-        const currentSaveId = this.saveCount;
-
-        if (this.isDebugMode) {
-          console.log('Field changed:', {
-            field,
-            value: (row as any)[field],
-            year: row.year,
-            section: section.type,
-            saveId: currentSaveId,
-            rowData: row
-          });
-        }
-
-        // Recalculate totals when quarterly values change
-        if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
-          this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
-        }
-
-        // Save the updated record to the database
-        await this.saveUpdatedRow(row, section);
-
-        // Optionally refresh the row to ensure backend/frontend sync
-        if (this.isDebugMode) {
-          await this.profitsHelper.refreshRow(row.id!, section, this.profitService);
-        }
-
-        // Visual feedback for successful save
-        row.justSaved = true;
-        setTimeout(() => row.justSaved = false, 600);
-
-        // Only show success toast for the most recent save to prevent spam
-        if (currentSaveId === this.saveCount && this.canShowToast()) {
-          this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
-          this.lastToastTime = Date.now();
-        }
-
-      } catch (error) {
-        console.error('Error updating field:', error);
-        this.toastService.error(`Failed to update ${section.displayName} data`);
-
-        // Optionally reload data on error to ensure consistency
-        try {
-          await this.loadProfitData();
-        } catch (reloadError) {
-          console.error('Error reloading data after save failure:', reloadError);
-        }
-      } finally {
-        this.saving = false;
-      }
-    }, this.debounceDelay);
+    // Mark row as changed for manual save
+    this.profitsHelper.markRowAsChanged(row, section);
   }
 
   /**
-   * Save the updated row to the database
+   * Manual save all pending changes
    */
-  private async saveUpdatedRow(row: ProfitDisplayRow, section: ProfitSectionData): Promise<void> {
-    if (!row.id) {
-      console.error('Cannot save row: missing ID');
+  async saveAllChanges(): Promise<void> {
+    if (!this.profitsHelper.hasPendingChanges()) {
+      this.toastService.info('No changes to save');
       return;
     }
 
-    // Use the helper service to transform the display row to save data format
-    const saveData = this.profitsHelper.transformRowToSaveData(
-      row,
-      section,
-      this.companyId,
-      this.clientId,
-      this.programId,
-      this.cohortId
-    );
+    this.saving = true;
 
     try {
-      await firstValueFrom(this.profitService.updateCompanyProfitSummary(row.id, saveData));
-      if (this.isDebugMode) {
-        console.log('Record saved successfully:', saveData);
+      const changedRecords = this.profitsHelper.getChangedRecords();
+      const updateRecords: Partial<UnifiedProfitRecord>[] = [];
+
+      // Transform each changed row to save format
+      for (const { key, row } of changedRecords) {
+        const [id, type] = key.split('_');
+        const section = this.profitSections.find(s => s.type === type);
+
+        if (section) {
+          const saveData = this.profitsHelper.transformRowToSaveData(
+            row,
+            section,
+            this.companyId,
+            this.clientId,
+            this.programId,
+            this.cohortId
+          );
+          updateRecords.push(saveData);
+        }
       }
+
+      if (this.isDebugMode) {
+        console.log('Batch saving records:', {
+          changeCount: changedRecords.length,
+          updateRecords
+        });
+      }
+
+      // Perform batch update
+      const result = await firstValueFrom(this.profitService.batchUpdateCompanyProfitSummary(updateRecords));
+
+      if (result.success) {
+        // Clear pending changes and visual indicators
+        this.profitSections.forEach(section => {
+          section.rows.forEach(row => {
+            row.isPendingSave = false;
+            row.justSaved = true;
+            setTimeout(() => row.justSaved = false, 600);
+          });
+        });
+
+        this.profitsHelper.clearPendingChanges();
+
+        this.toastService.success(`Successfully saved ${result.updated_count} records`);
+
+        // Optionally reload data to ensure consistency
+        if (this.isDebugMode) {
+          await this.loadProfitData();
+        }
+      } else {
+        throw new Error(result.error || 'Batch update failed');
+      }
+
     } catch (error) {
-      console.error('Error saving record:', error);
-      throw error;
+      console.error('Error saving changes:', error);
+      this.toastService.error('Failed to save changes. Please try again.');
+    } finally {
+      this.saving = false;
     }
   }
 
   /**
-   * Check if enough time has passed to show another toast (prevents spam)
+   * Check if there are pending changes
    */
-  private canShowToast(): boolean {
-    return Date.now() - this.lastToastTime > this.toastCooldown;
+  get hasPendingChanges(): boolean {
+    return this.profitsHelper.hasPendingChanges();
+  }
+
+  /**
+   * Get the count of pending changes for display
+   */
+  get pendingChangesCount(): number {
+    return this.profitsHelper.getPendingChangesCount();
   }
 
   /**

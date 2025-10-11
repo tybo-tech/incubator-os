@@ -15,6 +15,9 @@ export class ProfitsHelperService {
   // Cache revenue data to avoid repeated API calls
   private revenueCache = new Map<number, number>(); // year -> revenue_total
 
+  // Track changed records for batch saving
+  private changedRecords = new Map<string, ProfitDisplayRow>(); // key -> row
+
   constructor() { }
 
   /**
@@ -46,6 +49,62 @@ export class ProfitsHelperService {
    */
   getAvailableRevenueYears(): number[] {
     return Array.from(this.revenueCache.keys()).sort((a, b) => b - a);
+  }
+
+  /**
+   * Mark a row as changed (pending save)
+   */
+  markRowAsChanged(row: ProfitDisplayRow, section: ProfitSectionData): void {
+    const key = this.getRowKey(row, section);
+    this.changedRecords.set(key, { ...row }); // Store a copy
+    row.isPendingSave = true; // Add visual indicator
+  }
+
+  /**
+   * Get the unique key for a row
+   */
+  private getRowKey(row: ProfitDisplayRow, section: ProfitSectionData): string {
+    return `${row.id}_${section.type}`;
+  }
+
+  /**
+   * Check if there are pending changes
+   */
+  hasPendingChanges(): boolean {
+    return this.changedRecords.size > 0;
+  }
+
+  /**
+   * Get the count of pending changes
+   */
+  getPendingChangesCount(): number {
+    return this.changedRecords.size;
+  }
+
+  /**
+   * Get all changed records for batch update
+   */
+  getChangedRecords(): { key: string, row: ProfitDisplayRow }[] {
+    return Array.from(this.changedRecords.entries()).map(([key, row]) => ({
+      key,
+      row
+    }));
+  }
+
+  /**
+   * Clear all pending changes (after successful save)
+   */
+  clearPendingChanges(): void {
+    this.changedRecords.clear();
+  }
+
+  /**
+   * Remove a specific row from pending changes
+   */
+  removeFromPendingChanges(row: ProfitDisplayRow, section: ProfitSectionData): void {
+    const key = this.getRowKey(row, section);
+    this.changedRecords.delete(key);
+    row.isPendingSave = false;
   }
 
   /**
