@@ -9,7 +9,7 @@ import { filter } from 'rxjs/operators';
   imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
     <div class="min-h-screen bg-gray-50">
-      <!-- Financial Shell Header with Navigation -->
+      <!-- Financial Shell Header -->
       <div class="bg-white border-b border-gray-200">
         <div class="px-6 py-4">
           <h1 class="text-2xl font-bold text-gray-900 flex items-center">
@@ -18,8 +18,10 @@ import { filter } from 'rxjs/operators';
           </h1>
           <p class="text-gray-600 mt-1">Comprehensive financial analytics and reporting</p>
         </div>
+      </div>
 
-        <!-- Financial Navigation Tabs -->
+      <!-- Sticky Financial Navigation Tabs -->
+      <div class="bg-white border-b border-gray-200 sticky top-32 z-20">
         <div class="px-6">
           <div class="flex space-x-8 overflow-x-auto">
             <a
