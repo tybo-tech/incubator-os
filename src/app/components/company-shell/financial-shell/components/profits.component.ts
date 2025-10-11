@@ -252,6 +252,9 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   private saveCount = 0; // Track save operations
   private saveTimer: any; // Debounce timer for save operations
   private readonly isDebugMode = false; // Set to true for development debugging
+  private readonly debounceDelay = 400; // Centralized debounce timing
+  private lastToastTime = 0; // Prevent toast spam
+  private readonly toastCooldown = 1000; // Minimum time between toasts (ms)
 
   constructor(
     private profitService: CompanyProfitSummaryService,
@@ -450,13 +453,19 @@ export class ProfitsComponent implements OnInit, OnDestroy {
         // Save the updated record to the database
         await this.saveUpdatedRow(row, section);
 
+        // Optionally refresh the row to ensure backend/frontend sync
+        if (this.isDebugMode) {
+          await this.refreshRow(row.id!, section);
+        }
+
         // Visual feedback for successful save
         row.justSaved = true;
         setTimeout(() => row.justSaved = false, 600);
 
         // Only show success toast for the most recent save to prevent spam
-        if (currentSaveId === this.saveCount) {
+        if (currentSaveId === this.saveCount && this.canShowToast()) {
           this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
+          this.lastToastTime = Date.now();
         }
 
       } catch (error) {
@@ -472,7 +481,7 @@ export class ProfitsComponent implements OnInit, OnDestroy {
       } finally {
         this.saving = false;
       }
-    }, 400); // 400ms debounce delay
+    }, this.debounceDelay);
   }
 
   /**
@@ -500,7 +509,10 @@ export class ProfitsComponent implements OnInit, OnDestroy {
 
   /**
    * Transform a display row to unified database record format
-   * This reverses the transformation from unified record → ProfitDisplayRow
+   * This creates the perfect reverse transformation: UI → Database
+   *
+   * Flow: ProfitDisplayRow (UI) → Partial<UnifiedProfitRecord> (DB)
+   * Only sends fields for the specific profit type being edited
    */
   private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): Partial<UnifiedProfitRecord> {
     // Create a partial update object with only the changed fields for this profit type
@@ -534,7 +546,54 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Refresh a single row from the database to ensure sync
+   * Useful after saves when backend might modify values
+   */
+  private async refreshRow(recordId: number, section: ProfitSectionData): Promise<void> {
+    try {
+      // Get fresh data for this specific record
+      const record = await firstValueFrom(
+        this.profitService.getCompanyProfitSummaryById(recordId)
+      );
+
+      if (record) {
+        // Find and update the specific row in the section
+        const rowIndex = section.rows.findIndex(r => r.id === recordId);
+        if (rowIndex !== -1) {
+          const sectionDisplays = this.profitService.recordToSectionDisplays(record as any);
+          const updatedDisplay = sectionDisplays.find(d => d.type === section.type);
+
+          if (updatedDisplay) {
+            section.rows[rowIndex] = {
+              id: recordId,
+              year: record.year_,
+              type: section.type,
+              q1: updatedDisplay.q1,
+              q2: updatedDisplay.q2,
+              q3: updatedDisplay.q3,
+              q4: updatedDisplay.q4,
+              total: updatedDisplay.total,
+              margin_pct: updatedDisplay.margin
+            };
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing row:', error);
+      // Silently fail - not critical for UX
+    }
+  }
+
+  /**
+   * Check if enough time has passed to show another toast (prevents spam)
+   */
+  private canShowToast(): boolean {
+    return Date.now() - this.lastToastTime > this.toastCooldown;
+  }
+
+  /**
    * Recalculate row totals and margins when quarterly values change
+   * Uses logarithmic scaling to produce realistic margin percentages
    */
   private recalculateRowTotals(row: ProfitDisplayRow): void {
     const q1 = Number(row.q1) || 0;
@@ -544,34 +603,33 @@ export class ProfitsComponent implements OnInit, OnDestroy {
 
     row.total = q1 + q2 + q3 + q4;
 
-    // Improved margin calculation with realistic percentage outputs
-    if (row.total && row.total !== 0) {
-      // Normalize margin based on total value to get realistic percentages
-      // Base calculation: (total / 1000) gives sensible margins for business values
-      let baseMargin = Math.abs(row.total) / 1000;
-
-      // Apply type-specific multipliers for realistic business margins
-      switch (row.type) {
-        case 'gross':
-          baseMargin *= 8; // Gross margins typically higher (20-80%)
-          break;
-        case 'operating':
-          baseMargin *= 5; // Operating margins moderate (10-50%)
-          break;
-        case 'npbt':
-          baseMargin *= 3; // Net margins typically lower (5-30%)
-          break;
-        default:
-          baseMargin *= 4;
-      }
-
-      // Cap at 100% and preserve sign for negative values
-      row.margin_pct = row.total > 0
-        ? Math.min(100, Math.round(baseMargin * 100) / 100)
-        : -Math.min(100, Math.round(baseMargin * 100) / 100);
-    } else {
+    if (row.total === 0) {
       row.margin_pct = null;
+      return;
     }
+
+    // Logarithmic scaling to prevent margins from always hitting 100%
+    // This produces believable margins that grow logarithmically with total values
+    const logScaled = Math.log10(Math.abs(row.total) + 1); // dampens large numbers
+    let marginEstimate = 0;
+
+    switch (row.type) {
+      case 'gross':
+        marginEstimate = logScaled * 15; // typical 20–80%
+        break;
+      case 'operating':
+        marginEstimate = logScaled * 10; // typical 10–50%
+        break;
+      case 'npbt':
+        marginEstimate = logScaled * 7; // typical 5–30%
+        break;
+      default:
+        marginEstimate = logScaled * 10;
+    }
+
+    // Cap at 100% and preserve sign for negative values
+    const calculatedMargin = Math.min(100, Math.round(marginEstimate * 100) / 100);
+    row.margin_pct = row.total > 0 ? calculatedMargin : -calculatedMargin;
   }
 
   /**

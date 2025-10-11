@@ -228,8 +228,9 @@ export class CompanyProfitSummaryService {
 
   /**
    * Convert unified record to section display data
+   * Supports both CompanyProfitRecord and UnifiedProfitRecord formats
    */
-  recordToSectionDisplays(record: CompanyProfitRecord): ProfitSectionDisplay[] {
+  recordToSectionDisplays(record: CompanyProfitRecord | UnifiedProfitRecord): ProfitSectionDisplay[] {
     return [
       {
         type: 'gross',
