@@ -43,14 +43,21 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
       <div *ngIf="!loading && profitSections.length > 0" class="space-y-10">
 
         <div *ngFor="let section of profitSections" class="overflow-x-auto">
-          <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-            <i [ngClass]="{
-              'fa-chart-line text-green-600': section.type === 'gross',
-              'fa-briefcase text-blue-600': section.type === 'operating',
-              'fa-money-bill-wave text-yellow-600': section.type === 'npbt'
-            }" class="fas mr-2"></i>
-            {{ section.displayName }}
-          </h3>
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between">
+              <div class="flex items-center">
+                <i [ngClass]="{
+                  'fa-chart-line text-green-600': section.type === 'gross',
+                  'fa-cogs text-blue-600': section.type === 'operating',
+                  'fa-calculator text-purple-600': section.type === 'npbt'
+                }" class="fas mr-3 text-xl"></i>
+                {{ section.displayName }}
+              </div>
+              <span class="text-sm text-gray-500 font-normal">
+                {{ section.rows.length }} {{ section.rows.length === 1 ? 'year' : 'years' }}
+              </span>
+            </h3>
+          </div>
 
           <table class="min-w-full divide-y divide-gray-200 table-fixed">
             <thead class="bg-gray-50">
@@ -64,19 +71,34 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Q4</th>
                 <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 <th class="w-24 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Margin</th>
+                <th class="w-16 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
 
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of section.rows">
+              <tr *ngFor="let row of section.rows" class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ row.year }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q1) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q2) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q3) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q4) }}</td>
-                <td class="px-4 py-4 text-sm text-center font-semibold">{{ formatCurrency(row.total) }}</td>
-                <td class="px-4 py-4 text-sm text-center text-blue-600 font-semibold">
+                <td class="px-4 py-4 text-sm text-center font-semibold text-gray-900">
+                  {{ formatCurrencyWithUnit(row.total) }}
+                </td>
+                <td class="px-4 py-4 text-sm text-center font-semibold"
+                    [ngClass]="{
+                      'text-green-600': row.margin_pct !== null && row.margin_pct > 0,
+                      'text-red-500': row.margin_pct !== null && row.margin_pct < 0,
+                      'text-gray-400': row.margin_pct === null || row.margin_pct === 0
+                    }">
                   {{ formatPercentage(row.margin_pct) }}
+                </td>
+                <td class="px-4 py-4 text-sm text-center">
+                  <button
+                    class="text-gray-400 hover:text-red-500 transition-colors"
+                    title="Delete {{ row.year }} data">
+                    <i class="fas fa-trash text-sm"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -292,14 +314,43 @@ export class ProfitsComponent implements OnInit {
   /** Formatting helpers */
   formatCurrency(value: number | null): string {
     if (value == null || isNaN(value)) return '-';
+
+    // Format with thousands separators using space (European style)
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value);
+    }).format(value).replace(/,/g, ' ');
   }
 
   formatPercentage(value: number | null): string {
     if (value == null || isNaN(value)) return '-%';
     return `${Math.round(value)}%`;
+  }
+
+  /**
+   * Enhanced currency formatting for totals (with USD suffix)
+   */
+  formatCurrencyWithUnit(value: number | null): string {
+    if (value == null || isNaN(value)) return '- USD';
+    const formatted = this.formatCurrency(value);
+    return `${formatted} USD`;
+  }
+
+  /**
+   * Calculate section statistics for display
+   */
+  getSectionStats(section: ProfitSectionData) {
+    if (section.rows.length === 0) return null;
+
+    const latestYear = Math.max(...section.rows.map(r => r.year));
+    const latestRow = section.rows.find(r => r.year === latestYear);
+    const totalSum = section.rows.reduce((sum, row) => sum + (row.total || 0), 0);
+
+    return {
+      latestYear,
+      latestTotal: latestRow?.total || 0,
+      latestMargin: latestRow?.margin_pct || 0,
+      allTimeTotal: totalSum
+    };
   }
 }
