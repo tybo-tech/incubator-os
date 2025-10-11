@@ -5,13 +5,48 @@ import {
   ProfitType,
   UnifiedProfitRecord
 } from '../../models/financial.models';
+import { RevenueYearlyData } from '../../services/company-revenue-summary.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfitsHelperService {
 
+  // Cache revenue data to avoid repeated API calls
+  private revenueCache = new Map<number, number>(); // year -> revenue_total
+
   constructor() { }
+
+  /**
+   * Set revenue data cache for margin calculations
+   */
+  setRevenueData(revenueData: RevenueYearlyData[]): void {
+    this.revenueCache.clear();
+    revenueData.forEach(data => {
+      this.revenueCache.set(data.year, data.revenue_total || 0);
+    });
+  }
+
+  /**
+   * Get revenue for a specific year from cache
+   */
+  getRevenueForYear(year: number): number {
+    return this.revenueCache.get(year) || 0;
+  }
+
+  /**
+   * Check if we have any revenue data available
+   */
+  hasRevenueData(): boolean {
+    return this.revenueCache.size > 0;
+  }
+
+  /**
+   * Get all available revenue years
+   */
+  getAvailableRevenueYears(): number[] {
+    return Array.from(this.revenueCache.keys()).sort((a, b) => b - a);
+  }
 
   /**
    * Transform a display row to unified database record format
@@ -53,9 +88,10 @@ export class ProfitsHelperService {
 
   /**
    * Recalculate row totals and margins when quarterly values change
-   * Uses logarithmic scaling to produce realistic margin percentages
+   * Uses real revenue data for accurate margin calculations when available,
+   * falls back to logarithmic scaling if revenue data is not available
    */
-  recalculateRowTotals(row: ProfitDisplayRow): void {
+  recalculateRowTotals(row: ProfitDisplayRow, debug = false): void {
     const q1 = Number(row.q1) || 0;
     const q2 = Number(row.q2) || 0;
     const q3 = Number(row.q3) || 0;
@@ -68,28 +104,74 @@ export class ProfitsHelperService {
       return;
     }
 
-    // Logarithmic scaling to prevent margins from always hitting 100%
-    // This produces believable margins that grow logarithmically with total values
-    const logScaled = Math.log10(Math.abs(row.total) + 1); // dampens large numbers
-    let marginEstimate = 0;
+    // Try to get revenue data for this year for accurate margin calculation
+    const revenueForYear = this.getRevenueForYear(row.year);
 
-    switch (row.type) {
-      case 'gross':
-        marginEstimate = logScaled * 15; // typical 20–80%
-        break;
-      case 'operating':
-        marginEstimate = logScaled * 10; // typical 10–50%
-        break;
-      case 'npbt':
-        marginEstimate = logScaled * 7; // typical 5–30%
-        break;
-      default:
-        marginEstimate = logScaled * 10;
+    if (debug) {
+      console.log(`Calculating margin for ${row.type} ${row.year}:`, {
+        profit: row.total,
+        revenue: revenueForYear,
+        hasRevenueData: revenueForYear > 0
+      });
     }
 
-    // Cap at 100% and preserve sign for negative values
-    const calculatedMargin = Math.min(100, Math.round(marginEstimate * 100) / 100);
-    row.margin_pct = row.total > 0 ? calculatedMargin : -calculatedMargin;
+    if (revenueForYear > 0) {
+      // Calculate real margin: (Profit / Revenue) × 100
+      row.margin_pct = Math.round((row.total / revenueForYear) * 10000) / 100;
+
+      // Cap margins at reasonable business limits (can be negative)
+      const maxMargin = this.getMaxMarginForType(row.type);
+      if (row.margin_pct > maxMargin) {
+        row.margin_pct = maxMargin;
+      }
+
+      if (debug) {
+        console.log(`Real margin calculated: ${row.margin_pct}%`);
+      }
+    } else {
+      // Fallback to logarithmic scaling if no revenue data available
+      // This produces believable margins that grow logarithmically with total values
+      const logScaled = Math.log10(Math.abs(row.total) + 1); // dampens large numbers
+      let marginEstimate = 0;
+
+      switch (row.type) {
+        case 'gross':
+          marginEstimate = logScaled * 15; // typical 20–80%
+          break;
+        case 'operating':
+          marginEstimate = logScaled * 10; // typical 10–50%
+          break;
+        case 'npbt':
+          marginEstimate = logScaled * 7; // typical 5–30%
+          break;
+        default:
+          marginEstimate = logScaled * 10;
+      }
+
+      // Cap at 100% and preserve sign for negative values
+      const calculatedMargin = Math.min(100, Math.round(marginEstimate * 100) / 100);
+      row.margin_pct = row.total > 0 ? calculatedMargin : -calculatedMargin;
+
+      if (debug) {
+        console.log(`Estimated margin calculated: ${row.margin_pct}%`);
+      }
+    }
+  }
+
+  /**
+   * Get maximum realistic margin for each profit type
+   */
+  private getMaxMarginForType(type: ProfitType): number {
+    switch (type) {
+      case 'gross':
+        return 95; // Gross margins can be very high
+      case 'operating':
+        return 60; // Operating margins typically lower
+      case 'npbt':
+        return 40; // Net margins usually the lowest
+      default:
+        return 50;
+    }
   }
 
   /**

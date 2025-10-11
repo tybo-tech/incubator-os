@@ -13,6 +13,7 @@ import {
   UnifiedProfitRecord
 } from '../../../../../models/financial.models';
 import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
+import { CompanyRevenueSummaryService } from '../../../../../services/company-revenue-summary.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ProfitsHelperService } from '../../../../services/profits-helper.service';
 import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
@@ -63,6 +64,16 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   'fa-calculator text-purple-600': section.type === 'npbt'
                 }" class="fas mr-3 text-xl"></i>
                 {{ section.displayName }}
+                <span *ngIf="profitsHelper.hasRevenueData()"
+                      class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full"
+                      title="Margins calculated using actual revenue data for available years">
+                  ✓ Real Margins
+                </span>
+                <span *ngIf="!profitsHelper.hasRevenueData()"
+                      class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full"
+                      title="Margins estimated (no revenue data available)">
+                  ~ Estimated
+                </span>
               </div>
               <span class="text-sm text-gray-500 font-normal">
                 {{ section.rows.length }} {{ section.rows.length === 1 ? 'year' : 'years' }}
@@ -252,13 +263,14 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   saving = false; // Prevent double-saves during blur events
   private saveCount = 0; // Track save operations
   private saveTimer: any; // Debounce timer for save operations
-  private readonly isDebugMode = false; // Set to true for development debugging
+  private readonly isDebugMode = true; // Set to true for development debugging
   private readonly debounceDelay = 400; // Centralized debounce timing
   private lastToastTime = 0; // Prevent toast spam
   private readonly toastCooldown = 1000; // Minimum time between toasts (ms)
 
   constructor(
     private profitService: CompanyProfitSummaryService,
+    private revenueService: CompanyRevenueSummaryService,
     private route: ActivatedRoute,
     private toastService: ToastService,
     public profitsHelper: ProfitsHelperService
@@ -314,8 +326,26 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   async loadProfitData(): Promise<void> {
     this.loading = true;
     try {
-      // Use the unified record service method instead of the display row method
-      const records = await firstValueFrom(this.profitService.getCompanyProfitRecords({ company_id: this.companyId }));
+      // Load both profit records and revenue data for accurate margin calculations
+      const [records, revenueData] = await Promise.all([
+        firstValueFrom(this.profitService.getCompanyProfitRecords({ company_id: this.companyId })),
+        firstValueFrom(this.revenueService.getCompanyRevenueYearlyTrend(this.companyId))
+      ]);
+
+      // Set revenue data in the helper service for margin calculations
+      if (revenueData && Array.isArray(revenueData)) {
+        this.profitsHelper.setRevenueData(revenueData);
+
+        if (this.isDebugMode) {
+          console.log('Loaded revenue data for margin calculations:', {
+            rawData: revenueData,
+            revenueByYear: revenueData.reduce((acc, item) => {
+              acc[item.year] = item.revenue_total;
+              return acc;
+            }, {} as Record<number, number>)
+          });
+        }
+      }
 
       if (records && Array.isArray(records)) {
         // Initialize fresh sections
@@ -325,15 +355,17 @@ export class ProfitsComponent implements OnInit, OnDestroy {
         records.forEach(record => {
           const sectionDisplays = this.profitService.recordToSectionDisplays(record);
 
-          console.log(`Transforming record for year ${record.year_}:`, {
-            record: record,
-            sectionDisplays: sectionDisplays
-          });
+          if (this.isDebugMode) {
+            console.log(`Transforming record for year ${record.year_}:`, {
+              record: record,
+              sectionDisplays: sectionDisplays
+            });
+          }
 
           sectionDisplays.forEach(display => {
             const targetSection = this.profitSections.find(s => s.type === display.type);
             if (targetSection) {
-              targetSection.rows.push({
+              const row: ProfitDisplayRow = {
                 id: record.id,
                 year: record.year_,
                 type: display.type,
@@ -343,7 +375,12 @@ export class ProfitsComponent implements OnInit, OnDestroy {
                 q4: display.q4,
                 total: display.total,
                 margin_pct: display.margin
-              });
+              };
+
+              // Recalculate margins with real revenue data
+              this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
+
+              targetSection.rows.push(row);
             }
           });
         });
@@ -354,9 +391,19 @@ export class ProfitsComponent implements OnInit, OnDestroy {
         });
 
         if (this.isDebugMode) {
-          console.log('Loaded profit data:', {
+          console.log('Loaded profit data with revenue-based margins:', {
             recordCount: records.length,
-            sectionsPopulated: this.profitSections.map(s => ({ type: s.type, rowCount: s.rows.length }))
+            revenueYears: revenueData?.length || 0,
+            revenueAvailable: this.profitsHelper.getAvailableRevenueYears(),
+            sectionsPopulated: this.profitSections.map(s => ({
+              type: s.type,
+              rowCount: s.rows.length,
+              sampleMargins: s.rows.slice(0, 2).map(r => ({
+                year: r.year,
+                margin: r.margin_pct,
+                hasRevenue: this.profitsHelper.getRevenueForYear(r.year) > 0
+              }))
+            }))
           });
         }
       }
@@ -442,7 +489,7 @@ export class ProfitsComponent implements OnInit, OnDestroy {
 
         // Recalculate totals when quarterly values change
         if (['q1', 'q2', 'q3', 'q4'].includes(field)) {
-          this.profitsHelper.recalculateRowTotals(row);
+          this.profitsHelper.recalculateRowTotals(row, this.isDebugMode);
         }
 
         // Save the updated record to the database

@@ -5,6 +5,12 @@ import { map } from 'rxjs/operators';
 import { CompanyRevenueSummary } from '../models/financial.models';
 import { Constants } from './service';
 
+export interface RevenueYearlyData {
+  year: number;
+  revenue_total: number;
+  [key: string]: any;
+}
+
 export interface ICompanyRevenueSummaryFilters {
   company_id: number;
   year_?: number;
@@ -387,5 +393,26 @@ export class CompanyRevenueSummaryService {
 
   deleteCompanyRevenueSummary(id: number): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-company-revenue-summary.php`, { id });
+  }
+
+  /**
+   * Get yearly revenue trend for margin calculations in profits component
+   * @param companyId The ID of the company
+   */
+  getCompanyRevenueYearlyTrend(companyId: number): Observable<RevenueYearlyData[]> {
+    return this.http.get<RevenueYearlyData[]>(`${this.apiUrl}/get-company-revenue-yearly-trend.php?company_id=${companyId}`)
+      .pipe(
+        map(response => {
+          // Handle different response formats
+          const data = this.processApiResponse(response);
+          return data.map((item: any) => ({
+            year: parseInt(item.year_ || item.year, 10),
+            revenue_total: parseFloat(item.revenue_total || item.total || '0'),
+            export_total: parseFloat(item.export_total || '0'),
+            export_ratio: parseFloat(item.export_ratio || '0'),
+            ...item
+          }));
+        })
+      );
   }
 }
