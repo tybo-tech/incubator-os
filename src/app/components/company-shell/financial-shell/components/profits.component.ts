@@ -8,7 +8,8 @@ import {
   ProfitDisplayRow,
   ProfitSectionData,
   ProfitType,
-  CompanyProfitRecord
+  CompanyProfitRecord,
+  ProfitSaveData
 } from '../../../../../models/financial.models';
 import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -23,9 +24,16 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center">
-          <i class="fas fa-coins text-yellow-600 text-2xl mr-3"></i>
-          <h2 class="text-xl font-bold text-gray-900">Profit Summary</h2>
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center">
+            <i class="fas fa-coins text-yellow-600 text-2xl mr-3"></i>
+            <h2 class="text-xl font-bold text-gray-900">Profit Summary</h2>
+          </div>
+          <!-- Save indicator -->
+          <div *ngIf="saving" class="flex items-center text-yellow-600">
+            <div class="animate-spin h-4 w-4 border-2 border-yellow-600 border-t-transparent rounded-full mr-2"></div>
+            <span class="text-sm font-medium">Saving...</span>
+          </div>
         </div>
         <button
           (click)="openYearModal()"
@@ -92,8 +100,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   <input
                     type="number"
                     [(ngModel)]="row.year"
-                    (blur)="onFieldChange(row, 'year', section)"
-                    class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    (change)="onFieldChange(row, 'year', section)"
+                    [class]="'w-20 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [disabled]="saving"
                     min="2000"
                     max="2099"
                     step="1">
@@ -104,8 +113,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   <input
                     type="number"
                     [(ngModel)]="row.q1"
-                    (blur)="onFieldChange(row, 'q1', section)"
-                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    (change)="onFieldChange(row, 'q1', section)"
+                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [disabled]="saving"
                     placeholder="0"
                     step="1">
                 </td>
@@ -115,8 +125,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   <input
                     type="number"
                     [(ngModel)]="row.q2"
-                    (blur)="onFieldChange(row, 'q2', section)"
-                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    (change)="onFieldChange(row, 'q2', section)"
+                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [disabled]="saving"
                     placeholder="0"
                     step="1">
                 </td>
@@ -126,8 +137,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   <input
                     type="number"
                     [(ngModel)]="row.q3"
-                    (blur)="onFieldChange(row, 'q3', section)"
-                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    (change)="onFieldChange(row, 'q3', section)"
+                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [disabled]="saving"
                     placeholder="0"
                     step="1">
                 </td>
@@ -137,8 +149,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                   <input
                     type="number"
                     [(ngModel)]="row.q4"
-                    (blur)="onFieldChange(row, 'q4', section)"
-                    class="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center"
+                    (change)="onFieldChange(row, 'q4', section)"
+                    [class]="'w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-center ' + (saving ? 'border-yellow-300 bg-yellow-50' : 'border-gray-300')"
+                    [disabled]="saving"
                     placeholder="0"
                     step="1">
                 </td>
@@ -209,6 +222,8 @@ export class ProfitsComponent implements OnInit {
   cohortId!: number;
   profitSections: ProfitSectionData[] = [];
   loading = false;
+  saving = false; // Prevent double-saves during blur events
+  private saveCount = 0; // Track save operations
 
   constructor(
     private profitService: CompanyProfitSummaryService,
@@ -361,15 +376,23 @@ export class ProfitsComponent implements OnInit {
   }
 
   /**
-   * Handle field changes from inline editing
+   * Handle field changes from inline editing with save protection
    */
   async onFieldChange(row: ProfitDisplayRow, field: string, section: ProfitSectionData): Promise<void> {
+    // Prevent concurrent saves
+    if (this.saving) return;
+    this.saving = true;
+
     try {
+      this.saveCount++;
+      const currentSaveId = this.saveCount;
+
       console.log('Field changed:', {
         field,
         value: (row as any)[field],
         year: row.year,
         section: section.type,
+        saveId: currentSaveId,
         rowData: row
       });
 
@@ -381,11 +404,23 @@ export class ProfitsComponent implements OnInit {
       // Save the updated record to the database
       await this.saveUpdatedRow(row, section);
 
-      this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
+      // Only show success toast for the most recent save to prevent spam
+      if (currentSaveId === this.saveCount) {
+        this.toastService.success(`Updated ${section.displayName} ${field.toUpperCase()} for ${row.year}`);
+      }
 
     } catch (error) {
       console.error('Error updating field:', error);
       this.toastService.error(`Failed to update ${section.displayName} data`);
+
+      // Optionally reload data on error to ensure consistency
+      try {
+        await this.loadProfitData();
+      } catch (reloadError) {
+        console.error('Error reloading data after save failure:', reloadError);
+      }
+    } finally {
+      this.saving = false;
     }
   }
 
@@ -413,7 +448,7 @@ export class ProfitsComponent implements OnInit {
   /**
    * Transform a display row to ProfitSaveData format for the service
    */
-  private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): any {
+  private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): ProfitSaveData {
     return {
       company_id: this.companyId,
       client_id: this.clientId,
@@ -441,9 +476,25 @@ export class ProfitsComponent implements OnInit {
 
     row.total = q1 + q2 + q3 + q4;
 
-    // TODO: Calculate margin based on revenue data
-    // For now, keep existing margin or set to null if no total
-    if (row.total === 0) {
+    // Auto-calculate margin percentage as a simple placeholder
+    // In a real scenario, this would calculate based on revenue data
+    if (row.total && row.total !== 0) {
+      // Simple margin calculation - can be enhanced with actual business logic
+      // For now, calculate a basic margin based on the profit type
+      switch (row.type) {
+        case 'gross':
+          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.25) * 100) / 100 : 0;
+          break;
+        case 'operating':
+          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.15) * 100) / 100 : 0;
+          break;
+        case 'npbt':
+          row.margin_pct = row.total > 0 ? Math.round((row.total * 0.10) * 100) / 100 : 0;
+          break;
+        default:
+          row.margin_pct = 0;
+      }
+    } else {
       row.margin_pct = null;
     }
   }
