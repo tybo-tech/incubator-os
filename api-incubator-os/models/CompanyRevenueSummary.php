@@ -114,7 +114,7 @@ final class CompanyRevenueSummary
 
     public function listByCompany(int $companyId): array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM company_revenue_summary WHERE company_id = ? ORDER BY year_ DESC");
+        $stmt = $this->conn->prepare("SELECT * FROM company_revenue_summary WHERE company_id = ? ORDER BY year_");
         $stmt->execute([$companyId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

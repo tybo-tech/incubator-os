@@ -400,6 +400,7 @@ interface BreadcrumbInfo {
   `,
 })
 export class CohortsListComponent implements OnInit {
+  private readonly USE_NEW_COMPANY_PAGE = true;
   cohorts = signal<Cohort[]>([]);
   companies = signal<ICompany[]>([]);
   breadcrumbInfo = signal<BreadcrumbInfo | null>(null);
@@ -549,8 +550,8 @@ export class CohortsListComponent implements OnInit {
       {
         label: 'Clients',
         clickable: true,
-        action: () => this.navigateToClients()
-      }
+        action: () => this.navigateToClients(),
+      },
     ];
 
     const breadcrumb = this.breadcrumbInfo();
@@ -558,13 +559,13 @@ export class CohortsListComponent implements OnInit {
       items.push({
         label: breadcrumb.clientName,
         clickable: true,
-        action: () => this.navigateToPrograms()
+        action: () => this.navigateToPrograms(),
       });
 
       items.push({
         label: breadcrumb.programName,
         clickable: true,
-        action: () => this.backToCohorts()
+        action: () => this.backToCohorts(),
       });
 
       // Show cohort name if viewing companies
@@ -572,7 +573,7 @@ export class CohortsListComponent implements OnInit {
       if (selectedCohort) {
         items.push({
           label: selectedCohort.name,
-          clickable: false
+          clickable: false,
         });
       }
     }
@@ -772,16 +773,26 @@ export class CohortsListComponent implements OnInit {
     if (!info || !cohort) return;
 
     // Navigate to company detail with full context
-    this.router.navigate(['/companies', company.id], {
-      queryParams: {
-        clientId: info.clientId,
-        clientName: info.clientName,
-        programId: info.programId,
-        programName: info.programName,
-        cohortId: cohort.id,
-        cohortName: cohort.name,
-      },
-    });
+    if (this.USE_NEW_COMPANY_PAGE) {
+      this.router.navigate(['/company', company.id], {
+        queryParams: {
+          clientId: info.clientId,
+          programId: info.programId,
+          cohortId: cohort.id,
+        },
+      });
+    } else {
+      this.router.navigate(['/companies', company.id], {
+        queryParams: {
+          clientId: info.clientId,
+          clientName: info.clientName,
+          programId: info.programId,
+          programName: info.programName,
+          cohortId: cohort.id,
+          cohortName: cohort.name,
+        },
+      });
+    }
   }
 
   removeCompanyFromCohort(company: ICompany): void {

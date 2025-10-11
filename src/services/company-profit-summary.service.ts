@@ -8,7 +8,7 @@ import { Constants } from './service';
 export interface ICompanyProfitSummaryFilters {
   company_id: number;
   year_?: number;
-  type?: 'gross' | 'operating' | 'net' | 'before_tax';
+  type?: 'gross' | 'operating' | 'npbt';
   client_id?: number;
   program_id?: number | null;
   cohort_id?: number | null;
@@ -19,7 +19,68 @@ export interface ICompanyProfitSummaryFilters {
   offset?: number;
 }
 
-export type ProfitType = 'gross' | 'operating' | 'net' | 'before_tax';
+export type ProfitType = 'gross' | 'operating' | 'npbt';
+
+// New interface representing the actual database record
+export interface CompanyProfitRecord {
+  id?: number;
+  tenant_id?: number;
+  client_id: number;
+  company_id: number;
+  program_id?: number;
+  cohort_id?: number;
+  year_: number;
+
+  // Gross profit fields
+  gross_q1: number;
+  gross_q2: number;
+  gross_q3: number;
+  gross_q4: number;
+  gross_total?: number; // computed
+  gross_margin: number;
+
+  // Operating profit fields
+  operating_q1: number;
+  operating_q2: number;
+  operating_q3: number;
+  operating_q4: number;
+  operating_total?: number; // computed
+  operating_margin: number;
+
+  // Net profit before tax fields
+  npbt_q1: number;
+  npbt_q2: number;
+  npbt_q3: number;
+  npbt_q4: number;
+  npbt_total?: number; // computed
+  npbt_margin: number;
+
+  unit?: string;
+  notes?: string;
+  title?: string;
+  status_id?: number;
+  created_by?: number;
+  updated_by?: number;
+  created_at?: string;
+  updated_at?: string;
+
+  // UI state
+  isEditing?: boolean;
+  isNew?: boolean;
+  hasChanges?: boolean;
+}
+
+// Section data for display purposes
+export interface ProfitSectionDisplay {
+  type: ProfitType;
+  label: string;
+  q1: number;
+  q2: number;
+  q3: number;
+  q4: number;
+  total: number;
+  margin: number;
+}
 
 export interface ProfitDisplayRow {
   id?: number;
@@ -112,7 +173,7 @@ export class CompanyProfitSummaryService {
         color: 'blue'
       },
       {
-        type: 'before_tax',
+        type: 'npbt',
         displayName: 'Net profit before tax',
         rows: [],
         icon: 'fas fa-calculator',
@@ -241,6 +302,227 @@ export class CompanyProfitSummaryService {
     return rows.sort((a, b) => b.year - a.year);
   }
 
+  // ===== NEW UNIFIED RECORD METHODS =====
+
+  /**
+   * Create a new unified profit record for a given year
+   */
+  createNewProfitRecord(year: number, companyId: number, clientId: number): CompanyProfitRecord {
+    return {
+      client_id: clientId,
+      company_id: companyId,
+      year_: year,
+
+      // Initialize all fields to 0
+      gross_q1: 0,
+      gross_q2: 0,
+      gross_q3: 0,
+      gross_q4: 0,
+      gross_margin: 0,
+
+      operating_q1: 0,
+      operating_q2: 0,
+      operating_q3: 0,
+      operating_q4: 0,
+      operating_margin: 0,
+
+      npbt_q1: 0,
+      npbt_q2: 0,
+      npbt_q3: 0,
+      npbt_q4: 0,
+      npbt_margin: 0,
+
+      unit: 'USD',
+      status_id: 1,
+      isNew: true,
+      isEditing: true,
+      hasChanges: false
+    };
+  }
+
+  /**
+   * Convert unified record to section display data
+   */
+  recordToSectionDisplays(record: CompanyProfitRecord): ProfitSectionDisplay[] {
+    return [
+      {
+        type: 'gross',
+        label: 'Gross Profit',
+        q1: record.gross_q1,
+        q2: record.gross_q2,
+        q3: record.gross_q3,
+        q4: record.gross_q4,
+        total: record.gross_total || (record.gross_q1 + record.gross_q2 + record.gross_q3 + record.gross_q4),
+        margin: record.gross_margin
+      },
+      {
+        type: 'operating',
+        label: 'Operating Profit',
+        q1: record.operating_q1,
+        q2: record.operating_q2,
+        q3: record.operating_q3,
+        q4: record.operating_q4,
+        total: record.operating_total || (record.operating_q1 + record.operating_q2 + record.operating_q3 + record.operating_q4),
+        margin: record.operating_margin
+      },
+      {
+        type: 'npbt',
+        label: 'Net profit before tax',
+        q1: record.npbt_q1,
+        q2: record.npbt_q2,
+        q3: record.npbt_q3,
+        q4: record.npbt_q4,
+        total: record.npbt_total || (record.npbt_q1 + record.npbt_q2 + record.npbt_q3 + record.npbt_q4),
+        margin: record.npbt_margin
+      }
+    ];
+  }
+
+  /**
+   * Update specific section data in a unified record
+   */
+  updateRecordSection(record: CompanyProfitRecord, section: ProfitSectionDisplay): CompanyProfitRecord {
+    const updatedRecord = { ...record };
+
+    switch (section.type) {
+      case 'gross':
+        updatedRecord.gross_q1 = section.q1;
+        updatedRecord.gross_q2 = section.q2;
+        updatedRecord.gross_q3 = section.q3;
+        updatedRecord.gross_q4 = section.q4;
+        updatedRecord.gross_margin = section.margin;
+        break;
+      case 'operating':
+        updatedRecord.operating_q1 = section.q1;
+        updatedRecord.operating_q2 = section.q2;
+        updatedRecord.operating_q3 = section.q3;
+        updatedRecord.operating_q4 = section.q4;
+        updatedRecord.operating_margin = section.margin;
+        break;
+      case 'npbt':
+        updatedRecord.npbt_q1 = section.q1;
+        updatedRecord.npbt_q2 = section.q2;
+        updatedRecord.npbt_q3 = section.q3;
+        updatedRecord.npbt_q4 = section.q4;
+        updatedRecord.npbt_margin = section.margin;
+        break;
+    }
+
+    updatedRecord.hasChanges = true;
+    return updatedRecord;
+  }
+
+  /**
+   * Get all profit records for a company
+   */
+  getCompanyProfitRecords(filters: ICompanyProfitSummaryFilters): Observable<CompanyProfitRecord[]> {
+    const url = `${this.apiUrl}/list-company-profit-summary.php?company_id=${filters.company_id}`;
+
+    return this.http.get<any>(url, this.httpOptions).pipe(
+      map(response => {
+        const data = this.processApiResponse(response);
+        // Convert API data to our unified record format
+        return data.map(item => this.mapApiDataToRecord(item));
+      })
+    );
+  }
+
+  /**
+   * Map API data to unified record format
+   */
+  private mapApiDataToRecord(item: any): CompanyProfitRecord {
+    return {
+      id: item.id,
+      tenant_id: item.tenant_id,
+      client_id: item.client_id,
+      company_id: item.company_id,
+      program_id: item.program_id,
+      cohort_id: item.cohort_id,
+      year_: item.year_,
+
+      gross_q1: Number(item.gross_q1) || 0,
+      gross_q2: Number(item.gross_q2) || 0,
+      gross_q3: Number(item.gross_q3) || 0,
+      gross_q4: Number(item.gross_q4) || 0,
+      gross_total: Number(item.gross_total) || 0,
+      gross_margin: Number(item.gross_margin) || 0,
+
+      operating_q1: Number(item.operating_q1) || 0,
+      operating_q2: Number(item.operating_q2) || 0,
+      operating_q3: Number(item.operating_q3) || 0,
+      operating_q4: Number(item.operating_q4) || 0,
+      operating_total: Number(item.operating_total) || 0,
+      operating_margin: Number(item.operating_margin) || 0,
+
+      npbt_q1: Number(item.npbt_q1) || 0,
+      npbt_q2: Number(item.npbt_q2) || 0,
+      npbt_q3: Number(item.npbt_q3) || 0,
+      npbt_q4: Number(item.npbt_q4) || 0,
+      npbt_total: Number(item.npbt_total) || 0,
+      npbt_margin: Number(item.npbt_margin) || 0,
+
+      unit: item.unit || 'USD',
+      notes: item.notes,
+      title: item.title,
+      status_id: item.status_id || 1,
+      created_by: item.created_by,
+      updated_by: item.updated_by,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+
+      isEditing: false,
+      isNew: false,
+      hasChanges: false
+    };
+  }
+
+  /**
+   * Save a unified profit record
+   */
+  saveProfitRecord(record: CompanyProfitRecord): Observable<any> {
+    const endpoint = record.id ? 'update.php' : 'create.php';
+    const url = `${this.apiUrl}/${endpoint}`;
+
+    // Prepare data for API
+    const saveData = {
+      id: record.id,
+      client_id: record.client_id,
+      company_id: record.company_id,
+      program_id: record.program_id,
+      cohort_id: record.cohort_id,
+      year_: record.year_,
+
+      gross_q1: record.gross_q1,
+      gross_q2: record.gross_q2,
+      gross_q3: record.gross_q3,
+      gross_q4: record.gross_q4,
+      gross_margin: record.gross_margin,
+
+      operating_q1: record.operating_q1,
+      operating_q2: record.operating_q2,
+      operating_q3: record.operating_q3,
+      operating_q4: record.operating_q4,
+      operating_margin: record.operating_margin,
+
+      npbt_q1: record.npbt_q1,
+      npbt_q2: record.npbt_q2,
+      npbt_q3: record.npbt_q3,
+      npbt_q4: record.npbt_q4,
+      npbt_margin: record.npbt_margin,
+
+      unit: record.unit,
+      notes: record.notes,
+      title: record.title,
+      status_id: record.status_id
+    };
+
+    return record.id
+      ? this.http.put(url, saveData, this.httpOptions)
+      : this.http.post(url, saveData, this.httpOptions);
+  }
+
+  // ===== END NEW UNIFIED RECORD METHODS =====
+
   /**
    * Group profit rows by type
    */
@@ -281,8 +563,8 @@ export class CompanyProfitSummaryService {
     }
 
     // Type validation
-    if (!row.type || !['gross', 'operating', 'net', 'before_tax'].includes(row.type)) {
-      errors.push('Profit type must be one of: gross, operating, net, before_tax');
+    if (!row.type || !['gross', 'operating', 'npbt'].includes(row.type)) {
+      errors.push('Profit type must be one of: gross, operating, npbt');
     }
 
     // Profit values validation
@@ -391,7 +673,7 @@ export class CompanyProfitSummaryService {
   }
 
   /**
-   * List profit summary records by type (gross, operating, net, before_tax)
+   * List profit summary records by type (gross, operating, npbt)
    * @param companyId The ID of the company
    * @param type The profit type to filter by
    */
