@@ -2,7 +2,9 @@
 include_once '../../config/Database.php';
 include_once '../../models/CompanyProfitSummary.php';
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+// Get the POST data
+$input = json_decode(file_get_contents('php://input'), true);
+$id = isset($input['id']) ? (int)$input['id'] : 0;
 
 if ($id <= 0) {
     echo json_encode(['error' => 'Valid ID is required']);

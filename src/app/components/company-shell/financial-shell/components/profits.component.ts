@@ -86,7 +86,7 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
               </tr>
 
               <!-- Data rows -->
-              <tr *ngFor="let row of section.rows" class="hover:bg-gray-50 transition-colors">
+              <tr *ngFor="let row of section.rows; trackBy: trackById" class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ row.year }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q1) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q2) }}</td>
@@ -198,6 +198,13 @@ export class ProfitsComponent implements OnInit {
     return this.profitSections.every(section => section.rows.length === 0);
   }
 
+  /**
+   * TrackBy function for ngFor optimization - prevents unnecessary re-renders
+   */
+  trackById(index: number, row: ProfitDisplayRow): number {
+    return row.id ?? index;
+  }
+
   async loadProfitData(): Promise<void> {
     this.loading = true;
     try {
@@ -284,7 +291,7 @@ export class ProfitsComponent implements OnInit {
 
       // Reload data to show the new record
       await this.loadProfitData();
-      this.toastService.success(`Profit record created for ${year}`);
+      this.toastService.success(`Profit record for ${year} created successfully`);
 
       console.log(`Profit record created for year ${year}`);
     } catch (error) {
@@ -311,11 +318,11 @@ export class ProfitsComponent implements OnInit {
     try {
       await firstValueFrom(this.profitService.deleteCompanyProfitSummary(recordId));
       await this.loadProfitData();
-      this.toastService.deleteSuccess(`${year} profit data`);
+      this.toastService.success(`Profit data for ${year} deleted successfully`);
       console.log(`Deleted profit record for year ${year}`);
     } catch (error) {
       console.error('Error deleting record:', error);
-      this.toastService.deleteError(`${year} profit data`);
+      this.toastService.error(`Failed to delete profit data for ${year}`);
     }
   }
 
@@ -393,5 +400,32 @@ export class ProfitsComponent implements OnInit {
       latestMargin: latestRow?.margin_pct || 0,
       allTimeTotal: totalSum
     };
+  }
+
+  // =========================================================================
+  // FUTURE: INLINE EDITING METHODS (Ready for Phase 2)
+  // =========================================================================
+
+  /**
+   * Future method for inline editing - ready for Phase 2 implementation
+   * This would be called when user edits a cell and blurs the input
+   */
+  async onRowUpdate(row: ProfitDisplayRow): Promise<void> {
+    try {
+      // TODO: Implement updateProfitRow in service
+      // await firstValueFrom(this.profitService.updateProfitRow(row));
+      this.toastService.success(`Updated ${row.type} profit for ${row.year}`);
+      console.log(`Updated profit row for ${row.year} (${row.type})`);
+    } catch (error) {
+      console.error('Error updating profit row:', error);
+      this.toastService.error(`Failed to update ${row.type} profit for ${row.year}`);
+    }
+  }
+
+  /**
+   * Future method to toggle a row into edit mode
+   */
+  toggleRowEdit(row: ProfitDisplayRow): void {
+    row.isEditing = !row.isEditing;
   }
 }
