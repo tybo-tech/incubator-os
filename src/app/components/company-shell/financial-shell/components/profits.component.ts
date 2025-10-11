@@ -148,29 +148,8 @@ export class ProfitsComponent implements OnInit {
   }
 
   initializeSections(): void {
-    this.profitSections = [
-      {
-        type: 'gross',
-        displayName: 'Gross Profit',
-        rows: [],
-        icon: 'fas fa-chart-line',
-        color: 'green'
-      },
-      {
-        type: 'operating',
-        displayName: 'Operating Profit',
-        rows: [],
-        icon: 'fas fa-cogs',
-        color: 'blue'
-      },
-      {
-        type: 'npbt',
-        displayName: 'Net Profit Before Tax',
-        rows: [],
-        icon: 'fas fa-calculator',
-        color: 'purple'
-      }
-    ];
+    // Initialize with empty sections - will be populated in loadProfitData()
+    this.profitSections = this.profitService.getProfitSections();
   }
 
   get existingYears(): number[] {
@@ -186,13 +165,48 @@ export class ProfitsComponent implements OnInit {
   async loadProfitData(): Promise<void> {
     this.loading = true;
     try {
-      // Use modern RxJS approach
-      const data = await firstValueFrom(this.profitService.listAllCompanyProfitSummary(this.companyId));
+      // Use the unified record service method instead of the display row method
+      const records = await firstValueFrom(this.profitService.getCompanyProfitRecords({ company_id: this.companyId }));
 
-      if (data && Array.isArray(data)) {
-        const groupedRows = this.groupRowsByType(data);
+      if (records && Array.isArray(records)) {
+        // Initialize fresh sections
+        this.profitSections = this.profitService.getProfitSections();
+
+        // Transform each unified record into 3 section displays (gross, operating, npbt)
+        records.forEach(record => {
+          const sectionDisplays = this.profitService.recordToSectionDisplays(record);
+
+          console.log(`Transforming record for year ${record.year_}:`, {
+            record: record,
+            sectionDisplays: sectionDisplays
+          });
+
+          sectionDisplays.forEach(display => {
+            const targetSection = this.profitSections.find(s => s.type === display.type);
+            if (targetSection) {
+              targetSection.rows.push({
+                id: record.id,
+                year: record.year_,
+                type: display.type,
+                q1: display.q1,
+                q2: display.q2,
+                q3: display.q3,
+                q4: display.q4,
+                total: display.total,
+                margin_pct: display.margin
+              });
+            }
+          });
+        });
+
+        // Sort rows by year (newest first) in each section
         this.profitSections.forEach(section => {
-          section.rows = groupedRows.get(section.type) || [];
+          section.rows.sort((a, b) => b.year - a.year);
+        });
+
+        console.log('Loaded profit data:', {
+          recordCount: records.length,
+          sectionsPopulated: this.profitSections.map(s => ({ type: s.type, rowCount: s.rows.length }))
         });
       }
     } catch (error) {
@@ -200,10 +214,10 @@ export class ProfitsComponent implements OnInit {
     } finally {
       this.loading = false;
     }
-  }
-
-  /** Groups rows by gross/operating/npbt */
+  }  /** Groups rows by gross/operating/npbt - DEPRECATED: Now using unified record approach */
   groupRowsByType(rows: ProfitDisplayRow[]): Map<ProfitType, ProfitDisplayRow[]> {
+    // This method is no longer used since we're transforming unified records
+    // directly in loadProfitData() using recordToSectionDisplays()
     const grouped = new Map<ProfitType, ProfitDisplayRow[]>();
     const profitTypes: ProfitType[] = ['gross', 'operating', 'npbt'];
 
