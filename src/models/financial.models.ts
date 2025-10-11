@@ -203,6 +203,51 @@ export interface ProfitSaveData {
   margin_pct: number;
 }
 
+// Unified database record format (matches your actual database structure)
+export interface UnifiedProfitRecord {
+  id?: number;
+  tenant_id?: number | null;
+  client_id: number;
+  company_id: number;
+  program_id: number;
+  cohort_id: number;
+  year_: number;
+
+  // Gross profit fields
+  gross_q1: number;
+  gross_q2: number;
+  gross_q3: number;
+  gross_q4: number;
+  gross_total: number;
+  gross_margin: number;
+
+  // Operating profit fields
+  operating_q1: number;
+  operating_q2: number;
+  operating_q3: number;
+  operating_q4: number;
+  operating_total: number;
+  operating_margin: number;
+
+  // Net profit before tax fields
+  npbt_q1: number;
+  npbt_q2: number;
+  npbt_q3: number;
+  npbt_q4: number;
+  npbt_total: number;
+  npbt_margin: number;
+
+  // Metadata fields
+  unit?: string;
+  notes?: string | null;
+  title?: string | null;
+  status_id?: number;
+  created_by?: number | null;
+  updated_by?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ApiResponse<T = any> {
   data?: T[];
   [key: string]: any;

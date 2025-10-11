@@ -14,7 +14,8 @@ import {
   ProfitSectionData,
   ApiResponse,
   ValidationResult,
-  FormatOptions
+  FormatOptions,
+  UnifiedProfitRecord
 } from '../models/financial.models';
 import { Constants } from './service';
 
@@ -560,7 +561,7 @@ export class CompanyProfitSummaryService {
     return this.http.post<CompanyProfitSummary>(`${this.apiUrl}/add-company-profit-summary.php`, data, this.httpOptions);
   }
 
-  updateCompanyProfitSummary(id: number, data: ProfitSaveData): Observable<CompanyProfitSummary> {
+  updateCompanyProfitSummary(id: number, data: Partial<UnifiedProfitRecord>): Observable<CompanyProfitSummary> {
     const payload = { id, ...data };
     console.log('CompanyProfitSummaryService - updateCompanyProfitSummary called with:', { id, data, payload });
     return this.http.post<CompanyProfitSummary>(`${this.apiUrl}/update-company-profit-summary.php`, payload, this.httpOptions);

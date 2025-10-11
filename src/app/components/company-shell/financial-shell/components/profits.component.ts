@@ -9,7 +9,8 @@ import {
   ProfitSectionData,
   ProfitType,
   CompanyProfitRecord,
-  ProfitSaveData
+  ProfitSaveData,
+  UnifiedProfitRecord
 } from '../../../../../models/financial.models';
 import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -498,23 +499,38 @@ export class ProfitsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Transform a display row to ProfitSaveData format for the service
+   * Transform a display row to unified database record format
+   * This reverses the transformation from unified record → ProfitDisplayRow
    */
-  private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): ProfitSaveData {
-    return {
+  private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): Partial<UnifiedProfitRecord> {
+    // Create a partial update object with only the changed fields for this profit type
+    const updateData: Partial<UnifiedProfitRecord> = {
+      id: row.id,
       company_id: this.companyId,
       client_id: this.clientId,
       program_id: this.programId,
       cohort_id: this.cohortId,
-      year_: row.year,
-      type: section.type,
-      q1: Number(row.q1) || 0,
-      q2: Number(row.q2) || 0,
-      q3: Number(row.q3) || 0,
-      q4: Number(row.q4) || 0,
-      total: row.total || 0,
-      margin_pct: row.margin_pct || 0
+      year_: row.year
     };
+
+    // Map UI display row back to database columns based on profit type
+    const prefix = section.type; // 'gross', 'operating', or 'npbt'
+
+    (updateData as any)[`${prefix}_q1`] = Number(row.q1) || 0;
+    (updateData as any)[`${prefix}_q2`] = Number(row.q2) || 0;
+    (updateData as any)[`${prefix}_q3`] = Number(row.q3) || 0;
+    (updateData as any)[`${prefix}_q4`] = Number(row.q4) || 0;
+    (updateData as any)[`${prefix}_total`] = row.total || 0;
+    (updateData as any)[`${prefix}_margin`] = row.margin_pct || 0;
+
+    if (this.isDebugMode) {
+      console.log(`Transforming ${prefix} row to unified format:`, {
+        uiRow: row,
+        dbFormat: updateData
+      });
+    }
+
+    return updateData;
   }
 
   /**
