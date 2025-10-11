@@ -398,61 +398,36 @@ export class ProfitsComponent implements OnInit {
       return;
     }
 
-    // Transform the display row back to the unified record format
-    const updatedRecord = this.transformRowToRecord(row, section);
+    // Transform the display row to the ProfitSaveData format expected by the service
+    const saveData = this.transformRowToSaveData(row, section);
 
-    // TODO: Implement updateCompanyProfitSummary in service
-    console.log('Would save to database:', updatedRecord);
-
-    // For now, we'll use a placeholder
-    // await firstValueFrom(this.profitService.updateCompanyProfitSummary(updatedRecord));
+    try {
+      await firstValueFrom(this.profitService.updateCompanyProfitSummary(row.id, saveData));
+      console.log('Record saved successfully:', saveData);
+    } catch (error) {
+      console.error('Error saving record:', error);
+      throw error;
+    }
   }
 
   /**
-   * Transform a display row back to the unified database record format
+   * Transform a display row to ProfitSaveData format for the service
    */
-  private transformRowToRecord(row: ProfitDisplayRow, section: ProfitSectionData): any {
-    // Create a base record structure
-    const record: any = {
-      id: row.id,
-      year_: row.year,
+  private transformRowToSaveData(row: ProfitDisplayRow, section: ProfitSectionData): any {
+    return {
       company_id: this.companyId,
       client_id: this.clientId,
       program_id: this.programId,
-      cohort_id: this.cohortId
+      cohort_id: this.cohortId,
+      year_: row.year,
+      type: section.type,
+      q1: Number(row.q1) || 0,
+      q2: Number(row.q2) || 0,
+      q3: Number(row.q3) || 0,
+      q4: Number(row.q4) || 0,
+      total: row.total || 0,
+      margin_pct: row.margin_pct || 0
     };
-
-    // Map the display row values to the appropriate database fields based on section type
-    switch (section.type) {
-      case 'gross':
-        record.gross_q1 = row.q1;
-        record.gross_q2 = row.q2;
-        record.gross_q3 = row.q3;
-        record.gross_q4 = row.q4;
-        record.gross_total = row.total;
-        record.gross_margin = row.margin_pct;
-        break;
-
-      case 'operating':
-        record.operating_q1 = row.q1;
-        record.operating_q2 = row.q2;
-        record.operating_q3 = row.q3;
-        record.operating_q4 = row.q4;
-        record.operating_total = row.total;
-        record.operating_margin = row.margin_pct;
-        break;
-
-      case 'npbt':
-        record.npbt_q1 = row.q1;
-        record.npbt_q2 = row.q2;
-        record.npbt_q3 = row.q3;
-        record.npbt_q4 = row.q4;
-        record.npbt_total = row.total;
-        record.npbt_margin = row.margin_pct;
-        break;
-    }
-
-    return record;
   }
 
   /**
