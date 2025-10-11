@@ -11,6 +11,7 @@ import {
   CompanyProfitRecord
 } from '../../../../../models/financial.models';
 import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
+import { ToastService } from '../../../../services/toast.service';
 import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
 
 @Component({
@@ -76,6 +77,15 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
             </thead>
 
             <tbody class="bg-white divide-y divide-gray-200">
+              <!-- Empty state for individual sections -->
+              <tr *ngIf="section.rows.length === 0">
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400 italic">
+                  <i class="fas fa-chart-bar text-2xl mb-2 block text-gray-300"></i>
+                  No {{ section.displayName.toLowerCase() }} data available.
+                </td>
+              </tr>
+
+              <!-- Data rows -->
               <tr *ngFor="let row of section.rows" class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ row.year }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q1) }}</td>
@@ -146,7 +156,8 @@ export class ProfitsComponent implements OnInit {
 
   constructor(
     private profitService: CompanyProfitSummaryService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -236,6 +247,7 @@ export class ProfitsComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error loading profit data:', error);
+      this.toastService.error('Failed to load profit data. Please refresh the page.');
     } finally {
       this.loading = false;
     }
@@ -272,10 +284,12 @@ export class ProfitsComponent implements OnInit {
 
       // Reload data to show the new record
       await this.loadProfitData();
+      this.toastService.success(`Profit record created for ${year}`);
 
       console.log(`Profit record created for year ${year}`);
     } catch (error) {
       console.error('Error creating profit record:', error);
+      this.toastService.error(`Failed to create profit record for ${year}`);
     }
   }
 
@@ -297,9 +311,11 @@ export class ProfitsComponent implements OnInit {
     try {
       await firstValueFrom(this.profitService.deleteCompanyProfitSummary(recordId));
       await this.loadProfitData();
+      this.toastService.deleteSuccess(`${year} profit data`);
       console.log(`Deleted profit record for year ${year}`);
     } catch (error) {
       console.error('Error deleting record:', error);
+      this.toastService.deleteError(`${year} profit data`);
     }
   }
 
@@ -315,6 +331,7 @@ export class ProfitsComponent implements OnInit {
 
       if (existingYear) {
         console.warn(`Year ${year} already exists`);
+        this.toastService.warning(`Profit data for ${year} already exists`);
         return false;
       }
 
@@ -330,6 +347,7 @@ export class ProfitsComponent implements OnInit {
       return true;
     } catch (error) {
       console.error('Error adding profit record:', error);
+      this.toastService.error(`Failed to add profit record for ${year}`);
       return false;
     }
   }
