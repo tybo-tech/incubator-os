@@ -125,17 +125,96 @@ export type ProfitType = 'gross' | 'operating' | 'npbt';
 export interface ProfitDisplayRow {
   id?: number;
   year: number;
+  type: ProfitType;
+  q1: number | null;
+  q2: number | null;
+  q3: number | null;
+  q4: number | null;
+  total: number | null;
+  margin_pct: number | null;
+  isEditing?: boolean;
+  isNew?: boolean;
+}
+
+export interface ProfitSectionData {
+  type: ProfitType;
+  displayName: string;
+  rows: ProfitDisplayRow[];
+  icon: string;
+  color: string;
+}
+
+/* ============================================================================
+ * 6. Service Support Interfaces
+ * ============================================================================
+ */
+export interface ICompanyProfitSummaryFilters {
+  company_id: number;
+  year_?: number;
+  type?: 'gross' | 'operating' | 'npbt';
+  client_id?: number;
+  program_id?: number | null;
+  cohort_id?: number | null;
+  status_id?: number;
+  order_by?: 'year_' | 'total' | 'margin_pct' | 'type' | 'created_at' | 'updated_at';
+  order_dir?: 'ASC' | 'DESC';
+  limit?: number;
+  offset?: number;
+}
+
+// New interface representing the actual database record
+export interface CompanyProfitRecord extends CompanyProfitSummary {
+  // UI state
+  isEditing?: boolean;
+  isNew?: boolean;
+  hasChanges?: boolean;
+}
+
+// Section data for display purposes
+export interface ProfitSectionDisplay {
+  type: ProfitType;
+  label: string;
   q1: number;
   q2: number;
   q3: number;
   q4: number;
   total: number;
   margin: number;
-  unit?: string;
 }
 
-export interface ProfitSectionData {
-  label: string;
+export interface ProfitCalculationResult {
+  total: number;
+  marginPct: number;
+}
+
+export interface ProfitSaveData {
+  company_id: number;
+  client_id: number;
+  program_id: number;
+  cohort_id: number;
+  year_: number;
   type: ProfitType;
-  rows: ProfitDisplayRow[];
+  q1: number;
+  q2: number;
+  q3: number;
+  q4: number;
+  total: number;
+  margin_pct: number;
+}
+
+export interface ApiResponse<T = any> {
+  data?: T[];
+  [key: string]: any;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+export interface FormatOptions {
+  showCurrency?: boolean;
+  showPercentage?: boolean;
+  decimalPlaces?: number;
+  locale?: string;
 }

@@ -2,8 +2,13 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { CompanyProfitSummary } from '../../../../../models/financial.models';
-import { CompanyProfitSummaryService, ProfitDisplayRow, ProfitSectionData, ProfitType } from '../../../../../services/company-profit-summary.service';
+import {
+  CompanyProfitSummary,
+  ProfitDisplayRow,
+  ProfitSectionData,
+  ProfitType
+} from '../../../../../models/financial.models';
+import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
 import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
 
 @Component({
@@ -42,7 +47,7 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
               'fa-briefcase text-blue-600': section.type === 'operating',
               'fa-money-bill-wave text-yellow-600': section.type === 'npbt'
             }" class="fas mr-2"></i>
-            {{ section.label }}
+            {{ section.displayName }}
           </h3>
 
           <table class="min-w-full divide-y divide-gray-200 table-fixed">
@@ -67,9 +72,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q2) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q3) }}</td>
                 <td class="px-4 py-4 text-sm text-center">{{ formatCurrency(row.q4) }}</td>
-                <td class="px-4 py-4 text-sm text-center font-semibold">{{ formatCurrency(row.total) }} {{ row.unit }}</td>
+                <td class="px-4 py-4 text-sm text-center font-semibold">{{ formatCurrency(row.total) }}</td>
                 <td class="px-4 py-4 text-sm text-center text-blue-600 font-semibold">
-                  {{ formatPercentage(row.margin) }}
+                  {{ formatPercentage(row.margin_pct) }}
                 </td>
               </tr>
             </tbody>
@@ -142,9 +147,27 @@ export class ProfitsComponent implements OnInit {
 
   initializeSections(): void {
     this.profitSections = [
-      { label: 'Gross Profit', type: 'gross', rows: [] },
-      { label: 'Operating Profit', type: 'operating', rows: [] },
-      { label: 'Net Profit Before Tax', type: 'npbt', rows: [] }
+      {
+        type: 'gross',
+        displayName: 'Gross Profit',
+        rows: [],
+        icon: 'fas fa-chart-line',
+        color: 'green'
+      },
+      {
+        type: 'operating',
+        displayName: 'Operating Profit',
+        rows: [],
+        icon: 'fas fa-cogs',
+        color: 'blue'
+      },
+      {
+        type: 'npbt',
+        displayName: 'Net Profit Before Tax',
+        rows: [],
+        icon: 'fas fa-calculator',
+        color: 'purple'
+      }
     ];
   }
 
@@ -176,22 +199,12 @@ export class ProfitsComponent implements OnInit {
   }
 
   /** Groups rows by gross/operating/npbt */
-  groupRowsByType(rows: CompanyProfitSummary[]): Map<ProfitType, ProfitDisplayRow[]> {
+  groupRowsByType(rows: ProfitDisplayRow[]): Map<ProfitType, ProfitDisplayRow[]> {
     const grouped = new Map<ProfitType, ProfitDisplayRow[]>();
     const profitTypes: ProfitType[] = ['gross', 'operating', 'npbt'];
 
     for (const type of profitTypes) {
-      const typeRows: ProfitDisplayRow[] = rows.map(row => ({
-        id: row.id,
-        year: row.year_,
-        q1: parseFloat(row[`${type}_q1`] ?? '0'),
-        q2: parseFloat(row[`${type}_q2`] ?? '0'),
-        q3: parseFloat(row[`${type}_q3`] ?? '0'),
-        q4: parseFloat(row[`${type}_q4`] ?? '0'),
-        total: parseFloat(row[`${type}_total`] ?? '0'),
-        margin: parseFloat(row[`${type}_margin`] ?? '0'),
-        unit: row.unit ?? 'USD'
-      }));
+      const typeRows = rows.filter(row => row.type === type);
       grouped.set(type, typeRows);
     }
     return grouped;

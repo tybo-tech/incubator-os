@@ -2,144 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CompanyProfitSummary } from '../models/financial.models';
+import {
+  CompanyProfitSummary,
+  ICompanyProfitSummaryFilters,
+  ProfitType,
+  CompanyProfitRecord,
+  ProfitSectionDisplay,
+  ProfitDisplayRow,
+  ProfitCalculationResult,
+  ProfitSaveData,
+  ProfitSectionData,
+  ApiResponse,
+  ValidationResult,
+  FormatOptions
+} from '../models/financial.models';
 import { Constants } from './service';
-
-export interface ICompanyProfitSummaryFilters {
-  company_id: number;
-  year_?: number;
-  type?: 'gross' | 'operating' | 'npbt';
-  client_id?: number;
-  program_id?: number | null;
-  cohort_id?: number | null;
-  status_id?: number;
-  order_by?: 'year_' | 'total' | 'margin_pct' | 'type' | 'created_at' | 'updated_at';
-  order_dir?: 'ASC' | 'DESC';
-  limit?: number;
-  offset?: number;
-}
-
-export type ProfitType = 'gross' | 'operating' | 'npbt';
-
-// New interface representing the actual database record
-export interface CompanyProfitRecord {
-  id?: number;
-  tenant_id?: number;
-  client_id: number;
-  company_id: number;
-  program_id?: number;
-  cohort_id?: number;
-  year_: number;
-
-  // Gross profit fields
-  gross_q1: number;
-  gross_q2: number;
-  gross_q3: number;
-  gross_q4: number;
-  gross_total?: number; // computed
-  gross_margin: number;
-
-  // Operating profit fields
-  operating_q1: number;
-  operating_q2: number;
-  operating_q3: number;
-  operating_q4: number;
-  operating_total?: number; // computed
-  operating_margin: number;
-
-  // Net profit before tax fields
-  npbt_q1: number;
-  npbt_q2: number;
-  npbt_q3: number;
-  npbt_q4: number;
-  npbt_total?: number; // computed
-  npbt_margin: number;
-
-  unit?: string;
-  notes?: string;
-  title?: string;
-  status_id?: number;
-  created_by?: number;
-  updated_by?: number;
-  created_at?: string;
-  updated_at?: string;
-
-  // UI state
-  isEditing?: boolean;
-  isNew?: boolean;
-  hasChanges?: boolean;
-}
-
-// Section data for display purposes
-export interface ProfitSectionDisplay {
-  type: ProfitType;
-  label: string;
-  q1: number;
-  q2: number;
-  q3: number;
-  q4: number;
-  total: number;
-  margin: number;
-}
-
-export interface ProfitDisplayRow {
-  id?: number;
-  year: number;
-  type: ProfitType;
-  q1: number | null;
-  q2: number | null;
-  q3: number | null;
-  q4: number | null;
-  total: number | null;
-  margin_pct: number | null;
-  isEditing?: boolean;
-  isNew?: boolean;
-}
-
-export interface ProfitCalculationResult {
-  total: number;
-  marginPct: number;
-}
-
-export interface ProfitSaveData {
-  company_id: number;
-  client_id: number;
-  program_id: number;
-  cohort_id: number;
-  year_: number;
-  type: ProfitType;
-  q1: number;
-  q2: number;
-  q3: number;
-  q4: number;
-  total: number;
-  margin_pct: number;
-}
-
-export interface ProfitSectionData {
-  type: ProfitType;
-  displayName: string;
-  rows: ProfitDisplayRow[];
-  icon: string;
-  color: string;
-}
-
-export interface ApiResponse<T = any> {
-  data?: T[];
-  [key: string]: any;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-}
-
-export interface FormatOptions {
-  showCurrency?: boolean;
-  showPercentage?: boolean;
-  decimalPlaces?: number;
-  locale?: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class CompanyProfitSummaryService {
@@ -348,32 +225,32 @@ export class CompanyProfitSummaryService {
       {
         type: 'gross',
         label: 'Gross Profit',
-        q1: record.gross_q1,
-        q2: record.gross_q2,
-        q3: record.gross_q3,
-        q4: record.gross_q4,
-        total: record.gross_total || (record.gross_q1 + record.gross_q2 + record.gross_q3 + record.gross_q4),
-        margin: record.gross_margin
+        q1: record.gross_q1 || 0,
+        q2: record.gross_q2 || 0,
+        q3: record.gross_q3 || 0,
+        q4: record.gross_q4 || 0,
+        total: record.gross_total || ((record.gross_q1 || 0) + (record.gross_q2 || 0) + (record.gross_q3 || 0) + (record.gross_q4 || 0)),
+        margin: record.gross_margin || 0
       },
       {
         type: 'operating',
         label: 'Operating Profit',
-        q1: record.operating_q1,
-        q2: record.operating_q2,
-        q3: record.operating_q3,
-        q4: record.operating_q4,
-        total: record.operating_total || (record.operating_q1 + record.operating_q2 + record.operating_q3 + record.operating_q4),
-        margin: record.operating_margin
+        q1: record.operating_q1 || 0,
+        q2: record.operating_q2 || 0,
+        q3: record.operating_q3 || 0,
+        q4: record.operating_q4 || 0,
+        total: record.operating_total || ((record.operating_q1 || 0) + (record.operating_q2 || 0) + (record.operating_q3 || 0) + (record.operating_q4 || 0)),
+        margin: record.operating_margin || 0
       },
       {
         type: 'npbt',
         label: 'Net profit before tax',
-        q1: record.npbt_q1,
-        q2: record.npbt_q2,
-        q3: record.npbt_q3,
-        q4: record.npbt_q4,
-        total: record.npbt_total || (record.npbt_q1 + record.npbt_q2 + record.npbt_q3 + record.npbt_q4),
-        margin: record.npbt_margin
+        q1: record.npbt_q1 || 0,
+        q2: record.npbt_q2 || 0,
+        q3: record.npbt_q3 || 0,
+        q4: record.npbt_q4 || 0,
+        total: record.npbt_total || ((record.npbt_q1 || 0) + (record.npbt_q2 || 0) + (record.npbt_q3 || 0) + (record.npbt_q4 || 0)),
+        margin: record.npbt_margin || 0
       }
     ];
   }
