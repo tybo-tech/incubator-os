@@ -368,7 +368,7 @@ export class CompanyProfitSummaryService {
    * Save a unified profit record
    */
   saveProfitRecord(record: CompanyProfitRecord): Observable<any> {
-    const endpoint = record.id ? 'update.php' : 'create.php';
+    const endpoint = record.id ? 'update-company-profit-summary.php' : 'add-company-profit-summary.php';
     const url = `${this.apiUrl}/${endpoint}`;
 
     // Prepare data for API
