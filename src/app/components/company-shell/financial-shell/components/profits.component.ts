@@ -2,11 +2,13 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import {
   CompanyProfitSummary,
   ProfitDisplayRow,
   ProfitSectionData,
-  ProfitType
+  ProfitType,
+  CompanyProfitRecord
 } from '../../../../../models/financial.models';
 import { CompanyProfitSummaryService } from '../../../../../services/company-profit-summary.service';
 import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
@@ -184,7 +186,9 @@ export class ProfitsComponent implements OnInit {
   async loadProfitData(): Promise<void> {
     this.loading = true;
     try {
-      const data = await this.profitService.listAllCompanyProfitSummary(this.companyId).toPromise();
+      // Use modern RxJS approach
+      const data = await firstValueFrom(this.profitService.listAllCompanyProfitSummary(this.companyId));
+
       if (data && Array.isArray(data)) {
         const groupedRows = this.groupRowsByType(data);
         this.profitSections.forEach(section => {
@@ -214,12 +218,61 @@ export class ProfitsComponent implements OnInit {
     this.yearModal.open();
   }
 
-  onYearSelected(year: number): void {
-    console.log('Selected Year:', year);
+  async onYearSelected(year: number): Promise<void> {
+    try {
+      console.log('Creating profit record for year:', year);
+
+      // Use the new unified service method
+      await firstValueFrom(this.profitService.createProfitRecordForYear(
+        year,
+        this.companyId,
+        this.clientId,
+        this.programId,
+        this.cohortId
+      ));
+
+      // Reload data to show the new record
+      await this.loadProfitData();
+
+      console.log(`Profit record created for year ${year}`);
+    } catch (error) {
+      console.error('Error creating profit record:', error);
+    }
   }
 
   onModalClosed(): void {
     console.log('Modal Closed');
+  }
+
+  /**
+   * Quick method to add a profit record with validation
+   */
+  async addProfitRecordForYear(year: number): Promise<boolean> {
+    try {
+      // Check if year already exists
+      const existingYear = this.profitSections.some(section =>
+        section.rows.some(row => row.year === year)
+      );
+
+      if (existingYear) {
+        console.warn(`Year ${year} already exists`);
+        return false;
+      }
+
+      await firstValueFrom(this.profitService.createProfitRecordForYear(
+        year,
+        this.companyId,
+        this.clientId,
+        this.programId,
+        this.cohortId
+      ));
+
+      await this.loadProfitData();
+      return true;
+    } catch (error) {
+      console.error('Error adding profit record:', error);
+      return false;
+    }
   }
 
   /** Formatting helpers */

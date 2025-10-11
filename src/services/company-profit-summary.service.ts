@@ -31,6 +31,14 @@ export class CompanyProfitSummaryService {
   constructor(private http: HttpClient) {}
 
   /**
+   * Helper method to safely convert values to numbers
+   */
+  private toNum(value: any): number {
+    const n = Number(value);
+    return isNaN(n) ? 0 : n;
+  }
+
+  /**
    * Get profit section configurations
    */
   getProfitSections(): ProfitSectionData[] {
@@ -317,26 +325,26 @@ export class CompanyProfitSummaryService {
       cohort_id: item.cohort_id,
       year_: item.year_,
 
-      gross_q1: Number(item.gross_q1) || 0,
-      gross_q2: Number(item.gross_q2) || 0,
-      gross_q3: Number(item.gross_q3) || 0,
-      gross_q4: Number(item.gross_q4) || 0,
-      gross_total: Number(item.gross_total) || 0,
-      gross_margin: Number(item.gross_margin) || 0,
+      gross_q1: this.toNum(item.gross_q1),
+      gross_q2: this.toNum(item.gross_q2),
+      gross_q3: this.toNum(item.gross_q3),
+      gross_q4: this.toNum(item.gross_q4),
+      gross_total: this.toNum(item.gross_total),
+      gross_margin: this.toNum(item.gross_margin),
 
-      operating_q1: Number(item.operating_q1) || 0,
-      operating_q2: Number(item.operating_q2) || 0,
-      operating_q3: Number(item.operating_q3) || 0,
-      operating_q4: Number(item.operating_q4) || 0,
-      operating_total: Number(item.operating_total) || 0,
-      operating_margin: Number(item.operating_margin) || 0,
+      operating_q1: this.toNum(item.operating_q1),
+      operating_q2: this.toNum(item.operating_q2),
+      operating_q3: this.toNum(item.operating_q3),
+      operating_q4: this.toNum(item.operating_q4),
+      operating_total: this.toNum(item.operating_total),
+      operating_margin: this.toNum(item.operating_margin),
 
-      npbt_q1: Number(item.npbt_q1) || 0,
-      npbt_q2: Number(item.npbt_q2) || 0,
-      npbt_q3: Number(item.npbt_q3) || 0,
-      npbt_q4: Number(item.npbt_q4) || 0,
-      npbt_total: Number(item.npbt_total) || 0,
-      npbt_margin: Number(item.npbt_margin) || 0,
+      npbt_q1: this.toNum(item.npbt_q1),
+      npbt_q2: this.toNum(item.npbt_q2),
+      npbt_q3: this.toNum(item.npbt_q3),
+      npbt_q4: this.toNum(item.npbt_q4),
+      npbt_total: this.toNum(item.npbt_total),
+      npbt_margin: this.toNum(item.npbt_margin),
 
       unit: item.unit || 'USD',
       notes: item.notes,
@@ -398,6 +406,46 @@ export class CompanyProfitSummaryService {
       : this.http.post(url, saveData, this.httpOptions);
   }
 
+  /**
+   * Quick method to create and save a new profit record for a specific year
+   */
+  createProfitRecordForYear(year: number, companyId: number, clientId: number, programId?: number, cohortId?: number): Observable<any> {
+    const newRecord = this.createNewProfitRecord(year, companyId, clientId);
+    if (programId) newRecord.program_id = programId;
+    if (cohortId) newRecord.cohort_id = cohortId;
+
+    return this.saveProfitRecord(newRecord);
+  }
+
+  /**
+   * Calculate real-time margin percentage based on revenue
+   * Useful for cross-linking with revenue summary data
+   */
+  calculateMarginWithRevenue(profitTotal: number, revenueTotal: number): number {
+    if (!revenueTotal || revenueTotal === 0) return 0;
+    return (profitTotal / revenueTotal) * 100;
+  }
+
+  /**
+   * Update profit margins across all types for a given year when revenue changes
+   */
+  updateMarginsForYear(record: CompanyProfitRecord, revenueTotal: number): CompanyProfitRecord {
+    const updatedRecord = { ...record };
+
+    // Calculate totals for each profit type
+    const grossTotal = (record.gross_q1 || 0) + (record.gross_q2 || 0) + (record.gross_q3 || 0) + (record.gross_q4 || 0);
+    const operatingTotal = (record.operating_q1 || 0) + (record.operating_q2 || 0) + (record.operating_q3 || 0) + (record.operating_q4 || 0);
+    const npbtTotal = (record.npbt_q1 || 0) + (record.npbt_q2 || 0) + (record.npbt_q3 || 0) + (record.npbt_q4 || 0);
+
+    // Update margins
+    updatedRecord.gross_margin = this.calculateMarginWithRevenue(grossTotal, revenueTotal);
+    updatedRecord.operating_margin = this.calculateMarginWithRevenue(operatingTotal, revenueTotal);
+    updatedRecord.npbt_margin = this.calculateMarginWithRevenue(npbtTotal, revenueTotal);
+
+    updatedRecord.hasChanges = true;
+    return updatedRecord;
+  }
+
   // ===== END NEW UNIFIED RECORD METHODS =====
 
   /**
@@ -431,7 +479,7 @@ export class CompanyProfitSummaryService {
   /**
    * Validate profit row data
    */
-  validateProfitRow(row: ProfitDisplayRow): ValidationResult {
+  validateProfitRow(row: ProfitDisplayRow, existingRows?: ProfitDisplayRow[]): ValidationResult {
     const errors: string[] = [];
 
     // Year validation
@@ -442,6 +490,11 @@ export class CompanyProfitSummaryService {
     // Type validation
     if (!row.type || !['gross', 'operating', 'npbt'].includes(row.type)) {
       errors.push('Profit type must be one of: gross, operating, npbt');
+    }
+
+    // Duplicate year check
+    if (existingRows && this.checkForDuplicateYear(existingRows, row, row.year)) {
+      errors.push(`Year ${row.year} already exists for ${row.type} profit`);
     }
 
     // Profit values validation
@@ -456,6 +509,14 @@ export class CompanyProfitSummaryService {
     }
     if (row.q4 !== null && (row.q4 < -999999999 || row.q4 > 999999999)) {
       errors.push('Q4 profit must be between -999,999,999 and 999,999,999');
+    }
+
+    // Margin sanity check
+    if (row.margin_pct !== null && row.margin_pct > 1000) {
+      errors.push('Margin percentage seems unusually high (>1000%). Please verify.');
+    }
+    if (row.margin_pct !== null && row.margin_pct < -1000) {
+      errors.push('Margin percentage seems unusually low (<-1000%). Please verify.');
     }
 
     return {
