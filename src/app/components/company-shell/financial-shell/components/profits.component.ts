@@ -59,7 +59,7 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
             </h3>
           </div>
 
-          <table class="min-w-full divide-y divide-gray-200 table-fixed">
+          <table class="min-w-full divide-y divide-gray-200 border border-gray-100 rounded-lg overflow-hidden table-fixed">
             <thead class="bg-gray-50">
               <tr>
                 <th class="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -87,14 +87,17 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 </td>
                 <td class="px-4 py-4 text-sm text-center font-semibold"
                     [ngClass]="{
-                      'text-green-600': row.margin_pct !== null && row.margin_pct > 0,
-                      'text-red-500': row.margin_pct !== null && row.margin_pct < 0,
+                      'text-green-600': row.margin_pct !== null && row.margin_pct >= 50,
+                      'text-yellow-600': row.margin_pct !== null && row.margin_pct >= 30 && row.margin_pct < 50,
+                      'text-red-500': row.margin_pct !== null && row.margin_pct < 30 && row.margin_pct >= 0,
+                      'text-red-600': row.margin_pct !== null && row.margin_pct < 0,
                       'text-gray-400': row.margin_pct === null || row.margin_pct === 0
                     }">
                   {{ formatPercentage(row.margin_pct) }}
                 </td>
                 <td class="px-4 py-4 text-sm text-center">
                   <button
+                    (click)="deleteYearRecord(row.id, row.year)"
                     class="text-gray-400 hover:text-red-500 transition-colors"
                     title="Delete {{ row.year }} data">
                     <i class="fas fa-trash text-sm"></i>
@@ -278,6 +281,26 @@ export class ProfitsComponent implements OnInit {
 
   onModalClosed(): void {
     console.log('Modal Closed');
+  }
+
+  /**
+   * Delete a profit record for a specific year
+   */
+  async deleteYearRecord(recordId: number | undefined, year: number): Promise<void> {
+    if (!recordId) {
+      console.error('Cannot delete record: missing ID');
+      return;
+    }
+
+    if (!confirm(`Delete profit data for ${year}?`)) return;
+
+    try {
+      await firstValueFrom(this.profitService.deleteCompanyProfitSummary(recordId));
+      await this.loadProfitData();
+      console.log(`Deleted profit record for year ${year}`);
+    } catch (error) {
+      console.error('Error deleting record:', error);
+    }
   }
 
   /**
