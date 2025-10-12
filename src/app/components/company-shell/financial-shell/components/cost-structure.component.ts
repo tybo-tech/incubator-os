@@ -336,13 +336,10 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   loadRevenue() {
     this.isLoadingRevenue.set(true);
-    // TODO: Replace with actual revenue item type when available
-    // For now, we'll set example revenue data
+    // Load actual revenue items when revenue item type is implemented
+    // For now, leave empty for calculations
     this.isLoadingRevenue.set(false);
-    this.revenueItems.set([
-      { id: 1, company_id: this.companyId, year_: this.year, item_type: 'asset',
-        name: 'Service Revenue', amount: 60000, note: 'Main revenue stream' } as CompanyFinancialItem
-    ]);
+    this.revenueItems.set([]);
   }
 
   /**

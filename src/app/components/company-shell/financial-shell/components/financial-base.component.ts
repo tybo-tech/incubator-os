@@ -170,10 +170,34 @@ export abstract class FinancialBaseComponent implements OnInit {
     this.isSaving.set(true);
 
     try {
-      const itemsToUpdate = Array.from(changes.values());
+      const itemsToUpdate: any[] = [];
+      const itemsToCreate: any[] = [];
 
-      // Call the bulk update API
-      await this.financialService.bulkUpdateFinancialItems(itemsToUpdate).toPromise();
+      // Separate new items from existing items
+      Array.from(changes.entries()).forEach(([key, item]) => {
+        if (key.includes('_new_')) {
+          // New item - needs to be created
+          itemsToCreate.push(item);
+        } else {
+          // Existing item - needs to be updated
+          itemsToUpdate.push(item);
+        }
+      });
+
+      // Handle updates using bulk update API
+      if (itemsToUpdate.length > 0) {
+        await this.financialService.bulkUpdateFinancialItems(itemsToUpdate).toPromise();
+        console.log(`✅ Successfully updated ${itemsToUpdate.length} items`);
+      }
+
+      // Handle creates individually (bulk create not implemented yet)
+      if (itemsToCreate.length > 0) {
+        const createPromises = itemsToCreate.map(item =>
+          this.financialService.addCompanyFinancialItem(item).toPromise()
+        );
+        await Promise.all(createPromises);
+        console.log(`✅ Successfully created ${itemsToCreate.length} items`);
+      }
 
       // Clear unsaved changes after successful save
       this.clearUnsavedChanges();
@@ -181,7 +205,8 @@ export abstract class FinancialBaseComponent implements OnInit {
       // Refresh data
       this.refreshData();
 
-      console.log(`✅ Successfully saved ${itemsToUpdate.length} items`);
+      const totalSaved = itemsToUpdate.length + itemsToCreate.length;
+      console.log(`✅ Successfully saved ${totalSaved} items (${itemsToUpdate.length} updated, ${itemsToCreate.length} created)`);
 
     } catch (error) {
       console.error('Error bulk saving changes:', error);

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategoryDropdownComponent } from '../../../../shared/financial-category-dropdown/financial-category-dropdown.component';
@@ -114,7 +114,7 @@ export interface FinancialTableItem {
     </div>
   `,
 })
-export class FinancialItemTableComponent implements OnInit {
+export class FinancialItemTableComponent implements OnInit, OnChanges {
   @Input() title = 'Financial Items';
   @Input() currency = 'USD';
   @Input() items: FinancialTableItem[] = [];
@@ -137,15 +137,20 @@ export class FinancialItemTableComponent implements OnInit {
     this.initializeItems();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    // React to changes in items input from parent
+    if (changes['items'] && !changes['items'].firstChange) {
+      this.initializeItems();
+    }
+  }
+
   initializeItems() {
-    // Default placeholder data if none passed
-    if (!this.items || this.items.length === 0) {
-      this.list.set([
-        { name: 'Supplies', amount: 2000, note: 'Materials for training' },
-        { name: 'Direct labor', amount: 26000, note: 'Staff wages' },
-      ]);
-    } else {
+    // Initialize with real data passed from parent component
+    if (this.items && this.items.length > 0) {
       this.list.set(this.items);
+    } else {
+      // Start with empty list - no mock data
+      this.list.set([]);
     }
     this.calculateTotal();
   }
