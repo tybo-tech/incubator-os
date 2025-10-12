@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart } from '../../../utils/chart-setup';
 import { IPieChart, initPieChart } from '../../../models/Charts';
@@ -43,7 +43,7 @@ import { IPieChart, initPieChart } from '../../../models/Charts';
     }
   `]
 })
-export class PieComponent implements OnInit, OnDestroy {
+export class PieComponent implements OnInit, OnDestroy, OnChanges {
   @Input() componentTitle = 'Financial Overview';
   @Input() data: IPieChart = initPieChart();
 
@@ -78,10 +78,41 @@ export class PieComponent implements OnInit, OnDestroy {
                 const label = context.label || '';
                 const value = context.parsed;
                 const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
-                return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+                // Enhanced formatting with currency and better styling
+                const formattedValue = value.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                });
+
+                return `${label}: ${formattedValue} (${percentage}%)`;
+              },
+              title: function(context: any) {
+                return 'Financial Distribution';
+              },
+              footer: function(tooltipItems: any) {
+                const total = tooltipItems[0].dataset.data.reduce((a: number, b: number) => a + b, 0);
+                const formattedTotal = total.toLocaleString('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                });
+                return `Total: ${formattedTotal}`;
               }
-            }
+            },
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            footerColor: '#d1d5db',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            cornerRadius: 8,
+            displayColors: true,
+            padding: 12
           }
         }
       }
@@ -91,6 +122,30 @@ export class PieComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.chart = new Chart(this.canvasId, this.config);
     }, 0);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Update chart when data input changes
+    if (changes['data'] && this.chart) {
+      console.log('🔄 Pie chart data changed, updating chart...', this.data);
+      this.updateChartData();
+    }
+  }
+
+  private updateChartData(): void {
+    if (this.chart) {
+      // Update chart data
+      this.chart.data.labels = this.data.labels;
+      this.chart.data.datasets = this.data.datasets;
+
+      // Trigger chart update with animation
+      this.chart.update('active');
+
+      console.log('✅ Chart updated with new data:', {
+        labels: this.data.labels,
+        dataPoints: this.data.datasets[0]?.data
+      });
+    }
   }
 
   ngOnDestroy(): void {

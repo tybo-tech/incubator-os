@@ -221,10 +221,13 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     } as ExtendedFinancialTableItem))
   );
 
-  // Chart data for pie charts - computed from real financial data
+  // Chart data for pie charts - showing actual financial items and their amounts
   directCostChartData = computed((): IPieChart => {
     const items = this.directCostItems();
+    console.log('🔍 directCostChartData computed - items:', items.length, items);
+
     if (items.length === 0) {
+      console.log('📊 Returning empty state for direct costs chart');
       return {
         labels: ['No direct costs yet'],
         datasets: [{
@@ -236,32 +239,31 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
       };
     }
 
-    return {
-      labels: items.map(item => item.name || 'Unnamed'),
+    // Show actual items with their amounts
+    const chartData = {
+      labels: items.map(item => item.name || 'Unnamed Item'),
       datasets: [{
         data: items.map(item => item.amount || 0),
-        backgroundColor: [
-          'rgba(239, 68, 68, 0.8)',   // Red
-          'rgba(245, 101, 101, 0.8)', // Light red
-          'rgba(252, 165, 165, 0.8)', // Very light red
-          'rgba(254, 202, 202, 0.8)', // Pink red
-          'rgba(190, 18, 60, 0.8)',   // Dark red
-        ],
-        borderColor: [
-          'rgba(239, 68, 68, 1)',
-          'rgba(245, 101, 101, 1)',
-          'rgba(252, 165, 165, 1)',
-          'rgba(254, 202, 202, 1)',
-          'rgba(190, 18, 60, 1)',
-        ],
+        backgroundColor: this.generateColors(items.length, 'red'),
+        borderColor: this.generateColors(items.length, 'red', true),
         borderWidth: 2
       }]
     };
+
+    console.log('📊 Returning populated chart data for direct costs:', {
+      labels: chartData.labels,
+      data: chartData.datasets[0].data
+    });
+
+    return chartData;
   });
 
   operationalCostChartData = computed((): IPieChart => {
     const items = this.operationalCostItems();
+    console.log('🔍 operationalCostChartData computed - items:', items.length, items);
+
     if (items.length === 0) {
+      console.log('📊 Returning empty state for operational costs chart');
       return {
         labels: ['No operational costs yet'],
         datasets: [{
@@ -273,27 +275,23 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
       };
     }
 
-    return {
-      labels: items.map(item => item.name || 'Unnamed'),
+    // Show actual items with their amounts
+    const chartData = {
+      labels: items.map(item => item.name || 'Unnamed Item'),
       datasets: [{
         data: items.map(item => item.amount || 0),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',  // Blue
-          'rgba(96, 165, 250, 0.8)',  // Light blue
-          'rgba(147, 197, 253, 0.8)', // Very light blue
-          'rgba(191, 219, 254, 0.8)', // Pale blue
-          'rgba(29, 78, 216, 0.8)',   // Dark blue
-        ],
-        borderColor: [
-          'rgba(59, 130, 246, 1)',
-          'rgba(96, 165, 250, 1)',
-          'rgba(147, 197, 253, 1)',
-          'rgba(191, 219, 254, 1)',
-          'rgba(29, 78, 216, 1)',
-        ],
+        backgroundColor: this.generateColors(items.length, 'blue'),
+        borderColor: this.generateColors(items.length, 'blue', true),
         borderWidth: 2
       }]
     };
+
+    console.log('📊 Returning populated chart data for operational costs:', {
+      labels: chartData.labels,
+      data: chartData.datasets[0].data
+    });
+
+    return chartData;
   });
 
   constructor(
@@ -543,6 +541,52 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
     // Reload data for the new year
     this.refreshData();
+  }
+
+  /**
+   *  Generate dynamic color palettes for pie charts
+   */
+  private generateColors(count: number, baseColor: 'green' | 'red' | 'blue', isBorder = false): string[] {
+    const opacity = isBorder ? '1' : '0.8';
+
+    const colorPalettes = {
+      green: [
+        `rgba(34, 197, 94, ${opacity})`,   // emerald-500
+        `rgba(74, 222, 128, ${opacity})`,  // emerald-400
+        `rgba(134, 239, 172, ${opacity})`, // emerald-300
+        `rgba(187, 247, 208, ${opacity})`, // emerald-200
+        `rgba(21, 128, 61, ${opacity})`,   // emerald-700
+        `rgba(5, 150, 105, ${opacity})`,   // emerald-600
+        `rgba(16, 185, 129, ${opacity})`,  // emerald-500 variant
+      ],
+      red: [
+        `rgba(239, 68, 68, ${opacity})`,   // red-500
+        `rgba(248, 113, 113, ${opacity})`, // red-400
+        `rgba(252, 165, 165, ${opacity})`, // red-300
+        `rgba(254, 202, 202, ${opacity})`, // red-200
+        `rgba(185, 28, 28, ${opacity})`,   // red-700
+        `rgba(220, 38, 38, ${opacity})`,   // red-600
+        `rgba(239, 68, 68, ${opacity})`,   // red-500 variant
+      ],
+      blue: [
+        `rgba(59, 130, 246, ${opacity})`,  // blue-500
+        `rgba(96, 165, 250, ${opacity})`,  // blue-400
+        `rgba(147, 197, 253, ${opacity})`, // blue-300
+        `rgba(191, 219, 254, ${opacity})`, // blue-200
+        `rgba(29, 78, 216, ${opacity})`,   // blue-700
+        `rgba(37, 99, 235, ${opacity})`,   // blue-600
+        `rgba(59, 130, 246, ${opacity})`,  // blue-500 variant
+      ]
+    };
+
+    const palette = colorPalettes[baseColor];
+    const colors: string[] = [];
+
+    for (let i = 0; i < count; i++) {
+      colors.push(palette[i % palette.length]);
+    }
+
+    return colors;
   }
 
   exportCostStructure(): void {

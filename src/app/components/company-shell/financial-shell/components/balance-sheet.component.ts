@@ -3,8 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ContextService } from '../../../../../services/context.service';
 import { FinancialBaseComponent } from './financial-base.component';
-import { FinancialItemType, CompanyFinancialItem } from '../../../../../models/financial.models';
-import { FinancialItemTableComponent, FinancialTableItem } from './financial-items/financial-item-table.component';
+import {
+  FinancialItemType,
+  CompanyFinancialItem,
+} from '../../../../../models/financial.models';
+import {
+  FinancialItemTableComponent,
+  FinancialTableItem,
+} from './financial-items/financial-item-table.component';
 import { FinancialItemSummaryInfoComponent } from './financial-items/financial-item-summary-info.component';
 import { FinancialItemHeaderComponent } from './financial-items/financial-item-header.component';
 import { PieComponent } from '../../../../charts/pie/pie.component';
@@ -63,27 +69,33 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
       </app-financial-section-header>
 
       <!-- Save Changes Bar (shown when there are unsaved changes) -->
-      <div *ngIf="hasUnsavedChanges()"
-           class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+      <div
+        *ngIf="hasUnsavedChanges()"
+        class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
           <i class="fas fa-exclamation-triangle text-amber-600"></i>
           <div>
             <p class="font-semibold text-amber-800">You have unsaved changes</p>
-            <p class="text-sm text-amber-600">{{ unsavedChanges().size }} item(s) modified</p>
+            <p class="text-sm text-amber-600">
+              {{ unsavedChanges().size }} item(s) modified
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <button
             type="button"
             (click)="clearUnsavedChanges()"
-            class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+            class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+          >
             Cancel Changes
           </button>
           <button
             type="button"
             (click)="bulkSaveChanges()"
             [disabled]="isSaving()"
-            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
             <i *ngIf="isSaving()" class="fas fa-spinner fa-spin"></i>
             <i *ngIf="!isSaving()" class="fas fa-save"></i>
             {{ isSaving() ? 'Saving...' : 'Save All Changes' }}
@@ -92,15 +104,33 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
       </div>
 
       <!-- Balance Check Indicator -->
-      <div class="mb-6 p-3 rounded-lg"
-           [class]="balanceCheckStatus().isBalanced ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
+      <div
+        class="mb-6 p-3 rounded-lg"
+        [class]="
+          balanceCheckStatus().isBalanced
+            ? 'bg-green-50 border border-green-200'
+            : 'bg-red-50 border border-red-200'
+        "
+      >
         <div class="flex items-center justify-between">
-          <span class="font-semibold"
-                [class]="balanceCheckStatus().isBalanced ? 'text-green-800' : 'text-red-800'">
+          <span
+            class="font-semibold"
+            [class]="
+              balanceCheckStatus().isBalanced
+                ? 'text-green-800'
+                : 'text-red-800'
+            "
+          >
             {{ balanceCheckStatus().message }}
           </span>
-          <span class="text-sm"
-                [class]="balanceCheckStatus().isBalanced ? 'text-green-600' : 'text-red-600'">
+          <span
+            class="text-sm"
+            [class]="
+              balanceCheckStatus().isBalanced
+                ? 'text-green-600'
+                : 'text-red-600'
+            "
+          >
             Difference: {{ balanceCheckStatus().formattedDifference }}
           </span>
         </div>
@@ -125,9 +155,7 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
           ></app-pie>
 
           <!-- Summary Info -->
-          <app-financial-item-summary-info
-            [summary]="assetSummary()"
-          >
+          <app-financial-item-summary-info [summary]="assetSummary()">
           </app-financial-item-summary-info>
 
           <app-financial-item-table
@@ -161,9 +189,7 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
             [data]="liabilityChartData()"
           ></app-pie>
           <!-- Summary Info -->
-          <app-financial-item-summary-info
-            [summary]="liabilitySummary()"
-          >
+          <app-financial-item-summary-info [summary]="liabilitySummary()">
           </app-financial-item-summary-info>
 
           <app-financial-item-table
@@ -189,7 +215,10 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
     </div>
   `,
 })
-export class BalanceSheetComponent extends FinancialBaseComponent implements OnInit {
+export class BalanceSheetComponent
+  extends FinancialBaseComponent
+  implements OnInit
+{
   @Input() itemType!: FinancialItemType;
   @Input() title = '';
   @Input() subtitle = '';
@@ -221,8 +250,14 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
 
   // Balance validation computed property
   balanceCheckStatus = computed(() => {
-    const totalAssets = this.assetItems().reduce((sum, item) => sum + (item.amount || 0), 0);
-    const totalLiabilities = this.liabilityItems().reduce((sum, item) => sum + (item.amount || 0), 0);
+    const totalAssets = this.assetItems().reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
+    const totalLiabilities = this.liabilityItems().reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
     const totalEquity = totalAssets - totalLiabilities; // Calculated equity
     const difference = totalAssets - (totalLiabilities + totalEquity);
     const isBalanced = Math.abs(difference) < 0.01; // Allow for minor rounding differences
@@ -230,145 +265,168 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
     return {
       isBalanced,
       difference,
-      formattedDifference: this.calculationService.formatCurrency(Math.abs(difference), this.currency),
-      message: isBalanced ? '✅ Balance Sheet Balanced' : '❌ Balance Sheet Out of Balance'
+      formattedDifference: this.calculationService.formatCurrency(
+        Math.abs(difference),
+        this.currency
+      ),
+      message: isBalanced
+        ? '✅ Balance Sheet Balanced'
+        : '❌ Balance Sheet Out of Balance',
     };
   });
 
   // Summary data for display components using enhanced metrics
   assetSummary = computed(() => {
-    const totalAssets = this.assetItems().reduce((sum, item) => sum + (item.amount || 0), 0);
+    const totalAssets = this.assetItems().reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
     const assetCount = this.assetItems().length;
     return [
       {
         label: 'Total Assets',
         value: totalAssets,
         currency: '$',
-        isPositive: totalAssets > 0
+        isPositive: totalAssets > 0,
       },
       {
         label: 'Asset Count',
         value: assetCount,
         currency: 'items',
-        isPositive: assetCount > 0
-      }
+        isPositive: assetCount > 0,
+      },
     ];
   });
 
   liabilitySummary = computed(() => {
-    const totalLiabilities = this.liabilityItems().reduce((sum, item) => sum + (item.amount || 0), 0);
+    const totalLiabilities = this.liabilityItems().reduce(
+      (sum, item) => sum + (item.amount || 0),
+      0
+    );
     const liabilityCount = this.liabilityItems().length;
     return [
       {
         label: 'Total Liabilities',
         value: totalLiabilities,
         currency: '$',
-        isPositive: false // Liabilities are generally displayed as negative/red
+        isPositive: false, // Liabilities are generally displayed as negative/red
       },
       {
         label: 'Liability Count',
         value: liabilityCount,
         currency: 'items',
-        isPositive: liabilityCount === 0 // Fewer liabilities is better
-      }
+        isPositive: liabilityCount === 0, // Fewer liabilities is better
+      },
     ];
   });
 
   // Convert to table format for our reusable component
   assetTableItems = computed((): FinancialTableItem[] =>
-    this.assetItems().map(item => ({
-      name: item.name || '',
-      amount: item.amount || 0,
-      note: item.note || '',
-      categoryId: item.category_id || undefined,
-      // Add reference to original item for updates
-      _originalItem: item
-    } as ExtendedFinancialTableItem))
+    this.assetItems().map(
+      (item) =>
+        ({
+          name: item.name || '',
+          amount: item.amount || 0,
+          note: item.note || '',
+          categoryId: item.category_id || undefined,
+          // Add reference to original item for updates
+          _originalItem: item,
+        } as ExtendedFinancialTableItem)
+    )
   );
 
   liabilityTableItems = computed((): FinancialTableItem[] =>
-    this.liabilityItems().map(item => ({
-      name: item.name || '',
-      amount: item.amount || 0,
-      note: item.note || '',
-      categoryId: item.category_id || undefined,
-      _originalItem: item
-    } as ExtendedFinancialTableItem))
+    this.liabilityItems().map(
+      (item) =>
+        ({
+          name: item.name || '',
+          amount: item.amount || 0,
+          note: item.note || '',
+          categoryId: item.category_id || undefined,
+          _originalItem: item,
+        } as ExtendedFinancialTableItem)
+    )
   );
 
-  // Chart data for pie charts - computed from real financial data
+  // Chart data for pie charts - showing actual financial items and their amounts
   assetChartData = computed((): IPieChart => {
     const items = this.assetItems();
+    console.log('🔍 assetChartData computed - items:', items.length, items);
+
     if (items.length === 0) {
+      console.log('📊 Returning empty state for assets chart');
       return {
         labels: ['No assets yet'],
-        datasets: [{
-          data: [1],
-          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
-          borderColor: ['rgba(156, 163, 175, 1)'],
-          borderWidth: 2
-        }]
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: ['rgba(156, 163, 175, 0.8)'],
+            borderColor: ['rgba(156, 163, 175, 1)'],
+            borderWidth: 2,
+          },
+        ],
       };
     }
 
-    return {
-      labels: items.map(item => item.name || 'Unnamed'),
-      datasets: [{
-        data: items.map(item => item.amount || 0),
-        backgroundColor: [
-          'rgba(34, 197, 94, 0.8)',   // Green
-          'rgba(74, 222, 128, 0.8)',  // Light green
-          'rgba(134, 239, 172, 0.8)', // Very light green
-          'rgba(187, 247, 208, 0.8)', // Pale green
-          'rgba(21, 128, 61, 0.8)',   // Dark green
-        ],
-        borderColor: [
-          'rgba(34, 197, 94, 1)',
-          'rgba(74, 222, 128, 1)',
-          'rgba(134, 239, 172, 1)',
-          'rgba(187, 247, 208, 1)',
-          'rgba(21, 128, 61, 1)',
-        ],
-        borderWidth: 2
-      }]
+    // Show actual items with their amounts
+    const chartData = {
+      labels: items.map((item) => item.name || 'Unnamed Item'),
+      datasets: [
+        {
+          data: items.map((item) => item.amount || 0),
+          backgroundColor: this.generateColors(items.length, 'green'),
+          borderColor: this.generateColors(items.length, 'green', true),
+          borderWidth: 2,
+        },
+      ],
     };
+
+    console.log('📊 Returning populated chart data for assets:', {
+      labels: chartData.labels,
+      data: chartData.datasets[0].data,
+    });
+
+    return chartData;
   });
 
   liabilityChartData = computed((): IPieChart => {
     const items = this.liabilityItems();
+    console.log('🔍 liabilityChartData computed - items:', items.length, items);
+
     if (items.length === 0) {
+      console.log('📊 Returning empty state for liabilities chart');
       return {
         labels: ['No liabilities yet'],
-        datasets: [{
-          data: [1],
-          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
-          borderColor: ['rgba(156, 163, 175, 1)'],
-          borderWidth: 2
-        }]
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: ['rgba(156, 163, 175, 0.8)'],
+            borderColor: ['rgba(156, 163, 175, 1)'],
+            borderWidth: 2,
+          },
+        ],
       };
     }
 
-    return {
-      labels: items.map(item => item.name || 'Unnamed'),
-      datasets: [{
-        data: items.map(item => item.amount || 0),
-        backgroundColor: [
-          'rgba(239, 68, 68, 0.8)',   // Red
-          'rgba(248, 113, 113, 0.8)', // Light red
-          'rgba(252, 165, 165, 0.8)', // Very light red
-          'rgba(254, 202, 202, 0.8)', // Pale red
-          'rgba(185, 28, 28, 0.8)',   // Dark red
-        ],
-        borderColor: [
-          'rgba(239, 68, 68, 1)',
-          'rgba(248, 113, 113, 1)',
-          'rgba(252, 165, 165, 1)',
-          'rgba(254, 202, 202, 1)',
-          'rgba(185, 28, 28, 1)',
-        ],
-        borderWidth: 2
-      }]
+    // Show actual items with their amounts
+    const chartData = {
+      labels: items.map((item) => item.name || 'Unnamed Item'),
+      datasets: [
+        {
+          data: items.map((item) => item.amount || 0),
+          backgroundColor: this.generateColors(items.length, 'red'),
+          borderColor: this.generateColors(items.length, 'red', true),
+          borderWidth: 2,
+        },
+      ],
     };
+
+    console.log('📊 Returning populated chart data for liabilities:', {
+      labels: chartData.labels,
+      data: chartData.datasets[0].data,
+    });
+
+    return chartData;
   });
 
   constructor(
@@ -389,21 +447,34 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
    * 🎯 Lifecycle hook implementation for balance sheet-specific data transformations
    * Called automatically after items are loaded from backend
    */
-  protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
-    console.log(`🏦 Balance Sheet: Processing ${items.length} ${itemType} items`);
+  protected override afterItemsLoaded(
+    itemType: FinancialItemType,
+    items: CompanyFinancialItem[]
+  ): void {
+    console.log(
+      `🏦 Balance Sheet: Processing ${items.length} ${itemType} items`
+    );
 
     // Balance sheet-specific transformations and business logic
     switch (itemType) {
       case 'asset':
         // Sort assets by amount (largest first) and validate positive amounts
         items.sort((a, b) => (b.amount || 0) - (a.amount || 0));
-        console.log(`💰 Assets loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        console.log(
+          `💰 Assets loaded: $${items
+            .reduce((sum, item) => sum + (item.amount || 0), 0)
+            .toLocaleString()}`
+        );
         break;
 
       case 'liability':
         // Sort liabilities by amount (largest first) and validate they're properly categorized
         items.sort((a, b) => (b.amount || 0) - (a.amount || 0));
-        console.log(`🔴 Liabilities loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        console.log(
+          `🔴 Liabilities loaded: $${items
+            .reduce((sum, item) => sum + (item.amount || 0), 0)
+            .toLocaleString()}`
+        );
         break;
     }
 
@@ -437,7 +508,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
     // This prevents duplicate tracking entries
   }
 
-  onAssetItemUpdated(event: {index: number, item: FinancialTableItem}) {
+  onAssetItemUpdated(event: { index: number; item: FinancialTableItem }) {
     const { index, item } = event;
     console.log('Asset item updated:', item);
     const extendedItem = item as ExtendedFinancialTableItem;
@@ -449,7 +520,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId
+        categoryId: item.categoryId,
       });
     } else if ((item as any)._tempKey) {
       // New item with temp key - update the existing tracking entry
@@ -461,9 +532,12 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId
+        categoryId: item.categoryId,
       };
-      console.log('Updating asset item tracking with categoryId:', trackedItem.categoryId);
+      console.log(
+        'Updating asset item tracking with categoryId:',
+        trackedItem.categoryId
+      );
       this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
@@ -483,11 +557,11 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
       name: item.name,
       amount: item.amount,
       note: item.note,
-      categoryId: item.categoryId
+      categoryId: item.categoryId,
     });
   }
 
-  onAssetItemDeleted(event: {index: number, item: FinancialTableItem}) {
+  onAssetItemDeleted(event: { index: number; item: FinancialTableItem }) {
     console.log('Asset item deleted:', event);
     const { item } = event;
     const extendedItem = item as ExtendedFinancialTableItem;
@@ -499,13 +573,15 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
       // Add to deletion queue or handle deletion immediately
       // For now, we'll handle deletion immediately
       if (extendedItem._originalItem.id) {
-        this.financialService.deleteCompanyFinancialItem(extendedItem._originalItem.id).subscribe({
-          next: () => {
-            console.log('Asset deleted successfully');
-            this.loadItemsByType('asset', this.assetItems);
-          },
-          error: (err) => console.error('Error deleting asset:', err)
-        });
+        this.financialService
+          .deleteCompanyFinancialItem(extendedItem._originalItem.id)
+          .subscribe({
+            next: () => {
+              console.log('Asset deleted successfully');
+              this.loadItemsByType('asset', this.assetItems);
+            },
+            error: (err) => console.error('Error deleting asset:', err),
+          });
       }
     }
   }
@@ -519,7 +595,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
     // This prevents duplicate tracking entries
   }
 
-  onLiabilityItemUpdated(event: {index: number, item: FinancialTableItem}) {
+  onLiabilityItemUpdated(event: { index: number; item: FinancialTableItem }) {
     console.log('Liability item updated:', event);
     const { index, item } = event;
     const extendedItem = item as ExtendedFinancialTableItem;
@@ -531,7 +607,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId
+        categoryId: item.categoryId,
       });
     } else if ((item as any)._tempKey) {
       // New item with temp key - update the existing tracking entry
@@ -543,9 +619,12 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId
+        categoryId: item.categoryId,
       };
-      console.log('Updating liability item tracking with categoryId:', trackedItem.categoryId);
+      console.log(
+        'Updating liability item tracking with categoryId:',
+        trackedItem.categoryId
+      );
       this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
@@ -565,11 +644,11 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
       name: item.name,
       amount: item.amount,
       note: item.note,
-      categoryId: item.categoryId
+      categoryId: item.categoryId,
     });
   }
 
-  onLiabilityItemDeleted(event: {index: number, item: FinancialTableItem}) {
+  onLiabilityItemDeleted(event: { index: number; item: FinancialTableItem }) {
     console.log('Liability item deleted:', event);
     const { item } = event;
     const extendedItem = item as ExtendedFinancialTableItem;
@@ -580,13 +659,15 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
 
       // Handle deletion immediately
       if (extendedItem._originalItem.id) {
-        this.financialService.deleteCompanyFinancialItem(extendedItem._originalItem.id).subscribe({
-          next: () => {
-            console.log('Liability deleted successfully');
-            this.loadItemsByType('liability', this.liabilityItems);
-          },
-          error: (err) => console.error('Error deleting liability:', err)
-        });
+        this.financialService
+          .deleteCompanyFinancialItem(extendedItem._originalItem.id)
+          .subscribe({
+            next: () => {
+              console.log('Liability deleted successfully');
+              this.loadItemsByType('liability', this.liabilityItems);
+            },
+            error: (err) => console.error('Error deleting liability:', err),
+          });
       }
     }
   }
@@ -609,7 +690,12 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
    * @param newYear The newly selected year
    */
   onYearChange(newYear: number): void {
-    console.log('BalanceSheetComponent - Year changed from', this.year, 'to', newYear);
+    console.log(
+      'BalanceSheetComponent - Year changed from',
+      this.year,
+      'to',
+      newYear
+    );
     this.year = newYear;
 
     // Clear any unsaved changes when year changes
@@ -622,8 +708,63 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
   exportBalanceSheet(): void {
     console.log('Exporting balance sheet for year:', this.year);
     console.log('Balance Status:', this.balanceCheckStatus().message);
-    console.log('Financial Health:', this.financialMetrics().healthStatus, '-', this.financialMetrics().healthMessage);
+    console.log(
+      'Financial Health:',
+      this.financialMetrics().healthStatus,
+      '-',
+      this.financialMetrics().healthMessage
+    );
     // Implementation for PDF export functionality
     // This would integrate with your PDF service
+  }
+
+  /**
+   *  Generate dynamic color palettes for pie charts
+   */
+  private generateColors(
+    count: number,
+    baseColor: 'green' | 'red' | 'blue',
+    isBorder = false
+  ): string[] {
+    const opacity = isBorder ? '1' : '0.8';
+
+    const colorPalettes = {
+      green: [
+        `rgba(34, 197, 94, ${opacity})`, // emerald-500
+        `rgba(74, 222, 128, ${opacity})`, // emerald-400
+        `rgba(134, 239, 172, ${opacity})`, // emerald-300
+        `rgba(187, 247, 208, ${opacity})`, // emerald-200
+        `rgba(21, 128, 61, ${opacity})`, // emerald-700
+        `rgba(5, 150, 105, ${opacity})`, // emerald-600
+        `rgba(16, 185, 129, ${opacity})`, // emerald-500 variant
+      ],
+      red: [
+        `rgba(239, 68, 68, ${opacity})`, // red-500
+        `rgba(248, 113, 113, ${opacity})`, // red-400
+        `rgba(252, 165, 165, ${opacity})`, // red-300
+        `rgba(254, 202, 202, ${opacity})`, // red-200
+        `rgba(185, 28, 28, ${opacity})`, // red-700
+        `rgba(220, 38, 38, ${opacity})`, // red-600
+        `rgba(239, 68, 68, ${opacity})`, // red-500 variant
+      ],
+      blue: [
+        `rgba(59, 130, 246, ${opacity})`, // blue-500
+        `rgba(96, 165, 250, ${opacity})`, // blue-400
+        `rgba(147, 197, 253, ${opacity})`, // blue-300
+        `rgba(191, 219, 254, ${opacity})`, // blue-200
+        `rgba(29, 78, 216, ${opacity})`, // blue-700
+        `rgba(37, 99, 235, ${opacity})`, // blue-600
+        `rgba(59, 130, 246, ${opacity})`, // blue-500 variant
+      ],
+    };
+
+    const palette = colorPalettes[baseColor];
+    const colors: string[] = [];
+
+    for (let i = 0; i < count; i++) {
+      colors.push(palette[i % palette.length]);
+    }
+
+    return colors;
   }
 }

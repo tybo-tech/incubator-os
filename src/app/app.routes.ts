@@ -13,7 +13,7 @@ import {
   RevenueComponent,
   ProfitsComponent,
   CostStructureComponent,
-  BalanceSheetComponent,
+  // BalanceSheetComponent, // Temporarily disabled for pie chart testing
   RatiosComponent,
   FundsReceivedComponent,
   EmployeeCountComponent
@@ -109,10 +109,10 @@ export const routes: Routes = [
                 path: 'cost-structure',
                 component: CostStructureComponent,
               },
-              {
-                path: 'balance-sheet',
-                component: BalanceSheetComponent,
-              },
+              // {
+              //   path: 'balance-sheet',
+              //   component: BalanceSheetComponent, // Temporarily disabled for pie chart testing
+              // },
               {
                 path: 'ratios',
                 component: RatiosComponent,
