@@ -45,7 +45,7 @@ export class CompanyFinancialItemService {
 
   addCompanyFinancialItem(data: Partial<CompanyFinancialItem>): Observable<CompanyFinancialItem> {
     console.log('Sending data to API:', data);
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/add-company-financial-items.php`, data, this.httpOptions)
+    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/add-company-financial-item.php`, data, this.httpOptions)
       .pipe(
         tap(res => console.log('API response:', res)),
         catchError(this.handleError('Add financial item'))
@@ -55,7 +55,7 @@ export class CompanyFinancialItemService {
   updateCompanyFinancialItem(id: number, data: Partial<CompanyFinancialItem>): Observable<CompanyFinancialItem> {
     const payload = { id, ...data };
     console.log('CompanyFinancialItemService - updateCompanyFinancialItem called with:', { id, data, payload });
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/update-company-financial-items.php`, payload, this.httpOptions)
+    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/update-company-financial-item.php`, payload, this.httpOptions)
       .pipe(
         tap(res => console.log('Update API response:', res)),
         catchError(this.handleError('Update financial item'))
