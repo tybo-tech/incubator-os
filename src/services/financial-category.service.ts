@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { FinancialCategory } from '../models/financial.models';
 import { Constants } from './service';
 
@@ -25,6 +26,16 @@ export class FinancialCategoryService {
   };
 
   constructor(private http: HttpClient) {}
+
+  /**
+   * Centralized error handling for API calls
+   */
+  private handleError(operation = 'operation') {
+    return (error: any): Observable<never> => {
+      console.error(`${operation} failed:`, error);
+      return throwError(() => new Error(`Failed to ${operation.toLowerCase()}: ${error.message || 'Unknown error'}`));
+    };
+  }
 
   addFinancialCategory(data: Partial<FinancialCategory>): Observable<FinancialCategory> {
     console.log('Sending data to API:', data);
@@ -84,23 +95,53 @@ export class FinancialCategoryService {
   }
 
   /**
+   * List categories by multiple item types (using new API endpoint)
+   * Perfect for Cost Structure (direct_cost + operational_cost) or Balance Sheet (asset + liability + equity)
+   */
+  listCategoriesByMultipleTypes(
+    itemType1?: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity',
+    itemType2?: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity',
+    onlyActive: boolean = true
+  ): Observable<FinancialCategory[]> {
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (itemType1) {
+      params.append('item_type1', itemType1);
+    }
+    if (itemType2) {
+      params.append('item_type2', itemType2);
+    }
+    if (onlyActive) {
+      params.append('only_active', 'true');
+    }
+
+    const url = `${this.apiUrl}/list-financial-categories.php?${params.toString()}`;
+    return this.http.get<FinancialCategory[]>(url)
+      .pipe(catchError(this.handleError('List categories by multiple types')));
+  }
+
+  /**
+   * Get cost structure categories (direct_cost + operational_cost)
+   */
+  listCostStructureCategories(): Observable<FinancialCategory[]> {
+    return this.listCategoriesByMultipleTypes('direct_cost', 'operational_cost', true);
+  }
+
+  /**
+   * Get balance sheet categories (asset + liability + equity)
+   * Note: This loads asset and liability first, equity can be loaded separately if needed
+   */
+  listBalanceSheetCategories(): Observable<FinancialCategory[]> {
+    return this.listCategoriesByMultipleTypes('asset', 'liability', true);
+  }
+
+  /**
    * Get cost categories (direct and operational costs)
+   * Note: This method uses the old POST API. Consider using listCostStructureCategories() for the new GET API.
    */
   listCostCategories(): Observable<FinancialCategory[]> {
     return this.http.post<FinancialCategory[]>(`${this.apiUrl}/list-financial-categories.php`, {
       item_type_in: ['direct_cost', 'operational_cost'],
-      is_active: true,
-      order_by: 'name',
-      order_dir: 'ASC'
-    }, this.httpOptions);
-  }
-
-  /**
-   * Get balance sheet categories (assets, liabilities, equity)
-   */
-  listBalanceSheetCategories(): Observable<FinancialCategory[]> {
-    return this.http.post<FinancialCategory[]>(`${this.apiUrl}/list-financial-categories.php`, {
-      item_type_in: ['asset', 'liability', 'equity'],
       is_active: true,
       order_by: 'name',
       order_dir: 'ASC'

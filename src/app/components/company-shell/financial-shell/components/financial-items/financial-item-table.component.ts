@@ -58,6 +58,8 @@ export interface FinancialTableItem {
           <app-financial-category-dropdown
             [itemType]="itemType"
             [selectedCategoryId]="item.categoryId || null"
+            [loadMultipleTypes]="loadMultipleTypes"
+            [allowedTypes]="allowedTypes"
             (categorySelected)="onCategorySelected(item, $event)"
             (categoryCreated)="onCategoryCreated($event)"
           ></app-financial-category-dropdown>
@@ -117,6 +119,10 @@ export class FinancialItemTableComponent implements OnInit {
   @Input() currency = 'USD';
   @Input() items: FinancialTableItem[] = [];
   @Input() itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity' = 'direct_cost';
+
+  // New inputs for multi-type loading
+  @Input() loadMultipleTypes = false;
+  @Input() allowedTypes: ('direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity')[] = [];
 
   list = signal<FinancialTableItem[]>([]);
   total = signal(0);

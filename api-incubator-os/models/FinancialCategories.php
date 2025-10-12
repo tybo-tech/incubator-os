@@ -123,6 +123,41 @@ final class FinancialCategories
         return array_map([$this, 'cast'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * List categories filtered by multiple item types (for flexible filtering).
+     * Useful for Cost Structure (direct_cost + operational_cost) or Balance Sheet (asset + liability + equity).
+     */
+    public function listByMultipleTypes(?string $itemType1 = null, ?string $itemType2 = null, bool $onlyActive = false): array
+    {
+        $sql = "SELECT * FROM financial_categories WHERE 1=1";
+        $params = [];
+
+        // Build dynamic WHERE clause for multiple types
+        $typeConditions = [];
+        if ($itemType1) {
+            $typeConditions[] = "item_type = :type1";
+            $params[':type1'] = strtolower($itemType1);
+        }
+        if ($itemType2) {
+            $typeConditions[] = "item_type = :type2";
+            $params[':type2'] = strtolower($itemType2);
+        }
+
+        if (!empty($typeConditions)) {
+            $sql .= " AND (" . implode(' OR ', $typeConditions) . ")";
+        }
+
+        if ($onlyActive) {
+            $sql .= " AND is_active = 1";
+        }
+
+        $sql .= " ORDER BY item_type ASC, name ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        return array_map([$this, 'cast'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
     /* =========================================================================
        DELETE / STATUS
        ========================================================================= */

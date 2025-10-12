@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategory } from '../../../../models/financial.models';
@@ -82,23 +82,26 @@ import { FinancialCategoryService } from '../../../../services/financial-categor
     </div>
   `,
 })
-export class FinancialCategoryDropdownComponent implements OnInit {
+export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
   @Input() itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity' = 'direct_cost';
   @Input() selectedCategoryId: number | null = null;
   @Input() placeholder = 'Select category';
   @Input() description = false; // Whether to show description field when creating new category
   @Input() disabled = false;
 
+  // New inputs for multi-type loading and filtering
+  @Input() loadMultipleTypes = false; // Whether to load categories for multiple types
+  @Input() allowedTypes: ('direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity')[] = []; // Types to load when loadMultipleTypes is true
+
   @Output() categorySelected = new EventEmitter<FinancialCategory | null>();
   @Output() categoryCreated = new EventEmitter<FinancialCategory>();
 
   // Signals for reactive state management
-  categories = signal<FinancialCategory[]>([]);
+  allCategories = signal<FinancialCategory[]>([]); // All loaded categories
+  categories = signal<FinancialCategory[]>([]); // Filtered categories for display
   isLoading = signal(false);
   isCreating = signal(false);
-  isSubmitting = signal(false);
-
-  // New category form data
+  isSubmitting = signal(false);  // New category form data
   newCategoryName = '';
   newCategoryDescription = '';
 
@@ -109,26 +112,61 @@ export class FinancialCategoryDropdownComponent implements OnInit {
   }
 
   /**
-   * Load categories based on item type
+   * Load categories based on configuration
    */
   loadCategories() {
     this.isLoading.set(true);
 
-    this.financialCategoryService.listCategoriesByType(this.itemType)
-      .subscribe({
-        next: (categories) => {
-          this.categories.set(categories);
-          this.isLoading.set(false);
-        },
-        error: (error) => {
-          console.error('Failed to load financial categories:', error);
-          this.categories.set([]);
-          this.isLoading.set(false);
-        }
-      });
+    let categoryObservable;
+
+    if (this.loadMultipleTypes && this.allowedTypes.length > 0) {
+      // Load multiple types for flexible filtering
+      const [type1, type2] = this.allowedTypes;
+      categoryObservable = this.financialCategoryService.listCategoriesByMultipleTypes(type1, type2, true);
+    } else {
+      // Load single type (backward compatibility)
+      categoryObservable = this.financialCategoryService.listCategoriesByType(this.itemType);
+    }
+
+    categoryObservable.subscribe({
+      next: (categories) => {
+        this.allCategories.set(categories);
+        this.filterCategories();
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Failed to load financial categories:', error);
+        this.allCategories.set([]);
+        this.categories.set([]);
+        this.isLoading.set(false);
+      }
+    });
   }
 
   /**
+   * Filter categories based on current itemType context
+   */
+  filterCategories() {
+    const allCats = this.allCategories();
+
+    if (this.loadMultipleTypes) {
+      // When loading multiple types, filter to show only current itemType
+      const filtered = allCats.filter(cat => cat.item_type === this.itemType);
+      this.categories.set(filtered);
+    } else {
+      // When loading single type, show all loaded categories
+      this.categories.set(allCats);
+    }
+  }
+
+  /**
+   * Update filtering when itemType changes
+   */
+  ngOnChanges() {
+    if (this.allCategories().length > 0) {
+      this.filterCategories();
+    }
+  }  /**
    * Handle category selection change
    */
   onCategoryChange(categoryId: string | number) {
@@ -175,8 +213,11 @@ export class FinancialCategoryDropdownComponent implements OnInit {
     this.financialCategoryService.addFinancialCategory(newCategoryData)
       .subscribe({
         next: (newCategory) => {
-          // Add the new category to the list
-          this.categories.update(cats => [...cats, newCategory].sort((a, b) => a.name.localeCompare(b.name)));
+          // Add the new category to all categories
+          this.allCategories.update(cats => [...cats, newCategory].sort((a, b) => a.name.localeCompare(b.name)));
+
+          // Refresh the filtered categories
+          this.filterCategories();
 
           // Select the new category
           this.selectedCategoryId = newCategory.id!;

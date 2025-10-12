@@ -67,6 +67,8 @@ import { FinancialSectionHeaderComponent } from './financial-section-header.comp
             title="Direct Costs"
             currency="USD"
             itemType="direct_cost"
+            [loadMultipleTypes]="true"
+            [allowedTypes]="['direct_cost', 'operational_cost']"
             [items]="[
               {
                 name: 'Supplies',
@@ -104,6 +106,8 @@ import { FinancialSectionHeaderComponent } from './financial-section-header.comp
             title="Operational Costs"
             currency="USD"
             itemType="operational_cost"
+            [loadMultipleTypes]="true"
+            [allowedTypes]="['direct_cost', 'operational_cost']"
             [items]="[
               {
                 name: 'Marketing',
