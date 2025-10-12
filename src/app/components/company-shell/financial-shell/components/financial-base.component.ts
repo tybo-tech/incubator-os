@@ -224,22 +224,19 @@ export abstract class FinancialBaseComponent implements OnInit {
         console.log(`✅ Successfully updated ${itemsToUpdate.length} items`);
       }
 
-      // Handle creates individually (bulk create not implemented yet)
+      // Handle creates using bulk create API
       if (itemsToCreate.length > 0) {
-        const createPromises = itemsToCreate.map(item => {
-          // Add required context fields for new items
-          const newItem = {
-            ...item,
-            company_id: this.companyId,
-            client_id: this.clientId,
-            year_: this.year,
-            program_id: this.programId,
-            cohort_id: this.cohortId
-          };
-          return this.financialService.addCompanyFinancialItem(newItem).toPromise();
-        });
-        await Promise.all(createPromises);
-        console.log(`✅ Successfully created ${itemsToCreate.length} items`);
+        const itemsWithContext = itemsToCreate.map(item => ({
+          ...item,
+          company_id: this.companyId,
+          client_id: this.clientId,
+          year_: this.year,
+          program_id: this.programId,
+          cohort_id: this.cohortId
+        }));
+
+        await this.financialService.bulkCreateFinancialItems(itemsWithContext).toPromise();
+        console.log(`✅ Successfully created ${itemsToCreate.length} items via bulk create`);
       }
 
       // Clear unsaved changes after successful save

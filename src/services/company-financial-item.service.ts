@@ -76,6 +76,20 @@ export class CompanyFinancialItemService {
       );
   }
 
+  /**
+   * 🆕 Bulk create multiple financial items at once
+   * @param items Array of financial items to create
+   */
+  bulkCreateFinancialItems(items: Partial<CompanyFinancialItem>[]): Observable<any> {
+    const payload = { items };
+    console.log('CompanyFinancialItemService - bulkCreateFinancialItems called with:', payload);
+    return this.http.post<any>(`${this.apiUrl}/add-bulk-company-financial-items.php`, payload, this.httpOptions)
+      .pipe(
+        tap(res => console.log('Bulk create API response:', res)),
+        catchError(this.handleError('Bulk create financial items'))
+      );
+  }
+
   getCompanyFinancialItemById(id: number): Observable<CompanyFinancialItem> {
     return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/get-company-financial-items.php`, { id }, this.httpOptions)
       .pipe(catchError(this.handleError('Get financial item')));
