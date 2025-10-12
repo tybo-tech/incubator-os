@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@
 import { CommonModule } from '@angular/common';
 import { Chart } from '../../../utils/chart-setup';
 import { IPieChart, initPieChart } from '../../../models/Charts';
+import { Constants } from '../../../services/service';
 
 @Component({
   selector: 'app-pie',
@@ -83,7 +84,7 @@ export class PieComponent implements OnInit, OnDestroy, OnChanges {
                 // Enhanced formatting with currency and better styling
                 const formattedValue = value.toLocaleString('en-US', {
                   style: 'currency',
-                  currency: 'USD',
+                  currency: Constants.Currency,
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0
                 });
@@ -97,7 +98,7 @@ export class PieComponent implements OnInit, OnDestroy, OnChanges {
                 const total = tooltipItems[0].dataset.data.reduce((a: number, b: number) => a + b, 0);
                 const formattedTotal = total.toLocaleString('en-US', {
                   style: 'currency',
-                  currency: 'USD',
+                  currency: Constants.Currency,
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0
                 });

@@ -219,7 +219,7 @@ export class CompanyProfitSummaryService {
       npbt_q4: 0,
       npbt_margin: 0,
 
-      unit: 'USD',
+      unit: Constants.Currency,
       status_id: 1,
       isNew: true,
       isEditing: true,
@@ -349,7 +349,7 @@ export class CompanyProfitSummaryService {
       npbt_total: this.toNum(item.npbt_total),
       npbt_margin: this.toNum(item.npbt_margin),
 
-      unit: item.unit || 'USD',
+      unit: item.unit || Constants.Currency,
       notes: item.notes,
       title: item.title,
       status_id: item.status_id || 1,

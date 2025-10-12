@@ -153,8 +153,8 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
           ></app-pie>
 
           <!-- Summary Info -->
-          <app-financial-item-summary-info [summary]="assetSummary()">
-          </app-financial-item-summary-info>
+          <!-- <app-financial-item-summary-info [summary]="assetSummary()">
+          </app-financial-item-summary-info> -->
 
           <app-financial-item-table
             title="Assets"
@@ -187,8 +187,8 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
             [data]="liabilityChartData()"
           ></app-pie>
           <!-- Summary Info -->
-          <app-financial-item-summary-info [summary]="liabilitySummary()">
-          </app-financial-item-summary-info>
+          <!-- <app-financial-item-summary-info [summary]="liabilitySummary()">
+          </app-financial-item-summary-info> -->
 
           <app-financial-item-table
             title="Liabilities"

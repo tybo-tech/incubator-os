@@ -6,6 +6,7 @@ import {
   UnifiedProfitRecord
 } from '../../models/financial.models';
 import { RevenueYearlyData } from '../../services/company-revenue-summary.service';
+import { Constants } from '../../services';
 
 @Injectable({
   providedIn: 'root'
@@ -254,9 +255,9 @@ export class ProfitsHelperService {
    * Enhanced currency formatting for totals (with USD suffix)
    */
   formatCurrencyWithUnit(value: number | null): string {
-    if (value == null || isNaN(value)) return '- USD';
+    if (value == null || isNaN(value)) return '- '+ Constants.Currency;
     const formatted = this.formatCurrency(value);
-    return `${formatted} USD`;
+    return `${formatted} ${Constants.Currency}`;
   }
 
   /**

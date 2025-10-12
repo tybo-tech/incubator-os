@@ -9,14 +9,20 @@ import {
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
 import { FinancialBaseComponent } from './financial-base.component';
-import { FinancialItemTableComponent, FinancialTableItem } from './financial-items/financial-item-table.component';
+import {
+  FinancialItemTableComponent,
+  FinancialTableItem,
+} from './financial-items/financial-item-table.component';
 import { FinancialItemSummaryInfoComponent } from './financial-items/financial-item-summary-info.component';
 import { FinancialItemHeaderComponent } from './financial-items/financial-item-header.component';
 import { PieComponent } from '../../../../charts/pie/pie.component';
 import { FinancialSectionHeaderComponent } from './financial-items/financial-section-header.component';
 import { IPieChart } from '../../../../../models/Charts';
 import { FinancialChartService } from '../services/financial-chart.service';
-import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../services/financial-item-handler.service';
+import {
+  FinancialItemHandlerService,
+  ExtendedFinancialTableItem,
+} from '../services/financial-item-handler.service';
 
 @Component({
   selector: 'app-cost-structure',
@@ -47,27 +53,33 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
       </app-financial-section-header>
 
       <!-- Save Changes Bar (shown when there are unsaved changes) -->
-      <div *ngIf="hasUnsavedChanges()"
-           class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+      <div
+        *ngIf="hasUnsavedChanges()"
+        class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
           <i class="fas fa-exclamation-triangle text-amber-600"></i>
           <div>
             <p class="font-semibold text-amber-800">You have unsaved changes</p>
-            <p class="text-sm text-amber-600">{{ unsavedChanges().size }} item(s) modified</p>
+            <p class="text-sm text-amber-600">
+              {{ unsavedChanges().size }} item(s) modified
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <button
             type="button"
             (click)="clearUnsavedChanges()"
-            class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+            class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+          >
             Cancel Changes
           </button>
           <button
             type="button"
             (click)="bulkSaveChanges()"
             [disabled]="isSaving()"
-            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
             <i *ngIf="isSaving()" class="fas fa-spinner fa-spin"></i>
             <i *ngIf="!isSaving()" class="fas fa-save"></i>
             {{ isSaving() ? 'Saving...' : 'Save All Changes' }}
@@ -94,10 +106,10 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
           ></app-pie>
 
           <!-- Summary Info -->
-          <app-financial-item-summary-info
+          <!-- <app-financial-item-summary-info
             [summary]="directCostSummary()"
           >
-          </app-financial-item-summary-info>
+          </app-financial-item-summary-info> -->
 
           <app-financial-item-table
             title="Direct Costs"
@@ -130,10 +142,10 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
             [data]="operationalCostChartData()"
           ></app-pie>
           <!-- Summary Info -->
-          <app-financial-item-summary-info
+          <!-- <app-financial-item-summary-info
             [summary]="operationalCostSummary()"
           >
-          </app-financial-item-summary-info>
+          </app-financial-item-summary-info> -->
 
           <app-financial-item-table
             title="Operational Costs"
@@ -158,7 +170,10 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
     </div>
   `,
 })
-export class CostStructureComponent extends FinancialBaseComponent implements OnInit {
+export class CostStructureComponent
+  extends FinancialBaseComponent
+  implements OnInit
+{
   @Input() itemType!: FinancialItemType;
   @Input() title = '';
   @Input() subtitle = '';
@@ -187,11 +202,17 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   // Summary data for display components using enhanced metrics
   directCostSummary = computed(() =>
-    this.calculationService.generateDirectCostSummary(this.financialMetrics(), this.currency)
+    this.calculationService.generateDirectCostSummary(
+      this.financialMetrics(),
+      this.currency
+    )
   );
 
   operationalCostSummary = computed(() =>
-    this.calculationService.generateOperationalCostSummary(this.financialMetrics(), this.currency)
+    this.calculationService.generateOperationalCostSummary(
+      this.financialMetrics(),
+      this.currency
+    )
   );
 
   // Convert to table format for our reusable component
@@ -204,12 +225,16 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
   );
 
   // Chart data using centralized chart service
-  directCostChartData = computed((): IPieChart =>
-    this.chartService.generateDirectCostChartData(this.directCostItems())
+  directCostChartData = computed(
+    (): IPieChart =>
+      this.chartService.generateDirectCostChartData(this.directCostItems())
   );
 
-  operationalCostChartData = computed((): IPieChart =>
-    this.chartService.generateOperationalCostChartData(this.operationalCostItems())
+  operationalCostChartData = computed(
+    (): IPieChart =>
+      this.chartService.generateOperationalCostChartData(
+        this.operationalCostItems()
+      )
   );
 
   constructor(
@@ -220,7 +245,14 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     chartService: FinancialChartService,
     itemHandler: FinancialItemHandlerService
   ) {
-    super(service, calculationService, route, contextService, chartService, itemHandler);
+    super(
+      service,
+      calculationService,
+      route,
+      contextService,
+      chartService,
+      itemHandler
+    );
   }
 
   ngOnInit() {
@@ -232,21 +264,34 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
    * 🎯 Lifecycle hook implementation for cost-specific data transformations
    * Called automatically after items are loaded from backend
    */
-  protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
-    console.log(`📈 Cost Structure: Processing ${items.length} ${itemType} items`);
+  protected override afterItemsLoaded(
+    itemType: FinancialItemType,
+    items: CompanyFinancialItem[]
+  ): void {
+    console.log(
+      `📈 Cost Structure: Processing ${items.length} ${itemType} items`
+    );
 
     // Cost-specific transformations and business logic
     switch (itemType) {
       case 'direct_cost':
         // Validate and sort direct costs by amount (largest first)
         items.sort((a, b) => (b.amount || 0) - (a.amount || 0));
-        console.log(`🏭 Direct costs loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        console.log(
+          `🏭 Direct costs loaded: $${items
+            .reduce((sum, item) => sum + (item.amount || 0), 0)
+            .toLocaleString()}`
+        );
         break;
 
       case 'operational_cost':
         // Operational costs sorted alphabetically for better organization
         items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-        console.log(`⚙️ Operational costs loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        console.log(
+          `⚙️ Operational costs loaded: $${items
+            .reduce((sum, item) => sum + (item.amount || 0), 0)
+            .toLocaleString()}`
+        );
         break;
     }
 
@@ -278,7 +323,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     this.itemHandler.handleItemsChanged(items, 'direct_cost');
   }
 
-  onDirectCostItemUpdated(event: {index: number, item: FinancialTableItem}) {
+  onDirectCostItemUpdated(event: { index: number; item: FinancialTableItem }) {
     this.itemHandler.handleItemUpdated(
       event,
       'direct_cost',
@@ -296,7 +341,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     );
   }
 
-  onDirectCostItemDeleted(event: {index: number, item: FinancialTableItem}) {
+  onDirectCostItemDeleted(event: { index: number; item: FinancialTableItem }) {
     this.itemHandler.handleItemDeleted(
       event,
       'direct_cost',
@@ -311,7 +356,10 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     this.itemHandler.handleItemsChanged(items, 'operational_cost');
   }
 
-  onOperationalCostItemUpdated(event: {index: number, item: FinancialTableItem}) {
+  onOperationalCostItemUpdated(event: {
+    index: number;
+    item: FinancialTableItem;
+  }) {
     this.itemHandler.handleItemUpdated(
       event,
       'operational_cost',
@@ -329,7 +377,10 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     );
   }
 
-  onOperationalCostItemDeleted(event: {index: number, item: FinancialTableItem}) {
+  onOperationalCostItemDeleted(event: {
+    index: number;
+    item: FinancialTableItem;
+  }) {
     this.itemHandler.handleItemDeleted(
       event,
       'operational_cost',
@@ -346,7 +397,12 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   exportCostStructure(): void {
     console.log('Exporting cost structure for year:', this.year);
-    console.log('Financial Health:', this.financialMetrics().healthStatus, '-', this.financialMetrics().healthMessage);
+    console.log(
+      'Financial Health:',
+      this.financialMetrics().healthStatus,
+      '-',
+      this.financialMetrics().healthMessage
+    );
     // Implementation for PDF export functionality
     // This would integrate with your PDF service
   }

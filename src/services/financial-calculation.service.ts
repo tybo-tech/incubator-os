@@ -104,7 +104,7 @@ export class FinancialCalculationService {
     revenues: CompanyFinancialItem[] = [],
     assets: CompanyFinancialItem[] = [],
     liabilities: CompanyFinancialItem[] = [],
-    currency: string = 'USD'
+    currency: string = Constants.Currency
   ): FinancialMetrics {
 
     // Get base calculations
@@ -183,7 +183,7 @@ export class FinancialCalculationService {
    */
   generateFinancialSummary(
     calculations: FinancialCalculations,
-    currency: string = 'USD'
+    currency: string = Constants.Currency
   ): FinancialSummaryItem[] {
     return [
       {
@@ -226,7 +226,7 @@ export class FinancialCalculationService {
    */
   generateDirectCostSummary(
     calculations: FinancialCalculations,
-    currency: string = 'USD'
+    currency: string = Constants.Currency
   ): FinancialSummaryItem[] {
     return [
       {
@@ -260,7 +260,7 @@ export class FinancialCalculationService {
    */
   generateOperationalCostSummary(
     calculations: FinancialCalculations,
-    currency: string = 'USD'
+    currency: string = Constants.Currency
   ): FinancialSummaryItem[] {
     return [
       {
@@ -324,7 +324,7 @@ export class FinancialCalculationService {
       console.warn(`Invalid currency code: ${currency}, falling back to USD`);
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: Constants.Currency,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       }).format(value);
