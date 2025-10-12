@@ -38,6 +38,16 @@ export interface IDoughnutChart {
   }[];
 }
 
+export interface IPieChart {
+  labels: string[];
+  datasets: {
+    data: number[];
+    backgroundColor: string[];
+    borderColor?: string[];
+    borderWidth?: number;
+  }[];
+}
+
 // Initialize functions for default chart data
 export function initLineChart(): ILineChart {
   return {
@@ -97,6 +107,26 @@ export function initDoughnutChart(): IDoughnutChart {
         'rgba(255, 205, 86, 1)'
       ],
       borderWidth: 1
+    }]
+  };
+}
+
+export function initPieChart(): IPieChart {
+  return {
+    labels: ['Direct Costs', 'Operational Costs', 'Assets'],
+    datasets: [{
+      data: [45000, 30000, 25000],
+      backgroundColor: [
+        'rgba(239, 68, 68, 0.8)',   // Red for Direct Costs
+        'rgba(59, 130, 246, 0.8)',  // Blue for Operational Costs
+        'rgba(34, 197, 94, 0.8)'    // Green for Assets
+      ],
+      borderColor: [
+        'rgba(239, 68, 68, 1)',
+        'rgba(59, 130, 246, 1)',
+        'rgba(34, 197, 94, 1)'
+      ],
+      borderWidth: 2
     }]
   };
 }

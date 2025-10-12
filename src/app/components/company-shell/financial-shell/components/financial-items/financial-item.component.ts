@@ -10,6 +10,8 @@ import { Constants } from '../../../../../../services';
 import { FinancialItemTableComponent } from './financial-item-table.component';
 import { FinancialItemHeaderComponent } from './financial-item-header.component';
 import { FinancialItemSummaryInfoComponent } from './financial-item-summary-info.component';
+import { PieComponent } from '../../../../../charts/pie/pie.component';
+import { FinancialSectionHeaderComponent } from './financial-section-header.component';
 
 @Component({
   selector: 'app-financial-item',
@@ -20,17 +22,19 @@ import { FinancialItemSummaryInfoComponent } from './financial-item-summary-info
     FinancialItemTableComponent,
     FinancialItemHeaderComponent,
     FinancialItemSummaryInfoComponent,
+    PieComponent,
+    FinancialSectionHeaderComponent,
   ],
   template: `
     <div class="bg-white rounded-xl shadow-sm p-6 w-full">
       <!-- Page Header -->
-      <div class="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">Cost Structure</h2>
-        <div class="flex items-center gap-2">
-          <span class="text-gray-600 text-sm">Year:</span>
-          <div class="font-semibold text-gray-900">{{ year }}</div>
-        </div>
-      </div>
+      <app-financial-section-header
+        title="Cost Structure"
+        subtitle="Overview of direct and operational costs"
+        [year]="year"
+        icon="fas fa-sack-dollar"
+      >
+      </app-financial-section-header>
 
       <!-- Two-column grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -45,12 +49,7 @@ import { FinancialItemSummaryInfoComponent } from './financial-item-summary-info
           >
           </app-financial-item-header>
 
-          <!-- Chart Placeholder -->
-          <div
-            class="flex justify-center items-center bg-white border border-gray-200 rounded-lg h-48 mb-4"
-          >
-            <span class="text-gray-400 text-sm">[ Pie Chart Placeholder ]</span>
-          </div>
+          <app-pie componentTitle="Direct Costs"></app-pie>
 
           <!-- Summary Info -->
           <app-financial-item-summary-info
@@ -87,32 +86,30 @@ import { FinancialItemSummaryInfoComponent } from './financial-item-summary-info
           >
           </app-financial-item-header>
 
-          <!-- Chart Placeholder -->
-          <div
-            class="flex justify-center items-center bg-white border border-gray-200 rounded-lg h-48 mb-4"
-          >
-            <span class="text-gray-400 text-sm">[ Pie Chart Placeholder ]</span>
-          </div>
-
+          <app-pie componentTitle="Operational Costs"></app-pie>
           <!-- Summary Info -->
           <app-financial-item-summary-info
             [summary]="[
               { label: 'Revenue USD', value: 60000, currency: '$' },
-              { label: 'Gross Profit USD', value: 32000, currency: '$' }
+              { label: 'Operating Profit USD', value: 18000, currency: '$' }
             ]"
           >
           </app-financial-item-summary-info>
 
           <app-financial-item-table
-            title="Direct Costs"
+            title="Operational Costs"
             currency="USD"
             [items]="[
               {
-                name: 'Supplies',
-                amount: 2000,
-                note: 'Materials for training'
+                name: 'Marketing',
+                amount: 8000,
+                note: 'Advertising and promotion'
               },
-              { name: 'Direct labor', amount: 26000, note: 'Staff wages' }
+              {
+                name: 'Office Rent',
+                amount: 6000,
+                note: 'Monthly facility costs'
+              }
             ]"
           >
           </app-financial-item-table>

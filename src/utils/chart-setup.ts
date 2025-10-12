@@ -11,6 +11,7 @@ import {
   LineElement,
   Filler,
   DoughnutController,
+  PieController,
   BarController,
   LineController
 } from 'chart.js';
@@ -28,6 +29,7 @@ ChartJS.register(
   LineElement,
   Filler,
   DoughnutController,
+  PieController,
   BarController,
   LineController
 );
