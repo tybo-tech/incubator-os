@@ -433,9 +433,11 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
    */
   onAssetItemsChanged(items: FinancialTableItem[]) {
     // Track all changed items for bulk save
+    // Note: Skip items without IDs as they are handled by onAssetItemAdded
     items.forEach((item, index) => {
       const extendedItem = item as ExtendedFinancialTableItem;
       if (extendedItem._originalItem?.id) {
+        // Only track existing items (items with IDs from database)
         this.trackUnsavedChange(`asset_${extendedItem._originalItem.id}`, {
           ...extendedItem._originalItem,
           name: item.name,
@@ -444,6 +446,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
           categoryId: item.categoryId
         });
       }
+      // Skip new items (no ID) - they are handled by onAssetItemAdded
     });
   }
 
@@ -461,10 +464,10 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         note: item.note,
         categoryId: item.categoryId
       });
-    } else {
-      // New item without ID - track for creation
-      const tempKey = `asset_new_${index}_${Date.now()}`;
-      this.trackUnsavedChange(tempKey, {
+    } else if ((item as any)._tempKey) {
+      // New item with temp key - update the existing tracking entry
+      const tempKey = (item as any)._tempKey;
+      const trackedItem = {
         company_id: this.companyId,
         year_: this.year,
         item_type: 'asset',
@@ -472,14 +475,20 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         amount: item.amount,
         note: item.note,
         categoryId: item.categoryId
-      });
+      };
+      console.log('Updating asset item tracking with categoryId:', trackedItem.categoryId);
+      this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
 
   onAssetItemAdded(item: FinancialTableItem) {
     console.log('Asset item added:', item);
-    // For new items, track with temporary key
-    const tempKey = `asset_new_${Date.now()}`;
+    // For new items, track with timestamp-based key that can be updated later
+    const tempKey = `asset_new_${Date.now()}_${Math.random()}`;
+    // Store the key on the item for later reference
+    (item as any)._tempKey = tempKey;
+    
+    console.log('Creating new asset tracking with key:', tempKey);
     this.trackUnsavedChange(tempKey, {
       company_id: this.companyId,
       year_: this.year,
@@ -520,9 +529,11 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
   onLiabilityItemsChanged(items: FinancialTableItem[]) {
     console.log('Liability items changed:', items);
     // Track all changed items for bulk save
+    // Note: Skip items without IDs as they are handled by onLiabilityItemAdded
     items.forEach((item, index) => {
       const extendedItem = item as ExtendedFinancialTableItem;
       if (extendedItem._originalItem?.id) {
+        // Only track existing items (items with IDs from database)
         this.trackUnsavedChange(`liability_${extendedItem._originalItem.id}`, {
           ...extendedItem._originalItem,
           name: item.name,
@@ -531,6 +542,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
           categoryId: item.categoryId
         });
       }
+      // Skip new items (no ID) - they are handled by onLiabilityItemAdded
     });
   }
 
@@ -548,25 +560,18 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         note: item.note,
         categoryId: item.categoryId
       });
-    } else {
-      // New item without ID - track for creation
-      const tempKey = `liability_new_${index}_${Date.now()}`;
-      this.trackUnsavedChange(tempKey, {
-        company_id: this.companyId,
-        year_: this.year,
-        item_type: 'liability',
-        name: item.name,
-        amount: item.amount,
-        note: item.note,
-        categoryId: item.categoryId
-      });
     }
+    // Skip new items (no ID) - they are handled by onLiabilityItemAdded only
   }
 
   onLiabilityItemAdded(item: FinancialTableItem) {
     console.log('Liability item added:', item);
-    // For new items, track with temporary key
-    const tempKey = `liability_new_${Date.now()}`;
+    // For new items, track with timestamp-based key that can be updated later
+    const tempKey = `liability_new_${Date.now()}_${Math.random()}`;
+    // Store the key on the item for later reference
+    (item as any)._tempKey = tempKey;
+    
+    console.log('Creating new liability tracking with key:', tempKey);
     this.trackUnsavedChange(tempKey, {
       company_id: this.companyId,
       year_: this.year,

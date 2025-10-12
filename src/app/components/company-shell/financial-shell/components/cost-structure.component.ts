@@ -358,19 +358,8 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
    */
   onDirectCostItemsChanged(items: FinancialTableItem[]) {
     console.log('Direct cost items changed:', items);
-    // Track all changed items for bulk save
-    items.forEach((item, index) => {
-      const extendedItem = item as ExtendedFinancialTableItem;
-      if (extendedItem._originalItem?.id) {
-        this.trackUnsavedChange(`direct_cost_${extendedItem._originalItem.id}`, {
-          ...extendedItem._originalItem,
-          name: item.name,
-          amount: item.amount,
-          note: item.note,
-          categoryId: item.categoryId // Use frontend field name for bulk save mapping
-        });
-      }
-    });
+    // Note: Item tracking is handled by onDirectCostItemAdded and onDirectCostItemUpdated
+    // This prevents duplicate tracking entries
   }
 
   onDirectCostItemUpdated(event: {index: number, item: FinancialTableItem}) {
@@ -390,9 +379,9 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
       };
       console.log('Tracking existing item with categoryId:', trackedItem.categoryId); // Debug log
       this.trackUnsavedChange(`direct_cost_${extendedItem._originalItem.id}`, trackedItem);
-    } else {
-      // New item without ID - track for creation
-      const tempKey = `direct_cost_new_${index}_${Date.now()}`;
+    } else if ((item as any)._tempKey) {
+      // New item with temp key - update the existing tracking entry
+      const tempKey = (item as any)._tempKey;
       const trackedItem = {
         company_id: this.companyId,
         year_: this.year,
@@ -400,17 +389,20 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId // Use frontend field name for bulk save mapping
+        categoryId: item.categoryId
       };
-      console.log('Tracking new item with categoryId:', trackedItem.categoryId); // Debug log
+      console.log('Updating new item tracking with categoryId:', trackedItem.categoryId); // Debug log
       this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
 
   onDirectCostItemAdded(item: FinancialTableItem) {
     console.log('Direct cost item added:', item);
-    // For new items, track with temporary key
-    const tempKey = `direct_cost_new_${Date.now()}`;
+    // For new items, track with timestamp-based key that can be updated later
+    const tempKey = `direct_cost_new_${Date.now()}_${Math.random()}`;
+    // Store the key on the item for later reference
+    (item as any)._tempKey = tempKey;
+
     this.trackUnsavedChange(tempKey, {
       company_id: this.companyId,
       year_: this.year,
@@ -449,19 +441,8 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
    */
   onOperationalCostItemsChanged(items: FinancialTableItem[]) {
     console.log('Operational cost items changed:', items);
-    // Track all changed items for bulk save
-    items.forEach((item, index) => {
-      const extendedItem = item as ExtendedFinancialTableItem;
-      if (extendedItem._originalItem?.id) {
-        this.trackUnsavedChange(`operational_cost_${extendedItem._originalItem.id}`, {
-          ...extendedItem._originalItem,
-          name: item.name,
-          amount: item.amount,
-          note: item.note,
-          categoryId: item.categoryId // Use frontend field name for bulk save mapping
-        });
-      }
-    });
+    // Note: Item tracking is handled by onOperationalCostItemAdded and onOperationalCostItemUpdated
+    // This prevents duplicate tracking entries
   }
 
   onOperationalCostItemUpdated(event: {index: number, item: FinancialTableItem}) {
@@ -478,25 +459,31 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
         note: item.note,
         categoryId: item.categoryId // Use frontend field name for bulk save mapping
       });
-    } else {
-      // New item without ID - track for creation
-      const tempKey = `operational_cost_new_${index}_${Date.now()}`;
-      this.trackUnsavedChange(tempKey, {
+    } else if ((item as any)._tempKey) {
+      // New item with temp key - update the existing tracking entry
+      const tempKey = (item as any)._tempKey;
+      const trackedItem = {
         company_id: this.companyId,
         year_: this.year,
         item_type: 'operational_cost',
         name: item.name,
         amount: item.amount,
         note: item.note,
-        categoryId: item.categoryId // Use frontend field name for bulk save mapping
-      });
+        categoryId: item.categoryId
+      };
+      console.log('Updating operational cost item tracking with categoryId:', trackedItem.categoryId);
+      this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
 
   onOperationalCostItemAdded(item: FinancialTableItem) {
     console.log('Operational cost item added:', item);
-    // For new items, track with temporary key
-    const tempKey = `operational_cost_new_${Date.now()}`;
+    // For new items, track with timestamp-based key that can be updated later
+    const tempKey = `operational_cost_new_${Date.now()}_${Math.random()}`;
+    // Store the key on the item for later reference
+    (item as any)._tempKey = tempKey;
+
+    console.log('Creating new operational cost tracking with key:', tempKey);
     this.trackUnsavedChange(tempKey, {
       company_id: this.companyId,
       year_: this.year,
