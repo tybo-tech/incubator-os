@@ -3,28 +3,28 @@ import { FinancialBaseComponent } from '../app/components/company-shell/financia
 
 /**
  * 🏗️ Financial Domain Registry
- * 
+ *
  * Central registry for dynamic loading and management of financial domain components.
  * This is the core of our enterprise financial architecture that enables:
- * 
+ *
  * - Dynamic component loading in dashboards
  * - Runtime discovery of available financial modules
  * - Extensible architecture for new financial domains
  * - Multi-tenant financial module management
- * 
+ *
  * Usage:
  * ```typescript
  * // Register a domain
  * registry.register('balance_sheet', BalanceSheetComponent);
- * 
+ *
  * // Load dynamically in dashboard
  * const componentType = registry.get('balance_sheet');
  * viewContainerRef.createComponent(componentType);
- * 
+ *
  * // List all available domains
  * const domains = registry.list();
  * ```
- * 
+ *
  * This pattern matches enterprise systems like SAP Fiori and Odoo's modular core.
  */
 @Injectable({
@@ -113,7 +113,7 @@ export interface FinancialDomainDefinition {
  * 📊 Financial Domain Categories
  * Logical groupings for financial modules
  */
-export type FinancialDomainCategory = 
+export type FinancialDomainCategory =
   | 'financial_statements'  // Balance Sheet, P&L, Cash Flow
   | 'cost_analysis'        // Cost Structure, Expense Analysis
   | 'revenue_analysis'     // Revenue Breakdown, Sales Analysis

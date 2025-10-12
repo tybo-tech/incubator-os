@@ -298,14 +298,36 @@ export class FinancialCalculationService {
 
   /**
    * Format currency values for display
+   * Handles invalid currency codes gracefully
    */
   formatCurrency(value: number, currency: string = 'USD'): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
+    // Map common invalid currency codes to valid ones
+    const currencyMap: Record<string, string> = {
+      'R': 'ZAR',     // South African Rand
+      'rand': 'ZAR',
+      'RAND': 'ZAR'
+    };
+
+    // Use mapped currency or original if valid
+    const validCurrency = currencyMap[currency] || currency;
+
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: validCurrency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
+    } catch (error) {
+      // Fallback to USD if currency is invalid
+      console.warn(`Invalid currency code: ${currency}, falling back to USD`);
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
+    }
   }
 
   /**
@@ -409,7 +431,7 @@ export class FinancialCalculationService {
    * Essential for trend analysis and performance tracking
    */
   calculateYearOverYearGrowth(
-    current: FinancialMetrics, 
+    current: FinancialMetrics,
     previous: FinancialMetrics
   ): FinancialTrendAnalysis {
     const revenueGrowth = this.calculateGrowthRate(current.totalRevenue, previous.totalRevenue);
@@ -488,7 +510,7 @@ export class FinancialCalculationService {
     }
 
     const averageGrowthRate = growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length;
-    
+
     // Calculate volatility (standard deviation of growth rates)
     const variance = growthRates.reduce((sum, rate) => sum + Math.pow(rate - averageGrowthRate, 2), 0) / growthRates.length;
     const volatilityScore = Math.sqrt(variance);
@@ -504,10 +526,10 @@ export class FinancialCalculationService {
     }
 
     // Find best and worst periods
-    const bestPeriod = periods.reduce((best, current) => 
+    const bestPeriod = periods.reduce((best, current) =>
       current.operatingProfit > best.operatingProfit ? current : best
     );
-    const worstPeriod = periods.reduce((worst, current) => 
+    const worstPeriod = periods.reduce((worst, current) =>
       current.operatingProfit < worst.operatingProfit ? current : worst
     );
 

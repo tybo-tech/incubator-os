@@ -6,10 +6,10 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
 
 /**
  * 🏦 Financial Dashboard Component
- * 
+ *
  * Enterprise financial cockpit that provides a unified view of all financial domains.
  * This is the "CFO Assistant" - a comprehensive financial analysis center.
- * 
+ *
  * Features:
  * - Dynamic loading of registered financial domain components
  * - Real-time financial metrics aggregation
@@ -17,10 +17,10 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
  * - Executive summary view
  * - Configurable domain layout
  * - Multi-company and multi-period support
- * 
+ *
  * Architecture:
  * Financial Dashboard → Domain Registry → Individual Domain Components
- * 
+ *
  * This follows the same pattern as SAP Fiori Launchpad and Odoo's dashboard system.
  */
 @Component({
@@ -41,14 +41,14 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
               {{ subtitle || 'Comprehensive financial analysis and reporting center' }}
             </p>
           </div>
-          
+
           <!-- Dashboard Controls -->
           <div class="flex items-center space-x-4">
-            <select [(ngModel)]="selectedYear" (change)="onYearChanged()" 
+            <select [(ngModel)]="selectedYear" (change)="onYearChanged()"
                     class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
               <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
             </select>
-            
+
             <select [(ngModel)]="selectedCurrency" (change)="onCurrencyChanged()"
                     class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
               <option value="USD">USD ($)</option>
@@ -56,8 +56,8 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
               <option value="GBP">GBP (£)</option>
               <option value="ZAR">ZAR (R)</option>
             </select>
-            
-            <button (click)="refreshAllDomains()" 
+
+            <button (click)="refreshAllDomains()"
                     class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
               <i class="fas fa-sync-alt mr-2"></i>Refresh
             </button>
@@ -133,7 +133,7 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
         <div class="flex items-center space-x-1 bg-white rounded-lg p-1 shadow-sm border border-gray-200">
           <button *ngFor="let category of domainCategories; let i = index"
                   (click)="selectedCategory = category"
-                  [class]="selectedCategory === category ? 
+                  [class]="selectedCategory === category ?
                     'bg-blue-600 text-white' : 'text-gray-600 hover:text-gray-900'"
                   class="px-4 py-2 rounded-md text-sm font-medium transition-colors">
             {{ getCategoryDisplayName(category) }}
@@ -143,9 +143,9 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
 
       <!-- Financial Domain Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        <div *ngFor="let domain of getDomainsForCategory(selectedCategory)" 
+        <div *ngFor="let domain of getDomainsForCategory(selectedCategory)"
              class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          
+
           <!-- Domain Header -->
           <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -170,12 +170,12 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
             <div class="space-y-4">
               <div class="flex justify-between items-center">
                 <span class="text-sm text-gray-600">Status:</span>
-                <span class="px-2 py-1 text-xs rounded-full" 
+                <span class="px-2 py-1 text-xs rounded-full"
                       [class]="domain.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
                   {{ domain.isEnabled ? 'Active' : 'Inactive' }}
                 </span>
               </div>
-              
+
               <!-- Placeholder for domain-specific metrics -->
               <div class="text-center py-8 text-gray-500">
                 <i [class]="domain.icon + ' text-4xl mb-2'"></i>
@@ -195,17 +195,17 @@ import { FinancialCalculationService, FinancialMetrics } from '../../../../servi
             <i class="fas fa-file-pdf text-red-600 mr-2"></i>
             <span class="text-sm font-medium">Export PDF</span>
           </button>
-          
+
           <button class="flex items-center justify-center px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
             <i class="fas fa-file-excel text-green-600 mr-2"></i>
             <span class="text-sm font-medium">Export Excel</span>
           </button>
-          
+
           <button class="flex items-center justify-center px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
             <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
             <span class="text-sm font-medium">Schedule Report</span>
           </button>
-          
+
           <button class="flex items-center justify-center px-4 py-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
             <i class="fas fa-cog text-gray-600 mr-2"></i>
             <span class="text-sm font-medium">Settings</span>
@@ -251,7 +251,7 @@ export class FinancialDashboardComponent implements OnInit {
   initializeDashboard() {
     // Initialize core financial domains if not already registered
     this.domainRegistry.initializeCoreDomains();
-    
+
     console.log('🏦 Financial Dashboard initialized');
     console.log('📊 Available domains:', this.domainRegistry.list());
   }
