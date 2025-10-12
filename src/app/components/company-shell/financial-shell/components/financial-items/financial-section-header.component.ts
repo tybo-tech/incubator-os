@@ -21,12 +21,25 @@ import { CommonModule } from '@angular/common';
     </div>
   </div>
 
-  @if (year) {
-    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md">
-      <span class="text-gray-600 text-sm">Year:</span>
-      <div class="font-semibold text-gray-900">{{ year }}</div>
-    </div>
-  }
+  <div class="flex items-center gap-3">
+    @if (year) {
+      <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md">
+        <span class="text-gray-600 text-sm">Year:</span>
+        <div class="font-semibold text-gray-900">{{ year }}</div>
+      </div>
+    }
+
+    @if (actionLabel) {
+      <button
+        type="button"
+        (click)="onAction.emit()"
+        class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-3 py-2 rounded-md transition-all flex items-center gap-2"
+      >
+        <i *ngIf="actionIcon" [class]="actionIcon"></i>
+        {{ actionLabel }}
+      </button>
+    }
+  </div>
 </div>
   `,
 })
@@ -43,6 +56,12 @@ export class FinancialSectionHeaderComponent {
   /** Optional icon class (e.g., "fas fa-chart-line") */
   @Input() icon?: string;
 
-  /** Optional future event, e.g., for Add or Refresh buttons */
+  /** Optional action button label (e.g., "Export", "Add", "Refresh") */
+  @Input() actionLabel?: string;
+
+  /** Optional action button icon (e.g., "fas fa-file-export") */
+  @Input() actionIcon?: string;
+
+  /** Event emitter for action button clicks */
   @Output() onAction = new EventEmitter<void>();
 }

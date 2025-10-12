@@ -33,6 +33,9 @@ import { FinancialSectionHeaderComponent } from './financial-section-header.comp
         subtitle="Overview of direct and operational costs"
         [year]="year"
         icon="fas fa-sack-dollar"
+        actionLabel="Export PDF"
+        actionIcon="fas fa-file-export"
+        (onAction)="exportCostStructure()"
       >
       </app-financial-section-header>
 
@@ -238,5 +241,11 @@ export class FinancialItemComponent implements OnInit {
 
   trackByItemId(index: number, item: CompanyFinancialItem): number {
     return item.id ?? index;
+  }
+
+  exportCostStructure(): void {
+    console.log('Exporting cost structure for year:', this.year);
+    // Implementation for PDF export functionality
+    // This would integrate with your PDF service
   }
 }
