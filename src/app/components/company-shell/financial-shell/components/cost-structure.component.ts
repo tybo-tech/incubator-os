@@ -30,7 +30,7 @@ import {
   imports: [
     CommonModule,
     FinancialItemTableComponent,
-    FinancialItemSummaryInfoComponent,
+    // FinancialItemSummaryInfoComponent,
     FinancialItemHeaderComponent,
     PieComponent,
     FinancialSectionHeaderComponent,

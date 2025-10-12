@@ -19,7 +19,10 @@ import { CompanyFinancialItemService } from '../../../../../services/company-fin
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
 import { IPieChart } from '../../../../../models/Charts';
 import { FinancialChartService } from '../services/financial-chart.service';
-import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../services/financial-item-handler.service';
+import {
+  FinancialItemHandlerService,
+  ExtendedFinancialTableItem,
+} from '../services/financial-item-handler.service';
 
 /**
  * 🏦 Balance Sheet Component
@@ -44,7 +47,7 @@ import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../serv
   imports: [
     CommonModule,
     FinancialItemTableComponent,
-    FinancialItemSummaryInfoComponent,
+    // FinancialItemSummaryInfoComponent,
     FinancialItemHeaderComponent,
     PieComponent,
     FinancialSectionHeaderComponent,
@@ -325,12 +328,13 @@ export class BalanceSheetComponent
   );
 
   // Chart data using centralized chart service
-  assetChartData = computed((): IPieChart =>
-    this.chartService.generateAssetChartData(this.assetItems())
+  assetChartData = computed(
+    (): IPieChart => this.chartService.generateAssetChartData(this.assetItems())
   );
 
-  liabilityChartData = computed((): IPieChart =>
-    this.chartService.generateLiabilityChartData(this.liabilityItems())
+  liabilityChartData = computed(
+    (): IPieChart =>
+      this.chartService.generateLiabilityChartData(this.liabilityItems())
   );
 
   constructor(
@@ -341,7 +345,14 @@ export class BalanceSheetComponent
     chartService: FinancialChartService,
     itemHandler: FinancialItemHandlerService
   ) {
-    super(service, calculationService, route, contextService, chartService, itemHandler);
+    super(
+      service,
+      calculationService,
+      route,
+      contextService,
+      chartService,
+      itemHandler
+    );
   }
 
   ngOnInit() {
