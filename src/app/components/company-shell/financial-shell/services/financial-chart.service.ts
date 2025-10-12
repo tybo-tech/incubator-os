@@ -52,7 +52,15 @@ export class FinancialChartService {
 
     // Generate chart data from actual items
     const chartData = {
-      labels: items.map(item => item.name || itemNameFallback),
+      labels: items.map(item => {
+        const label = item.category_name || item.name || itemNameFallback;
+        console.log(`📊 Chart label for item:`, {
+          name: item.name,
+          category_name: item.category_name,
+          finalLabel: label
+        });
+        return label;
+      }),
       datasets: [{
         data: items.map(item => item.amount || 0),
         backgroundColor: this.generateColors(items.length, baseColor),

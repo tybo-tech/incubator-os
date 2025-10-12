@@ -147,7 +147,7 @@ final class CompanyFinancialItems
     {
         $sql = "SELECT cfi.*, c.name as category_name
                 FROM company_financial_items cfi
-                LEFT JOIN categories c ON cfi.category_id = c.id
+                LEFT JOIN financial_categories c ON cfi.category_id = c.id
                 WHERE cfi.company_id = :company_id";
         $params = [':company_id' => $companyId];
 
