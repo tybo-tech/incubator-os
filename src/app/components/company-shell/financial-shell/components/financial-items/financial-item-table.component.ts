@@ -174,6 +174,7 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
 
     // 🔄 Emit change events
     if (index !== undefined && item) {
+      console.log('Emitting itemUpdated with categoryId:', item.categoryId);
       this.itemUpdated.emit({ index, item });
     }
     this.itemsChanged.emit(this.list());
@@ -201,18 +202,24 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
   }
 
   onCategorySelected(item: FinancialTableItem, category: FinancialCategory | null) {
+    console.log('Category selected for item:', item);
+    console.log('Selected category:', category);
+
     const index = this.list().findIndex(listItem => listItem === item);
 
     if (category) {
       item.category = category;
       item.categoryId = category.id;
       item.name = category.name;
+      console.log('Set categoryId to:', item.categoryId);
     } else {
       item.category = undefined;
       item.categoryId = undefined;
       item.name = '';
+      console.log('Cleared categoryId');
     }
 
+    console.log('About to update row with item:', item);
     this.updateRow(index, item);
   }
 

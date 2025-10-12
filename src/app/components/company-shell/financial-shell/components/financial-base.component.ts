@@ -220,7 +220,12 @@ export abstract class FinancialBaseComponent implements OnInit {
 
       // Handle updates using bulk update API
       if (itemsToUpdate.length > 0) {
-        await this.financialService.bulkUpdateFinancialItems(itemsToUpdate).toPromise();
+        const itemsWithMappedFields = itemsToUpdate.map(item => ({
+          ...item,
+          category_id: item.categoryId || null // Map frontend categoryId to backend category_id
+        }));
+
+        await this.financialService.bulkUpdateFinancialItems(itemsWithMappedFields).toPromise();
         console.log(`✅ Successfully updated ${itemsToUpdate.length} items`);
       }
 
@@ -232,7 +237,8 @@ export abstract class FinancialBaseComponent implements OnInit {
           client_id: this.clientId,
           year_: this.year,
           program_id: this.programId,
-          cohort_id: this.cohortId
+          cohort_id: this.cohortId,
+          category_id: item.categoryId || null // Map frontend categoryId to backend category_id
         }));
 
         await this.financialService.bulkCreateFinancialItems(itemsWithContext).toPromise();

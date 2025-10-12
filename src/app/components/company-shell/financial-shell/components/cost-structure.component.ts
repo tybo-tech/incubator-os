@@ -375,17 +375,20 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   onDirectCostItemUpdated(event: {index: number, item: FinancialTableItem}) {
     console.log('Direct cost item updated:', event);
+    console.log('Item categoryId:', event.item.categoryId); // Debug log
     const { index, item } = event;
     const extendedItem = item as ExtendedFinancialTableItem;
 
     if (extendedItem._originalItem?.id) {
-      this.trackUnsavedChange(`direct_cost_${extendedItem._originalItem.id}`, {
+      const trackedItem = {
         ...extendedItem._originalItem,
         name: item.name,
         amount: item.amount,
         note: item.note,
         category_id: item.categoryId
-      });
+      };
+      console.log('Tracking item with category_id:', trackedItem.category_id); // Debug log
+      this.trackUnsavedChange(`direct_cost_${extendedItem._originalItem.id}`, trackedItem);
     }
   }
 
