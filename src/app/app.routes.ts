@@ -29,7 +29,6 @@ import { CompaniesListComponent } from './components/companies/companies-list.co
 import { IndustriesListComponent } from './admin/industries/industries-list.component';
 import { UsersListComponent } from './admin/users/users-list.component';
 import { ReportsOverviewComponent } from './admin/reports/reports-overview.component';
-import { FinancialItemComponent } from './components/company-shell/financial-shell/components/financial-items/financial-item.component';
 
 export const routes: Routes = [
   {
@@ -108,7 +107,7 @@ export const routes: Routes = [
               },
               {
                 path: 'cost-structure',
-                component: FinancialItemComponent,
+                component: CostStructureComponent,
               },
               {
                 path: 'balance-sheet',

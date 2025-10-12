@@ -14,6 +14,7 @@ import { FinancialCategoryService } from '../../../../services/financial-categor
         [(ngModel)]="selectedCategoryId"
         (ngModelChange)="onCategoryChange($event)"
         [disabled]="isLoading() || isCreating()"
+        aria-label="Select financial category"
         class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
         [class.opacity-50]="isLoading() || isCreating()"
       >
@@ -139,6 +140,8 @@ export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
         this.allCategories.set([]);
         this.categories.set([]);
         this.isLoading.set(false);
+        // Non-intrusive error handling for loading
+        console.warn('Categories could not be loaded. Please refresh the page or contact support if the issue persists.');
       }
     });
   }
@@ -231,6 +234,8 @@ export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
         },
         error: (error) => {
           console.error('Failed to create financial category:', error);
+          // User-friendly error message
+          alert('Error creating category. Please check your input and try again.');
           this.isSubmitting.set(false);
         }
       });
