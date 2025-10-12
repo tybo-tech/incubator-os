@@ -13,6 +13,24 @@ export interface FinancialCalculations {
   workingCapitalRatio: number;
 }
 
+/**
+ * 🎯 Clean computed interface for components
+ * Components get all calculations in one reactive object
+ */
+export interface FinancialMetrics extends FinancialCalculations {
+  // Formatted display values
+  formattedRevenue: string;
+  formattedGrossProfit: string;
+  formattedOperatingProfit: string;
+  formattedGrossMargin: string;
+  formattedOperatingMargin: string;
+
+  // Health indicators
+  healthStatus: 'excellent' | 'good' | 'warning' | 'critical';
+  healthMessage: string;
+  healthColor: string;
+}
+
 export interface FinancialSummaryItem {
   label: string;
   value: number;
@@ -37,9 +55,43 @@ export interface FinancialSummaryItem {
 export class FinancialCalculationService {
 
   /**
-   * Calculate comprehensive financial metrics from financial items
+   * 🎯 Enhanced method that returns everything components need
+   * Clean interface with calculations + formatting + health status
    */
   calculateFinancialMetrics(
+    directCosts: CompanyFinancialItem[],
+    operationalCosts: CompanyFinancialItem[],
+    revenues: CompanyFinancialItem[] = [],
+    assets: CompanyFinancialItem[] = [],
+    liabilities: CompanyFinancialItem[] = []
+  ): FinancialMetrics {
+
+    // Get base calculations
+    const calculations = this.calculateBaseFinancialMetrics(
+      directCosts, operationalCosts, revenues, assets, liabilities
+    );
+
+    // Get health status
+    const health = this.getFinancialHealthStatus(calculations);
+
+    // Return enhanced metrics with formatting and health
+    return {
+      ...calculations,
+      formattedRevenue: this.formatCurrency(calculations.totalRevenue),
+      formattedGrossProfit: this.formatCurrency(calculations.grossProfit),
+      formattedOperatingProfit: this.formatCurrency(calculations.operatingProfit),
+      formattedGrossMargin: this.formatPercentage(calculations.grossMargin),
+      formattedOperatingMargin: this.formatPercentage(calculations.operatingMargin),
+      healthStatus: health.status,
+      healthMessage: health.message,
+      healthColor: health.color
+    };
+  }
+
+  /**
+   * Base calculation method (renamed for clarity)
+   */
+  private calculateBaseFinancialMetrics(
     directCosts: CompanyFinancialItem[],
     operationalCosts: CompanyFinancialItem[],
     revenues: CompanyFinancialItem[] = [],

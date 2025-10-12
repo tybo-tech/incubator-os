@@ -4,9 +4,9 @@ import {
   FinancialItemType,
   CompanyFinancialItem,
 } from '../../../../../models/financial.models';
-import { Constants } from '../../../../../services';
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
+import { FinancialBaseComponent } from './financial-base.component';
 import { FinancialItemTableComponent, FinancialTableItem } from './financial-items/financial-item-table.component';
 import { FinancialItemSummaryInfoComponent } from './financial-items/financial-item-summary-info.component';
 import { FinancialItemHeaderComponent } from './financial-items/financial-item-header.component';
@@ -118,25 +118,22 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
     </div>
   `,
 })
-export class CostStructureComponent implements OnInit {
-  @Input() companyId!: number;
-  @Input() year!: number;
+export class CostStructureComponent extends FinancialBaseComponent implements OnInit {
   @Input() itemType!: FinancialItemType;
   @Input() title = '';
   @Input() subtitle = '';
-  currency = Constants.Currency;
 
-  // Real financial data from backend
+  // Specialized financial data signals for cost structure domain
   directCostItems = signal<CompanyFinancialItem[]>([]);
   operationalCostItems = signal<CompanyFinancialItem[]>([]);
   revenueItems = signal<CompanyFinancialItem[]>([]);
 
-  // Loading states
+  // Loading states for each data type
   isLoadingDirectCosts = signal(false);
   isLoadingOperationalCosts = signal(false);
   isLoadingRevenue = signal(false);
 
-  // Financial calculations using centralized service
+  // 🎯 Enhanced financial metrics using the clean interface
   financialMetrics = computed(() =>
     this.calculationService.calculateFinancialMetrics(
       this.directCostItems(),
@@ -145,7 +142,7 @@ export class CostStructureComponent implements OnInit {
     )
   );
 
-  // Summary data for display components
+  // Summary data for display components using enhanced metrics
   directCostSummary = computed(() =>
     this.calculationService.generateDirectCostSummary(this.financialMetrics(), this.currency)
   );
@@ -153,19 +150,6 @@ export class CostStructureComponent implements OnInit {
   operationalCostSummary = computed(() =>
     this.calculationService.generateOperationalCostSummary(this.financialMetrics(), this.currency)
   );
-
-  // Financial health status
-  financialHealth = computed(() =>
-    this.calculationService.getFinancialHealthStatus(this.financialMetrics())
-  );
-
-  // Legacy computed properties for backward compatibility (can be removed later)
-  totalDirectCosts = computed(() => this.financialMetrics().totalDirectCosts);
-  totalOperationalCosts = computed(() => this.financialMetrics().totalOperationalCosts);
-  totalRevenue = computed(() => this.financialMetrics().totalRevenue);
-  grossProfit = computed(() => this.financialMetrics().grossProfit);
-  operatingProfit = computed(() => this.financialMetrics().operatingProfit);
-  grossMargin = computed(() => this.financialMetrics().grossMargin);
 
   // Convert to table format for our reusable component
   directCostTableItems = computed((): FinancialTableItem[] =>
@@ -265,64 +249,30 @@ export class CostStructureComponent implements OnInit {
   });
 
   constructor(
-    private service: CompanyFinancialItemService,
-    private calculationService: FinancialCalculationService
-  ) {}
+    service: CompanyFinancialItemService,
+    calculationService: FinancialCalculationService
+  ) {
+    super(service, calculationService);
+  }
 
   ngOnInit() {
     this.loadFinancialData();
   }
 
   /**
-   * Load all financial data types for comprehensive cost structure analysis
+   * 🚀 Load all financial data types using standardized base methods
    */
   loadFinancialData() {
-    this.loadDirectCosts();
-    this.loadOperationalCosts();
+    this.loadItemsByType('direct_cost', this.directCostItems);
+    this.loadItemsByType('operational_cost', this.operationalCostItems);
     this.loadRevenue();
-  }
-
-  loadDirectCosts() {
-    this.isLoadingDirectCosts.set(true);
-    this.service
-      .listFinancialItemsByYearAndType(this.companyId, this.year, 'direct_cost')
-      .subscribe({
-        next: (data) => {
-          this.directCostItems.set(Array.isArray(data) ? data : []);
-          this.isLoadingDirectCosts.set(false);
-        },
-        error: (err) => {
-          console.error('Error loading direct costs', err);
-          this.directCostItems.set([]);
-          this.isLoadingDirectCosts.set(false);
-        },
-      });
-  }
-
-  loadOperationalCosts() {
-    this.isLoadingOperationalCosts.set(true);
-    this.service
-      .listFinancialItemsByYearAndType(this.companyId, this.year, 'operational_cost')
-      .subscribe({
-        next: (data) => {
-          this.operationalCostItems.set(Array.isArray(data) ? data : []);
-          this.isLoadingOperationalCosts.set(false);
-        },
-        error: (err) => {
-          console.error('Error loading operational costs', err);
-          this.operationalCostItems.set([]);
-          this.isLoadingOperationalCosts.set(false);
-        },
-      });
   }
 
   loadRevenue() {
     this.isLoadingRevenue.set(true);
-    // Note: If you have revenue as a separate item type, adjust accordingly
-    // For now, we'll calculate this from other financial data or set manually
-    // This demonstrates the architecture - you can extend this pattern
+    // TODO: Replace with actual revenue item type when available
+    // For now, we'll set example revenue data
     this.isLoadingRevenue.set(false);
-    // Set some example revenue data - replace with actual service call
     this.revenueItems.set([
       { id: 1, company_id: this.companyId, year_: this.year, item_type: 'asset',
         name: 'Service Revenue', amount: 60000, note: 'Main revenue stream' } as CompanyFinancialItem
@@ -330,81 +280,22 @@ export class CostStructureComponent implements OnInit {
   }
 
   /**
-   * Handle direct cost item changes from table component
+   * 🔄 Handle direct cost item changes using base persistence method
    */
   onDirectCostItemsChanged(items: FinancialTableItem[]) {
-    this.handleItemsChanged(items, 'direct_cost', this.directCostItems);
+    this.persistItemChanges(items, 'direct_cost', () => this.loadItemsByType('direct_cost', this.directCostItems));
   }
 
   /**
-   * Handle operational cost item changes from table component
+   * 🔄 Handle operational cost item changes using base persistence method
    */
   onOperationalCostItemsChanged(items: FinancialTableItem[]) {
-    this.handleItemsChanged(items, 'operational_cost', this.operationalCostItems);
-  }
-
-  /**
-   * Centralized method to handle item changes and persist to backend
-   */
-  private async handleItemsChanged(
-    tableItems: FinancialTableItem[],
-    itemType: 'direct_cost' | 'operational_cost',
-    targetSignal: any // Simplified type to avoid circular reference
-  ) {
-    const promises: Promise<CompanyFinancialItem | undefined>[] = [];
-
-    tableItems.forEach(tableItem => {
-      const originalItem = (tableItem as ExtendedFinancialTableItem)._originalItem as CompanyFinancialItem;
-
-      if (originalItem?.id) {
-        // Update existing item
-        const updateData: Partial<CompanyFinancialItem> = {
-          name: tableItem.name,
-          amount: tableItem.amount,
-          note: tableItem.note,
-          category_id: tableItem.categoryId
-        };
-
-        promises.push(
-          this.service.updateCompanyFinancialItem(originalItem.id, updateData).toPromise()
-        );
-      } else {
-        // Create new item
-        const newItem: Partial<CompanyFinancialItem> = {
-          company_id: this.companyId,
-          year_: this.year,
-          item_type: itemType,
-          name: tableItem.name,
-          amount: tableItem.amount,
-          note: tableItem.note,
-          category_id: tableItem.categoryId
-        };
-
-        promises.push(
-          this.service.addCompanyFinancialItem(newItem).toPromise()
-        );
-      }
-    });
-
-    // Wait for all updates/creates to complete, then refresh data
-    try {
-      await Promise.all(promises);
-
-      if (itemType === 'direct_cost') {
-        this.loadDirectCosts();
-      } else {
-        this.loadOperationalCosts();
-      }
-
-      // Refresh profit summary to keep everything in sync
-      this.service.refreshCompanyYearSummary(this.companyId, this.year).subscribe();
-    } catch (err) {
-      console.error(`Error updating ${itemType} items:`, err);
-    }
+    this.persistItemChanges(items, 'operational_cost', () => this.loadItemsByType('operational_cost', this.operationalCostItems));
   }
 
   exportCostStructure(): void {
     console.log('Exporting cost structure for year:', this.year);
+    console.log('Financial Health:', this.financialMetrics().healthStatus, '-', this.financialMetrics().healthMessage);
     // Implementation for PDF export functionality
     // This would integrate with your PDF service
   }
