@@ -1,10 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Constants } from '../../../../../../services/service';
 
 export interface SummaryInfo {
   label: string;
   value: number;
   currency?: string;
+  isPositive?: boolean;
 }
 
 @Component({
@@ -17,10 +19,10 @@ export interface SummaryInfo {
     <div class="bg-white border border-gray-200 rounded-md p-3">
       <p class="text-gray-500">{{ item.label }}</p>
       <p class="font-semibold text-gray-900">
-        @if (item.currency) {
+        @if (item.currency && item.currency !== 'items') {
           {{ item.currency }} {{ item.value | number:'1.0-0' }}
         } @else {
-          {{ item.value | number:'1.0-0' }}
+          {{ item.value | number:'1.0-0' }} {{ item.currency || '' }}
         }
       </p>
     </div>
@@ -30,7 +32,7 @@ export interface SummaryInfo {
 })
 export class FinancialItemSummaryInfoComponent {
   @Input() summary: SummaryInfo[] = [
-    { label: 'Revenue USD', value: 60000, currency: '$' },
-    { label: 'Gross Profit USD', value: 32000, currency: '$' },
+    { label: `Revenue ${Constants.Currency}`, value: 60000, currency: Constants.Currency },
+    { label: `Gross Profit ${Constants.Currency}`, value: 32000, currency: Constants.Currency },
   ];
 }

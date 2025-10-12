@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategoryDropdownComponent } from '../../../../shared/financial-category-dropdown/financial-category-dropdown.component';
 import { FinancialCategory } from '../../../../../../models/financial.models';
+import { Constants } from '../../../../../../services/service';
 
 export interface FinancialTableItem {
   name: string;
@@ -125,7 +126,7 @@ export interface FinancialTableItem {
 })
 export class FinancialItemTableComponent implements OnInit, OnChanges {
   @Input() title = 'Financial Items';
-  @Input() currency = 'USD';
+  @Input() currency = Constants.Currency; // Use centralized currency
   @Input() items: FinancialTableItem[] = [];
   @Input() itemType:
     | 'direct_cost'

@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { ICompany } from '../../../../../models/simple.schema';
 import { ICompanyFinancials } from '../../../../../services/company-financials.service';
+import { Constants } from '../../../../../services/service';
 
 interface QuarterlySummary {
   year: number;
@@ -284,13 +285,24 @@ export class BankStatementSummaryComponent implements OnInit, OnChanges {
   }
 
   formatCurrency(value: number): string {
-    if (isNaN(value) || value === 0) return 'R0';
+    if (isNaN(value) || value === 0) return `${this.getCurrencySymbol()}0`;
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: 'ZAR',
+      currency: Constants.Currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);
+  }
+
+  private getCurrencySymbol(): string {
+    // Return proper currency symbol based on Constants.Currency
+    switch (Constants.Currency) {
+      case 'ZAR': return 'R';
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      default: return Constants.Currency + ' ';
+    }
   }
 
   // Expose Math for template

@@ -307,6 +307,8 @@ export class CompanyRevenueSummaryService {
     } = options;
 
     return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: Constants.Currency,
       minimumFractionDigits: decimalPlaces,
       maximumFractionDigits: decimalPlaces
     }).format(value);

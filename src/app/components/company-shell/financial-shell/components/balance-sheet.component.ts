@@ -281,7 +281,7 @@ export class BalanceSheetComponent
       {
         label: 'Total Assets',
         value: totalAssets,
-        currency: '$',
+        currency: this.currency,
         isPositive: totalAssets > 0,
       },
       {
@@ -303,7 +303,7 @@ export class BalanceSheetComponent
       {
         label: 'Total Liabilities',
         value: totalLiabilities,
-        currency: '$',
+        currency: this.currency,
         isPositive: false, // Liabilities are generally displayed as negative/red
       },
       {

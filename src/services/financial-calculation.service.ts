@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CompanyFinancialItem } from '../models/financial.models';
+import { Constants } from './service';
 
 export interface FinancialCalculations {
   totalRevenue: number;
@@ -300,7 +301,7 @@ export class FinancialCalculationService {
    * Format currency values for display
    * Handles invalid currency codes gracefully
    */
-  formatCurrency(value: number, currency: string = 'USD'): string {
+  formatCurrency(value: number, currency: string = Constants.Currency): string {
     // Map common invalid currency codes to valid ones
     const currencyMap: Record<string, string> = {
       'R': 'ZAR',     // South African Rand
