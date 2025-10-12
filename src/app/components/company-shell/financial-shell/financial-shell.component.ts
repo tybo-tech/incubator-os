@@ -7,6 +7,7 @@ import {
   RouterLink,
   NavigationEnd,
 } from '@angular/router';
+import { ContextService } from '../../../../services/context.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -35,6 +36,7 @@ import { filter } from 'rxjs/operators';
             <a
               *ngFor="let tab of financialTabs"
               [routerLink]="[tab.route]"
+              [queryParams]="getQueryParams()"
               [class]="
                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' +
                 (isTabActive(tab.route)
@@ -58,6 +60,11 @@ import { filter } from 'rxjs/operators';
 })
 export class FinancialShellComponent implements OnInit {
   currentUrl = '';
+
+  // Query parameters to persist throughout financial navigation
+  clientId: number | null = null;
+  programId: number | null = null;
+  cohortId: number | null = null;
 
   financialTabs = [
     {
@@ -104,9 +111,26 @@ export class FinancialShellComponent implements OnInit {
     },
   ];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private contextService: ContextService
+  ) {}
 
   ngOnInit(): void {
+    // Subscribe to context changes
+    this.contextService.context$.subscribe(context => {
+      this.clientId = context.clientId;
+      this.programId = context.programId;
+      this.cohortId = context.cohortId;
+
+      console.log('FinancialShell - Context updated from service:', {
+        clientId: this.clientId,
+        programId: this.programId,
+        cohortId: this.cohortId
+      });
+    });
+
     // Track route changes for active tab highlighting
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -120,5 +144,12 @@ export class FinancialShellComponent implements OnInit {
 
   isTabActive(tabRoute: string): boolean {
     return this.currentUrl.includes(`/financials/${tabRoute}`);
+  }
+
+  /**
+   * Get current query parameters for child component navigation
+   */
+  getQueryParams(): any {
+    return this.contextService.getQueryParams();
   }
 }

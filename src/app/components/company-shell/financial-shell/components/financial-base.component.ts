@@ -2,6 +2,7 @@ import { Component, Input, signal, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
+import { ContextService } from '../../../../../services/context.service';
 import { CompanyFinancialItem, FinancialItemType } from '../../../../../models/financial.models';
 import { Constants } from '../../../../../services';
 
@@ -53,36 +54,34 @@ export abstract class FinancialBaseComponent implements OnInit {
   constructor(
     protected financialService: CompanyFinancialItemService,
     protected calculationService: FinancialCalculationService,
-    protected route: ActivatedRoute
+    protected route: ActivatedRoute,
+    protected contextService: ContextService
   ) {}
 
   abstract ngOnInit(): void;
 
   /**
-   * 🔧 Initialize client context from route parameters
-   * Call this from child component ngOnInit() if not using @Input for companyId
+   * 🔧 Initialize client context from route parameters or context service
+   * Call this from child component ngOnInit()
    */
   protected initializeContext(): void {
-    // Get companyId from route params if not provided via @Input
-    if (!this.companyId) {
-      const companyId = this.route.parent?.parent?.snapshot.params['id'];
-      if (companyId) {
-        this.companyId = parseInt(companyId, 10);
-      }
-    }
+    // Extract context from route and update context service
+    this.contextService.extractContextFromRoute(this.route);
 
-    // Extract required query parameters
-    const queryParams = this.route.parent?.parent?.snapshot.queryParams;
-    this.clientId = queryParams?.['clientId'] ? parseInt(queryParams['clientId'], 10) : 0;
-    this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
-    this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
+    // Subscribe to context changes
+    this.contextService.context$.subscribe(context => {
+      this.companyId = context.companyId || this.companyId;
+      this.clientId = context.clientId || 0;
+      this.programId = context.programId || 0;
+      this.cohortId = context.cohortId || 0;
 
-    console.log('FinancialBase - Context initialized:', {
-      companyId: this.companyId,
-      year: this.year,
-      clientId: this.clientId,
-      programId: this.programId,
-      cohortId: this.cohortId
+      console.log('FinancialBase - Context updated from service:', {
+        companyId: this.companyId,
+        year: this.year,
+        clientId: this.clientId,
+        programId: this.programId,
+        cohortId: this.cohortId
+      });
     });
   }
 

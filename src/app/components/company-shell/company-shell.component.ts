@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
 import { CompanyService } from '../../../services/company.service';
+import { ContextService } from '../../../services/context.service';
 import { ICompany } from '../../../models/simple.schema';
 import { filter } from 'rxjs/operators';
 
@@ -68,6 +69,7 @@ import { filter } from 'rxjs/operators';
             <a
               *ngFor="let tab of companyTabs"
               [routerLink]="[tab.route]"
+              [queryParams]="getQueryParams()"
               [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' +
                       (isTabActive(tab.route) ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
               <span class="flex items-center space-x-2">
@@ -95,6 +97,11 @@ export class CompanyShellComponent implements OnInit {
   companyName = 'Company Management';
   companyInitial = 'C';
   currentUrl = '';
+
+  // Query parameters to persist throughout navigation
+  clientId: number | null = null;
+  programId: number | null = null;
+  cohortId: number | null = null;
 
   companyTabs = [
     {
@@ -137,16 +144,33 @@ export class CompanyShellComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private companyService: CompanyService
+    private companyService: CompanyService,
+    private contextService: ContextService
   ) {}
 
   ngOnInit(): void {
+    // Initialize context from route
+    this.contextService.extractContextFromRoute(this.route);
+
     // Get company ID from route parameters
     this.route.params.subscribe(params => {
       this.companyId = params['id'];
       if (this.companyId) {
         this.loadCompanyInfo();
       }
+    });
+
+    // Subscribe to context changes
+    this.contextService.context$.subscribe(context => {
+      this.clientId = context.clientId;
+      this.programId = context.programId;
+      this.cohortId = context.cohortId;
+
+      console.log('CompanyShell - Context updated from service:', {
+        clientId: this.clientId,
+        programId: this.programId,
+        cohortId: this.cohortId
+      });
     });
 
     // Track route changes for active tab highlighting
@@ -190,12 +214,24 @@ export class CompanyShellComponent implements OnInit {
   }
 
   navigateBack(): void {
-    this.router.navigate(['/companies']);
+    // Navigate back with preserved query parameters
+    if (this.clientId && this.programId && this.cohortId) {
+      this.router.navigate(['/clients', this.clientId, 'programs', this.programId, 'cohorts', this.cohortId]);
+    } else {
+      this.router.navigate(['/companies']);
+    }
   }
 
   isTabActive(tabRoute: string): boolean {
     if (!this.companyId) return false;
     const expectedPath = `/company/${this.companyId}/${tabRoute}`;
     return this.currentUrl.startsWith(expectedPath);
+  }
+
+  /**
+   * Get current query parameters for child component navigation
+   */
+  getQueryParams(): any {
+    return this.contextService.getQueryParams();
   }
 }
