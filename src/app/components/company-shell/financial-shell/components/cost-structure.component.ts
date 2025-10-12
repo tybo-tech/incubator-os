@@ -39,7 +39,7 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
         subtitle="Overview of direct and operational costs"
         [showYearSelector]="true"
         [selectedYear]="year"
-        [availableYears]="[2024, 2023, 2022, 2021, 2020]"
+        [availableYears]="availableYears"
         icon="fas fa-sack-dollar"
         actionLabel="Export PDF"
         actionIcon="fas fa-file-export"
@@ -164,6 +164,9 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
   @Input() itemType!: FinancialItemType;
   @Input() title = '';
   @Input() subtitle = '';
+
+  // Year selector options - dynamically includes current year
+  availableYears = this.generateAvailableYears();
 
   // Specialized financial data signals for cost structure domain
   directCostItems = signal<CompanyFinancialItem[]>([]);
@@ -497,16 +500,29 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
   }
 
   /**
+   * Generate available years for the year selector
+   * Always includes current year plus last 4 years
+   */
+  private generateAvailableYears(): number[] {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = 0; i < 5; i++) {
+      years.push(currentYear - i);
+    }
+    return years;
+  }
+
+  /**
    * Handle year change from header component
    * @param newYear The newly selected year
    */
   onYearChange(newYear: number): void {
     console.log('CostStructureComponent - Year changed from', this.year, 'to', newYear);
     this.year = newYear;
-    
+
     // Clear any unsaved changes when year changes
     this.clearUnsavedChanges();
-    
+
     // Reload data for the new year
     this.refreshData();
   }

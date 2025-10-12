@@ -26,8 +26,8 @@ import { FormsModule } from '@angular/forms';
     @if (showYearSelector) {
       <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md">
         <span class="text-gray-600 text-sm">Year:</span>
-        <select 
-          [(ngModel)]="selectedYear" 
+        <select
+          [(ngModel)]="selectedYear"
           (ngModelChange)="yearChange($event)"
           class="bg-transparent border-none outline-none font-semibold text-gray-900 text-sm cursor-pointer"
         >
