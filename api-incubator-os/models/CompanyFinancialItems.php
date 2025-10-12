@@ -134,7 +134,10 @@ final class CompanyFinancialItems
 
     public function getById(int $id): ?array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM company_financial_items WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT cfi.*, c.name as category_name
+                                      FROM company_financial_items cfi
+                                      LEFT JOIN categories c ON cfi.category_id = c.id
+                                      WHERE cfi.id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->cast($row) : null;
@@ -142,19 +145,22 @@ final class CompanyFinancialItems
 
     public function listByCompany(int $companyId, ?string $type = null, ?int $year = null): array
     {
-        $sql = "SELECT * FROM company_financial_items WHERE company_id = :company_id";
+        $sql = "SELECT cfi.*, c.name as category_name
+                FROM company_financial_items cfi
+                LEFT JOIN categories c ON cfi.category_id = c.id
+                WHERE cfi.company_id = :company_id";
         $params = [':company_id' => $companyId];
 
         if ($type) {
-            $sql .= " AND item_type = :type";
+            $sql .= " AND cfi.item_type = :type";
             $params[':type'] = strtolower($type);
         }
         if ($year) {
-            $sql .= " AND year_ = :year_";
+            $sql .= " AND cfi.year_ = :year_";
             $params[':year_'] = $year;
         }
 
-        $sql .= " ORDER BY year_ DESC, name ASC";
+        $sql .= " ORDER BY cfi.year_ DESC, cfi.name ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
 
@@ -163,19 +169,22 @@ final class CompanyFinancialItems
 
     public function listByType(string $type, ?int $companyId = null, ?int $year = null): array
     {
-        $sql = "SELECT * FROM company_financial_items WHERE item_type = :type";
+        $sql = "SELECT cfi.*, c.name as category_name
+                FROM company_financial_items cfi
+                LEFT JOIN categories c ON cfi.category_id = c.id
+                WHERE cfi.item_type = :type";
         $params = [':type' => strtolower($type)];
 
         if ($companyId) {
-            $sql .= " AND company_id = :company_id";
+            $sql .= " AND cfi.company_id = :company_id";
             $params[':company_id'] = $companyId;
         }
         if ($year) {
-            $sql .= " AND year_ = :year_";
+            $sql .= " AND cfi.year_ = :year_";
             $params[':year_'] = $year;
         }
 
-        $sql .= " ORDER BY name ASC";
+        $sql .= " ORDER BY cfi.name ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
 
