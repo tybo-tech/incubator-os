@@ -9,6 +9,7 @@ export * from './company.service';
 export * from './industry.service';
 export * from './user.service';
 export * from './company-financials.service';
+export * from './financial-calculation.service';
 
 // New Form System Services
 export * from './form.service';

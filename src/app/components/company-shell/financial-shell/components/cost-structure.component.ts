@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FinancialItemType,
@@ -6,11 +6,17 @@ import {
 } from '../../../../../models/financial.models';
 import { Constants } from '../../../../../services';
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
-import { FinancialItemTableComponent } from './financial-items/financial-item-table.component';
+import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
+import { FinancialItemTableComponent, FinancialTableItem } from './financial-items/financial-item-table.component';
 import { FinancialItemSummaryInfoComponent } from './financial-items/financial-item-summary-info.component';
 import { FinancialItemHeaderComponent } from './financial-items/financial-item-header.component';
 import { PieComponent } from '../../../../charts/pie/pie.component';
 import { FinancialSectionHeaderComponent } from './financial-items/financial-section-header.component';
+import { IPieChart } from '../../../../../models/Charts';
+
+export interface ExtendedFinancialTableItem extends FinancialTableItem {
+  _originalItem?: CompanyFinancialItem;
+}
 
 @Component({
   selector: 'app-cost-structure',
@@ -50,31 +56,24 @@ import { FinancialSectionHeaderComponent } from './financial-items/financial-sec
           >
           </app-financial-item-header>
 
-          <app-pie componentTitle="Direct Costs"></app-pie>
+          <app-pie
+            componentTitle="Direct Costs Breakdown"
+            [data]="directCostChartData()"
+          ></app-pie>
 
           <!-- Summary Info -->
           <app-financial-item-summary-info
-            [summary]="[
-              { label: 'Revenue USD', value: 60000, currency: '$' },
-              { label: 'Gross Profit USD', value: 32000, currency: '$' }
-            ]"
+            [summary]="directCostSummary()"
           >
           </app-financial-item-summary-info>
 
           <app-financial-item-table
             title="Direct Costs"
-            currency="USD"
+            [currency]="currency"
             itemType="direct_cost"
             [loadMultipleTypes]="true"
             [allowedTypes]="['direct_cost', 'operational_cost']"
-            [items]="[
-              {
-                name: 'Supplies',
-                amount: 2000,
-                note: 'Materials for training'
-              },
-              { name: 'Direct labor', amount: 26000, note: 'Staff wages' }
-            ]"
+            [items]="directCostTableItems()"
           >
           </app-financial-item-table>
         </div>
@@ -90,34 +89,23 @@ import { FinancialSectionHeaderComponent } from './financial-items/financial-sec
           >
           </app-financial-item-header>
 
-          <app-pie componentTitle="Operational Costs"></app-pie>
+          <app-pie
+            componentTitle="Operational Costs Breakdown"
+            [data]="operationalCostChartData()"
+          ></app-pie>
           <!-- Summary Info -->
           <app-financial-item-summary-info
-            [summary]="[
-              { label: 'Revenue USD', value: 60000, currency: '$' },
-              { label: 'Operating Profit USD', value: 18000, currency: '$' }
-            ]"
+            [summary]="operationalCostSummary()"
           >
           </app-financial-item-summary-info>
 
           <app-financial-item-table
             title="Operational Costs"
-            currency="USD"
+            [currency]="currency"
             itemType="operational_cost"
             [loadMultipleTypes]="true"
             [allowedTypes]="['direct_cost', 'operational_cost']"
-            [items]="[
-              {
-                name: 'Marketing',
-                amount: 8000,
-                note: 'Advertising and promotion'
-              },
-              {
-                name: 'Office Rent',
-                amount: 6000,
-                note: 'Monthly facility costs'
-              }
-            ]"
+            [items]="operationalCostTableItems()"
           >
           </app-financial-item-table>
         </div>
@@ -138,113 +126,281 @@ export class CostStructureComponent implements OnInit {
   @Input() subtitle = '';
   currency = Constants.Currency;
 
-  items = signal<CompanyFinancialItem[]>([]);
-  isLoading = signal(false);
-  totalAmount = signal(0);
+  // Real financial data from backend
+  directCostItems = signal<CompanyFinancialItem[]>([]);
+  operationalCostItems = signal<CompanyFinancialItem[]>([]);
+  revenueItems = signal<CompanyFinancialItem[]>([]);
 
-  constructor(private service: CompanyFinancialItemService) {}
+  // Loading states
+  isLoadingDirectCosts = signal(false);
+  isLoadingOperationalCosts = signal(false);
+  isLoadingRevenue = signal(false);
 
-  ngOnInit() {
-    this.loadItems();
-  }
+  // Financial calculations using centralized service
+  financialMetrics = computed(() =>
+    this.calculationService.calculateFinancialMetrics(
+      this.directCostItems(),
+      this.operationalCostItems(),
+      this.revenueItems()
+    )
+  );
 
-  loadItems() {
-    this.isLoading.set(true);
-    this.service
-      .listFinancialItemsByYearAndType(this.companyId, this.year, this.itemType)
-      .subscribe({
-        next: (data) => {
-          // Ensure we have a valid array
-          const itemsArray = Array.isArray(data) ? data : [];
-          this.items.set(itemsArray);
-          this.calculateTotal();
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Error loading financial items', err);
-          this.items.set([]); // Set empty array on error
-          this.totalAmount.set(0);
-          this.isLoading.set(false);
-        },
-      });
-  }
+  // Summary data for display components
+  directCostSummary = computed(() =>
+    this.calculationService.generateDirectCostSummary(this.financialMetrics(), this.currency)
+  );
 
-  addItem() {
-    const newItem: Partial<CompanyFinancialItem> = {
-      company_id: this.companyId,
-      year_: this.year,
-      item_type: this.itemType,
-      name: 'New Item',
-      amount: 0,
-      note: '',
-    };
+  operationalCostSummary = computed(() =>
+    this.calculationService.generateOperationalCostSummary(this.financialMetrics(), this.currency)
+  );
 
-    this.service.addCompanyFinancialItem(newItem).subscribe({
-      next: (res) => {
-        this.items.update((list) => {
-          const currentList = Array.isArray(list) ? list : [];
-          return [...currentList, res];
-        });
-        this.calculateTotal();
-      },
-      error: (err) => {
-        console.error('Error adding financial item', err);
-      },
-    });
-  }
+  // Financial health status
+  financialHealth = computed(() =>
+    this.calculationService.getFinancialHealthStatus(this.financialMetrics())
+  );
 
-  updateItem(item: CompanyFinancialItem) {
-    if (!item.id) return;
-    this.service
-      .updateCompanyFinancialItem(item.id, {
-        amount: item.amount,
-        note: item.note,
-        name: item.name,
-      })
-      .subscribe({
-        next: (res) => {
-          this.items.update((list) => {
-            const currentList = Array.isArray(list) ? list : [];
-            return currentList.map((i) => (i.id === item.id ? res : i));
-          });
-          this.calculateTotal();
-        },
-        error: (err) => {
-          console.error('Error updating financial item', err);
-        },
-      });
-  }
+  // Legacy computed properties for backward compatibility (can be removed later)
+  totalDirectCosts = computed(() => this.financialMetrics().totalDirectCosts);
+  totalOperationalCosts = computed(() => this.financialMetrics().totalOperationalCosts);
+  totalRevenue = computed(() => this.financialMetrics().totalRevenue);
+  grossProfit = computed(() => this.financialMetrics().grossProfit);
+  operatingProfit = computed(() => this.financialMetrics().operatingProfit);
+  grossMargin = computed(() => this.financialMetrics().grossMargin);
 
-  deleteItem(item: CompanyFinancialItem) {
-    if (!confirm(`Delete "${item.name}"?`) || !item.id) return;
-    this.service.deleteCompanyFinancialItem(item.id).subscribe({
-      next: () => {
-        this.items.update((list) => {
-          const currentList = Array.isArray(list) ? list : [];
-          return currentList.filter((i) => i.id !== item.id);
-        });
-        this.calculateTotal();
-      },
-      error: (err) => {
-        console.error('Error deleting financial item', err);
-      },
-    });
-  }
+  // Convert to table format for our reusable component
+  directCostTableItems = computed((): FinancialTableItem[] =>
+    this.directCostItems().map(item => ({
+      name: item.name || '',
+      amount: item.amount || 0,
+      note: item.note || '',
+      categoryId: item.category_id || undefined,
+      // Add reference to original item for updates
+      _originalItem: item
+    } as ExtendedFinancialTableItem))
+  );
 
-  calculateTotal() {
-    const currentItems = this.items();
-    // Safely check if items is an array before calling reduce
-    if (!Array.isArray(currentItems)) {
-      this.totalAmount.set(0);
-      return;
+  operationalCostTableItems = computed((): FinancialTableItem[] =>
+    this.operationalCostItems().map(item => ({
+      name: item.name || '',
+      amount: item.amount || 0,
+      note: item.note || '',
+      categoryId: item.category_id || undefined,
+      _originalItem: item
+    } as ExtendedFinancialTableItem))
+  );
+
+  // Chart data for pie charts - computed from real financial data
+  directCostChartData = computed((): IPieChart => {
+    const items = this.directCostItems();
+    if (items.length === 0) {
+      return {
+        labels: ['No direct costs yet'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
+          borderColor: ['rgba(156, 163, 175, 1)'],
+          borderWidth: 2
+        }]
+      };
     }
 
-    const total = currentItems.reduce((sum, i) => sum + (i.amount ?? 0), 0);
-    this.totalAmount.set(total);
+    return {
+      labels: items.map(item => item.name || 'Unnamed'),
+      datasets: [{
+        data: items.map(item => item.amount || 0),
+        backgroundColor: [
+          'rgba(239, 68, 68, 0.8)',   // Red
+          'rgba(245, 101, 101, 0.8)', // Light red
+          'rgba(252, 165, 165, 0.8)', // Very light red
+          'rgba(254, 202, 202, 0.8)', // Pink red
+          'rgba(190, 18, 60, 0.8)',   // Dark red
+        ],
+        borderColor: [
+          'rgba(239, 68, 68, 1)',
+          'rgba(245, 101, 101, 1)',
+          'rgba(252, 165, 165, 1)',
+          'rgba(254, 202, 202, 1)',
+          'rgba(190, 18, 60, 1)',
+        ],
+        borderWidth: 2
+      }]
+    };
+  });
+
+  operationalCostChartData = computed((): IPieChart => {
+    const items = this.operationalCostItems();
+    if (items.length === 0) {
+      return {
+        labels: ['No operational costs yet'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
+          borderColor: ['rgba(156, 163, 175, 1)'],
+          borderWidth: 2
+        }]
+      };
+    }
+
+    return {
+      labels: items.map(item => item.name || 'Unnamed'),
+      datasets: [{
+        data: items.map(item => item.amount || 0),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',  // Blue
+          'rgba(96, 165, 250, 0.8)',  // Light blue
+          'rgba(147, 197, 253, 0.8)', // Very light blue
+          'rgba(191, 219, 254, 0.8)', // Pale blue
+          'rgba(29, 78, 216, 0.8)',   // Dark blue
+        ],
+        borderColor: [
+          'rgba(59, 130, 246, 1)',
+          'rgba(96, 165, 250, 1)',
+          'rgba(147, 197, 253, 1)',
+          'rgba(191, 219, 254, 1)',
+          'rgba(29, 78, 216, 1)',
+        ],
+        borderWidth: 2
+      }]
+    };
+  });
+
+  constructor(
+    private service: CompanyFinancialItemService,
+    private calculationService: FinancialCalculationService
+  ) {}
+
+  ngOnInit() {
+    this.loadFinancialData();
   }
 
-  trackByItemId(index: number, item: CompanyFinancialItem): number {
-    return item.id ?? index;
+  /**
+   * Load all financial data types for comprehensive cost structure analysis
+   */
+  loadFinancialData() {
+    this.loadDirectCosts();
+    this.loadOperationalCosts();
+    this.loadRevenue();
+  }
+
+  loadDirectCosts() {
+    this.isLoadingDirectCosts.set(true);
+    this.service
+      .listFinancialItemsByYearAndType(this.companyId, this.year, 'direct_cost')
+      .subscribe({
+        next: (data) => {
+          this.directCostItems.set(Array.isArray(data) ? data : []);
+          this.isLoadingDirectCosts.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading direct costs', err);
+          this.directCostItems.set([]);
+          this.isLoadingDirectCosts.set(false);
+        },
+      });
+  }
+
+  loadOperationalCosts() {
+    this.isLoadingOperationalCosts.set(true);
+    this.service
+      .listFinancialItemsByYearAndType(this.companyId, this.year, 'operational_cost')
+      .subscribe({
+        next: (data) => {
+          this.operationalCostItems.set(Array.isArray(data) ? data : []);
+          this.isLoadingOperationalCosts.set(false);
+        },
+        error: (err) => {
+          console.error('Error loading operational costs', err);
+          this.operationalCostItems.set([]);
+          this.isLoadingOperationalCosts.set(false);
+        },
+      });
+  }
+
+  loadRevenue() {
+    this.isLoadingRevenue.set(true);
+    // Note: If you have revenue as a separate item type, adjust accordingly
+    // For now, we'll calculate this from other financial data or set manually
+    // This demonstrates the architecture - you can extend this pattern
+    this.isLoadingRevenue.set(false);
+    // Set some example revenue data - replace with actual service call
+    this.revenueItems.set([
+      { id: 1, company_id: this.companyId, year_: this.year, item_type: 'asset',
+        name: 'Service Revenue', amount: 60000, note: 'Main revenue stream' } as CompanyFinancialItem
+    ]);
+  }
+
+  /**
+   * Handle direct cost item changes from table component
+   */
+  onDirectCostItemsChanged(items: FinancialTableItem[]) {
+    this.handleItemsChanged(items, 'direct_cost', this.directCostItems);
+  }
+
+  /**
+   * Handle operational cost item changes from table component
+   */
+  onOperationalCostItemsChanged(items: FinancialTableItem[]) {
+    this.handleItemsChanged(items, 'operational_cost', this.operationalCostItems);
+  }
+
+  /**
+   * Centralized method to handle item changes and persist to backend
+   */
+  private async handleItemsChanged(
+    tableItems: FinancialTableItem[],
+    itemType: 'direct_cost' | 'operational_cost',
+    targetSignal: any // Simplified type to avoid circular reference
+  ) {
+    const promises: Promise<CompanyFinancialItem | undefined>[] = [];
+
+    tableItems.forEach(tableItem => {
+      const originalItem = (tableItem as ExtendedFinancialTableItem)._originalItem as CompanyFinancialItem;
+
+      if (originalItem?.id) {
+        // Update existing item
+        const updateData: Partial<CompanyFinancialItem> = {
+          name: tableItem.name,
+          amount: tableItem.amount,
+          note: tableItem.note,
+          category_id: tableItem.categoryId
+        };
+
+        promises.push(
+          this.service.updateCompanyFinancialItem(originalItem.id, updateData).toPromise()
+        );
+      } else {
+        // Create new item
+        const newItem: Partial<CompanyFinancialItem> = {
+          company_id: this.companyId,
+          year_: this.year,
+          item_type: itemType,
+          name: tableItem.name,
+          amount: tableItem.amount,
+          note: tableItem.note,
+          category_id: tableItem.categoryId
+        };
+
+        promises.push(
+          this.service.addCompanyFinancialItem(newItem).toPromise()
+        );
+      }
+    });
+
+    // Wait for all updates/creates to complete, then refresh data
+    try {
+      await Promise.all(promises);
+
+      if (itemType === 'direct_cost') {
+        this.loadDirectCosts();
+      } else {
+        this.loadOperationalCosts();
+      }
+
+      // Refresh profit summary to keep everything in sync
+      this.service.refreshCompanyYearSummary(this.companyId, this.year).subscribe();
+    } catch (err) {
+      console.error(`Error updating ${itemType} items:`, err);
+    }
   }
 
   exportCostStructure(): void {
