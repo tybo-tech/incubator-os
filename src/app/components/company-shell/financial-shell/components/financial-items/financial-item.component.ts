@@ -66,6 +66,7 @@ import { FinancialSectionHeaderComponent } from './financial-section-header.comp
           <app-financial-item-table
             title="Direct Costs"
             currency="USD"
+            itemType="direct_cost"
             [items]="[
               {
                 name: 'Supplies',
@@ -102,6 +103,7 @@ import { FinancialSectionHeaderComponent } from './financial-section-header.comp
           <app-financial-item-table
             title="Operational Costs"
             currency="USD"
+            itemType="operational_cost"
             [items]="[
               {
                 name: 'Marketing',

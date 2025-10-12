@@ -1,17 +1,21 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FinancialCategoryDropdownComponent } from '../../../../shared/financial-category-dropdown/financial-category-dropdown.component';
+import { FinancialCategory } from '../../../../../../models/financial.models';
 
 export interface FinancialTableItem {
   name: string;
   amount: number;
   note?: string;
+  category?: FinancialCategory;
+  categoryId?: number;
 }
 
 @Component({
   selector: 'app-financial-item-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FinancialCategoryDropdownComponent],
   template: `
     <div
       class="w-full bg-white rounded-lg border border-gray-200 overflow-hidden"
@@ -38,7 +42,7 @@ export interface FinancialTableItem {
         <div
           class="grid grid-cols-[2fr_1fr_2fr_auto] gap-3 bg-gray-100 text-gray-700 font-semibold px-4 py-2"
         >
-          <div>Name</div>
+          <div>Category</div>
           <div class="text-right">{{ currency }}</div>
           <div>Note</div>
           <div></div>
@@ -50,13 +54,13 @@ export interface FinancialTableItem {
         <div
           class="grid grid-cols-[2fr_1fr_2fr_auto] gap-3 items-center px-4 py-2 hover:bg-gray-50 transition"
         >
-          <!-- Name -->
-          <input
-            type="text"
-            [(ngModel)]="item.name"
-            (blur)="updateRow()"
-            class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+          <!-- Category Dropdown -->
+          <app-financial-category-dropdown
+            [itemType]="itemType"
+            [selectedCategoryId]="item.categoryId || null"
+            (categorySelected)="onCategorySelected(item, $event)"
+            (categoryCreated)="onCategoryCreated($event)"
+          ></app-financial-category-dropdown>
 
           <!-- Amount -->
           <input
@@ -112,6 +116,7 @@ export class FinancialItemTableComponent implements OnInit {
   @Input() title = 'Financial Items';
   @Input() currency = 'USD';
   @Input() items: FinancialTableItem[] = [];
+  @Input() itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity' = 'direct_cost';
 
   list = signal<FinancialTableItem[]>([]);
   total = signal(0);
@@ -160,5 +165,24 @@ export class FinancialItemTableComponent implements OnInit {
 
   trackByIndex(index: number): number {
     return index;
+  }
+
+  onCategorySelected(item: FinancialTableItem, category: FinancialCategory | null) {
+    if (category) {
+      item.category = category;
+      item.categoryId = category.id;
+      item.name = category.name;
+    } else {
+      item.category = undefined;
+      item.categoryId = undefined;
+      item.name = '';
+    }
+    this.updateRow();
+  }
+
+  onCategoryCreated(newCategory: FinancialCategory) {
+    console.log('New category created:', newCategory);
+    // The dropdown component will handle adding it to the list
+    // This is just for logging or additional processing if needed
   }
 }
