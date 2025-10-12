@@ -1,10 +1,12 @@
-import { Component, Input, signal, OnInit } from '@angular/core';
+import { Component, Input, signal, OnInit, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
 import { ContextService } from '../../../../../services/context.service';
 import { CompanyFinancialItem, FinancialItemType } from '../../../../../models/financial.models';
 import { Constants } from '../../../../../services';
+import { FinancialChartService } from '../services/financial-chart.service';
+import { FinancialItemHandlerService, FinancialItemContext, FinancialItemHandlerCallbacks } from '../services/financial-item-handler.service';
 
 /**
  * 🏗️ Abstract Financial Base Component
@@ -51,11 +53,32 @@ export abstract class FinancialBaseComponent implements OnInit {
   // Shared data signals - can be specialized by extending components
   items = signal<CompanyFinancialItem[]>([]);
 
+  // 🎯 Common computed properties for financial context
+  financialContext = computed((): FinancialItemContext => ({
+    companyId: this.companyId,
+    year: this.year,
+    clientId: this.clientId,
+    programId: this.programId,
+    cohortId: this.cohortId
+  }));
+
+  // Year selector options - computed to avoid initialization issues
+  availableYears = computed(() => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = 0; i <= 4; i++) {
+      years.push(currentYear - i);
+    }
+    return years;
+  });
+
   constructor(
     protected financialService: CompanyFinancialItemService,
     protected calculationService: FinancialCalculationService,
     protected route: ActivatedRoute,
-    protected contextService: ContextService
+    protected contextService: ContextService,
+    protected chartService: FinancialChartService,
+    protected itemHandler: FinancialItemHandlerService
   ) {}
 
   abstract ngOnInit(): void;
@@ -153,6 +176,33 @@ export abstract class FinancialBaseComponent implements OnInit {
   protected refreshData(): void {
     // To be implemented by extending components
     this.ngOnInit();
+  }
+
+  /**
+   * 📅 Common year change handler
+   * Can be overridden by child components for specific behavior
+   */
+  protected onYearChange(newYear: number): void {
+    console.log(`${this.constructor.name} - Year changed from ${this.year} to ${newYear}`);
+    this.year = newYear;
+
+    // Clear any unsaved changes when year changes
+    this.clearUnsavedChanges();
+
+    // Reload data for the new year
+    this.refreshData();
+  }
+
+  /**
+   * 🎯 Common method to get item handler callbacks
+   * Provides standardized callbacks for CRUD operations
+   */
+  protected getItemHandlerCallbacks(): FinancialItemHandlerCallbacks {
+    return {
+      trackUnsavedChange: (key: string, item: any) => this.trackUnsavedChange(key, item),
+      removeUnsavedChange: (key: string) => this.removeUnsavedChange(key),
+      refreshItemsCallback: () => this.refreshData()
+    };
   }
 
   /**

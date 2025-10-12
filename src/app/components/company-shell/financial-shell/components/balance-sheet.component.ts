@@ -18,10 +18,8 @@ import { FinancialSectionHeaderComponent } from './financial-items/financial-sec
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
 import { IPieChart } from '../../../../../models/Charts';
-
-export interface ExtendedFinancialTableItem extends FinancialTableItem {
-  _originalItem?: CompanyFinancialItem;
-}
+import { FinancialChartService } from '../services/financial-chart.service';
+import { FinancialItemHandlerService, ExtendedFinancialTableItem } from '../services/financial-item-handler.service';
 
 /**
  * 🏦 Balance Sheet Component
@@ -59,7 +57,7 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
         subtitle="Assets, liabilities and equity overview"
         [showYearSelector]="true"
         [selectedYear]="year"
-        [availableYears]="availableYears"
+        [availableYears]="availableYears()"
         icon="fas fa-balance-scale"
         actionLabel="Export PDF"
         actionIcon="fas fa-file-export"
@@ -223,9 +221,6 @@ export class BalanceSheetComponent
   @Input() title = '';
   @Input() subtitle = '';
 
-  // Year selector options - dynamically includes current year
-  availableYears = this.generateAvailableYears();
-
   // Specialized financial data signals for balance sheet domain
   assetItems = signal<CompanyFinancialItem[]>([]);
   liabilityItems = signal<CompanyFinancialItem[]>([]);
@@ -320,122 +315,33 @@ export class BalanceSheetComponent
     ];
   });
 
-  // Convert to table format for our reusable component
+  // Convert to table format using centralized handler
   assetTableItems = computed((): FinancialTableItem[] =>
-    this.assetItems().map(
-      (item) =>
-        ({
-          name: item.name || '',
-          amount: item.amount || 0,
-          note: item.note || '',
-          categoryId: item.category_id || undefined,
-          // Add reference to original item for updates
-          _originalItem: item,
-        } as ExtendedFinancialTableItem)
-    )
+    this.itemHandler.convertToTableItems(this.assetItems())
   );
 
   liabilityTableItems = computed((): FinancialTableItem[] =>
-    this.liabilityItems().map(
-      (item) =>
-        ({
-          name: item.name || '',
-          amount: item.amount || 0,
-          note: item.note || '',
-          categoryId: item.category_id || undefined,
-          _originalItem: item,
-        } as ExtendedFinancialTableItem)
-    )
+    this.itemHandler.convertToTableItems(this.liabilityItems())
   );
 
-  // Chart data for pie charts - showing actual financial items and their amounts
-  assetChartData = computed((): IPieChart => {
-    const items = this.assetItems();
-    console.log('🔍 assetChartData computed - items:', items.length, items);
+  // Chart data using centralized chart service
+  assetChartData = computed((): IPieChart =>
+    this.chartService.generateAssetChartData(this.assetItems())
+  );
 
-    if (items.length === 0) {
-      console.log('📊 Returning empty state for assets chart');
-      return {
-        labels: ['No assets yet'],
-        datasets: [
-          {
-            data: [1],
-            backgroundColor: ['rgba(156, 163, 175, 0.8)'],
-            borderColor: ['rgba(156, 163, 175, 1)'],
-            borderWidth: 2,
-          },
-        ],
-      };
-    }
-
-    // Show actual items with their amounts
-    const chartData = {
-      labels: items.map((item) => item.name || 'Unnamed Item'),
-      datasets: [
-        {
-          data: items.map((item) => item.amount || 0),
-          backgroundColor: this.generateColors(items.length, 'green'),
-          borderColor: this.generateColors(items.length, 'green', true),
-          borderWidth: 2,
-        },
-      ],
-    };
-
-    console.log('📊 Returning populated chart data for assets:', {
-      labels: chartData.labels,
-      data: chartData.datasets[0].data,
-    });
-
-    return chartData;
-  });
-
-  liabilityChartData = computed((): IPieChart => {
-    const items = this.liabilityItems();
-    console.log('🔍 liabilityChartData computed - items:', items.length, items);
-
-    if (items.length === 0) {
-      console.log('📊 Returning empty state for liabilities chart');
-      return {
-        labels: ['No liabilities yet'],
-        datasets: [
-          {
-            data: [1],
-            backgroundColor: ['rgba(156, 163, 175, 0.8)'],
-            borderColor: ['rgba(156, 163, 175, 1)'],
-            borderWidth: 2,
-          },
-        ],
-      };
-    }
-
-    // Show actual items with their amounts
-    const chartData = {
-      labels: items.map((item) => item.name || 'Unnamed Item'),
-      datasets: [
-        {
-          data: items.map((item) => item.amount || 0),
-          backgroundColor: this.generateColors(items.length, 'red'),
-          borderColor: this.generateColors(items.length, 'red', true),
-          borderWidth: 2,
-        },
-      ],
-    };
-
-    console.log('📊 Returning populated chart data for liabilities:', {
-      labels: chartData.labels,
-      data: chartData.datasets[0].data,
-    });
-
-    return chartData;
-  });
+  liabilityChartData = computed((): IPieChart =>
+    this.chartService.generateLiabilityChartData(this.liabilityItems())
+  );
 
   constructor(
     service: CompanyFinancialItemService,
     calculationService: FinancialCalculationService,
     route: ActivatedRoute,
-    contextService: ContextService
+    contextService: ContextService,
+    chartService: FinancialChartService,
+    itemHandler: FinancialItemHandlerService
   ) {
-    super(service, calculationService, route, contextService);
+    super(service, calculationService, route, contextService, chartService, itemHandler);
   }
 
   ngOnInit() {
@@ -500,209 +406,76 @@ export class BalanceSheetComponent
   }
 
   /**
-   * 🔄 Handle asset item changes using base persistence method
+   * 🔄 Handle asset item changes using centralized handler
    */
   onAssetItemsChanged(items: FinancialTableItem[]) {
-    console.log('Asset items changed:', items);
-    // Note: Item tracking is handled by onAssetItemAdded and onAssetItemUpdated
-    // This prevents duplicate tracking entries
+    this.itemHandler.handleItemsChanged(items, 'asset');
   }
 
   onAssetItemUpdated(event: { index: number; item: FinancialTableItem }) {
-    const { index, item } = event;
-    console.log('Asset item updated:', item);
-    const extendedItem = item as ExtendedFinancialTableItem;
-
-    if (extendedItem._originalItem?.id) {
-      // Existing item with ID - track for update
-      this.trackUnsavedChange(`asset_${extendedItem._originalItem.id}`, {
-        ...extendedItem._originalItem,
-        name: item.name,
-        amount: item.amount,
-        note: item.note,
-        categoryId: item.categoryId,
-      });
-    } else if ((item as any)._tempKey) {
-      // New item with temp key - update the existing tracking entry
-      const tempKey = (item as any)._tempKey;
-      const trackedItem = {
-        company_id: this.companyId,
-        year_: this.year,
-        item_type: 'asset',
-        name: item.name,
-        amount: item.amount,
-        note: item.note,
-        categoryId: item.categoryId,
-      };
-      console.log(
-        'Updating asset item tracking with categoryId:',
-        trackedItem.categoryId
-      );
-      this.trackUnsavedChange(tempKey, trackedItem);
-    }
+    this.itemHandler.handleItemUpdated(
+      event,
+      'asset',
+      this.financialContext(),
+      this.getItemHandlerCallbacks()
+    );
   }
 
   onAssetItemAdded(item: FinancialTableItem) {
-    console.log('Asset item added:', item);
-    // For new items, track with timestamp-based key that can be updated later
-    const tempKey = `asset_new_${Date.now()}_${Math.random()}`;
-    // Store the key on the item for later reference
-    (item as any)._tempKey = tempKey;
-
-    console.log('Creating new asset tracking with key:', tempKey);
-    this.trackUnsavedChange(tempKey, {
-      company_id: this.companyId,
-      year_: this.year,
-      item_type: 'asset',
-      name: item.name,
-      amount: item.amount,
-      note: item.note,
-      categoryId: item.categoryId,
-    });
+    this.itemHandler.handleItemAdded(
+      item,
+      'asset',
+      this.financialContext(),
+      this.getItemHandlerCallbacks()
+    );
   }
 
   onAssetItemDeleted(event: { index: number; item: FinancialTableItem }) {
-    console.log('Asset item deleted:', event);
-    const { item } = event;
-    const extendedItem = item as ExtendedFinancialTableItem;
-
-    if (extendedItem._originalItem?.id) {
-      // Remove from unsaved changes if it was being tracked
-      this.removeUnsavedChange(`asset_${extendedItem._originalItem.id}`);
-
-      // Add to deletion queue or handle deletion immediately
-      // For now, we'll handle deletion immediately
-      if (extendedItem._originalItem.id) {
-        this.financialService
-          .deleteCompanyFinancialItem(extendedItem._originalItem.id)
-          .subscribe({
-            next: () => {
-              console.log('Asset deleted successfully');
-              this.loadItemsByType('asset', this.assetItems);
-            },
-            error: (err) => console.error('Error deleting asset:', err),
-          });
-      }
-    }
+    this.itemHandler.handleItemDeleted(
+      event,
+      'asset',
+      this.getItemHandlerCallbacks()
+    );
   }
 
   /**
-   * 🔄 Handle liability item changes using base persistence method
+   * 🔄 Handle liability item changes using centralized handler
    */
   onLiabilityItemsChanged(items: FinancialTableItem[]) {
-    console.log('Liability items changed:', items);
-    // Note: Item tracking is handled by onLiabilityItemAdded and onLiabilityItemUpdated
-    // This prevents duplicate tracking entries
+    this.itemHandler.handleItemsChanged(items, 'liability');
   }
 
   onLiabilityItemUpdated(event: { index: number; item: FinancialTableItem }) {
-    console.log('Liability item updated:', event);
-    const { index, item } = event;
-    const extendedItem = item as ExtendedFinancialTableItem;
-
-    if (extendedItem._originalItem?.id) {
-      // Existing item with ID - track for update
-      this.trackUnsavedChange(`liability_${extendedItem._originalItem.id}`, {
-        ...extendedItem._originalItem,
-        name: item.name,
-        amount: item.amount,
-        note: item.note,
-        categoryId: item.categoryId,
-      });
-    } else if ((item as any)._tempKey) {
-      // New item with temp key - update the existing tracking entry
-      const tempKey = (item as any)._tempKey;
-      const trackedItem = {
-        company_id: this.companyId,
-        year_: this.year,
-        item_type: 'liability',
-        name: item.name,
-        amount: item.amount,
-        note: item.note,
-        categoryId: item.categoryId,
-      };
-      console.log(
-        'Updating liability item tracking with categoryId:',
-        trackedItem.categoryId
-      );
-      this.trackUnsavedChange(tempKey, trackedItem);
-    }
+    this.itemHandler.handleItemUpdated(
+      event,
+      'liability',
+      this.financialContext(),
+      this.getItemHandlerCallbacks()
+    );
   }
 
   onLiabilityItemAdded(item: FinancialTableItem) {
-    console.log('Liability item added:', item);
-    // For new items, track with timestamp-based key that can be updated later
-    const tempKey = `liability_new_${Date.now()}_${Math.random()}`;
-    // Store the key on the item for later reference
-    (item as any)._tempKey = tempKey;
-
-    console.log('Creating new liability tracking with key:', tempKey);
-    this.trackUnsavedChange(tempKey, {
-      company_id: this.companyId,
-      year_: this.year,
-      item_type: 'liability',
-      name: item.name,
-      amount: item.amount,
-      note: item.note,
-      categoryId: item.categoryId,
-    });
+    this.itemHandler.handleItemAdded(
+      item,
+      'liability',
+      this.financialContext(),
+      this.getItemHandlerCallbacks()
+    );
   }
 
   onLiabilityItemDeleted(event: { index: number; item: FinancialTableItem }) {
-    console.log('Liability item deleted:', event);
-    const { item } = event;
-    const extendedItem = item as ExtendedFinancialTableItem;
-
-    if (extendedItem._originalItem?.id) {
-      // Remove from unsaved changes if it was being tracked
-      this.removeUnsavedChange(`liability_${extendedItem._originalItem.id}`);
-
-      // Handle deletion immediately
-      if (extendedItem._originalItem.id) {
-        this.financialService
-          .deleteCompanyFinancialItem(extendedItem._originalItem.id)
-          .subscribe({
-            next: () => {
-              console.log('Liability deleted successfully');
-              this.loadItemsByType('liability', this.liabilityItems);
-            },
-            error: (err) => console.error('Error deleting liability:', err),
-          });
-      }
-    }
-  }
-
-  /**
-   * Generate available years for the year selector
-   * Always includes current year plus last 4 years
-   */
-  private generateAvailableYears(): number[] {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = 0; i < 5; i++) {
-      years.push(currentYear - i);
-    }
-    return years;
-  }
-
-  /**
-   * Handle year change from header component
-   * @param newYear The newly selected year
-   */
-  onYearChange(newYear: number): void {
-    console.log(
-      'BalanceSheetComponent - Year changed from',
-      this.year,
-      'to',
-      newYear
+    this.itemHandler.handleItemDeleted(
+      event,
+      'liability',
+      this.getItemHandlerCallbacks()
     );
-    this.year = newYear;
+  }
 
-    // Clear any unsaved changes when year changes
-    this.clearUnsavedChanges();
-
-    // Reload data for the new year
-    this.refreshData();
+  /**
+   * Handle year change using base implementation
+   */
+  override onYearChange(newYear: number): void {
+    super.onYearChange(newYear);
   }
 
   exportBalanceSheet(): void {
@@ -716,55 +489,5 @@ export class BalanceSheetComponent
     );
     // Implementation for PDF export functionality
     // This would integrate with your PDF service
-  }
-
-  /**
-   *  Generate dynamic color palettes for pie charts
-   */
-  private generateColors(
-    count: number,
-    baseColor: 'green' | 'red' | 'blue',
-    isBorder = false
-  ): string[] {
-    const opacity = isBorder ? '1' : '0.8';
-
-    const colorPalettes = {
-      green: [
-        `rgba(34, 197, 94, ${opacity})`, // emerald-500
-        `rgba(74, 222, 128, ${opacity})`, // emerald-400
-        `rgba(134, 239, 172, ${opacity})`, // emerald-300
-        `rgba(187, 247, 208, ${opacity})`, // emerald-200
-        `rgba(21, 128, 61, ${opacity})`, // emerald-700
-        `rgba(5, 150, 105, ${opacity})`, // emerald-600
-        `rgba(16, 185, 129, ${opacity})`, // emerald-500 variant
-      ],
-      red: [
-        `rgba(239, 68, 68, ${opacity})`, // red-500
-        `rgba(248, 113, 113, ${opacity})`, // red-400
-        `rgba(252, 165, 165, ${opacity})`, // red-300
-        `rgba(254, 202, 202, ${opacity})`, // red-200
-        `rgba(185, 28, 28, ${opacity})`, // red-700
-        `rgba(220, 38, 38, ${opacity})`, // red-600
-        `rgba(239, 68, 68, ${opacity})`, // red-500 variant
-      ],
-      blue: [
-        `rgba(59, 130, 246, ${opacity})`, // blue-500
-        `rgba(96, 165, 250, ${opacity})`, // blue-400
-        `rgba(147, 197, 253, ${opacity})`, // blue-300
-        `rgba(191, 219, 254, ${opacity})`, // blue-200
-        `rgba(29, 78, 216, ${opacity})`, // blue-700
-        `rgba(37, 99, 235, ${opacity})`, // blue-600
-        `rgba(59, 130, 246, ${opacity})`, // blue-500 variant
-      ],
-    };
-
-    const palette = colorPalettes[baseColor];
-    const colors: string[] = [];
-
-    for (let i = 0; i < count; i++) {
-      colors.push(palette[i % palette.length]);
-    }
-
-    return colors;
   }
 }
