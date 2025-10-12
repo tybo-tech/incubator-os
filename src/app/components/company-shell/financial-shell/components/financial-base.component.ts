@@ -47,6 +47,24 @@ export abstract class FinancialBaseComponent implements OnInit {
   abstract ngOnInit(): void;
 
   /**
+   * 🎯 Lifecycle hook for child components to transform or post-process data
+   * Called after items are successfully loaded from backend
+   */
+  protected afterItemsLoaded?(itemType: FinancialItemType, items: CompanyFinancialItem[]): void;
+
+  /**
+   * 🎯 Lifecycle hook called before persisting items to backend
+   * Allows child components to validate or transform data before save
+   */
+  protected beforeItemsPersisted?(items: any[], itemType: FinancialItemType): any[];
+
+  /**
+   * 🎯 Lifecycle hook called after successful persistence
+   * Perfect for triggering additional calculations or refreshes
+   */
+  protected afterItemsPersisted?(itemType: FinancialItemType): void;
+
+  /**
    * 🚀 Standardized data loader for any financial item type
    * Eliminates duplicate loading logic across components
    */
@@ -63,7 +81,12 @@ export abstract class FinancialBaseComponent implements OnInit {
       .listFinancialItemsByYearAndType(this.companyId, this.year, itemType)
       .subscribe({
         next: (data) => {
-          signal.set(Array.isArray(data) ? data : []);
+          const items = Array.isArray(data) ? data : [];
+          signal.set(items);
+
+          // 🎯 Call lifecycle hook for child components to transform/post-process data
+          this.afterItemsLoaded?.(itemType, items);
+
           this.isLoading.set(false);
         },
         error: (err) => {
@@ -114,7 +137,10 @@ export abstract class FinancialBaseComponent implements OnInit {
     refreshCallback?: () => void
   ): Promise<void> {
     try {
-      const promises = items.map(item => {
+      // 🎯 Call lifecycle hook for pre-persistence validation/transformation
+      const processedItems = this.beforeItemsPersisted?.(items, itemType) || items;
+
+      const promises = processedItems.map(item => {
         if (item.id) {
           // Update existing
           return this.financialService.updateCompanyFinancialItem(item.id, item).toPromise();
@@ -126,6 +152,9 @@ export abstract class FinancialBaseComponent implements OnInit {
       });
 
       await Promise.all(promises);
+
+      // 🎯 Call lifecycle hook after successful persistence
+      this.afterItemsPersisted?.(itemType);
 
       if (refreshCallback) {
         refreshCallback();

@@ -138,7 +138,10 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     this.calculationService.calculateFinancialMetrics(
       this.directCostItems(),
       this.operationalCostItems(),
-      this.revenueItems()
+      this.revenueItems(),
+      [], // assets - empty for cost structure focus
+      [], // liabilities - empty for cost structure focus
+      this.currency // Pass currency parameter
     )
   );
 
@@ -257,6 +260,32 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   ngOnInit() {
     this.loadFinancialData();
+  }
+
+  /**
+   * 🎯 Lifecycle hook implementation for cost-specific data transformations
+   * Called automatically after items are loaded from backend
+   */
+  protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
+    console.log(`📈 Cost Structure: Processing ${items.length} ${itemType} items`);
+
+    // Cost-specific transformations and business logic
+    switch (itemType) {
+      case 'direct_cost':
+        // Validate and sort direct costs by amount (largest first)
+        items.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+        console.log(`🏭 Direct costs loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        break;
+
+      case 'operational_cost':
+        // Operational costs sorted alphabetically for better organization
+        items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        console.log(`⚙️ Operational costs loaded: $${items.reduce((sum, item) => sum + (item.amount || 0), 0).toLocaleString()}`);
+        break;
+    }
+
+    // Trigger financial metrics recalculation after data transformation
+    // The computed properties will automatically update
   }
 
   /**

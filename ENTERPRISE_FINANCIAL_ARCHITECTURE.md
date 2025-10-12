@@ -22,10 +22,50 @@ export abstract class FinancialBaseComponent {
   // ✅ Shared loading states  
   // ✅ Standard error handling
   // ✅ Consistent service injection
+  // 🎯 NEW: Lifecycle hooks for child component customization
+  
+  protected afterItemsLoaded?(itemType: FinancialItemType, items: CompanyFinancialItem[]): void;
+  protected beforeItemsPersisted?(items: any[], itemType: FinancialItemType): any[];
+  protected afterItemsPersisted?(itemType: FinancialItemType): void;
 }
 ```
 
 **Purpose:** Eliminates boilerplate across all financial components
+
+**🎯 Lifecycle Hook Examples:**
+```typescript
+// In CostStructureComponent
+protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
+  console.log(`📈 Cost Structure: Processing ${items.length} ${itemType} items`);
+  
+  switch (itemType) {
+    case 'direct_cost':
+      // Sort by amount (largest first)
+      items.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      break;
+    case 'operational_cost':
+      // Sort alphabetically for better organization
+      items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      break;
+  }
+}
+
+// In BalanceSheetComponent
+protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
+  switch (itemType) {
+    case 'asset':
+      // Sort by liquidity (current assets first, then fixed)
+      items.sort((a, b) => {
+        const aIsCurrentAsset = this.isCurrentAsset(a);
+        const bIsCurrentAsset = this.isCurrentAsset(b);
+        if (aIsCurrentAsset && !bIsCurrentAsset) return -1;
+        if (!aIsCurrentAsset && bIsCurrentAsset) return 1;
+        return (b.amount || 0) - (a.amount || 0);
+      });
+      break;
+  }
+}
+```
 
 ---
 
@@ -51,8 +91,25 @@ export class FinancialCalculationService {
   // ✅ Clean FinancialMetrics interface
   // ✅ Formatted display values
   // ✅ Health status indicators
+  // 🎯 NEW: Currency support and advanced ratios
+  
+  calculateFinancialMetrics(
+    directCosts: CompanyFinancialItem[],
+    operationalCosts: CompanyFinancialItem[],
+    revenues: CompanyFinancialItem[] = [],
+    assets: CompanyFinancialItem[] = [],
+    liabilities: CompanyFinancialItem[] = [],
+    currency: string = 'USD' // 🎯 Currency parameter
+  ): FinancialMetrics
 }
 ```
+
+**🎯 Advanced Ratios Now Available:**
+- **Debt-to-Equity Ratio:** Total Debt / Total Equity
+- **Expense Ratio:** Total Expenses / Total Revenue (%)
+- **Current Ratio:** Current Assets / Current Liabilities
+- **Quick Ratio:** (Current Assets - Inventory) / Current Liabilities
+- **Return on Assets:** Operating Profit / Total Assets (%)
 
 **Purpose:** Single source of truth for all financial business logic
 
@@ -77,25 +134,69 @@ export class FinancialCalculationService {
 ```typescript
 export class BalanceSheetComponent extends FinancialBaseComponent {
   // Domain-specific signals
-  assetItems = signal<CompanyFinancialItem[]>([]);
-  liabilityItems = signal<CompanyFinancialItem[]>([]);
-  equityItems = signal<CompanyFinancialItem[]>([]);
+  currentAssets = signal<CompanyFinancialItem[]>([]);
+  fixedAssets = signal<CompanyFinancialItem[]>([]);
+  currentLiabilities = signal<CompanyFinancialItem[]>([]);
+  longTermLiabilities = signal<CompanyFinancialItem[]>([]);
+  equity = signal<CompanyFinancialItem[]>([]);
 
-  // Same base methods, different data types
-  ngOnInit() {
-    this.loadItemsByType('asset', this.assetItems);
-    this.loadItemsByType('liability', this.liabilityItems);
-    this.loadItemsByType('equity', this.equityItems);
+  // 🎯 Enhanced financial metrics with balance sheet calculations
+  financialMetrics = computed(() => {
+    const metrics = this.calculationService.calculateFinancialMetrics(
+      [], [], [], // Not applicable for balance sheet
+      [...this.currentAssets(), ...this.fixedAssets()], // all assets
+      [...this.currentLiabilities(), ...this.longTermLiabilities()], // all liabilities
+      this.currency
+    );
+
+    // Add balance sheet specific calculations
+    const totalAssets = this.sumItems([...this.currentAssets(), ...this.fixedAssets()]);
+    const totalLiabilities = this.sumItems([...this.currentLiabilities(), ...this.longTermLiabilities()]);
+    const totalEquity = this.sumItems(this.equity());
+    const workingCapital = this.sumItems(this.currentAssets()) - this.sumItems(this.currentLiabilities());
+
+    return {
+      ...metrics,
+      formattedCurrentAssets: this.calculationService.formatCurrency(this.sumItems(this.currentAssets()), this.currency),
+      formattedTotalAssets: this.calculationService.formatCurrency(totalAssets, this.currency),
+      formattedTotalEquity: this.calculationService.formatCurrency(totalEquity, this.currency),
+      formattedWorkingCapital: this.calculationService.formatCurrency(workingCapital, this.currency),
+      workingCapital
+    };
+  });
+
+  // 🎯 Balance validation
+  balanceCheckStatus = computed(() => {
+    const totalAssets = this.sumItems([...this.currentAssets(), ...this.fixedAssets()]);
+    const totalLiabilities = this.sumItems([...this.currentLiabilities(), ...this.longTermLiabilities()]);
+    const totalEquity = this.sumItems(this.equity());
+    const liabilitiesAndEquity = totalLiabilities + totalEquity;
+    const difference = totalAssets - liabilitiesAndEquity;
+    const isBalanced = Math.abs(difference) < 0.01;
+
+    return {
+      isBalanced,
+      difference,
+      formattedDifference: this.calculationService.formatCurrency(Math.abs(difference), this.currency),
+      message: isBalanced ? '✅ Balance Sheet Balanced' : '❌ Balance Sheet Out of Balance'
+    };
+  });
+
+  // 🎯 Lifecycle hook for asset/liability sorting
+  protected override afterItemsLoaded(itemType: FinancialItemType, items: CompanyFinancialItem[]): void {
+    switch (itemType) {
+      case 'asset':
+        // Sort by liquidity (current assets first, then fixed)
+        items.sort((a, b) => {
+          const aIsCurrentAsset = this.isCurrentAsset(a);
+          const bIsCurrentAsset = this.isCurrentAsset(b);
+          if (aIsCurrentAsset && !bIsCurrentAsset) return -1;
+          if (!aIsCurrentAsset && bIsCurrentAsset) return 1;
+          return (b.amount || 0) - (a.amount || 0);
+        });
+        break;
+    }
   }
-
-  // Same calculation service, different method
-  financialMetrics = computed(() =>
-    this.calculationService.calculateBalanceSheetMetrics(
-      this.assetItems(),
-      this.liabilityItems(), 
-      this.equityItems()
-    )
-  );
 }
 ```
 

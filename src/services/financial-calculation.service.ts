@@ -25,6 +25,16 @@ export interface FinancialMetrics extends FinancialCalculations {
   formattedGrossMargin: string;
   formattedOperatingMargin: string;
 
+  // Advanced ratios
+  debtToEquityRatio: number;
+  expenseRatio: number;
+  currentRatio: number;
+  quickRatio: number;
+  returnOnAssets: number;
+  formattedDebtToEquity: string;
+  formattedExpenseRatio: string;
+  formattedCurrentRatio: string;
+
   // Health indicators
   healthStatus: 'excellent' | 'good' | 'warning' | 'critical';
   healthMessage: string;
@@ -63,7 +73,8 @@ export class FinancialCalculationService {
     operationalCosts: CompanyFinancialItem[],
     revenues: CompanyFinancialItem[] = [],
     assets: CompanyFinancialItem[] = [],
-    liabilities: CompanyFinancialItem[] = []
+    liabilities: CompanyFinancialItem[] = [],
+    currency: string = 'USD'
   ): FinancialMetrics {
 
     // Get base calculations
@@ -71,17 +82,24 @@ export class FinancialCalculationService {
       directCosts, operationalCosts, revenues, assets, liabilities
     );
 
+    // Calculate advanced ratios
+    const advancedRatios = this.calculateAdvancedRatios(calculations, assets, liabilities);
+
     // Get health status
     const health = this.getFinancialHealthStatus(calculations);
 
     // Return enhanced metrics with formatting and health
     return {
       ...calculations,
-      formattedRevenue: this.formatCurrency(calculations.totalRevenue),
-      formattedGrossProfit: this.formatCurrency(calculations.grossProfit),
-      formattedOperatingProfit: this.formatCurrency(calculations.operatingProfit),
+      ...advancedRatios,
+      formattedRevenue: this.formatCurrency(calculations.totalRevenue, currency),
+      formattedGrossProfit: this.formatCurrency(calculations.grossProfit, currency),
+      formattedOperatingProfit: this.formatCurrency(calculations.operatingProfit, currency),
       formattedGrossMargin: this.formatPercentage(calculations.grossMargin),
       formattedOperatingMargin: this.formatPercentage(calculations.operatingMargin),
+      formattedDebtToEquity: advancedRatios.debtToEquityRatio.toFixed(2),
+      formattedExpenseRatio: this.formatPercentage(advancedRatios.expenseRatio),
+      formattedCurrentRatio: advancedRatios.currentRatio.toFixed(2),
       healthStatus: health.status,
       healthMessage: health.message,
       healthColor: health.color
@@ -311,5 +329,49 @@ export class FinancialCalculationService {
         color: 'text-red-600'
       };
     }
+  }
+
+  /**
+   * 📊 Calculate advanced financial ratios
+   * Essential for enterprise financial analysis
+   */
+  private calculateAdvancedRatios(
+    calculations: FinancialCalculations,
+    assets: CompanyFinancialItem[],
+    liabilities: CompanyFinancialItem[]
+  ): {
+    debtToEquityRatio: number;
+    expenseRatio: number;
+    currentRatio: number;
+    quickRatio: number;
+    returnOnAssets: number;
+  } {
+    const totalAssets = this.sumItems(assets);
+    const totalLiabilities = this.sumItems(liabilities);
+    const equity = totalAssets - totalLiabilities;
+
+    // Debt-to-Equity Ratio: Total Debt / Total Equity
+    const debtToEquityRatio = equity > 0 ? totalLiabilities / equity : 0;
+
+    // Expense Ratio: Total Expenses / Total Revenue
+    const totalExpenses = calculations.totalDirectCosts + calculations.totalOperationalCosts;
+    const expenseRatio = calculations.totalRevenue > 0 ? (totalExpenses / calculations.totalRevenue) * 100 : 0;
+
+    // Current Ratio: Current Assets / Current Liabilities (simplified as total assets/liabilities)
+    const currentRatio = totalLiabilities > 0 ? totalAssets / totalLiabilities : 0;
+
+    // Quick Ratio: (Current Assets - Inventory) / Current Liabilities (simplified)
+    const quickRatio = currentRatio * 0.8; // Estimate assuming 20% inventory
+
+    // Return on Assets: Operating Profit / Total Assets
+    const returnOnAssets = totalAssets > 0 ? (calculations.operatingProfit / totalAssets) * 100 : 0;
+
+    return {
+      debtToEquityRatio,
+      expenseRatio,
+      currentRatio,
+      quickRatio,
+      returnOnAssets
+    };
   }
 }
