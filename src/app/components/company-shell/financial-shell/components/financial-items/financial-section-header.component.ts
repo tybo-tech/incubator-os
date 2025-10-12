@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-financial-section-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
 <div class="flex justify-between items-center border-b pb-4 mb-6">
   <div class="flex items-center gap-3">
@@ -22,7 +23,20 @@ import { CommonModule } from '@angular/common';
   </div>
 
   <div class="flex items-center gap-3">
-    @if (year) {
+    @if (showYearSelector) {
+      <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md">
+        <span class="text-gray-600 text-sm">Year:</span>
+        <select 
+          [(ngModel)]="selectedYear" 
+          (ngModelChange)="yearChange($event)"
+          class="bg-transparent border-none outline-none font-semibold text-gray-900 text-sm cursor-pointer"
+        >
+          @for (year of availableYears; track year) {
+            <option [value]="year">{{ year }}</option>
+          }
+        </select>
+      </div>
+    } @else if (year) {
       <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-md">
         <span class="text-gray-600 text-sm">Year:</span>
         <div class="font-semibold text-gray-900">{{ year }}</div>
@@ -50,8 +64,17 @@ export class FinancialSectionHeaderComponent {
   /** Optional subtitle, e.g., "Company Assets and Liabilities" */
   @Input() subtitle?: string;
 
-  /** Optional year label (can be string or number) */
+  /** Optional year label (can be string or number) - used when showYearSelector is false */
   @Input() year?: number | string;
+
+  /** Whether to show a year selector dropdown instead of static year display */
+  @Input() showYearSelector = false;
+
+  /** Available years for the dropdown */
+  @Input() availableYears: number[] = [2024, 2023, 2022, 2021, 2020];
+
+  /** Currently selected year */
+  @Input() selectedYear: number = new Date().getFullYear();
 
   /** Optional icon class (e.g., "fas fa-chart-line") */
   @Input() icon?: string;
@@ -64,4 +87,16 @@ export class FinancialSectionHeaderComponent {
 
   /** Event emitter for action button clicks */
   @Output() onAction = new EventEmitter<void>();
+
+  /** Event emitter for year changes */
+  @Output() onYearChange = new EventEmitter<number>();
+
+  /**
+   * Handle year selection change
+   * @param year The newly selected year
+   */
+  yearChange(year: number): void {
+    this.selectedYear = year;
+    this.onYearChange.emit(year);
+  }
 }

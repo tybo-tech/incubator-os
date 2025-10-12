@@ -51,11 +51,14 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
       <app-financial-section-header
         title="Balance Sheet"
         subtitle="Assets, liabilities and equity overview"
-        [year]="year"
+        [showYearSelector]="true"
+        [selectedYear]="year"
+        [availableYears]="[2024, 2023, 2022, 2021, 2020]"
         icon="fas fa-balance-scale"
         actionLabel="Export PDF"
         actionIcon="fas fa-file-export"
         (onAction)="exportBalanceSheet()"
+        (onYearChange)="onYearChange($event)"
       >
       </app-financial-section-header>
 
@@ -567,6 +570,21 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
         });
       }
     }
+  }
+
+  /**
+   * Handle year change from header component
+   * @param newYear The newly selected year
+   */
+  onYearChange(newYear: number): void {
+    console.log('BalanceSheetComponent - Year changed from', this.year, 'to', newYear);
+    this.year = newYear;
+    
+    // Clear any unsaved changes when year changes
+    this.clearUnsavedChanges();
+    
+    // Reload data for the new year
+    this.refreshData();
   }
 
   exportBalanceSheet(): void {

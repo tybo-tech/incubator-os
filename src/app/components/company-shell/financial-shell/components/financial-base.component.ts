@@ -28,7 +28,7 @@ import { Constants } from '../../../../../services';
 })
 export abstract class FinancialBaseComponent implements OnInit {
   @Input() companyId!: number;
-  @Input() year!: number;
+  @Input() year: number = new Date().getFullYear(); // Auto-select current year
 
   // Client context - extracted from query parameters
   clientId!: number;

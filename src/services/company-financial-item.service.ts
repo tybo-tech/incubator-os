@@ -91,8 +91,13 @@ export class CompanyFinancialItemService {
   }
 
   getCompanyFinancialItemById(id: number): Observable<CompanyFinancialItem> {
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/get-company-financial-items.php`, { id }, this.httpOptions)
-      .pipe(catchError(this.handleError('Get financial item')));
+    const url = `${this.apiUrl}/get-company-financial-item.php?id=${id}`;
+    console.log('CompanyFinancialItemService - getCompanyFinancialItemById GET request:', url);
+    return this.http.get<CompanyFinancialItem>(url)
+      .pipe(
+        tap(res => console.log('Get financial item response:', res)),
+        catchError(this.handleError('Get financial item'))
+      );
   }
 
   /**
@@ -100,15 +105,24 @@ export class CompanyFinancialItemService {
    * @param filters Filtering and sorting options
    */
   listCompanyFinancialItems(filters: ICompanyFinancialItemFilters): Observable<CompanyFinancialItem[]> {
-    // Add default sorting fallback
-    const filtersWithDefaults = {
-      ...filters,
-      order_by: filters.order_by ?? 'created_at',
-      order_dir: filters.order_dir ?? 'DESC'
-    };
+    // Build query parameters for GET request
+    const params = new URLSearchParams();
 
-    return this.http.post<CompanyFinancialItem[]>(`${this.apiUrl}/list-company-financial-items.php`, filtersWithDefaults, this.httpOptions)
-      .pipe(catchError(this.handleError('List financial items')));
+    // company_id is required
+    params.append('company_id', filters.company_id.toString());
+
+    // Add optional filters
+    if (filters.item_type) params.append('type', filters.item_type);
+    if (filters.year_) params.append('year', filters.year_.toString());
+
+    const url = `${this.apiUrl}/list-company-financial-items.php?${params.toString()}`;
+    console.log('CompanyFinancialItemService - listCompanyFinancialItems GET request:', url);
+
+    return this.http.get<CompanyFinancialItem[]>(url)
+      .pipe(
+        tap(res => console.log('List financial items response:', res)),
+        catchError(this.handleError('List financial items'))
+      );
   }
 
   /**
@@ -181,9 +195,29 @@ export class CompanyFinancialItemService {
     });
   }
 
+  /**
+   * Get totals by type for a company and year
+   * @param companyId The ID of the company
+   * @param year The year to get totals for
+   */
+  getTotalsByType(companyId: number, year: number): Observable<any> {
+    const url = `${this.apiUrl}/get-totals-by-type.php?company_id=${companyId}&year=${year}`;
+    console.log('CompanyFinancialItemService - getTotalsByType GET request:', url);
+    return this.http.get<any>(url)
+      .pipe(
+        tap(res => console.log('Get totals by type response:', res)),
+        catchError(this.handleError('Get totals by type'))
+      );
+  }
+
   deleteCompanyFinancialItem(id: number): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-company-financial-items.php`, { id })
-      .pipe(catchError(this.handleError('Delete financial item')));
+    const url = `${this.apiUrl}/delete-company-financial-item.php?id=${id}`;
+    console.log('CompanyFinancialItemService - deleteCompanyFinancialItem GET request:', url);
+    return this.http.get<{ success: boolean }>(url)
+      .pipe(
+        tap(res => console.log('Delete financial item response:', res)),
+        catchError(this.handleError('Delete financial item'))
+      );
   }
 
   /**
