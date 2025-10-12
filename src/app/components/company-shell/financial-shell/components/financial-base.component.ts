@@ -1,4 +1,5 @@
 import { Component, Input, signal, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CompanyFinancialItemService } from '../../../../../services/company-financial-item.service';
 import { FinancialCalculationService } from '../../../../../services/financial-calculation.service';
 import { CompanyFinancialItem, FinancialItemType } from '../../../../../models/financial.models';
@@ -28,6 +29,11 @@ export abstract class FinancialBaseComponent implements OnInit {
   @Input() companyId!: number;
   @Input() year!: number;
 
+  // Client context - extracted from query parameters
+  clientId!: number;
+  programId!: number;
+  cohortId!: number;
+
   // Standard currency from constants
   currency = Constants.Currency;
 
@@ -46,10 +52,39 @@ export abstract class FinancialBaseComponent implements OnInit {
 
   constructor(
     protected financialService: CompanyFinancialItemService,
-    protected calculationService: FinancialCalculationService
+    protected calculationService: FinancialCalculationService,
+    protected route: ActivatedRoute
   ) {}
 
   abstract ngOnInit(): void;
+
+  /**
+   * 🔧 Initialize client context from route parameters
+   * Call this from child component ngOnInit() if not using @Input for companyId
+   */
+  protected initializeContext(): void {
+    // Get companyId from route params if not provided via @Input
+    if (!this.companyId) {
+      const companyId = this.route.parent?.parent?.snapshot.params['id'];
+      if (companyId) {
+        this.companyId = parseInt(companyId, 10);
+      }
+    }
+
+    // Extract required query parameters
+    const queryParams = this.route.parent?.parent?.snapshot.queryParams;
+    this.clientId = queryParams?.['clientId'] ? parseInt(queryParams['clientId'], 10) : 0;
+    this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
+    this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
+
+    console.log('FinancialBase - Context initialized:', {
+      companyId: this.companyId,
+      year: this.year,
+      clientId: this.clientId,
+      programId: this.programId,
+      cohortId: this.cohortId
+    });
+  }
 
   /**
    * 🎯 Lifecycle hook for child components to transform or post-process data
@@ -192,9 +227,18 @@ export abstract class FinancialBaseComponent implements OnInit {
 
       // Handle creates individually (bulk create not implemented yet)
       if (itemsToCreate.length > 0) {
-        const createPromises = itemsToCreate.map(item =>
-          this.financialService.addCompanyFinancialItem(item).toPromise()
-        );
+        const createPromises = itemsToCreate.map(item => {
+          // Add required context fields for new items
+          const newItem = {
+            ...item,
+            company_id: this.companyId,
+            client_id: this.clientId,
+            year_: this.year,
+            program_id: this.programId,
+            cohort_id: this.cohortId
+          };
+          return this.financialService.addCompanyFinancialItem(newItem).toPromise();
+        });
         await Promise.all(createPromises);
         console.log(`✅ Successfully created ${itemsToCreate.length} items`);
       }
@@ -235,7 +279,15 @@ export abstract class FinancialBaseComponent implements OnInit {
           return this.financialService.updateCompanyFinancialItem(item.id, item).toPromise();
         } else {
           // Create new
-          const newItem = { ...item, company_id: this.companyId, year_: this.year, item_type: itemType };
+          const newItem = {
+            ...item,
+            company_id: this.companyId,
+            client_id: this.clientId,
+            year_: this.year,
+            item_type: itemType,
+            program_id: this.programId,
+            cohort_id: this.cohortId
+          };
           return this.financialService.addCompanyFinancialItem(newItem).toPromise();
         }
       });

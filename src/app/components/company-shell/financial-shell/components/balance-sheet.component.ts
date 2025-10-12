@@ -1,5 +1,6 @@
 import { Component, computed, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FinancialBaseComponent } from './financial-base.component';
 import { FinancialItemType, CompanyFinancialItem } from '../../../../../models/financial.models';
 import { FinancialItemTableComponent, FinancialTableItem } from './financial-items/financial-item-table.component';
@@ -365,12 +366,14 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
 
   constructor(
     service: CompanyFinancialItemService,
-    calculationService: FinancialCalculationService
+    calculationService: FinancialCalculationService,
+    route: ActivatedRoute
   ) {
-    super(service, calculationService);
+    super(service, calculationService, route);
   }
 
   ngOnInit() {
+    this.initializeContext();
     this.loadFinancialData();
   }
 

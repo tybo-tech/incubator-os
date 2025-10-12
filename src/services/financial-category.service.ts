@@ -39,17 +39,17 @@ export class FinancialCategoryService {
 
   addFinancialCategory(data: Partial<FinancialCategory>): Observable<FinancialCategory> {
     console.log('Sending data to API:', data);
-    return this.http.post<FinancialCategory>(`${this.apiUrl}/add-financial-categories.php`, data, this.httpOptions);
+    return this.http.post<FinancialCategory>(`${this.apiUrl}/add-financial-category.php`, data, this.httpOptions);
   }
 
   updateFinancialCategory(id: number, data: Partial<FinancialCategory>): Observable<FinancialCategory> {
     const payload = { id, ...data };
     console.log('FinancialCategoryService - updateFinancialCategory called with:', { id, data, payload });
-    return this.http.post<FinancialCategory>(`${this.apiUrl}/update-financial-categories.php`, payload, this.httpOptions);
+    return this.http.post<FinancialCategory>(`${this.apiUrl}/update-financial-category.php`, payload, this.httpOptions);
   }
 
   getFinancialCategoryById(id: number): Observable<FinancialCategory> {
-    return this.http.post<FinancialCategory>(`${this.apiUrl}/get-financial-categories.php`, { id }, this.httpOptions);
+    return this.http.post<FinancialCategory>(`${this.apiUrl}/get-financial-category.php`, { id }, this.httpOptions);
   }
 
   /**
@@ -162,7 +162,7 @@ export class FinancialCategoryService {
   }
 
   deleteFinancialCategory(id: number): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-financial-categories.php`, { id });
+    return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-financial-category.php`, { id });
   }
 
   /**

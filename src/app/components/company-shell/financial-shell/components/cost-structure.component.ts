@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import {
   FinancialItemType,
   CompanyFinancialItem,
@@ -290,12 +291,14 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
 
   constructor(
     service: CompanyFinancialItemService,
-    calculationService: FinancialCalculationService
+    calculationService: FinancialCalculationService,
+    route: ActivatedRoute
   ) {
-    super(service, calculationService);
+    super(service, calculationService, route);
   }
 
   ngOnInit() {
+    this.initializeContext();
     this.loadFinancialData();
   }
 
