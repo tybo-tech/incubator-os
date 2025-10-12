@@ -367,7 +367,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
           name: item.name,
           amount: item.amount,
           note: item.note,
-          category_id: item.categoryId
+          categoryId: item.categoryId // Use frontend field name for bulk save mapping
         });
       }
     });
@@ -380,15 +380,30 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     const extendedItem = item as ExtendedFinancialTableItem;
 
     if (extendedItem._originalItem?.id) {
+      // Existing item with ID - track for update
       const trackedItem = {
         ...extendedItem._originalItem,
         name: item.name,
         amount: item.amount,
         note: item.note,
-        category_id: item.categoryId
+        categoryId: item.categoryId // Use frontend field name for bulk save mapping
       };
-      console.log('Tracking item with category_id:', trackedItem.category_id); // Debug log
+      console.log('Tracking existing item with categoryId:', trackedItem.categoryId); // Debug log
       this.trackUnsavedChange(`direct_cost_${extendedItem._originalItem.id}`, trackedItem);
+    } else {
+      // New item without ID - track for creation
+      const tempKey = `direct_cost_new_${index}_${Date.now()}`;
+      const trackedItem = {
+        company_id: this.companyId,
+        year_: this.year,
+        item_type: 'direct_cost',
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        categoryId: item.categoryId // Use frontend field name for bulk save mapping
+      };
+      console.log('Tracking new item with categoryId:', trackedItem.categoryId); // Debug log
+      this.trackUnsavedChange(tempKey, trackedItem);
     }
   }
 
@@ -403,7 +418,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
       name: item.name,
       amount: item.amount,
       note: item.note,
-      category_id: item.categoryId
+      categoryId: item.categoryId // Use frontend field name for bulk save mapping
     });
   }
 
@@ -443,7 +458,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
           name: item.name,
           amount: item.amount,
           note: item.note,
-          category_id: item.categoryId
+          categoryId: item.categoryId // Use frontend field name for bulk save mapping
         });
       }
     });
@@ -455,12 +470,25 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
     const extendedItem = item as ExtendedFinancialTableItem;
 
     if (extendedItem._originalItem?.id) {
+      // Existing item with ID - track for update
       this.trackUnsavedChange(`operational_cost_${extendedItem._originalItem.id}`, {
         ...extendedItem._originalItem,
         name: item.name,
         amount: item.amount,
         note: item.note,
-        category_id: item.categoryId
+        categoryId: item.categoryId // Use frontend field name for bulk save mapping
+      });
+    } else {
+      // New item without ID - track for creation
+      const tempKey = `operational_cost_new_${index}_${Date.now()}`;
+      this.trackUnsavedChange(tempKey, {
+        company_id: this.companyId,
+        year_: this.year,
+        item_type: 'operational_cost',
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        categoryId: item.categoryId // Use frontend field name for bulk save mapping
       });
     }
   }
@@ -476,7 +504,7 @@ export class CostStructureComponent extends FinancialBaseComponent implements On
       name: item.name,
       amount: item.amount,
       note: item.note,
-      category_id: item.categoryId
+      categoryId: item.categoryId // Use frontend field name for bulk save mapping
     });
   }
 

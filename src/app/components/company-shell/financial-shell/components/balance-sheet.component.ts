@@ -432,7 +432,6 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
    * 🔄 Handle asset item changes using base persistence method
    */
   onAssetItemsChanged(items: FinancialTableItem[]) {
-    console.log('Asset items changed:', items);
     // Track all changed items for bulk save
     items.forEach((item, index) => {
       const extendedItem = item as ExtendedFinancialTableItem;
@@ -442,24 +441,37 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
           name: item.name,
           amount: item.amount,
           note: item.note,
-          category_id: item.categoryId
+          categoryId: item.categoryId
         });
       }
     });
   }
 
   onAssetItemUpdated(event: {index: number, item: FinancialTableItem}) {
-    console.log('Asset item updated:', event);
     const { index, item } = event;
+    console.log('Asset item updated:', item);
     const extendedItem = item as ExtendedFinancialTableItem;
 
     if (extendedItem._originalItem?.id) {
+      // Existing item with ID - track for update
       this.trackUnsavedChange(`asset_${extendedItem._originalItem.id}`, {
         ...extendedItem._originalItem,
         name: item.name,
         amount: item.amount,
         note: item.note,
-        category_id: item.categoryId
+        categoryId: item.categoryId
+      });
+    } else {
+      // New item without ID - track for creation
+      const tempKey = `asset_new_${index}_${Date.now()}`;
+      this.trackUnsavedChange(tempKey, {
+        company_id: this.companyId,
+        year_: this.year,
+        item_type: 'asset',
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        categoryId: item.categoryId
       });
     }
   }
@@ -475,7 +487,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
       name: item.name,
       amount: item.amount,
       note: item.note,
-      category_id: item.categoryId
+      categoryId: item.categoryId
     });
   }
 
@@ -516,7 +528,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
           name: item.name,
           amount: item.amount,
           note: item.note,
-          category_id: item.categoryId
+          categoryId: item.categoryId
         });
       }
     });
@@ -528,12 +540,25 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
     const extendedItem = item as ExtendedFinancialTableItem;
 
     if (extendedItem._originalItem?.id) {
+      // Existing item with ID - track for update
       this.trackUnsavedChange(`liability_${extendedItem._originalItem.id}`, {
         ...extendedItem._originalItem,
         name: item.name,
         amount: item.amount,
         note: item.note,
-        category_id: item.categoryId
+        categoryId: item.categoryId
+      });
+    } else {
+      // New item without ID - track for creation
+      const tempKey = `liability_new_${index}_${Date.now()}`;
+      this.trackUnsavedChange(tempKey, {
+        company_id: this.companyId,
+        year_: this.year,
+        item_type: 'liability',
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        categoryId: item.categoryId
       });
     }
   }
@@ -549,7 +574,7 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
       name: item.name,
       amount: item.amount,
       note: item.note,
-      category_id: item.categoryId
+      categoryId: item.categoryId
     });
   }
 

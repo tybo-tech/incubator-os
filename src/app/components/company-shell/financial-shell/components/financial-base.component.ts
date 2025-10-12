@@ -225,6 +225,7 @@ export abstract class FinancialBaseComponent implements OnInit {
           category_id: item.categoryId || null // Map frontend categoryId to backend category_id
         }));
 
+        console.log('🔄 Bulk Update - Items to send to backend:', itemsWithMappedFields);
         await this.financialService.bulkUpdateFinancialItems(itemsWithMappedFields).toPromise();
         console.log(`✅ Successfully updated ${itemsToUpdate.length} items`);
       }
@@ -241,6 +242,7 @@ export abstract class FinancialBaseComponent implements OnInit {
           category_id: item.categoryId || null // Map frontend categoryId to backend category_id
         }));
 
+        console.log('🔄 Bulk Create - Items to send to backend:', itemsWithContext);
         await this.financialService.bulkCreateFinancialItems(itemsWithContext).toPromise();
         console.log(`✅ Successfully created ${itemsToCreate.length} items via bulk create`);
       }

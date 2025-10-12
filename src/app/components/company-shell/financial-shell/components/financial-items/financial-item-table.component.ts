@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategoryDropdownComponent } from '../../../../shared/financial-category-dropdown/financial-category-dropdown.component';
@@ -118,17 +127,34 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
   @Input() title = 'Financial Items';
   @Input() currency = 'USD';
   @Input() items: FinancialTableItem[] = [];
-  @Input() itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity' = 'direct_cost';
+  @Input() itemType:
+    | 'direct_cost'
+    | 'operational_cost'
+    | 'asset'
+    | 'liability'
+    | 'equity' = 'direct_cost';
 
   // New inputs for multi-type loading
   @Input() loadMultipleTypes = false;
-  @Input() allowedTypes: ('direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity')[] = [];
+  @Input() allowedTypes: (
+    | 'direct_cost'
+    | 'operational_cost'
+    | 'asset'
+    | 'liability'
+    | 'equity'
+  )[] = [];
 
   // 🔄 Output events for change tracking
   @Output() itemsChanged = new EventEmitter<FinancialTableItem[]>();
   @Output() itemAdded = new EventEmitter<FinancialTableItem>();
-  @Output() itemUpdated = new EventEmitter<{index: number, item: FinancialTableItem}>();
-  @Output() itemDeleted = new EventEmitter<{index: number, item: FinancialTableItem}>();
+  @Output() itemUpdated = new EventEmitter<{
+    index: number;
+    item: FinancialTableItem;
+  }>();
+  @Output() itemDeleted = new EventEmitter<{
+    index: number;
+    item: FinancialTableItem;
+  }>();
 
   list = signal<FinancialTableItem[]>([]);
   total = signal(0);
@@ -174,7 +200,6 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
 
     // 🔄 Emit change events
     if (index !== undefined && item) {
-      console.log('Emitting itemUpdated with categoryId:', item.categoryId);
       this.itemUpdated.emit({ index, item });
     }
     this.itemsChanged.emit(this.list());
@@ -201,25 +226,9 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
     return index;
   }
 
-  onCategorySelected(item: FinancialTableItem, category: FinancialCategory | null) {
-    console.log('Category selected for item:', item);
-    console.log('Selected category:', category);
-
-    const index = this.list().findIndex(listItem => listItem === item);
-
-    if (category) {
-      item.category = category;
-      item.categoryId = category.id;
-      item.name = category.name;
-      console.log('Set categoryId to:', item.categoryId);
-    } else {
-      item.category = undefined;
-      item.categoryId = undefined;
-      item.name = '';
-      console.log('Cleared categoryId');
-    }
-
-    console.log('About to update row with item:', item);
+  onCategorySelected(item: FinancialTableItem, categoryId: number) {
+    item.categoryId = categoryId;
+    const index = this.list().findIndex((listItem) => listItem === item);
     this.updateRow(index, item);
   }
 
