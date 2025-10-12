@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { CompanyFinancialItem } from '../models/financial.models';
 import { Constants } from './service';
 
 export interface ICompanyFinancialItemFilters {
   company_id: number;
   year_?: number;
-  item_type?: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity';
+  item_type?: 'direct' | 'operational' | 'asset' | 'liability' | 'equity';
   category_id?: number | null;
   name?: string;
   client_id?: number;
@@ -32,19 +33,38 @@ export class CompanyFinancialItemService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Centralized error handling for API calls
+   */
+  private handleError(operation = 'operation') {
+    return (error: any): Observable<never> => {
+      console.error(`${operation} failed:`, error);
+      return throwError(() => new Error(`Failed to ${operation.toLowerCase()}: ${error.message || 'Unknown error'}`));
+    };
+  }
+
   addCompanyFinancialItem(data: Partial<CompanyFinancialItem>): Observable<CompanyFinancialItem> {
     console.log('Sending data to API:', data);
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/add-company-financial-items.php`, data, this.httpOptions);
+    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/add-company-financial-items.php`, data, this.httpOptions)
+      .pipe(
+        tap(res => console.log('API response:', res)),
+        catchError(this.handleError('Add financial item'))
+      );
   }
 
   updateCompanyFinancialItem(id: number, data: Partial<CompanyFinancialItem>): Observable<CompanyFinancialItem> {
     const payload = { id, ...data };
     console.log('CompanyFinancialItemService - updateCompanyFinancialItem called with:', { id, data, payload });
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/update-company-financial-items.php`, payload, this.httpOptions);
+    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/update-company-financial-items.php`, payload, this.httpOptions)
+      .pipe(
+        tap(res => console.log('Update API response:', res)),
+        catchError(this.handleError('Update financial item'))
+      );
   }
 
   getCompanyFinancialItemById(id: number): Observable<CompanyFinancialItem> {
-    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/get-company-financial-items.php`, { id }, this.httpOptions);
+    return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/get-company-financial-items.php`, { id }, this.httpOptions)
+      .pipe(catchError(this.handleError('Get financial item')));
   }
 
   /**
@@ -52,7 +72,15 @@ export class CompanyFinancialItemService {
    * @param filters Filtering and sorting options
    */
   listCompanyFinancialItems(filters: ICompanyFinancialItemFilters): Observable<CompanyFinancialItem[]> {
-    return this.http.post<CompanyFinancialItem[]>(`${this.apiUrl}/list-company-financial-items.php`, filters, this.httpOptions);
+    // Add default sorting fallback
+    const filtersWithDefaults = {
+      ...filters,
+      order_by: filters.order_by ?? 'created_at',
+      order_dir: filters.order_dir ?? 'DESC'
+    };
+
+    return this.http.post<CompanyFinancialItem[]>(`${this.apiUrl}/list-company-financial-items.php`, filtersWithDefaults, this.httpOptions)
+      .pipe(catchError(this.handleError('List financial items')));
   }
 
   /**
@@ -82,11 +110,11 @@ export class CompanyFinancialItemService {
   }
 
   /**
-   * List financial items by type (direct_cost, operational_cost, asset, liability, equity)
+   * List financial items by type (direct, operational, asset, liability, equity)
    * @param companyId The ID of the company
    * @param itemType The item type to filter by
    */
-  listFinancialItemsByType(companyId: number, itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
+  listFinancialItemsByType(companyId: number, itemType: 'direct' | 'operational' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
     return this.listCompanyFinancialItems({
       company_id: companyId,
       item_type: itemType,
@@ -115,7 +143,7 @@ export class CompanyFinancialItemService {
    * @param year The year to filter by
    * @param itemType The item type to filter by
    */
-  listFinancialItemsByYearAndType(companyId: number, year: number, itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
+  listFinancialItemsByYearAndType(companyId: number, year: number, itemType: 'direct' | 'operational' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
     return this.listCompanyFinancialItems({
       company_id: companyId,
       year_: year,
@@ -126,6 +154,18 @@ export class CompanyFinancialItemService {
   }
 
   deleteCompanyFinancialItem(id: number): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-company-financial-items.php`, { id });
+    return this.http.post<{ success: boolean }>(`${this.apiUrl}/delete-company-financial-items.php`, { id })
+      .pipe(catchError(this.handleError('Delete financial item')));
+  }
+
+  /**
+   * Refresh profit summary after cost changes to ensure UI stays in sync
+   * This pairs with the automatic profit recalculation in the backend
+   * @param companyId The ID of the company
+   * @param year The year to refresh
+   */
+  refreshCompanyYearSummary(companyId: number, year: number): Observable<any> {
+    return this.http.get(`${Constants.ApiBase}/api-nodes/company-profit-summary/get-company-profit-summary.php?company_id=${companyId}&year_=${year}`)
+      .pipe(catchError(this.handleError('Refresh company year summary')));
   }
 }

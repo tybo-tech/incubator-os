@@ -91,7 +91,7 @@ export interface CompanyProfitSummary extends BaseAudit {
  */
 export interface CompanyFinancialItem extends BaseAudit {
   year_: number;
-  item_type: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity';
+  item_type: FinancialItemType;
   category_id?: number | null;
   name: string;
   amount?: number;
@@ -100,6 +100,8 @@ export interface CompanyFinancialItem extends BaseAudit {
   // Optional populated field for UI (category dropdown)
   category_name?: string;
 }
+
+export type FinancialItemType = 'direct' | 'operational' | 'asset' | 'liability' | 'equity';
 
 /* ============================================================================
  * 4. Financial Category

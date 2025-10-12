@@ -48,7 +48,23 @@ final class CompanyFinancialItems
             ':updated_by'  => $data['updated_by'] ?? null,
         ]);
 
-        return $this->getById((int)$this->conn->lastInsertId());
+        $result = $this->getById((int)$this->conn->lastInsertId());
+
+        // Auto-recalculate profit summaries for cost items
+        $itemType = strtolower($data['item_type']);
+        if (in_array($itemType, ['direct', 'operational'])) {
+            try {
+                $this->recalculateProfitForYear(
+                    (int)$data['company_id'],
+                    (int)$data['year_']
+                );
+            } catch (Throwable $e) {
+                error_log("Profit recalc failed for company {$data['company_id']}, year {$data['year_']}: " . $e->getMessage());
+                // Continue execution - cost update succeeded even if profit sync failed
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -56,6 +72,10 @@ final class CompanyFinancialItems
      */
     public function update(int $id, array $fields): ?array
     {
+        // Get the current record first to check for changes that need profit recalculation
+        $current = $this->getById($id);
+        if (!$current) return null;
+
         $allowed = [
             'item_type','category_id','name','amount','note','status_id','updated_by'
         ];
@@ -79,7 +99,33 @@ final class CompanyFinancialItems
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
 
-        return $this->getById($id);
+        $result = $this->getById($id);
+
+        // Auto-recalculate profit summaries if cost-related fields changed
+        $needsRecalc = false;
+        if (isset($fields['amount']) && $fields['amount'] !== $current['amount']) {
+            $needsRecalc = true;
+        }
+        if (isset($fields['item_type']) && strtolower($fields['item_type']) !== $current['item_type']) {
+            $needsRecalc = true;
+        }
+
+        if ($needsRecalc) {
+            $itemType = isset($fields['item_type']) ? strtolower($fields['item_type']) : $current['item_type'];
+            if (in_array($itemType, ['direct', 'operational']) || in_array($current['item_type'], ['direct', 'operational'])) {
+                try {
+                    $this->recalculateProfitForYear(
+                        $current['company_id'],
+                        $current['year_']
+                    );
+                } catch (Throwable $e) {
+                    error_log("Profit recalc failed for company {$current['company_id']}, year {$current['year_']}: " . $e->getMessage());
+                    // Continue execution - cost update succeeded even if profit sync failed
+                }
+            }
+        }
+
+        return $result;
     }
 
     /* =========================================================================
@@ -142,9 +188,26 @@ final class CompanyFinancialItems
 
     public function delete(int $id): bool
     {
+        // Get the record before deletion for profit recalculation
+        $current = $this->getById($id);
+
         $stmt = $this->conn->prepare("DELETE FROM company_financial_items WHERE id = ?");
         $stmt->execute([$id]);
-        return $stmt->rowCount() > 0;
+        $deleted = $stmt->rowCount() > 0;
+
+        // Auto-recalculate profit summaries if we deleted a cost item
+        if ($deleted && $current && in_array($current['item_type'], ['direct', 'operational'])) {
+            try {
+                $this->recalculateProfitForYear(
+                    $current['company_id'],
+                    $current['year_']
+                );
+            } catch (Throwable $e) {
+                error_log("Profit recalc failed after delete for company {$current['company_id']}, year {$current['year_']}: " . $e->getMessage());
+            }
+        }
+
+        return $deleted;
     }
 
     public function deleteByCompanyYear(int $companyId, int $year, string $type): int
@@ -164,7 +227,7 @@ final class CompanyFinancialItems
     /**
      * Get total amount per item_type (assets, liabilities, costs, etc.)
      */
-    public function getTotalsByType(int $companyId, int $year): array
+    public function getTotalsByTypeAndYear(int $companyId, int $year): array
     {
         $sql = "SELECT item_type, SUM(amount) AS total_amount
                 FROM company_financial_items
@@ -205,6 +268,59 @@ final class CompanyFinancialItems
     /* =========================================================================
        HELPERS
        ========================================================================= */
+
+    /**
+     * Recalculate profit margins after a cost update.
+     */
+    private function recalculateProfitForYear(int $companyId, int $year): void
+    {
+        // 1. Get revenue total
+        $stmt = $this->conn->prepare("
+            SELECT (revenue_q1 + revenue_q2 + revenue_q3 + revenue_q4) AS total_revenue
+            FROM company_revenue_summary
+            WHERE company_id = ? AND year_ = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$companyId, $year]);
+        $revenueTotal = (float)($stmt->fetchColumn() ?? 0);
+
+        // 2. Get total direct and operational costs
+        $totals = $this->getTotalsByTypeAndYear($companyId, $year);
+        $directCosts = $totals['direct'] ?? 0;
+        $operationalCosts = $totals['operational'] ?? 0;
+
+        // 3. Compute profit layers
+        $grossProfit = $revenueTotal - $directCosts;
+        $operatingProfit = $grossProfit - $operationalCosts;
+
+        // 4. Compute margins safely
+        $grossMargin = $revenueTotal > 0 ? round(($grossProfit / $revenueTotal) * 100, 2) : 0;
+        $operatingMargin = $revenueTotal > 0 ? round(($operatingProfit / $revenueTotal) * 100, 2) : 0;
+
+        // 5. Update or create company_profit_summary record
+        $stmt = $this->conn->prepare("
+            INSERT INTO company_profit_summary (
+                company_id, year_, gross_total, gross_margin,
+                operating_total, operating_margin, created_at, updated_at
+            ) VALUES (
+                :company_id, :year_, :gross_total, :gross_margin,
+                :operating_total, :operating_margin, NOW(), NOW()
+            ) ON DUPLICATE KEY UPDATE
+                gross_total = :gross_total,
+                gross_margin = :gross_margin,
+                operating_total = :operating_total,
+                operating_margin = :operating_margin,
+                updated_at = NOW()
+        ");
+        $stmt->execute([
+            ':company_id' => $companyId,
+            ':year_' => $year,
+            ':gross_total' => $grossProfit,
+            ':gross_margin' => $grossMargin,
+            ':operating_total' => $operatingProfit,
+            ':operating_margin' => $operatingMargin
+        ]);
+    }
 
     private function cast(array $row): array
     {
