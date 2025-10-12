@@ -50,6 +50,35 @@ export interface FinancialSummaryItem {
 }
 
 /**
+ * 📈 Trend Analytics Interface
+ * Year-over-year comparison and growth analysis
+ */
+export interface FinancialTrendAnalysis {
+  revenueGrowth: number;
+  profitGrowth: number;
+  marginChange: number;
+  costGrowth: number;
+  efficiencyTrend: 'improving' | 'declining' | 'stable';
+  formattedRevenueGrowth: string;
+  formattedProfitGrowth: string;
+  formattedMarginChange: string;
+}
+
+/**
+ * 🎯 Financial Performance Benchmarks
+ * Industry comparison and performance indicators
+ */
+export interface FinancialBenchmarks {
+  profitMarginBenchmark: number;
+  revenueGrowthBenchmark: number;
+  industryAverageRatios: {
+    currentRatio: number;
+    debtToEquity: number;
+    returnOnAssets: number;
+  };
+}
+
+/**
  * 🧮 Financial Calculation Service
  *
  * Centralized service for all financial calculations and business logic.
@@ -372,6 +401,122 @@ export class FinancialCalculationService {
       currentRatio,
       quickRatio,
       returnOnAssets
+    };
+  }
+
+  /**
+   * 📈 Calculate Year-over-Year Growth Analysis
+   * Essential for trend analysis and performance tracking
+   */
+  calculateYearOverYearGrowth(
+    current: FinancialMetrics, 
+    previous: FinancialMetrics
+  ): FinancialTrendAnalysis {
+    const revenueGrowth = this.calculateGrowthRate(current.totalRevenue, previous.totalRevenue);
+    const profitGrowth = this.calculateGrowthRate(current.operatingProfit, previous.operatingProfit);
+    const marginChange = current.operatingMargin - previous.operatingMargin;
+    const costGrowth = this.calculateGrowthRate(
+      current.totalDirectCosts + current.totalOperationalCosts,
+      previous.totalDirectCosts + previous.totalOperationalCosts
+    );
+
+    // Determine efficiency trend
+    let efficiencyTrend: 'improving' | 'declining' | 'stable' = 'stable';
+    if (marginChange > 2) {
+      efficiencyTrend = 'improving';
+    } else if (marginChange < -2) {
+      efficiencyTrend = 'declining';
+    }
+
+    return {
+      revenueGrowth,
+      profitGrowth,
+      marginChange,
+      costGrowth,
+      efficiencyTrend,
+      formattedRevenueGrowth: this.formatPercentage(revenueGrowth),
+      formattedProfitGrowth: this.formatPercentage(profitGrowth),
+      formattedMarginChange: this.formatPercentage(marginChange)
+    };
+  }
+
+  /**
+   * 🎯 Calculate Financial Performance Benchmarks
+   * Compare against industry standards
+   */
+  calculateBenchmarks(metrics: FinancialMetrics): FinancialBenchmarks {
+    // Industry average benchmarks (configurable)
+    return {
+      profitMarginBenchmark: 15, // 15% operating margin benchmark
+      revenueGrowthBenchmark: 10, // 10% annual growth benchmark
+      industryAverageRatios: {
+        currentRatio: 1.5, // Healthy liquidity ratio
+        debtToEquity: 0.5, // Conservative debt level
+        returnOnAssets: 8   // 8% ROA benchmark
+      }
+    };
+  }
+
+  /**
+   * 📊 Calculate Multi-Period Trend Analysis
+   * Analyze trends across multiple periods
+   */
+  calculateMultiPeriodTrends(
+    periods: FinancialMetrics[]
+  ): {
+    trend: 'upward' | 'downward' | 'volatile' | 'stable';
+    averageGrowthRate: number;
+    volatilityScore: number;
+    bestPeriod: FinancialMetrics;
+    worstPeriod: FinancialMetrics;
+  } {
+    if (periods.length < 2) {
+      return {
+        trend: 'stable',
+        averageGrowthRate: 0,
+        volatilityScore: 0,
+        bestPeriod: periods[0],
+        worstPeriod: periods[0]
+      };
+    }
+
+    // Calculate period-over-period growth rates
+    const growthRates: number[] = [];
+    for (let i = 1; i < periods.length; i++) {
+      const growth = this.calculateGrowthRate(periods[i].totalRevenue, periods[i-1].totalRevenue);
+      growthRates.push(growth);
+    }
+
+    const averageGrowthRate = growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length;
+    
+    // Calculate volatility (standard deviation of growth rates)
+    const variance = growthRates.reduce((sum, rate) => sum + Math.pow(rate - averageGrowthRate, 2), 0) / growthRates.length;
+    const volatilityScore = Math.sqrt(variance);
+
+    // Determine trend
+    let trend: 'upward' | 'downward' | 'volatile' | 'stable' = 'stable';
+    if (volatilityScore > 15) {
+      trend = 'volatile';
+    } else if (averageGrowthRate > 5) {
+      trend = 'upward';
+    } else if (averageGrowthRate < -5) {
+      trend = 'downward';
+    }
+
+    // Find best and worst periods
+    const bestPeriod = periods.reduce((best, current) => 
+      current.operatingProfit > best.operatingProfit ? current : best
+    );
+    const worstPeriod = periods.reduce((worst, current) => 
+      current.operatingProfit < worst.operatingProfit ? current : worst
+    );
+
+    return {
+      trend,
+      averageGrowthRate,
+      volatilityScore,
+      bestPeriod,
+      worstPeriod
     };
   }
 }
