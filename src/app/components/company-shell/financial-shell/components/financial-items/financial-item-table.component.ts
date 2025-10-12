@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategoryDropdownComponent } from '../../../../shared/financial-category-dropdown/financial-category-dropdown.component';
@@ -68,7 +68,7 @@ export interface FinancialTableItem {
           <input
             type="number"
             [(ngModel)]="item.amount"
-            (input)="updateRow()"
+            (input)="updateRow(i, item)"
             class="border border-gray-300 rounded-md px-2 py-1 text-sm text-right w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             step="0.01"
             min="0"
@@ -78,7 +78,7 @@ export interface FinancialTableItem {
           <input
             type="text"
             [(ngModel)]="item.note"
-            (blur)="updateRow()"
+            (blur)="updateRow(i, item)"
             placeholder="Optional note"
             class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -124,6 +124,12 @@ export class FinancialItemTableComponent implements OnInit {
   @Input() loadMultipleTypes = false;
   @Input() allowedTypes: ('direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity')[] = [];
 
+  // 🔄 Output events for change tracking
+  @Output() itemsChanged = new EventEmitter<FinancialTableItem[]>();
+  @Output() itemAdded = new EventEmitter<FinancialTableItem>();
+  @Output() itemUpdated = new EventEmitter<{index: number, item: FinancialTableItem}>();
+  @Output() itemDeleted = new EventEmitter<{index: number, item: FinancialTableItem}>();
+
   list = signal<FinancialTableItem[]>([]);
   total = signal(0);
 
@@ -152,16 +158,32 @@ export class FinancialItemTableComponent implements OnInit {
     };
     this.list.update((rows) => [...rows, newItem]);
     this.calculateTotal();
+
+    // 🔄 Emit change events
+    this.itemAdded.emit(newItem);
+    this.itemsChanged.emit(this.list());
   }
 
-  updateRow() {
+  updateRow(index?: number, item?: FinancialTableItem) {
     this.calculateTotal();
+
+    // 🔄 Emit change events
+    if (index !== undefined && item) {
+      this.itemUpdated.emit({ index, item });
+    }
+    this.itemsChanged.emit(this.list());
   }
 
   deleteRow(index: number) {
     if (!confirm('Delete this item?')) return;
+
+    const itemToDelete = this.list()[index];
     this.list.update((rows) => rows.filter((_, i) => i !== index));
     this.calculateTotal();
+
+    // 🔄 Emit change events
+    this.itemDeleted.emit({ index, item: itemToDelete });
+    this.itemsChanged.emit(this.list());
   }
 
   calculateTotal() {
@@ -174,6 +196,8 @@ export class FinancialItemTableComponent implements OnInit {
   }
 
   onCategorySelected(item: FinancialTableItem, category: FinancialCategory | null) {
+    const index = this.list().findIndex(listItem => listItem === item);
+
     if (category) {
       item.category = category;
       item.categoryId = category.id;
@@ -183,7 +207,8 @@ export class FinancialItemTableComponent implements OnInit {
       item.categoryId = undefined;
       item.name = '';
     }
-    this.updateRow();
+
+    this.updateRow(index, item);
   }
 
   onCategoryCreated(newCategory: FinancialCategory) {

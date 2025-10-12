@@ -57,6 +57,35 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
       >
       </app-financial-section-header>
 
+      <!-- Save Changes Bar (shown when there are unsaved changes) -->
+      <div *ngIf="hasUnsavedChanges()"
+           class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-exclamation-triangle text-amber-600"></i>
+          <div>
+            <p class="font-semibold text-amber-800">You have unsaved changes</p>
+            <p class="text-sm text-amber-600">{{ unsavedChanges().size }} item(s) modified</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="clearUnsavedChanges()"
+            class="px-3 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+            Cancel Changes
+          </button>
+          <button
+            type="button"
+            (click)="bulkSaveChanges()"
+            [disabled]="isSaving()"
+            class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+            <i *ngIf="isSaving()" class="fas fa-spinner fa-spin"></i>
+            <i *ngIf="!isSaving()" class="fas fa-save"></i>
+            {{ isSaving() ? 'Saving...' : 'Save All Changes' }}
+          </button>
+        </div>
+      </div>
+
       <!-- Balance Check Indicator -->
       <div class="mb-6 p-3 rounded-lg"
            [class]="balanceCheckStatus().isBalanced ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'">
@@ -103,6 +132,10 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
             [loadMultipleTypes]="true"
             [allowedTypes]="['asset', 'liability']"
             [items]="assetTableItems()"
+            (itemsChanged)="onAssetItemsChanged($event)"
+            (itemUpdated)="onAssetItemUpdated($event)"
+            (itemAdded)="onAssetItemAdded($event)"
+            (itemDeleted)="onAssetItemDeleted($event)"
           >
           </app-financial-item-table>
         </div>
@@ -135,6 +168,10 @@ export interface ExtendedFinancialTableItem extends FinancialTableItem {
             [loadMultipleTypes]="true"
             [allowedTypes]="['asset', 'liability']"
             [items]="liabilityTableItems()"
+            (itemsChanged)="onLiabilityItemsChanged($event)"
+            (itemUpdated)="onLiabilityItemUpdated($event)"
+            (itemAdded)="onLiabilityItemAdded($event)"
+            (itemDeleted)="onLiabilityItemDeleted($event)"
           >
           </app-financial-item-table>
         </div>
@@ -387,14 +424,147 @@ export class BalanceSheetComponent extends FinancialBaseComponent implements OnI
    * 🔄 Handle asset item changes using base persistence method
    */
   onAssetItemsChanged(items: FinancialTableItem[]) {
-    this.persistItemChanges(items, 'asset', () => this.loadItemsByType('asset', this.assetItems));
+    console.log('Asset items changed:', items);
+    // Track all changed items for bulk save
+    items.forEach((item, index) => {
+      const extendedItem = item as ExtendedFinancialTableItem;
+      if (extendedItem._originalItem?.id) {
+        this.trackUnsavedChange(`asset_${extendedItem._originalItem.id}`, {
+          ...extendedItem._originalItem,
+          name: item.name,
+          amount: item.amount,
+          note: item.note,
+          category_id: item.categoryId
+        });
+      }
+    });
+  }
+
+  onAssetItemUpdated(event: {index: number, item: FinancialTableItem}) {
+    console.log('Asset item updated:', event);
+    const { index, item } = event;
+    const extendedItem = item as ExtendedFinancialTableItem;
+
+    if (extendedItem._originalItem?.id) {
+      this.trackUnsavedChange(`asset_${extendedItem._originalItem.id}`, {
+        ...extendedItem._originalItem,
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        category_id: item.categoryId
+      });
+    }
+  }
+
+  onAssetItemAdded(item: FinancialTableItem) {
+    console.log('Asset item added:', item);
+    // For new items, track with temporary key
+    const tempKey = `asset_new_${Date.now()}`;
+    this.trackUnsavedChange(tempKey, {
+      company_id: this.companyId,
+      year_: this.year,
+      item_type: 'asset',
+      name: item.name,
+      amount: item.amount,
+      note: item.note,
+      category_id: item.categoryId
+    });
+  }
+
+  onAssetItemDeleted(event: {index: number, item: FinancialTableItem}) {
+    console.log('Asset item deleted:', event);
+    const { item } = event;
+    const extendedItem = item as ExtendedFinancialTableItem;
+
+    if (extendedItem._originalItem?.id) {
+      // Remove from unsaved changes if it was being tracked
+      this.removeUnsavedChange(`asset_${extendedItem._originalItem.id}`);
+
+      // Add to deletion queue or handle deletion immediately
+      // For now, we'll handle deletion immediately
+      if (extendedItem._originalItem.id) {
+        this.financialService.deleteCompanyFinancialItem(extendedItem._originalItem.id).subscribe({
+          next: () => {
+            console.log('Asset deleted successfully');
+            this.loadItemsByType('asset', this.assetItems);
+          },
+          error: (err) => console.error('Error deleting asset:', err)
+        });
+      }
+    }
   }
 
   /**
    * 🔄 Handle liability item changes using base persistence method
    */
   onLiabilityItemsChanged(items: FinancialTableItem[]) {
-    this.persistItemChanges(items, 'liability', () => this.loadItemsByType('liability', this.liabilityItems));
+    console.log('Liability items changed:', items);
+    // Track all changed items for bulk save
+    items.forEach((item, index) => {
+      const extendedItem = item as ExtendedFinancialTableItem;
+      if (extendedItem._originalItem?.id) {
+        this.trackUnsavedChange(`liability_${extendedItem._originalItem.id}`, {
+          ...extendedItem._originalItem,
+          name: item.name,
+          amount: item.amount,
+          note: item.note,
+          category_id: item.categoryId
+        });
+      }
+    });
+  }
+
+  onLiabilityItemUpdated(event: {index: number, item: FinancialTableItem}) {
+    console.log('Liability item updated:', event);
+    const { index, item } = event;
+    const extendedItem = item as ExtendedFinancialTableItem;
+
+    if (extendedItem._originalItem?.id) {
+      this.trackUnsavedChange(`liability_${extendedItem._originalItem.id}`, {
+        ...extendedItem._originalItem,
+        name: item.name,
+        amount: item.amount,
+        note: item.note,
+        category_id: item.categoryId
+      });
+    }
+  }
+
+  onLiabilityItemAdded(item: FinancialTableItem) {
+    console.log('Liability item added:', item);
+    // For new items, track with temporary key
+    const tempKey = `liability_new_${Date.now()}`;
+    this.trackUnsavedChange(tempKey, {
+      company_id: this.companyId,
+      year_: this.year,
+      item_type: 'liability',
+      name: item.name,
+      amount: item.amount,
+      note: item.note,
+      category_id: item.categoryId
+    });
+  }
+
+  onLiabilityItemDeleted(event: {index: number, item: FinancialTableItem}) {
+    console.log('Liability item deleted:', event);
+    const { item } = event;
+    const extendedItem = item as ExtendedFinancialTableItem;
+
+    if (extendedItem._originalItem?.id) {
+      // Remove from unsaved changes if it was being tracked
+      this.removeUnsavedChange(`liability_${extendedItem._originalItem.id}`);
+
+      // Handle deletion immediately
+      if (extendedItem._originalItem.id) {
+        this.financialService.deleteCompanyFinancialItem(extendedItem._originalItem.id).subscribe({
+          next: () => {
+            console.log('Liability deleted successfully');
+            this.loadItemsByType('liability', this.liabilityItems);
+          },
+          error: (err) => console.error('Error deleting liability:', err)
+        });
+      }
+    }
   }
 
   exportBalanceSheet(): void {

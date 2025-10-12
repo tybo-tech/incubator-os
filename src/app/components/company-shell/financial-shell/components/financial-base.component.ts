@@ -36,6 +36,11 @@ export abstract class FinancialBaseComponent implements OnInit {
   hasError = signal(false);
   errorMessage = signal('');
 
+  // 🔄 Unsaved changes tracking
+  unsavedChanges = signal<Map<string, any>>(new Map());
+  hasUnsavedChanges = signal(false);
+  isSaving = signal(false);
+
   // Shared data signals - can be specialized by extending components
   items = signal<CompanyFinancialItem[]>([]);
 
@@ -125,6 +130,65 @@ export abstract class FinancialBaseComponent implements OnInit {
       next: () => console.log('Profit summary refreshed'),
       error: (err) => console.error('Error refreshing profit summary:', err)
     });
+  }
+
+  /**
+   * 🔄 Track unsaved changes for an item
+   */
+  protected trackUnsavedChange(itemKey: string, item: any): void {
+    const changes = this.unsavedChanges();
+    changes.set(itemKey, item);
+    this.unsavedChanges.set(new Map(changes));
+    this.hasUnsavedChanges.set(changes.size > 0);
+  }
+
+  /**
+   * 🗑️ Remove item from unsaved changes
+   */
+  protected removeUnsavedChange(itemKey: string): void {
+    const changes = this.unsavedChanges();
+    changes.delete(itemKey);
+    this.unsavedChanges.set(new Map(changes));
+    this.hasUnsavedChanges.set(changes.size > 0);
+  }
+
+  /**
+   * 🧹 Clear all unsaved changes
+   */
+  protected clearUnsavedChanges(): void {
+    this.unsavedChanges.set(new Map());
+    this.hasUnsavedChanges.set(false);
+  }
+
+  /**
+   * 💾 Bulk save all unsaved changes
+   */
+  protected async bulkSaveChanges(): Promise<void> {
+    const changes = this.unsavedChanges();
+    if (changes.size === 0) return;
+
+    this.isSaving.set(true);
+
+    try {
+      const itemsToUpdate = Array.from(changes.values());
+
+      // Call the bulk update API
+      await this.financialService.bulkUpdateFinancialItems(itemsToUpdate).toPromise();
+
+      // Clear unsaved changes after successful save
+      this.clearUnsavedChanges();
+
+      // Refresh data
+      this.refreshData();
+
+      console.log(`✅ Successfully saved ${itemsToUpdate.length} items`);
+
+    } catch (error) {
+      console.error('Error bulk saving changes:', error);
+      this.handleError('Failed to save changes');
+    } finally {
+      this.isSaving.set(false);
+    }
   }
 
   /**

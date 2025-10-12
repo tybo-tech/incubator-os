@@ -62,6 +62,20 @@ export class CompanyFinancialItemService {
       );
   }
 
+  /**
+   * 💾 Bulk update multiple financial items at once
+   * @param items Array of financial items to update
+   */
+  bulkUpdateFinancialItems(items: Partial<CompanyFinancialItem>[]): Observable<any> {
+    const payload = { items };
+    console.log('CompanyFinancialItemService - bulkUpdateFinancialItems called with:', payload);
+    return this.http.post<any>(`${this.apiUrl}/update-bulk-company-financial-items.php`, payload, this.httpOptions)
+      .pipe(
+        tap(res => console.log('Bulk update API response:', res)),
+        catchError(this.handleError('Bulk update financial items'))
+      );
+  }
+
   getCompanyFinancialItemById(id: number): Observable<CompanyFinancialItem> {
     return this.http.post<CompanyFinancialItem>(`${this.apiUrl}/get-company-financial-items.php`, { id }, this.httpOptions)
       .pipe(catchError(this.handleError('Get financial item')));
