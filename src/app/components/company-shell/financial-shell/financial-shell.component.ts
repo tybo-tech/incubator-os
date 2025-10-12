@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router, ActivatedRoute, RouterLink, NavigationEnd } from '@angular/router';
+import {
+  RouterOutlet,
+  Router,
+  ActivatedRoute,
+  RouterLink,
+  NavigationEnd,
+} from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -16,7 +22,9 @@ import { filter } from 'rxjs/operators';
             <i class="fas fa-chart-line text-green-600 mr-3"></i>
             Financial Management
           </h1>
-          <p class="text-gray-600 mt-1">Comprehensive financial analytics and reporting</p>
+          <p class="text-gray-600 mt-1">
+            Comprehensive financial analytics and reporting
+          </p>
         </div>
       </div>
 
@@ -27,8 +35,13 @@ import { filter } from 'rxjs/operators';
             <a
               *ngFor="let tab of financialTabs"
               [routerLink]="[tab.route]"
-              [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' +
-                      (isTabActive(tab.route) ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
+              [class]="
+                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' +
+                (isTabActive(tab.route)
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')
+              "
+            >
               <i [class]="tab.icon + ' mr-2'"></i>
               {{ tab.label }}
             </a>
@@ -41,7 +54,7 @@ import { filter } from 'rxjs/operators';
         <router-outlet></router-outlet>
       </div>
     </div>
-  `
+  `,
 })
 export class FinancialShellComponent implements OnInit {
   currentUrl = '';
@@ -50,57 +63,56 @@ export class FinancialShellComponent implements OnInit {
     {
       label: 'Bank Statements',
       route: 'bank-statements',
-      icon: 'fas fa-university'
+      icon: 'fas fa-university',
     },
     {
       label: 'Revenue',
       route: 'revenue',
-      icon: 'fas fa-chart-line'
+      icon: 'fas fa-chart-line',
     },
-    {
-      label: 'Profits',
-      route: 'profits',
-      icon: 'fas fa-coins'
-    },
+
     {
       label: 'Cost Structure',
       route: 'cost-structure',
-      icon: 'fas fa-chart-pie'
+      icon: 'fas fa-chart-pie',
     },
     {
       label: 'Balance Sheet',
       route: 'balance-sheet',
-      icon: 'fas fa-balance-scale'
+      icon: 'fas fa-balance-scale',
     },
+    {
+      label: 'Profits',
+      route: 'profits',
+      icon: 'fas fa-coins',
+    },
+
     {
       label: 'Ratios',
       route: 'ratios',
-      icon: 'fas fa-calculator'
+      icon: 'fas fa-calculator',
     },
     {
       label: 'Funds Received',
       route: 'funds-received',
-      icon: 'fas fa-hand-holding-usd'
+      icon: 'fas fa-hand-holding-usd',
     },
     {
       label: 'Employee Count',
       route: 'employee-count',
-      icon: 'fas fa-users'
-    }
+      icon: 'fas fa-users',
+    },
   ];
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     // Track route changes for active tab highlighting
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
-      this.currentUrl = event.url;
-    });
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.currentUrl = event.url;
+      });
 
     // Set initial URL
     this.currentUrl = this.router.url;

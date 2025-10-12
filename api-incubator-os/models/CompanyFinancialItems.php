@@ -52,7 +52,7 @@ final class CompanyFinancialItems
 
         // Auto-recalculate profit summaries for cost items
         $itemType = strtolower($data['item_type']);
-        if (in_array($itemType, ['direct', 'operational'])) {
+        if (in_array($itemType, ['direct_cost', 'operational_cost'])) {
             try {
                 $this->recalculateProfitForYear(
                     (int)$data['company_id'],
@@ -112,7 +112,7 @@ final class CompanyFinancialItems
 
         if ($needsRecalc) {
             $itemType = isset($fields['item_type']) ? strtolower($fields['item_type']) : $current['item_type'];
-            if (in_array($itemType, ['direct', 'operational']) || in_array($current['item_type'], ['direct', 'operational'])) {
+            if (in_array($itemType, ['direct_cost', 'operational_cost']) || in_array($current['item_type'], ['direct_cost', 'operational_cost'])) {
                 try {
                     $this->recalculateProfitForYear(
                         $current['company_id'],
@@ -196,7 +196,7 @@ final class CompanyFinancialItems
         $deleted = $stmt->rowCount() > 0;
 
         // Auto-recalculate profit summaries if we deleted a cost item
-        if ($deleted && $current && in_array($current['item_type'], ['direct', 'operational'])) {
+        if ($deleted && $current && in_array($current['item_type'], ['direct_cost', 'operational_cost'])) {
             try {
                 $this->recalculateProfitForYear(
                     $current['company_id'],
@@ -286,8 +286,8 @@ final class CompanyFinancialItems
 
         // 2. Get total direct and operational costs
         $totals = $this->getTotalsByTypeAndYear($companyId, $year);
-        $directCosts = $totals['direct'] ?? 0;
-        $operationalCosts = $totals['operational'] ?? 0;
+        $directCosts = $totals['direct_cost'] ?? 0;
+        $operationalCosts = $totals['operational_cost'] ?? 0;
 
         // 3. Compute profit layers
         $grossProfit = $revenueTotal - $directCosts;

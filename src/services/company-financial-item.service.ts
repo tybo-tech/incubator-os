@@ -8,7 +8,7 @@ import { Constants } from './service';
 export interface ICompanyFinancialItemFilters {
   company_id: number;
   year_?: number;
-  item_type?: 'direct' | 'operational' | 'asset' | 'liability' | 'equity';
+  item_type?: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity';
   category_id?: number | null;
   name?: string;
   client_id?: number;
@@ -110,11 +110,11 @@ export class CompanyFinancialItemService {
   }
 
   /**
-   * List financial items by type (direct, operational, asset, liability, equity)
+   * List financial items by type (direct_cost, operational_cost, asset, liability, equity)
    * @param companyId The ID of the company
    * @param itemType The item type to filter by
    */
-  listFinancialItemsByType(companyId: number, itemType: 'direct' | 'operational' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
+  listFinancialItemsByType(companyId: number, itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
     return this.listCompanyFinancialItems({
       company_id: companyId,
       item_type: itemType,
@@ -143,7 +143,7 @@ export class CompanyFinancialItemService {
    * @param year The year to filter by
    * @param itemType The item type to filter by
    */
-  listFinancialItemsByYearAndType(companyId: number, year: number, itemType: 'direct' | 'operational' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
+  listFinancialItemsByYearAndType(companyId: number, year: number, itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity'): Observable<CompanyFinancialItem[]> {
     return this.listCompanyFinancialItems({
       company_id: companyId,
       year_: year,

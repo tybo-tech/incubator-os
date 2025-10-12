@@ -90,4 +90,8 @@ export class FinancialItemComponent implements OnInit {
     const total = this.items().reduce((sum, i) => sum + (i.amount ?? 0), 0);
     this.totalAmount.set(total);
   }
+
+  trackByItemId(index: number, item: CompanyFinancialItem): number {
+    return item.id ?? index;
+  }
 }

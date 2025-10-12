@@ -101,7 +101,7 @@ export interface CompanyFinancialItem extends BaseAudit {
   category_name?: string;
 }
 
-export type FinancialItemType = 'direct' | 'operational' | 'asset' | 'liability' | 'equity';
+export type FinancialItemType = 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity';
 
 /* ============================================================================
  * 4. Financial Category
