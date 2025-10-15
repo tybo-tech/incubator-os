@@ -219,7 +219,7 @@ export class FinancialYearService {
       }
 
       // Break if we've reached the end
-      if (currentYear > financialYear.fy_end_year || 
+      if (currentYear > financialYear.fy_end_year ||
           (currentYear === financialYear.fy_end_year && currentMonth > financialYear.end_month)) {
         break;
       }
@@ -238,8 +238,8 @@ export class FinancialYearService {
     // Handle year transitions
     if (financialYear.start_month <= financialYear.end_month) {
       // Financial year doesn't cross calendar year boundary
-      return year === financialYear.fy_start_year && 
-             month >= financialYear.start_month && 
+      return year === financialYear.fy_start_year &&
+             month >= financialYear.start_month &&
              month <= financialYear.end_month;
     } else {
       // Financial year crosses calendar year boundary (e.g., March to February)
@@ -253,12 +253,12 @@ export class FinancialYearService {
    */
   getQuarterForMonth(month: number, financialYear: FinancialYear): number {
     let adjustedMonth = month;
-    
+
     // Adjust month relative to financial year start
     if (month < financialYear.start_month) {
       adjustedMonth = month + 12;
     }
-    
+
     const monthsFromStart = adjustedMonth - financialYear.start_month;
     return Math.floor(monthsFromStart / 3) + 1;
   }
@@ -320,7 +320,7 @@ export class FinancialYearService {
       console.error(`💥 ${operation} failed:`, error);
 
       let errorMessage = 'An unexpected error occurred';
-      
+
       if (error.error && error.error.error) {
         errorMessage = error.error.error;
       } else if (error.message) {

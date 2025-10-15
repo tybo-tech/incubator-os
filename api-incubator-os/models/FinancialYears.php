@@ -169,7 +169,7 @@ final class FinancialYears
     public function getCurrentActive(): ?array
     {
         $activeYears = $this->getActive();
-        
+
         // Return the first active year, or null if none found
         return count($activeYears) > 0 ? $activeYears[0] : null;
     }
@@ -246,9 +246,9 @@ final class FinancialYears
      */
     public function hasConflict(int $startYear, int $endYear, ?int $excludeId = null): bool
     {
-        $sql = "SELECT id FROM financial_years 
+        $sql = "SELECT id FROM financial_years
                 WHERE ((fy_start_year = :start_year AND fy_end_year = :end_year))";
-        
+
         $params = [
             ':start_year' => $startYear,
             ':end_year' => $endYear
@@ -261,7 +261,7 @@ final class FinancialYears
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
-        
+
         return $stmt->rowCount() > 0;
     }
 
@@ -272,36 +272,36 @@ final class FinancialYears
     {
         $fy = $this->getById($id);
         $months = [];
-        
+
         $startMonth = $fy['start_month'];
         $endMonth = $fy['end_month'];
         $startYear = $fy['fy_start_year'];
         $endYear = $fy['fy_end_year'];
-        
+
         $currentMonth = $startMonth;
         $currentYear = $startYear;
-        
+
         while (true) {
             $months[] = [
                 'month' => $currentMonth,
                 'year' => $currentYear,
                 'name' => date('F Y', mktime(0, 0, 0, $currentMonth, 1, $currentYear))
             ];
-            
+
             // Move to next month
             $currentMonth++;
             if ($currentMonth > 12) {
                 $currentMonth = 1;
                 $currentYear++;
             }
-            
+
             // Break if we've reached the end
-            if ($currentYear > $endYear || 
+            if ($currentYear > $endYear ||
                 ($currentYear === $endYear && $currentMonth > $endMonth)) {
                 break;
             }
         }
-        
+
         return $months;
     }
 
@@ -341,17 +341,17 @@ final class FinancialYears
      */
     public function getSummary(): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     COUNT(*) as total_years,
                     COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_years,
                     MIN(fy_start_year) as earliest_year,
                     MAX(fy_end_year) as latest_year
                 FROM financial_years";
-        
+
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         return [
             'total_years' => (int) $result['total_years'],
             'active_years' => (int) $result['active_years'],

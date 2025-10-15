@@ -365,14 +365,14 @@ export class MonthlyRevenueComponent implements OnInit {
       const data = await firstValueFrom(
         this.yearlyStatsService.getAllCompanyStats(companyId)
       );
-      
+
       // Filter for revenue type records and add display fields
       const revenueData = data
         .filter(record => record.is_revenue === true)
         .map(record => {
           // Find the financial year name from our loaded financial years
           const financialYear = this.availableFinancialYears().find(fy => fy.value === record.financial_year_id);
-          
+
           return {
             ...record,
             financial_year: record.financial_year_id,
@@ -380,7 +380,7 @@ export class MonthlyRevenueComponent implements OnInit {
             account_name: `Account ${record.account_id || 'Unknown'}`
           };
         });
-      
+
       this.existingData.set(revenueData);
     } catch (error) {
       console.warn('Could not load existing revenue data:', error);

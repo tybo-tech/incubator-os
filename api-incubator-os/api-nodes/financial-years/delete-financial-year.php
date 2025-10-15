@@ -18,7 +18,7 @@ try {
     $financialYears = new FinancialYears($db);
 
     $success = $financialYears->delete($id);
-    
+
     if ($success) {
         echo json_encode(['message' => 'Financial year deleted successfully']);
     } else {
