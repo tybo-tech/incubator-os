@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CompanyService } from '../../../../../services/company.service';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyFinancialYearlyStatsService, CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
+import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { firstValueFrom } from 'rxjs';
 
 interface MonthlyRevenueFormData {
@@ -27,6 +28,7 @@ interface MonthlyRevenueFormData {
 // Extended interface for display purposes
 interface DisplayCompanyFinancialYearlyStats extends CompanyFinancialYearlyStats {
   financial_year?: number;
+  financial_year_name?: string;
   account_name?: string;
 }
 
@@ -102,8 +104,10 @@ interface DisplayCompanyFinancialYearlyStats extends CompanyFinancialYearlyStats
                   formControlName="financial_year"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="">Select Year</option>
-                  <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+                  <option value="">Select Financial Year</option>
+                  <option *ngFor="let year of availableFinancialYears()" [value]="year.value">
+                    {{ year.label }} {{ year.isActive ? '(Active)' : '' }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -115,10 +119,10 @@ interface DisplayCompanyFinancialYearlyStats extends CompanyFinancialYearlyStats
                   <i class="fas fa-table mr-2"></i>
                   Monthly Revenue Entry (Excel-style)
                 </h4>
-                
+
                 <div class="grid grid-cols-12 gap-2 mb-4">
                   <!-- Month Headers -->
-                  <div *ngFor="let month of monthNames; let i = index" 
+                  <div *ngFor="let month of monthNames; let i = index"
                        class="text-center bg-green-100 p-2 rounded text-sm font-medium text-green-800">
                     {{ month }}
                   </div>
@@ -217,7 +221,7 @@ interface DisplayCompanyFinancialYearlyStats extends CompanyFinancialYearlyStats
             <tbody class="bg-white divide-y divide-gray-200">
               <tr *ngFor="let record of existingData()" class="hover:bg-gray-50">
                 <td class="px-4 py-3 text-sm font-medium text-gray-900">
-                  {{ record.financial_year }}
+                  {{ record.financial_year_name }}
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-900">
                   {{ record.account_name }}
@@ -273,11 +277,13 @@ export class MonthlyRevenueComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private companyService = inject(CompanyService);
   private yearlyStatsService = inject(CompanyFinancialYearlyStatsService);
+  private financialYearService = inject(FinancialYearService);
   private fb = inject(FormBuilder);
 
   // Signals
   company = signal<ICompany | null>(null);
   existingData = signal<DisplayCompanyFinancialYearlyStats[]>([]);
+  availableFinancialYears = signal<{ value: number; label: string; isActive: boolean }[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
 
@@ -287,7 +293,6 @@ export class MonthlyRevenueComponent implements OnInit {
   // Configuration
   monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   monthFields = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'];
-  availableYears = [2023, 2024, 2025, 2026, 2027];
 
   constructor() {
     this.revenueForm = this.fb.group({
@@ -325,6 +330,9 @@ export class MonthlyRevenueComponent implements OnInit {
       );
       this.company.set(company);
 
+      // Load financial years for dropdown
+      await this.loadFinancialYears();
+
       // Load existing revenue data
       await this.loadExistingData(parseInt(companyId));
     } catch (error) {
@@ -332,6 +340,23 @@ export class MonthlyRevenueComponent implements OnInit {
       console.error('Monthly Revenue Component Error:', error);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  private async loadFinancialYears() {
+    try {
+      const years = await firstValueFrom(
+        this.financialYearService.getFinancialYearOptions()
+      );
+      this.availableFinancialYears.set(years);
+    } catch (error) {
+      console.warn('Could not load financial years:', error);
+      // Set fallback years if API fails
+      this.availableFinancialYears.set([
+        { value: 1, label: 'FY 2024/2025', isActive: true },
+        { value: 2, label: 'FY 2023/2024', isActive: false },
+        { value: 3, label: 'FY 2025/2026', isActive: false }
+      ]);
     }
   }
 
@@ -344,20 +369,24 @@ export class MonthlyRevenueComponent implements OnInit {
       // Filter for revenue type records and add display fields
       const revenueData = data
         .filter(record => record.is_revenue === true)
-        .map(record => ({
-          ...record,
-          financial_year: record.financial_year_id,
-          account_name: `Account ${record.account_id || 'Unknown'}`
-        }));
+        .map(record => {
+          // Find the financial year name from our loaded financial years
+          const financialYear = this.availableFinancialYears().find(fy => fy.value === record.financial_year_id);
+          
+          return {
+            ...record,
+            financial_year: record.financial_year_id,
+            financial_year_name: financialYear?.label || `Year ${record.financial_year_id}`,
+            account_name: `Account ${record.account_id || 'Unknown'}`
+          };
+        });
       
       this.existingData.set(revenueData);
     } catch (error) {
       console.warn('Could not load existing revenue data:', error);
       this.existingData.set([]);
     }
-  }
-
-  totalRevenue = signal(0);
+  }  totalRevenue = signal(0);
 
   onMonthValueChange() {
     const formValue = this.revenueForm.value;
@@ -381,7 +410,7 @@ export class MonthlyRevenueComponent implements OnInit {
       this.error.set(null);
 
       const formValue = this.revenueForm.value as MonthlyRevenueFormData;
-      
+
       const yearlyStatsData: Partial<CompanyFinancialYearlyStats> = {
         company_id: this.company()!.id,
         financial_year_id: formValue.financial_year,
@@ -411,10 +440,10 @@ export class MonthlyRevenueComponent implements OnInit {
       // Reload data and reset form
       await this.loadExistingData(this.company()!.id);
       this.resetForm();
-      
+
       // Success feedback could be added here with a toast service
       console.log('Revenue data saved successfully');
-      
+
     } catch (error) {
       this.error.set('Failed to save revenue data: ' + (error as Error).message);
       console.error('Save Error:', error);
@@ -473,10 +502,10 @@ export class MonthlyRevenueComponent implements OnInit {
       await firstValueFrom(
         this.yearlyStatsService.deleteYearlyStats(record.id!)
       );
-      
+
       // Reload data
       await this.loadExistingData(this.company()!.id);
-      
+
     } catch (error) {
       this.error.set('Failed to delete record: ' + (error as Error).message);
       console.error('Delete Error:', error);
