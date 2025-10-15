@@ -11,12 +11,13 @@ import {
   CompanyAccountsListFilters,
   ApiResponse
 } from './company-account.interface';
+import { Constants } from '../../services/service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CompanyAccountService {
-  private baseUrl = '/api-incubator-os/api-nodes/company-accounts';
+  private apiUrl = `${Constants.ApiBase}/api-nodes/company-accounts`;
 
   // Signals for reactive state management
   companyAccounts = signal<CompanyAccount[]>([]);
@@ -50,7 +51,7 @@ export class CompanyAccountService {
       }
     }
 
-    return this.http.get<CompanyAccountsListResponse>(`${this.baseUrl}/list-company-accounts.php`, { params })
+    return this.http.get<CompanyAccountsListResponse>(`${this.apiUrl}/list-company-accounts.php`, { params })
       .pipe(
         tap(response => {
           if (response.success) {
@@ -91,7 +92,7 @@ export class CompanyAccountService {
 
     const params = new HttpParams().set('id', id.toString());
 
-    return this.http.get<CompanyAccountResponse>(`${this.baseUrl}/get-company-account.php`, { params })
+    return this.http.get<CompanyAccountResponse>(`${this.apiUrl}/get-company-account.php`, { params })
       .pipe(
         tap(() => this.loading.set(false)),
         catchError(error => {
@@ -113,7 +114,7 @@ export class CompanyAccountService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.post<CompanyAccountResponse>(`${this.baseUrl}/add-company-account.php`, accountData)
+    return this.http.post<CompanyAccountResponse>(`${this.apiUrl}/add-company-account.php`, accountData)
       .pipe(
         tap(response => {
           this.loading.set(false);
@@ -145,7 +146,7 @@ export class CompanyAccountService {
 
     const params = new HttpParams().set('id', id.toString());
 
-    return this.http.put<CompanyAccountResponse>(`${this.baseUrl}/update-company-account.php`, accountData, { params })
+    return this.http.put<CompanyAccountResponse>(`${this.apiUrl}/update-company-account.php`, accountData, { params })
       .pipe(
         tap(response => {
           this.loading.set(false);
@@ -181,7 +182,7 @@ export class CompanyAccountService {
 
     const params = new HttpParams().set('id', id.toString());
 
-    return this.http.delete<ApiResponse>(`${this.baseUrl}/delete-company-account.php`, { params })
+    return this.http.delete<ApiResponse>(`${this.apiUrl}/delete-company-account.php`, { params })
       .pipe(
         tap(response => {
           this.loading.set(false);
@@ -213,7 +214,7 @@ export class CompanyAccountService {
     const params = new HttpParams().set('id', id.toString());
     const data = { is_active: isActive };
 
-    return this.http.patch<CompanyAccountResponse>(`${this.baseUrl}/set-account-active.php`, data, { params })
+    return this.http.patch<CompanyAccountResponse>(`${this.apiUrl}/set-account-active.php`, data, { params })
       .pipe(
         tap(response => {
           this.loading.set(false);
@@ -252,7 +253,7 @@ export class CompanyAccountService {
       params = params.set('company_id', companyId.toString());
     }
 
-    return this.http.get<CompanyAccountsSummaryResponse>(`${this.baseUrl}/accounts-summary.php`, { params })
+    return this.http.get<CompanyAccountsSummaryResponse>(`${this.apiUrl}/accounts-summary.php`, { params })
       .pipe(
         tap(() => this.loading.set(false)),
         catchError(error => {

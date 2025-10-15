@@ -322,8 +322,8 @@ export class MonthlyRevenueComponent implements OnInit {
       this.isLoading.set(true);
       this.error.set(null);
 
-      // Get company ID from route
-      const companyId = this.route.snapshot.queryParams['companyId'];
+      // Get company ID from parent route params (same pattern as other financial components)
+      const companyId = this.route.parent?.parent?.snapshot.params['id'];
       if (!companyId) {
         throw new Error('Company ID not found in route parameters');
       }
@@ -389,9 +389,8 @@ export class MonthlyRevenueComponent implements OnInit {
         this.yearlyStatsService.getAllCompanyStats(companyId)
       );
 
-      // Filter for revenue type records and add display fields
+      // Process all records and add display fields
       const revenueData = data
-        .filter(record => record.is_revenue === true)
         .map(record => {
           // Find the financial year name from our loaded financial years
           const financialYear = this.availableFinancialYears().find(fy => fy.value === record.financial_year_id);
@@ -440,8 +439,7 @@ export class MonthlyRevenueComponent implements OnInit {
       const yearlyStatsData: Partial<CompanyFinancialYearlyStats> = {
         company_id: this.company()!.id,
         financial_year_id: formValue.financial_year,
-        is_revenue: true,
-        account_id: 1, // Default account ID for now
+        account_id: parseInt(formValue.account), // Use the selected account ID from the form
         client_id: 1, // Default client ID
         m1: formValue.m1 || 0,
         m2: formValue.m2 || 0,
@@ -500,7 +498,7 @@ export class MonthlyRevenueComponent implements OnInit {
 
   editRecord(record: DisplayCompanyFinancialYearlyStats) {
     this.revenueForm.patchValue({
-      account: record.account_name || 'Primary Account',
+      account: record.account_id?.toString() || '', // Use account_id instead of account_name
       financial_year: record.financial_year_id,
       m1: record.m1 || 0,
       m2: record.m2 || 0,

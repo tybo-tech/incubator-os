@@ -8,7 +8,7 @@ final class CompanyFinancialYearlyStats
     // Define writable fields for security
     private const WRITABLE = [
         'tenant_id', 'client_id', 'program_id', 'cohort_id', 'company_id',
-        'account_id', 'financial_year_id', 'is_revenue',
+        'account_id', 'financial_year_id',
         'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
         'notes'
     ];
@@ -124,12 +124,7 @@ final class CompanyFinancialYearlyStats
             ':financial_year_id' => $financialYearId
         ];
 
-        if ($isRevenue !== null) {
-            $sql .= " AND is_revenue = :is_revenue";
-            $params[':is_revenue'] = (int)$isRevenue;
-        }
-
-        $sql .= " ORDER BY is_revenue DESC, account_id ASC";
+        $sql .= " ORDER BY account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -144,12 +139,7 @@ final class CompanyFinancialYearlyStats
         $sql = "SELECT * FROM company_financial_yearly_stats WHERE company_id = :company_id";
         $params = [':company_id' => $companyId];
 
-        if ($isRevenue !== null) {
-            $sql .= " AND is_revenue = :is_revenue";
-            $params[':is_revenue'] = (int)$isRevenue;
-        }
-
-        $sql .= " ORDER BY financial_year_id DESC, is_revenue DESC, account_id ASC";
+        $sql .= " ORDER BY financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -191,11 +181,6 @@ final class CompanyFinancialYearlyStats
             $params[':financial_year_id'] = (int)$filters['financial_year_id'];
         }
 
-        if (isset($filters['is_revenue'])) {
-            $sql .= " AND is_revenue = :is_revenue";
-            $params[':is_revenue'] = (int)$filters['is_revenue'];
-        }
-
         if (isset($filters['program_id'])) {
             $sql .= " AND program_id = :program_id";
             $params[':program_id'] = (int)$filters['program_id'];
@@ -207,7 +192,7 @@ final class CompanyFinancialYearlyStats
         }
 
         // Default ordering
-        $sql .= " ORDER BY company_id ASC, financial_year_id DESC, is_revenue DESC, account_id ASC";
+        $sql .= " ORDER BY company_id ASC, financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -221,13 +206,11 @@ final class CompanyFinancialYearlyStats
     {
         $sql = "SELECT * FROM company_financial_yearly_stats
                 WHERE company_id = :company_id
-                AND financial_year_id = :financial_year_id
-                AND is_revenue = :is_revenue";
+                AND financial_year_id = :financial_year_id";
 
         $params = [
             ':company_id' => $companyId,
-            ':financial_year_id' => $financialYearId,
-            ':is_revenue' => (int)$isRevenue
+            ':financial_year_id' => $financialYearId
         ];
 
         if ($accountId !== null) {

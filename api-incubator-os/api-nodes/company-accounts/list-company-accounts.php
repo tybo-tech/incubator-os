@@ -28,7 +28,15 @@ try {
 
     // Get query parameters
     $companyId = isset($_GET['company_id']) ? (int)$_GET['company_id'] : null;
-    $isActive = isset($_GET['is_active']) ? (int)$_GET['is_active'] : null;
+    $isActive = null;
+    if (isset($_GET['is_active'])) {
+        $activeValue = $_GET['is_active'];
+        if ($activeValue === 'true' || $activeValue === '1' || $activeValue === 1) {
+            $isActive = 1;
+        } elseif ($activeValue === 'false' || $activeValue === '0' || $activeValue === 0) {
+            $isActive = 0;
+        }
+    }
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
     $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : null;
 
@@ -58,6 +66,7 @@ try {
             'message' => 'Company accounts retrieved successfully'
         ]);
     } else {
+        error_log("CompanyAccounts listAll failed: " . json_encode($result));
         http_response_code(400);
         echo json_encode($result);
     }

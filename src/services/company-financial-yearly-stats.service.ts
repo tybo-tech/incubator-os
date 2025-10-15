@@ -32,7 +32,6 @@ export interface CompanyFinancialYearlyStats {
   company_id: number;
   account_id?: number | null;
   financial_year_id: number;
-  is_revenue: boolean;
   m1: number;
   m2: number;
   m3: number;
@@ -317,15 +316,17 @@ export class CompanyFinancialYearlyStatsService {
   }
 
   /**
-   * Group stats by revenue/expense type
+   * Group stats by type (revenue vs expenses)
+   * Note: Since is_revenue field is not available in database schema,
+   * this method returns empty arrays. Consider using account_id to categorize.
    */
   groupStatsByType(stats: CompanyFinancialYearlyStats[]): {
     revenue: CompanyFinancialYearlyStats[];
     expenses: CompanyFinancialYearlyStats[];
   } {
     return {
-      revenue: stats.filter(stat => stat.is_revenue),
-      expenses: stats.filter(stat => !stat.is_revenue)
+      revenue: [], // TODO: Implement account-based categorization
+      expenses: [] // TODO: Implement account-based categorization
     };
   }
 

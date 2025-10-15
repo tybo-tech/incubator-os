@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Revenue Capture - Excel Style Mock</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .company-info {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .account-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .account-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-year-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .add-year-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .financial-year-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .excel-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            background: white;
+        }
+
+        .excel-table th {
+            background: #e9ecef;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .excel-table td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            position: relative;
+        }
+
+        .year-cell {
+            background: #f8f9fa !important;
+            font-weight: 600;
+            color: #495057;
+            width: 100px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .month-input {
+            width: 100%;
+            border: none;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+            background: transparent;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .month-input:focus {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .month-input:hover {
+            background: #f8f9fa;
+        }
+
+        .total-cell {
+            background: #e8f5e8 !important;
+            font-weight: 600;
+            color: #155724;
+        }
+
+        .total-input {
+            width: 100%;
+            border: none;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: #155724;
+            outline: none;
+        }
+
+        .month-header {
+            min-width: 90px;
+        }
+
+        .actions-cell {
+            width: 80px;
+            background: #f8f9fa !important;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin: 0 2px;
+            transition: all 0.2s;
+        }
+
+        .save-btn {
+            color: #28a745;
+        }
+
+        .delete-btn {
+            color: #dc3545;
+        }
+
+        .action-btn:hover {
+            background: rgba(0,0,0,0.1);
+        }
+
+        .new-row {
+            background: #f0f8f0 !important;
+        }
+
+        .new-row .month-input {
+            border: 1px dashed #28a745;
+        }
+
+        .summary-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .company-info {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .month-header {
+                min-width: 70px;
+            }
+
+            .excel-table th,
+            .excel-table td {
+                padding: 6px 4px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Monthly Revenue Capture</h1>
+            <p>Excel-style interface for easy financial data entry</p>
+        </div>
+
+        <div class="company-info">
+            <div class="company-name">
+                🏢 Dongelihle Enterprises
+            </div>
+            <div class="account-selector">
+                <label for="account">Account:</label>
+                <select id="account">
+                    <option value="16">Main Account</option>
+                    <option value="17">Revenue Account</option>
+                    <option value="18">Expense Account</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="add-year-btn" onclick="addNewYear()">
+                ➕ Add New Year
+            </button>
+            <div class="financial-year-info">
+                💡 Financial Year: March to February
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th class="year-cell">Year</th>
+                        <th class="month-header">Mar</th>
+                        <th class="month-header">Apr</th>
+                        <th class="month-header">May</th>
+                        <th class="month-header">Jun</th>
+                        <th class="month-header">Jul</th>
+                        <th class="month-header">Aug</th>
+                        <th class="month-header">Sep</th>
+                        <th class="month-header">Oct</th>
+                        <th class="month-header">Nov</th>
+                        <th class="month-header">Dec</th>
+                        <th class="month-header">Jan</th>
+                        <th class="month-header">Feb</th>
+                        <th class="month-header">Total</th>
+                        <th class="actions-cell">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="data-rows">
+                    <!-- Existing Data Row -->
+                    <tr>
+                        <td class="year-cell">FY 2024/25</td>
+                        <td><input type="number" class="month-input" value="570" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="4928" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="2860" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="1380" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="2775" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="0" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="9455" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="4090" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="3770" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="1680" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="0" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="0" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td class="total-cell">
+                            <input type="number" class="total-input" value="31508" readonly>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="action-btn save-btn" title="Save">💾</button>
+                            <button class="action-btn delete-btn" title="Delete">🗑️</button>
+                        </td>
+                    </tr>
+
+                    <!-- New Row Template (will be added dynamically) -->
+                    <tr class="new-row" style="display: none;" id="new-row-template">
+                        <td class="year-cell">FY 2025/26</td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td><input type="number" class="month-input" value="" placeholder="0" onchange="calculateTotal(this)"></td>
+                        <td class="total-cell">
+                            <input type="number" class="total-input" value="0" readonly>
+                        </td>
+                        <td class="actions-cell">
+                            <button class="action-btn save-btn" title="Save">💾</button>
+                            <button class="action-btn delete-btn" title="Delete">🗑️</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-section">
+            <h3>📈 Summary Statistics</h3>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-label">Total Years</div>
+                    <div class="summary-value">1</div>
+                </div>
+                <div class="summary-card" style="border-left-color: #28a745;">
+                    <div class="summary-label">Total Revenue</div>
+                    <div class="summary-value">R 31,508</div>
+                </div>
+                <div class="summary-card" style="border-left-color: #ffc107;">
+                    <div class="summary-label">Average Monthly</div>
+                    <div class="summary-value">R 2,626</div>
+                </div>
+                <div class="summary-card" style="border-left-color: #dc3545;">
+                    <div class="summary-label">Best Month</div>
+                    <div class="summary-value">Sep (R 9,455)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-calculate totals when values change
+        function calculateTotal(input) {
+            const row = input.closest('tr');
+            const monthInputs = row.querySelectorAll('.month-input');
+            const totalInput = row.querySelector('.total-input');
+
+            let total = 0;
+            monthInputs.forEach(monthInput => {
+                const value = parseFloat(monthInput.value) || 0;
+                total += value;
+            });
+
+            totalInput.value = total;
+            updateSummary();
+        }
+
+        // Add new year functionality
+        function addNewYear() {
+            const template = document.getElementById('new-row-template');
+            const newRow = template.cloneNode(true);
+            newRow.style.display = 'table-row';
+            newRow.id = '';
+
+            // Update year in the new row
+            const currentYear = new Date().getFullYear();
+            newRow.querySelector('.year-cell').textContent = `FY ${currentYear}/${(currentYear + 1).toString().slice(-2)}`;
+
+            // Add to table
+            document.getElementById('data-rows').appendChild(newRow);
+
+            // Focus on first month input
+            newRow.querySelector('.month-input').focus();
+
+            updateSummary();
+        }
+
+        // Update summary statistics
+        function updateSummary() {
+            const rows = document.querySelectorAll('#data-rows tr:not([style*="display: none"])');
+            const summaryCards = document.querySelectorAll('.summary-value');
+
+            // Update total years
+            summaryCards[0].textContent = rows.length;
+
+            // Calculate total revenue
+            let totalRevenue = 0;
+            rows.forEach(row => {
+                const totalInput = row.querySelector('.total-input');
+                if (totalInput) {
+                    totalRevenue += parseFloat(totalInput.value) || 0;
+                }
+            });
+
+            summaryCards[1].textContent = `R ${totalRevenue.toLocaleString()}`;
+
+            // Calculate average monthly
+            const monthsWithData = rows.length * 12;
+            const avgMonthly = monthsWithData > 0 ? totalRevenue / monthsWithData : 0;
+            summaryCards[2].textContent = `R ${Math.round(avgMonthly).toLocaleString()}`;
+
+            // Find best month (simplified)
+            summaryCards[3].textContent = 'Sep (R 9,455)'; // Mock data
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.target.classList.contains('month-input')) {
+                if (e.key === 'Tab' || e.key === 'Enter') {
+                    // Auto-move to next input on Tab/Enter
+                    calculateTotal(e.target);
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const nextInput = e.target.parentElement.nextElementSibling?.querySelector('.month-input');
+                    if (nextInput) nextInput.focus();
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const prevInput = e.target.parentElement.previousElementSibling?.querySelector('.month-input');
+                    if (prevInput) prevInput.focus();
+                }
+            }
+        });
+
+        // Initialize
+        updateSummary();
+
+        // Add some interaction feedback
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📊 Monthly Revenue Capture - Excel Style Interface Loaded');
+            console.log('Features:');
+            console.log('✅ Add new years with one click');
+            console.log('✅ Excel-like keyboard navigation');
+            console.log('✅ Auto-calculation of totals');
+            console.log('✅ Real-time summary statistics');
+            console.log('✅ Responsive design');
+            console.log('✅ Sticky headers and year column');
+        });
+    </script>
+</body>
+</html>
