@@ -68,6 +68,11 @@ export class FinancialShellComponent implements OnInit {
 
   financialTabs = [
     {
+      label: 'Revenue Capture',
+      route: 'revenue-capture',
+      icon: 'fas fa-table',
+    },
+    {
       label: 'Monthly Revenue',
       route: 'monthly-revenue',
       icon: 'fas fa-chart-line',

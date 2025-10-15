@@ -92,8 +92,12 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
-                redirectTo: 'monthly-revenue',
+                redirectTo: 'revenue-capture',
                 pathMatch: 'full'
+              },
+              {
+                path: 'revenue-capture',
+                loadComponent: () => import('./components/company-shell/financial-shell/components/company-revenue-capture.component').then(m => m.CompanyRevenueCaptureComponent),
               },
               {
                 path: 'monthly-revenue',
