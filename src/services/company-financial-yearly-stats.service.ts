@@ -338,12 +338,12 @@ export class CompanyFinancialYearlyStatsService {
     expenseRatio: number;
     netProfitability: number;
   } {
-    const profitMargin = summary.revenue_total > 0 ? 
+    const profitMargin = summary.revenue_total > 0 ?
       (summary.net_total / summary.revenue_total) * 100 : 0;
-    
-    const expenseRatio = summary.revenue_total > 0 ? 
+
+    const expenseRatio = summary.revenue_total > 0 ?
       (summary.expense_total / summary.revenue_total) * 100 : 0;
-    
+
     const netProfitability = summary.net_total;
 
     return {

@@ -7,8 +7,8 @@ final class CompanyFinancialYearlyStats
 
     // Define writable fields for security
     private const WRITABLE = [
-        'tenant_id', 'client_id', 'program_id', 'cohort_id', 'company_id', 
-        'account_id', 'financial_year_id', 'is_revenue', 
+        'tenant_id', 'client_id', 'program_id', 'cohort_id', 'company_id',
+        'account_id', 'financial_year_id', 'is_revenue',
         'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12',
         'notes'
     ];
@@ -29,7 +29,7 @@ final class CompanyFinancialYearlyStats
     public function add(array $data): array
     {
         $filteredData = $this->filterWritable($data);
-        
+
         $sql = "INSERT INTO company_financial_yearly_stats (
                     tenant_id, client_id, program_id, cohort_id, company_id,
                     account_id, financial_year_id, is_revenue,
@@ -117,7 +117,7 @@ final class CompanyFinancialYearlyStats
      */
     public function getByCompanyAndYear(int $companyId, int $financialYearId, ?bool $isRevenue = null): array
     {
-        $sql = "SELECT * FROM company_financial_yearly_stats 
+        $sql = "SELECT * FROM company_financial_yearly_stats
                 WHERE company_id = :company_id AND financial_year_id = :financial_year_id";
         $params = [
             ':company_id' => $companyId,
@@ -219,11 +219,11 @@ final class CompanyFinancialYearlyStats
      */
     public function getByUniqueKey(int $companyId, ?int $accountId, int $financialYearId, bool $isRevenue): ?array
     {
-        $sql = "SELECT * FROM company_financial_yearly_stats 
-                WHERE company_id = :company_id 
-                AND financial_year_id = :financial_year_id 
+        $sql = "SELECT * FROM company_financial_yearly_stats
+                WHERE company_id = :company_id
+                AND financial_year_id = :financial_year_id
                 AND is_revenue = :is_revenue";
-        
+
         $params = [
             ':company_id' => $companyId,
             ':financial_year_id' => $financialYearId,
@@ -273,11 +273,11 @@ final class CompanyFinancialYearlyStats
      */
     public function getYearlyTotals(int $companyId, int $financialYearId): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     is_revenue,
                     SUM(total_amount) as yearly_total,
                     COUNT(*) as account_count
-                FROM company_financial_yearly_stats 
+                FROM company_financial_yearly_stats
                 WHERE company_id = :company_id AND financial_year_id = :financial_year_id
                 GROUP BY is_revenue";
 
@@ -288,7 +288,7 @@ final class CompanyFinancialYearlyStats
         ]);
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $totals = [
             'revenue_total' => 0,
             'expense_total' => 0,
@@ -308,7 +308,7 @@ final class CompanyFinancialYearlyStats
         }
 
         $totals['net_total'] = $totals['revenue_total'] - $totals['expense_total'];
-        
+
         return $totals;
     }
 
@@ -317,13 +317,13 @@ final class CompanyFinancialYearlyStats
      */
     public function getMonthlyBreakdown(int $companyId, int $financialYearId): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     is_revenue,
                     SUM(m1) as m1_total, SUM(m2) as m2_total, SUM(m3) as m3_total,
                     SUM(m4) as m4_total, SUM(m5) as m5_total, SUM(m6) as m6_total,
                     SUM(m7) as m7_total, SUM(m8) as m8_total, SUM(m9) as m9_total,
                     SUM(m10) as m10_total, SUM(m11) as m11_total, SUM(m12) as m12_total
-                FROM company_financial_yearly_stats 
+                FROM company_financial_yearly_stats
                 WHERE company_id = :company_id AND financial_year_id = :financial_year_id
                 GROUP BY is_revenue";
 
@@ -367,10 +367,10 @@ final class CompanyFinancialYearlyStats
     {
         // Cast integer fields
         $intFields = [
-            'id', 'tenant_id', 'client_id', 'program_id', 'cohort_id', 
+            'id', 'tenant_id', 'client_id', 'program_id', 'cohort_id',
             'company_id', 'account_id', 'financial_year_id', 'is_revenue'
         ];
-        
+
         foreach ($intFields as $field) {
             if (isset($row[$field]) && $row[$field] !== null) {
                 $row[$field] = (int)$row[$field];
@@ -381,7 +381,7 @@ final class CompanyFinancialYearlyStats
         $decimalFields = [
             'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'total_amount'
         ];
-        
+
         foreach ($decimalFields as $field) {
             if (isset($row[$field]) && $row[$field] !== null) {
                 $row[$field] = (float)$row[$field];

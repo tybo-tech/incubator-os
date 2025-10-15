@@ -15,17 +15,17 @@ try {
     $database = new Database();
     $db = $database->connect();
     $yearlyStats = new CompanyFinancialYearlyStats($db);
-    
+
     $deleted = $yearlyStats->delete($id);
-    
+
     if (!$deleted) {
         http_response_code(404);
         echo json_encode(['error' => 'Yearly stats record not found']);
         exit;
     }
-    
+
     echo json_encode(['success' => true, 'message' => 'Yearly stats record deleted successfully']);
-    
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

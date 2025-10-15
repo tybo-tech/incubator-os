@@ -134,9 +134,9 @@ export class FinancialRatioService {
    * Update only ratio targets (min and ideal)
    */
   updateRatioTargets(id: number, minTarget?: number, idealTarget?: number): Observable<FinancialRatio> {
-    return this.updateRatio(id, { 
-      min_target: minTarget, 
-      ideal_target: idealTarget 
+    return this.updateRatio(id, {
+      min_target: minTarget,
+      ideal_target: idealTarget
     });
   }
 

@@ -15,10 +15,10 @@ try {
     $database = new Database();
     $db = $database->connect();
     $yearlyStats = new CompanyFinancialYearlyStats($db);
-    
+
     $result = $yearlyStats->upsert($data);
     echo json_encode($result);
-    
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);

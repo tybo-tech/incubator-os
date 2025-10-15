@@ -14,7 +14,7 @@ try {
     $database = new Database();
     $db = $database->connect();
     $yearlyStats = new CompanyFinancialYearlyStats($db);
-    
+
     // Build filters array
     $filters = [];
     if ($companyId) $filters['company_id'] = $companyId;
@@ -22,10 +22,10 @@ try {
     if ($isRevenue !== null) $filters['is_revenue'] = $isRevenue;
     if ($programId) $filters['program_id'] = $programId;
     if ($cohortId) $filters['cohort_id'] = $cohortId;
-    
+
     $result = $yearlyStats->listAll($filters);
     echo json_encode($result);
-    
+
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);
