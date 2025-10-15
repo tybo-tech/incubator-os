@@ -6,6 +6,8 @@ import { CompanyService } from '../../../../../services/company.service';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyFinancialYearlyStatsService, CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
+import { CompanyAccountService } from '../../../../services/company-account.service';
+import { CompanyAccount } from '../../../../services/company-account.interface';
 import { firstValueFrom } from 'rxjs';
 
 interface MonthlyRevenueFormData {
@@ -86,10 +88,10 @@ interface DisplayCompanyFinancialYearlyStats extends CompanyFinancialYearlyStats
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Select Account</option>
-                  <option value="Primary Account">Primary Account</option>
-                  <option value="Secondary Account">Secondary Account</option>
-                  <option value="Business Account">Business Account</option>
-                  <option value="Savings Account">Savings Account</option>
+                  <option *ngFor="let account of availableAccounts()" [value]="account.id">
+                    {{ account.account_name }}
+                    <span *ngIf="account.account_number">({{ account.account_number }})</span>
+                  </option>
                 </select>
               </div>
 
@@ -278,12 +280,14 @@ export class MonthlyRevenueComponent implements OnInit {
   private companyService = inject(CompanyService);
   private yearlyStatsService = inject(CompanyFinancialYearlyStatsService);
   private financialYearService = inject(FinancialYearService);
+  private companyAccountService = inject(CompanyAccountService);
   private fb = inject(FormBuilder);
 
   // Signals
   company = signal<ICompany | null>(null);
   existingData = signal<DisplayCompanyFinancialYearlyStats[]>([]);
   availableFinancialYears = signal<{ value: number; label: string; isActive: boolean }[]>([]);
+  availableAccounts = signal<CompanyAccount[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
 
@@ -330,11 +334,12 @@ export class MonthlyRevenueComponent implements OnInit {
       );
       this.company.set(company);
 
-      // Load financial years for dropdown
-      await this.loadFinancialYears();
-
-      // Load existing revenue data
-      await this.loadExistingData(parseInt(companyId));
+      // Load financial years, company accounts, and existing data in parallel
+      await Promise.all([
+        this.loadFinancialYears(),
+        this.loadCompanyAccounts(parseInt(companyId)),
+        this.loadExistingData(parseInt(companyId))
+      ]);
     } catch (error) {
       this.error.set('Failed to load component data: ' + (error as Error).message);
       console.error('Monthly Revenue Component Error:', error);
@@ -360,6 +365,24 @@ export class MonthlyRevenueComponent implements OnInit {
     }
   }
 
+  private async loadCompanyAccounts(companyId: number) {
+    try {
+      const response = await firstValueFrom(
+        this.companyAccountService.getAccountsByCompany(companyId, true)
+      );
+
+      if (response.success) {
+        this.availableAccounts.set(response.data);
+      } else {
+        console.warn('Could not load company accounts:', response.message);
+        this.availableAccounts.set([]);
+      }
+    } catch (error) {
+      console.warn('Could not load company accounts:', error);
+      this.availableAccounts.set([]);
+    }
+  }
+
   private async loadExistingData(companyId: number) {
     try {
       const data = await firstValueFrom(
@@ -373,11 +396,14 @@ export class MonthlyRevenueComponent implements OnInit {
           // Find the financial year name from our loaded financial years
           const financialYear = this.availableFinancialYears().find(fy => fy.value === record.financial_year_id);
 
+          // Find the account name from our loaded accounts
+          const account = this.availableAccounts().find(acc => acc.id === record.account_id);
+
           return {
             ...record,
             financial_year: record.financial_year_id,
             financial_year_name: financialYear?.label || `Year ${record.financial_year_id}`,
-            account_name: `Account ${record.account_id || 'Unknown'}`
+            account_name: account?.account_name || `Account ${record.account_id || 'Unknown'}`
           };
         });
 
