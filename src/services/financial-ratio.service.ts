@@ -95,6 +95,14 @@ export class FinancialRatioService {
   }
 
   /**
+   * List all ratios for a company across all years
+   */
+  listAllCompanyRatios(companyId: number): Observable<FinancialRatio[]> {
+    return this.http.get<FinancialRatio[]>(`${this.apiUrl}/list-company-ratios.php?company_id=${companyId}`)
+      .pipe(catchError(this.handleError('List all company ratios')));
+  }
+
+  /**
    * List ratios by group (Profitability, Liquidity, etc.)
    */
   listRatiosByGroup(
@@ -120,6 +128,30 @@ export class FinancialRatioService {
     console.log('🎯 Updating ratio:', { id, data: payload });
     return this.http.post<FinancialRatio>(`${this.apiUrl}/update-ratio.php`, payload, this.httpOptions)
       .pipe(catchError(this.handleError('Update ratio')));
+  }
+
+  /**
+   * Update only ratio targets (min and ideal)
+   */
+  updateRatioTargets(id: number, minTarget?: number, idealTarget?: number): Observable<FinancialRatio> {
+    return this.updateRatio(id, { 
+      min_target: minTarget, 
+      ideal_target: idealTarget 
+    });
+  }
+
+  /**
+   * Update ratio notes
+   */
+  updateRatioNotes(id: number, notes: string): Observable<FinancialRatio> {
+    return this.updateRatio(id, { notes });
+  }
+
+  /**
+   * Toggle ratio status (active/inactive)
+   */
+  toggleRatioStatus(id: number, isActive: boolean): Observable<FinancialRatio> {
+    return this.updateRatio(id, { status_id: isActive ? 1 : 0 });
   }
 
   /**
@@ -153,6 +185,19 @@ export class FinancialRatioService {
   }
 
   /**
+   * Get background color class for ratio health
+   */
+  getRatioHealthBackground(health: 'excellent' | 'good' | 'warning' | 'critical'): string {
+    switch (health) {
+      case 'excellent': return 'bg-emerald-50 border-emerald-200';
+      case 'good': return 'bg-green-50 border-green-200';
+      case 'warning': return 'bg-yellow-50 border-yellow-200';
+      case 'critical': return 'bg-red-50 border-red-200';
+      default: return 'bg-gray-50 border-gray-200';
+    }
+  }
+
+  /**
    * Helper method to format ratio value as percentage
    */
   formatRatioValue(value: number | null): string {
@@ -179,5 +224,52 @@ export class FinancialRatioService {
       default:
         return `Current value: ${value}`;
     }
+  }
+
+  /**
+   * Group ratios by category
+   */
+  groupRatiosByCategory(ratios: FinancialRatio[]): Record<string, FinancialRatio[]> {
+    return ratios.reduce((groups, ratio) => {
+      const group = ratio.group_name;
+      if (!groups[group]) {
+        groups[group] = [];
+      }
+      groups[group].push(ratio);
+      return groups;
+    }, {} as Record<string, FinancialRatio[]>);
+  }
+
+  /**
+   * Calculate summary statistics for ratios
+   */
+  calculateRatioSummary(ratios: FinancialRatio[]): {
+    total: number;
+    excellent: number;
+    good: number;
+    warning: number;
+    critical: number;
+    averageRatio: number;
+  } {
+    const summary = {
+      total: ratios.length,
+      excellent: 0,
+      good: 0,
+      warning: 0,
+      critical: 0,
+      averageRatio: 0
+    };
+
+    if (ratios.length === 0) return summary;
+
+    let totalRatio = 0;
+    ratios.forEach(ratio => {
+      const health = this.getRatioHealth(ratio);
+      summary[health]++;
+      totalRatio += ratio.ratio_value || 0;
+    });
+
+    summary.averageRatio = totalRatio / ratios.length;
+    return summary;
   }
 }
