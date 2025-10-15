@@ -68,6 +68,11 @@ export class FinancialShellComponent implements OnInit {
 
   financialTabs = [
     {
+      label: 'Monthly Revenue',
+      route: 'monthly-revenue',
+      icon: 'fas fa-chart-line',
+    },
+    {
       label: 'Bank Statements',
       route: 'bank-statements',
       icon: 'fas fa-university',
@@ -75,7 +80,7 @@ export class FinancialShellComponent implements OnInit {
     {
       label: 'Revenue',
       route: 'revenue',
-      icon: 'fas fa-chart-line',
+      icon: 'fas fa-trending-up',
     },
 
     {

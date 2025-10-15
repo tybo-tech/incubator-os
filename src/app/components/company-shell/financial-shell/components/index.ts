@@ -1,3 +1,4 @@
+export { MonthlyRevenueComponent } from './monthly-revenue.component';
 export { ProfitsComponent } from './profits.component';
 export { BankStatementsComponent } from './bank-statements.component';
 export { RevenueComponent } from './revenue.component';

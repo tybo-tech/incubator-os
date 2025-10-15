@@ -9,6 +9,7 @@ import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { FinancialTabComponent } from './components/companies/company-detail/financial-tab/financial-tab.component';
 import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
 import {
+  MonthlyRevenueComponent,
   BankStatementsComponent,
   RevenueComponent,
   ProfitsComponent,
@@ -91,8 +92,12 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
-                redirectTo: 'bank-statements',
+                redirectTo: 'monthly-revenue',
                 pathMatch: 'full'
+              },
+              {
+                path: 'monthly-revenue',
+                component: MonthlyRevenueComponent,
               },
               {
                 path: 'bank-statements',
