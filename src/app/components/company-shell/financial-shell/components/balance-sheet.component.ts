@@ -105,7 +105,7 @@ import {
       </div>
 
       <!-- Balance Check Indicator -->
-      <div
+      <!-- <div
         class="mb-6 p-3 rounded-lg"
         [class]="
           balanceCheckStatus().isBalanced
@@ -135,7 +135,7 @@ import {
             Difference: {{ balanceCheckStatus().formattedDifference }}
           </span>
         </div>
-      </div>
+      </div> -->
 
       <!-- Two-column grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

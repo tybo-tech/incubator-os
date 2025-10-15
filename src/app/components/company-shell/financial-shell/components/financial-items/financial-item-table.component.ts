@@ -36,7 +36,7 @@ export interface FinancialTableItem {
       >
         <div>
           <h3 class="text-base font-semibold text-gray-800">{{ title }}</h3>
-          <p class="text-xs text-gray-500">{{ currency }} | Editable table</p>
+          <!-- <p class="text-xs text-gray-500">{{ currency }} | Editable table</p> -->
         </div>
         <button
           (click)="addRow()"

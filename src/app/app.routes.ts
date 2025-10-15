@@ -29,6 +29,7 @@ import { CompaniesListComponent } from './components/companies/companies-list.co
 import { IndustriesListComponent } from './admin/industries/industries-list.component';
 import { UsersListComponent } from './admin/users/users-list.component';
 import { ReportsOverviewComponent } from './admin/reports/reports-overview.component';
+import { BalanceSheetComponent } from './components/company-shell/financial-shell/components/balance-sheet.component';
 
 export const routes: Routes = [
   {
@@ -109,10 +110,10 @@ export const routes: Routes = [
                 path: 'cost-structure',
                 component: CostStructureComponent,
               },
-              // {
-              //   path: 'balance-sheet',
-              //   component: BalanceSheetComponent, // Temporarily disabled for pie chart testing
-              // },
+              {
+                path: 'balance-sheet',
+                component: BalanceSheetComponent, // Temporarily disabled for pie chart testing
+              },
               {
                 path: 'ratios',
                 component: RatiosComponent,
