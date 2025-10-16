@@ -23,21 +23,18 @@ final class CompanyFinancialYearlyStats
        CREATE / UPDATE
        ========================================================================= */
 
-    /**
-     * Add a new yearly financial stat record.
-     */
     public function add(array $data): array
     {
         $filteredData = $this->filterWritable($data);
 
         $sql = "INSERT INTO company_financial_yearly_stats (
                     tenant_id, client_id, program_id, cohort_id, company_id,
-                    account_id, financial_year_id, is_revenue,
+                    account_id, financial_year_id,
                     m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12,
                     notes, created_at, updated_at
                 ) VALUES (
                     :tenant_id, :client_id, :program_id, :cohort_id, :company_id,
-                    :account_id, :financial_year_id, :is_revenue,
+                    :account_id, :financial_year_id,
                     :m1, :m2, :m3, :m4, :m5, :m6, :m7, :m8, :m9, :m10, :m11, :m12,
                     :notes, NOW(), NOW()
                 )";
@@ -51,7 +48,6 @@ final class CompanyFinancialYearlyStats
             ':company_id'        => $filteredData['company_id'],
             ':account_id'        => $filteredData['account_id'] ?? null,
             ':financial_year_id' => $filteredData['financial_year_id'],
-            ':is_revenue'        => isset($filteredData['is_revenue']) ? (int)$filteredData['is_revenue'] : 1,
             ':m1'                => $filteredData['m1'] ?? 0.00,
             ':m2'                => $filteredData['m2'] ?? 0.00,
             ':m3'                => $filteredData['m3'] ?? 0.00,
@@ -67,13 +63,20 @@ final class CompanyFinancialYearlyStats
             ':notes'             => $filteredData['notes'] ?? null,
         ]);
 
-        return $this->getById((int)$this->conn->lastInsertId());
+        $id = (int)$this->conn->lastInsertId();
+        $result = $this->getById($id);
+
+        return [
+            'success' => true,
+            'message' => 'Financial yearly stats created successfully',
+            'data' => $result
+        ];
     }
 
     /**
      * Update a yearly financial stat record.
      */
-    public function update(int $id, array $fields): ?array
+    public function update(int $id, array $fields): array
     {
         $filteredFields = $this->filterWritable($fields);
         $sets = [];
@@ -84,7 +87,14 @@ final class CompanyFinancialYearlyStats
             $params[":$col"] = $value;
         }
 
-        if (!$sets) return $this->getById($id);
+        if (!$sets) {
+            $result = $this->getById($id);
+            return [
+                'success' => true,
+                'message' => 'No changes made',
+                'data' => $result
+            ];
+        }
 
         $params[':id'] = $id;
         $sql = "UPDATE company_financial_yearly_stats
@@ -94,7 +104,12 @@ final class CompanyFinancialYearlyStats
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
 
-        return $this->getById($id);
+        $result = $this->getById($id);
+        return [
+            'success' => true,
+            'message' => 'Financial yearly stats updated successfully',
+            'data' => $result
+        ];
     }
 
     /* =========================================================================
@@ -200,9 +215,9 @@ final class CompanyFinancialYearlyStats
     }
 
     /**
-     * Get unique record by company, account, year, and revenue type.
+     * Get unique record by company, account, and year.
      */
-    public function getByUniqueKey(int $companyId, ?int $accountId, int $financialYearId, bool $isRevenue): ?array
+    public function getByUniqueKey(int $companyId, ?int $accountId, int $financialYearId): ?array
     {
         $sql = "SELECT * FROM company_financial_yearly_stats
                 WHERE company_id = :company_id
@@ -240,8 +255,7 @@ final class CompanyFinancialYearlyStats
         $existing = $this->getByUniqueKey(
             (int)$data['company_id'],
             isset($data['account_id']) ? (int)$data['account_id'] : null,
-            (int)$data['financial_year_id'],
-            (bool)($data['is_revenue'] ?? true)
+            (int)$data['financial_year_id']
         );
 
         if ($existing) {
@@ -351,7 +365,7 @@ final class CompanyFinancialYearlyStats
         // Cast integer fields
         $intFields = [
             'id', 'tenant_id', 'client_id', 'program_id', 'cohort_id',
-            'company_id', 'account_id', 'financial_year_id', 'is_revenue'
+            'company_id', 'account_id', 'financial_year_id'
         ];
 
         foreach ($intFields as $field) {
@@ -370,9 +384,6 @@ final class CompanyFinancialYearlyStats
                 $row[$field] = (float)$row[$field];
             }
         }
-
-        // Cast boolean field
-        $row['is_revenue'] = (bool)($row['is_revenue'] ?? false);
 
         return $row;
     }
