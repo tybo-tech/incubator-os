@@ -8,6 +8,7 @@ import { FinancialYearService, FinancialYear } from '../../../../../services/fin
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { FinancialDataTransformerService } from '../../../../services/financial-data-transformer.service';
+import { CompanyFinancialYearlyStats, CompanyFinancialYearlyStatsService } from '../../../../../services/company-financial-yearly-stats.service';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -80,8 +81,16 @@ import { map } from 'rxjs/operators';
 
       <!-- Year Groups Section -->
       <section class="space-y-8" role="main" aria-label="Financial Year Groups">
+        <!-- Loading State -->
+        <div *ngIf="loading()" class="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div class="flex justify-center items-center space-x-2">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="text-gray-600">Loading financial data...</span>
+          </div>
+        </div>
+
         <!-- Empty State -->
-        <div *ngIf="years().length === 0" class="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div *ngIf="!loading() && years().length === 0" class="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
           <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
@@ -145,6 +154,8 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   readonly years = signal<YearGroup[]>([]);
   readonly availableFinancialYears = signal<FinancialYear[]>([]);
   readonly availableAccounts = signal<CompanyAccount[]>([]);
+  readonly allYearlyStats = signal<CompanyFinancialYearlyStats[]>([]);
+  readonly loading = signal<boolean>(false);
 
   // Selected financial year
   selectedFinancialYearId: string = '';
@@ -164,63 +175,123 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   constructor(
     private financialYearService: FinancialYearService,
     private companyAccountService: CompanyAccountService,
-    private transformerService: FinancialDataTransformerService
+    private transformerService: FinancialDataTransformerService,
+    private yearlyStatsService: CompanyFinancialYearlyStatsService
   ) {}
 
   ngOnInit() {
-    this.loadFinancialYears();
-    this.loadCompanyAccounts();
-    this.loadYearlyData();
+    this.loadAllData();
   }  /**
    * Track function for ngFor to optimize rendering
    */
   trackYear = (index: number, year: YearGroup): number => year.id;
 
   /**
-   * Load financial years from API
+   * Load all required data in a single efficient call
    */
-  private loadFinancialYears(): void {
-    this.financialYearService.getAllFinancialYears().subscribe({
-      next: (years: FinancialYear[]) => {
-        this.availableFinancialYears.set(years);
-        // Auto-select the active financial year
-        const activeYear = years.find((year: FinancialYear) => year.is_active);
+  private loadAllData(): void {
+    const companyId = this.companyId();
+    if (!companyId) return;
+
+    this.loading.set(true);
+
+    // Load all data in parallel using forkJoin
+    forkJoin({
+      financialYears: this.financialYearService.getAllFinancialYears(),
+      accounts: this.companyAccountService.getAccountsByCompany(companyId, false),
+      yearlyStats: this.yearlyStatsService.getAllCompanyStats(companyId)
+    }).subscribe({
+      next: (data) => {
+        console.log('All data loaded:', data);
+        
+        // Store all data in signals
+        this.availableFinancialYears.set(data.financialYears);
+        this.availableAccounts.set(data.accounts.success ? data.accounts.data : []);
+        this.allYearlyStats.set(data.yearlyStats);
+
+        // Auto-select active financial year
+        const activeYear = data.financialYears.find(year => year.is_active);
         if (activeYear && !this.selectedFinancialYearId) {
           this.selectedFinancialYearId = activeYear.id.toString();
         }
+
+        // Transform data into year groups
+        this.transformDataToYearGroups();
+        
+        this.loading.set(false);
       },
-      error: (error: any) => {
-        console.error('Failed to load financial years:', error);
+      error: (error) => {
+        console.error('Failed to load data:', error);
+        this.loading.set(false);
       }
     });
   }
 
   /**
-   * Load company accounts from API
+   * Transform loaded data into YearGroup format for the UI
    */
-  private loadCompanyAccounts(): void {
-    const companyId = this.companyId();
-    if (companyId) {
-      this.companyAccountService.getAccountsByCompany(companyId, false).subscribe({
-        next: (response: any) => {
-          if (response.success) {
-            this.availableAccounts.set(response.data);
-          }
-        },
-        error: (error: any) => {
-          console.error('Failed to load company accounts:', error);
+  private transformDataToYearGroups(): void {
+    const financialYears = this.availableFinancialYears();
+    const accounts = this.availableAccounts();
+    const yearlyStats = this.allYearlyStats();
+
+    const yearGroups: YearGroup[] = financialYears.map(year => {
+      // Get stats for this specific year
+      const yearStats = yearlyStats.filter(stat => stat.financial_year_id === year.id);
+      
+      // Convert each stats record to an AccountRecord
+      const accountRecords: AccountRecord[] = yearStats.map(stat => {
+        const account = accounts.find(acc => acc.id === stat.account_id) || 
+                       (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
+        
+        if (!account) {
+          console.warn('Account not found for stats:', stat);
+          return null;
         }
-      });
-    }
+
+        return {
+          id: stat.id,
+          accountName: account.account_name,
+          months: {
+            m1: stat.m1 || 0,
+            m2: stat.m2 || 0,
+            m3: stat.m3 || 0,
+            m4: stat.m4 || 0,
+            m5: stat.m5 || 0,
+            m6: stat.m6 || 0,
+            m7: stat.m7 || 0,
+            m8: stat.m8 || 0,
+            m9: stat.m9 || 0,
+            m10: stat.m10 || 0,
+            m11: stat.m11 || 0,
+            m12: stat.m12 || 0
+          },
+          total: stat.total_amount
+        };
+      }).filter(record => record !== null) as AccountRecord[];
+
+      return {
+        id: year.id,
+        name: year.name,
+        startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
+        endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
+        expanded: year.is_active, // Expand active years by default
+        isActive: year.is_active,
+        accounts: accountRecords
+      };
+    });
+
+    this.years.set(yearGroups);
+    console.log('Year groups created:', yearGroups);
   }
 
   /**
    * Handle financial year selection change
    */
   onFinancialYearChange(): void {
-    // Reload data when financial year selection changes
+    // When financial year selection changes, just re-transform the existing data
     console.log('Financial year changed to:', this.selectedFinancialYearId);
-    this.loadYearlyData();
+    // No need to reload data, just re-filter/transform what we have
   }
 
   /**
@@ -241,9 +312,8 @@ export class CompanyRevenueCaptureComponent implements OnInit {
    * Handle data updates from management modal
    */
   onDataUpdated(): void {
-    this.loadFinancialYears();
-    this.loadCompanyAccounts();
-    this.loadYearlyData(); // Reload the actual yearly data
+    // Reload all data when updates happen
+    this.loadAllData();
   }
 
   /**
@@ -311,94 +381,6 @@ export class CompanyRevenueCaptureComponent implements OnInit {
       },
       total: 0
     };
-  }
-
-  /**
-   * Load yearly data from the database
-   */
-  private loadYearlyData(): void {
-    const companyId = this.companyId();
-    if (!companyId) return;
-
-    // Load all financial years first, then load data for each
-    this.financialYearService.getAllFinancialYears().subscribe({
-      next: (years: FinancialYear[]) => {
-        if (years.length === 0) {
-          this.years.set([]);
-          return;
-        }
-
-        // For each financial year, load the yearly stats data
-        const yearDataLoaders = years.map(year => {
-          return this.transformerService.getYearData(companyId, year.id).pipe(
-            map(yearData => {
-              if (!yearData) {
-                // Return empty year group if no data
-                return this.createEmptyYearGroup(year);
-              }
-
-              // Transform the yearly stats data into YearGroup format
-              const accounts: AccountRecord[] = [];
-
-              // Convert each stats record to an AccountRecord
-              yearData.monthlyData.forEach((stats, accountId) => {
-                const account = yearData.accounts.find(acc => acc.id === accountId) ||
-                                (accountId === 0 ? { id: 0, account_name: 'Company Total' } : null);
-
-                if (account) {
-                  const monthlyInput = this.transformerService.statsToMonthlyInput(stats);
-                  accounts.push({
-                    id: stats.id,
-                    accountName: account.account_name,
-                    months: {
-                      m1: monthlyInput.months[0] || 0,
-                      m2: monthlyInput.months[1] || 0,
-                      m3: monthlyInput.months[2] || 0,
-                      m4: monthlyInput.months[3] || 0,
-                      m5: monthlyInput.months[4] || 0,
-                      m6: monthlyInput.months[5] || 0,
-                      m7: monthlyInput.months[6] || 0,
-                      m8: monthlyInput.months[7] || 0,
-                      m9: monthlyInput.months[8] || 0,
-                      m10: monthlyInput.months[9] || 0,
-                      m11: monthlyInput.months[10] || 0,
-                      m12: monthlyInput.months[11] || 0
-                    },
-                    total: monthlyInput.total
-                  });
-                }
-              });
-
-              return {
-                id: year.id,
-                name: year.name,
-                startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-                endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-                expanded: year.is_active, // Expand active years by default
-                isActive: year.is_active,
-                accounts: accounts
-              } as YearGroup;
-            })
-          );
-        });
-
-        // Execute all loaders and combine results
-        forkJoin(yearDataLoaders).subscribe({
-          next: (yearGroups: YearGroup[]) => {
-            this.years.set(yearGroups);
-            console.log('Loaded yearly data:', yearGroups);
-          },
-          error: (error: any) => {
-            console.error('Failed to load yearly data:', error);
-            // Fallback to empty years
-            this.years.set(years.map(year => this.createEmptyYearGroup(year)));
-          }
-        });
-      },
-      error: (error: any) => {
-        console.error('Failed to load financial years for data:', error);
-      }
-    });
   }
 
   /**
