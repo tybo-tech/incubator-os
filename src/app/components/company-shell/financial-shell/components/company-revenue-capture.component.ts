@@ -28,37 +28,38 @@ import { map } from 'rxjs/operators';
           <p class="text-gray-600">Manage monthly revenue data across financial years</p>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Financial Year Selector -->
+          <!-- Add New Financial Year Section -->
           <div class="flex items-center gap-2">
+            <label for="addYearSelect" class="text-sm font-medium text-gray-700">Add Year:</label>
             <select
+              id="addYearSelect"
               [(ngModel)]="selectedFinancialYearId"
-              (change)="onFinancialYearChange()"
               class="px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
-              <option value="">Select Financial Year</option>
-              <option *ngFor="let fy of availableFinancialYears()" [value]="fy.id" [class.font-bold]="fy.is_active">
+              <option value="">Select year to add...</option>
+              <option *ngFor="let fy of availableYearsToAdd()" [value]="fy.id" [class.font-bold]="fy.is_active">
                 {{ fy.name }} {{ fy.is_active ? '(Active)' : '' }}
               </option>
             </select>
             <button
               type="button"
-              (click)="openManagementModal()"
-              class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors border border-blue-200"
-              title="Manage Financial Years & Accounts">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              (click)="addNewFinancialYear()"
+              [disabled]="!selectedFinancialYearId || availableYearsToAdd().length === 0"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
+              Add Year
             </button>
           </div>
           <button
             type="button"
-            (click)="addYear()"
-            [disabled]="!selectedFinancialYearId"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            (click)="openManagementModal()"
+            class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors border border-blue-200"
+            title="Manage Financial Years & Accounts">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
-            Add Year
           </button>
         </div>
       </header>
@@ -94,14 +95,16 @@ import { map } from 'rxjs/operators';
           <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No financial years yet</h3>
-          <p class="text-gray-500 mb-4">Get started by adding your first financial year</p>
-          <button
-            type="button"
-            (click)="addYear()"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
-            Add First Year
-          </button>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No financial data captured yet</h3>
+          <p class="text-gray-500 mb-4">Start by adding a financial year from the dropdown above, then begin capturing your monthly revenue data.</p>
+          <div class="text-sm text-gray-400">
+            <span class="inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Only financial years with captured data are displayed
+            </span>
+          </div>
         </div>
 
         <!-- Year Group List -->
@@ -172,6 +175,12 @@ export class CompanyRevenueCaptureComponent implements OnInit {
     this.years().filter(year => year.isActive).length
   );
 
+  // Available financial years that don't have data yet (for adding new ones)
+  readonly availableYearsToAdd = computed(() => {
+    const existingYearIds = this.years().map(year => year.id);
+    return this.availableFinancialYears().filter(year => !existingYearIds.includes(year.id));
+  });
+
   constructor(
     private financialYearService: FinancialYearService,
     private companyAccountService: CompanyAccountService,
@@ -203,7 +212,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
     }).subscribe({
       next: (data) => {
         console.log('All data loaded:', data);
-        
+
         // Store all data in signals
         this.availableFinancialYears.set(data.financialYears);
         this.availableAccounts.set(data.accounts.success ? data.accounts.data : []);
@@ -217,7 +226,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
         // Transform data into year groups
         this.transformDataToYearGroups();
-        
+
         this.loading.set(false);
       },
       error: (error) => {
@@ -229,60 +238,67 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
   /**
    * Transform loaded data into YearGroup format for the UI
+   * Only shows financial years that have actual data captured
    */
   private transformDataToYearGroups(): void {
     const financialYears = this.availableFinancialYears();
     const accounts = this.availableAccounts();
     const yearlyStats = this.allYearlyStats();
 
-    const yearGroups: YearGroup[] = financialYears.map(year => {
-      // Get stats for this specific year
-      const yearStats = yearlyStats.filter(stat => stat.financial_year_id === year.id);
-      
-      // Convert each stats record to an AccountRecord
-      const accountRecords: AccountRecord[] = yearStats.map(stat => {
-        const account = accounts.find(acc => acc.id === stat.account_id) || 
-                       (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
-        
-        if (!account) {
-          console.warn('Account not found for stats:', stat);
-          return null;
-        }
+    // Get unique financial year IDs that have data
+    const yearIdsWithData = [...new Set(yearlyStats.map(stat => stat.financial_year_id))];
+
+    // Only create year groups for financial years that have actual data
+    const yearGroups: YearGroup[] = financialYears
+      .filter(year => yearIdsWithData.includes(year.id))
+      .map(year => {
+        // Get stats for this specific year
+        const yearStats = yearlyStats.filter(stat => stat.financial_year_id === year.id);
+
+        // Convert each stats record to an AccountRecord
+        const accountRecords: AccountRecord[] = yearStats.map(stat => {
+          const account = accounts.find(acc => acc.id === stat.account_id) ||
+                         (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
+
+          if (!account) {
+            console.warn('Account not found for stats:', stat);
+            return null;
+          }
+
+          return {
+            id: stat.id,
+            accountName: account.account_name,
+            months: {
+              m1: stat.m1 || 0,
+              m2: stat.m2 || 0,
+              m3: stat.m3 || 0,
+              m4: stat.m4 || 0,
+              m5: stat.m5 || 0,
+              m6: stat.m6 || 0,
+              m7: stat.m7 || 0,
+              m8: stat.m8 || 0,
+              m9: stat.m9 || 0,
+              m10: stat.m10 || 0,
+              m11: stat.m11 || 0,
+              m12: stat.m12 || 0
+            },
+            total: stat.total_amount
+          };
+        }).filter(record => record !== null) as AccountRecord[];
 
         return {
-          id: stat.id,
-          accountName: account.account_name,
-          months: {
-            m1: stat.m1 || 0,
-            m2: stat.m2 || 0,
-            m3: stat.m3 || 0,
-            m4: stat.m4 || 0,
-            m5: stat.m5 || 0,
-            m6: stat.m6 || 0,
-            m7: stat.m7 || 0,
-            m8: stat.m8 || 0,
-            m9: stat.m9 || 0,
-            m10: stat.m10 || 0,
-            m11: stat.m11 || 0,
-            m12: stat.m12 || 0
-          },
-          total: stat.total_amount
+          id: year.id,
+          name: year.name,
+          startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
+          endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
+          expanded: year.is_active, // Expand active years by default
+          isActive: year.is_active,
+          accounts: accountRecords
         };
-      }).filter(record => record !== null) as AccountRecord[];
-
-      return {
-        id: year.id,
-        name: year.name,
-        startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-        endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-        expanded: year.is_active, // Expand active years by default
-        isActive: year.is_active,
-        accounts: accountRecords
-      };
-    });
+      });
 
     this.years.set(yearGroups);
-    console.log('Year groups created:', yearGroups);
+    console.log('Year groups created (only with data):', yearGroups);
   }
 
   /**
@@ -292,6 +308,52 @@ export class CompanyRevenueCaptureComponent implements OnInit {
     // When financial year selection changes, just re-transform the existing data
     console.log('Financial year changed to:', this.selectedFinancialYearId);
     // No need to reload data, just re-filter/transform what we have
+  }
+
+  /**
+   * Add a new financial year to the display
+   * Creates an empty year group for the selected financial year
+   */
+  addNewFinancialYear(): void {
+    if (!this.selectedFinancialYearId) {
+      console.warn('No financial year selected');
+      return;
+    }
+
+    const yearId = parseInt(this.selectedFinancialYearId);
+    const selectedYear = this.availableFinancialYears().find(year => year.id === yearId);
+
+    if (!selectedYear) {
+      console.warn('Selected financial year not found');
+      return;
+    }
+
+    // Check if year already exists
+    const existingYear = this.years().find(year => year.id === yearId);
+    if (existingYear) {
+      console.warn('Financial year already exists');
+      return;
+    }
+
+    // Create new empty year group
+    const newYearGroup: YearGroup = {
+      id: selectedYear.id,
+      name: selectedYear.name,
+      startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
+      endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
+      expanded: true, // Expand new years by default
+      isActive: selectedYear.is_active,
+      accounts: [] // Start with empty accounts
+    };
+
+    // Add to the years array
+    const currentYears = this.years();
+    this.years.set([...currentYears, newYearGroup]);
+
+    // Reset selection
+    this.selectedFinancialYearId = '';
+
+    console.log('Added new financial year:', newYearGroup);
   }
 
   /**
@@ -317,26 +379,6 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   }
 
   /**
-   * Add a new financial year
-   */
-  addYear(): void {
-    const currentYear = new Date().getFullYear();
-    const newId = this.generateNewYearId();
-
-    const newYear: YearGroup = {
-      id: newId,
-      name: `FY ${currentYear}/${(currentYear + 1).toString().slice(-2)}`,
-      startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-      endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-      expanded: true,
-      isActive: true,
-      accounts: [this.createEmptyAccount(CompanyRevenueCaptureComponent.DEFAULT_ACCOUNT_ID)]
-    };
-
-    this.years.update(years => [...years, newYear]);
-  }
-
-  /**
    * Delete a financial year by ID
    */
   deleteYear(yearId: number): void {
@@ -357,44 +399,5 @@ export class CompanyRevenueCaptureComponent implements OnInit {
    */
   private calculateYearTotal(year: YearGroup): number {
     return year.accounts.reduce((total, account) => total + (account.total || 0), 0);
-  }
-
-  /**
-   * Generate a new unique ID for a year
-   */
-  private generateNewYearId(): number {
-    const existingIds = this.years().map(year => year.id);
-    return existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-  }
-
-  /**
-   * Create an empty account record with default values
-   */
-  private createEmptyAccount(id: number): AccountRecord {
-    return {
-      id,
-      accountName: '',
-      months: {
-        m1: null, m2: null, m3: null, m4: null,
-        m5: null, m6: null, m7: null, m8: null,
-        m9: null, m10: null, m11: null, m12: null
-      },
-      total: 0
-    };
-  }
-
-  /**
-   * Create an empty year group for a financial year with no data
-   */
-  private createEmptyYearGroup(year: FinancialYear): YearGroup {
-    return {
-      id: year.id,
-      name: year.name,
-      startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-      endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-      expanded: year.is_active,
-      isActive: year.is_active,
-      accounts: []
-    };
   }
 }

@@ -183,7 +183,7 @@ class CompanyAccounts
     public function getById($id)
     {
         try {
-            $sql = "SELECT ca.*, c.company_name
+            $sql = "SELECT ca.*, c.name as company_name
                     FROM company_accounts ca
                     LEFT JOIN companies c ON ca.company_id = c.id
                     WHERE ca.id = ?";
