@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
 import { FinancialManagementModalComponent } from './financial-management-modal.component';
+import { FinancialYearComparisonComponent } from './financial-year-comparison.component';
 import { YearGroup, AccountRecord, AccountChangeEvent } from '../models/revenue-capture.interface';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccountService } from '../../../../services/company-account.service';
@@ -19,7 +20,7 @@ import { map } from 'rxjs/operators';
 @Component({
   selector: 'app-company-revenue-capture',
   standalone: true,
-  imports: [CommonModule, FormsModule, YearGroupComponent],
+  imports: [CommonModule, FormsModule, YearGroupComponent, FinancialYearComparisonComponent],
   template: `
     <div class="p-6 space-y-8 bg-gray-50 min-h-screen w-full">
       <!-- Header Section -->
@@ -79,6 +80,11 @@ import { map } from 'rxjs/operators';
           <div class="text-sm text-gray-500 font-medium">Active Years</div>
           <div class="text-2xl font-semibold text-emerald-600 mt-1">{{ activeYears() }}</div>
         </div>
+      </section>
+
+      <!-- Financial Years Comparison Chart -->
+      <section *ngIf="years().length > 1" role="region" aria-label="Financial Years Comparison">
+        <app-financial-year-comparison [years]="years()"></app-financial-year-comparison>
       </section>
 
       <!-- Year Groups Section -->
