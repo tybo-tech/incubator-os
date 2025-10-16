@@ -12,7 +12,7 @@ import { ILineChart, initLineChart } from '../../../models/Charts';
 export class LineChartComponent implements OnInit, OnDestroy {
   @Input() componentTitle = 'Line Chart';
   @Input() data: ILineChart = initLineChart();
-  
+
   // Generate unique chart ID
   chartId = `line-chart-${Math.random().toString(36).substr(2, 9)}`;
   config: any;

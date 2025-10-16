@@ -187,7 +187,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
   toggleChartType(): void {
     const newType = this.currentChartType() === 'line' ? 'bar' : 'line';
     this.currentChartType.set(newType);
-    
+
     // Force a brief delay to ensure proper rendering
     setTimeout(() => {
       console.log(`📊 Switched to ${newType} chart view`);

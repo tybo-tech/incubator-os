@@ -12,7 +12,7 @@ import { IBarChart, initBarChart } from '../../../models/Charts';
 export class BarChartComponent implements OnInit, OnDestroy {
   @Input() componentTitle = 'Colours overview';
   @Input() data: IBarChart = initBarChart();
-  
+
   // Generate unique chart ID
   chartId = `bar-chart-${Math.random().toString(36).substr(2, 9)}`;
   config: any;
