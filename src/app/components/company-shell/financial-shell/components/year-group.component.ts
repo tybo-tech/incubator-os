@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-capture.interface';
+import { YearGroup, AccountRecord, MonthDisplay, AccountChangeEvent } from '../models/revenue-capture.interface';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { AccountManagementModalComponent } from './account-management-modal.component';
 
@@ -208,7 +208,7 @@ export class YearGroupComponent {
   @Output() yearChanged = new EventEmitter<YearGroup>();
   @Output() deleteYear = new EventEmitter<number>();
   @Output() accountsUpdateRequested = new EventEmitter<void>();
-  @Output() accountChanged = new EventEmitter<{yearId: number, account: AccountRecord}>();
+  @Output() accountChanged = new EventEmitter<AccountChangeEvent>();
 
   @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
@@ -285,10 +285,11 @@ export class YearGroupComponent {
 
     account.total = total;
 
-    // Emit specific account change for targeted saving
+    // Emit specific account change for targeted saving (update existing record)
     this.accountChanged.emit({
       yearId: this.year.id,
-      account: { ...account }
+      account: { ...account },
+      action: 'update' // Signal that this should update existing record
     });
 
     // Also update the year for UI consistency (but parent will only save the specific account)
@@ -297,9 +298,10 @@ export class YearGroupComponent {
 
   /**
    * Handle account name/selection changes
+   * Immediately creates a database record with zeros when account is selected
    */
   onAccountNameChange(account: AccountRecord): void {
-    console.log('Account name changed:', account.accountName);
+    console.log('🎯 Account name changed:', account.accountName);
 
     // Find the selected account details
     const selectedAccount = this.availableAccounts.find(
@@ -309,16 +311,19 @@ export class YearGroupComponent {
     if (selectedAccount) {
       // Update the account ID to match the selected account
       account.accountId = selectedAccount.id;
-      console.log('Updated account ID:', account.accountId);
+      console.log('📝 Updated account ID:', account.accountId);
+
+      // Emit event to create database record immediately
+      this.accountChanged.emit({
+        yearId: this.year.id,
+        account: { ...account },
+        action: 'insert' // Signal that this should insert a new record
+      });
+    } else {
+      console.log('⚠️ No account selected or account not found');
     }
 
-    // Emit specific account change
-    this.accountChanged.emit({
-      yearId: this.year.id,
-      account: { ...account }
-    });
-
-    // Also update the year
+    // Also update the year for UI consistency
     this.onAccountChange();
   }
 

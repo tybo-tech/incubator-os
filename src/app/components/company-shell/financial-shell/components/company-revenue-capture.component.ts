@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
 import { FinancialManagementModalComponent } from './financial-management-modal.component';
-import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
+import { YearGroup, AccountRecord, AccountChangeEvent } from '../models/revenue-capture.interface';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
@@ -170,7 +170,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
   // Debounced save mechanism
   private saveSubject = new Subject<YearGroup>();
-  private accountSaveSubject = new Subject<{yearId: number, account: AccountRecord}>();
+  private accountSaveSubject = new Subject<AccountChangeEvent>();
 
   // Computed properties
   readonly totalRevenue = computed(() =>
@@ -205,12 +205,37 @@ export class CompanyRevenueCaptureComponent implements OnInit {
     // Set up debounced save for individual account changes (wait 300ms)
     this.accountSaveSubject.pipe(
       debounceTime(300)
-    ).subscribe(({yearId, account}) => {
-      this.saveAccountToDatabase(yearId, account);
+    ).subscribe(({yearId, account, action = 'update'}) => {
+      this.saveAccountToDatabase(yearId, account, action);
     });
 
     this.loadAllData();
   }  /**
+   * Handle account changes from child components
+   */
+  onAccountChanged(event: AccountChangeEvent): void {
+    console.log(`🔄 Account changed: ${event.account.accountName} (${event.action})`);
+
+    // Update local state immediately for UI responsiveness
+    this.years.update(years =>
+      years.map(year => {
+        if (year.id === event.yearId) {
+          return {
+            ...year,
+            accounts: year.accounts.map(acc =>
+              acc.id === event.account.id ? { ...event.account } : acc
+            )
+          };
+        }
+        return year;
+      })
+    );
+
+    // Debounce the database save for this specific account
+    this.accountSaveSubject.next(event);
+  }
+
+  /**
    * Track function for ngFor to optimize rendering
    */
   trackYear = (index: number, year: YearGroup): number => year.id;
@@ -423,64 +448,86 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   }
 
   /**
-   * Handle individual account changes from child components
-   * Updates local state and saves only the specific account that changed
+   * Save a specific account's changes to the database
    */
-  onAccountChanged(event: {yearId: number, account: AccountRecord}): void {
-    const { yearId, account } = event;
-    console.log(`💰 Account changed: ${account.accountName} in year ID ${yearId}`);
+  private saveAccountToDatabase(yearId: number, account: AccountRecord, action: 'insert' | 'update' = 'update'): void {
+    const companyId = this.companyId();
+    console.log(`🔄 ${action === 'insert' ? 'Creating' : 'Updating'} account: ${account.accountName} (Company ID: ${companyId}, Year ID: ${yearId})`);
 
-    // Update local state immediately for UI responsiveness
+    // Convert AccountRecord to MonthlyInputData format
+    const monthlyData = this.accountRecordToMonthlyInput(account, yearId);
+
+    if (action === 'insert') {
+      // For insert operations, remove the statsId and force creation
+      const insertData = { ...monthlyData };
+      delete insertData.statsId; // Remove ID to force insert
+
+      console.log(`💡 Inserting new account record:`, {
+        accountId: insertData.accountId,
+        accountName: account.accountName,
+        companyId: companyId,
+        financialYearId: yearId,
+        total: insertData.total
+      });
+
+      // Use upsert to handle potential duplicates safely
+      this.transformerService.saveMonthlyData(insertData, companyId, yearId)
+        .subscribe({
+          next: (result) => {
+            console.log(`✅ Successfully inserted: ${account.accountName}`, result);
+
+            // Update the local account with the new database ID
+            if (result.id) {
+              this.updateAccountIdInLocalState(yearId, account.id, result.id);
+            }
+          },
+          error: (error) => {
+            console.error(`❌ Failed to insert: ${account.accountName}`, error);
+          }
+        });
+    } else {
+      // For update operations, use existing logic
+      if (account.id && account.id > 0) {
+        console.log(`💡 Updating existing account record:`, {
+          statsId: monthlyData.statsId,
+          accountId: monthlyData.accountId,
+          accountName: account.accountName,
+          total: monthlyData.total
+        });
+
+        this.transformerService.saveMonthlyData(monthlyData, companyId, yearId)
+          .subscribe({
+            next: (result) => {
+              console.log(`✅ Successfully updated: ${account.accountName}`, result);
+            },
+            error: (error) => {
+              console.error(`❌ Failed to update: ${account.accountName}`, error);
+            }
+          });
+      } else {
+        console.log(`⏭️ Skipping update for new/empty account: ${account.accountName} (ID: ${account.id})`);
+      }
+    }
+  }
+
+  /**
+   * Update the account ID in local state after successful database insert
+   */
+  private updateAccountIdInLocalState(yearId: number, oldAccountId: number, newAccountId: number): void {
     this.years.update(years =>
       years.map(year => {
         if (year.id === yearId) {
           return {
             ...year,
             accounts: year.accounts.map(acc =>
-              acc.id === account.id ? { ...account } : acc
+              acc.id === oldAccountId ? { ...acc, id: newAccountId } : acc
             )
           };
         }
         return year;
       })
     );
-
-    // Debounce the database save for this specific account
-    this.accountSaveSubject.next({ yearId, account });
-  }
-
-  /**
-   * Save a specific account's changes to the database
-   */
-  private saveAccountToDatabase(yearId: number, account: AccountRecord): void {
-    const companyId = this.companyId();
-    console.log(`🔄 Saving single account: ${account.accountName} (Company ID: ${companyId}, Year ID: ${yearId})`);
-
-    if (account.id && account.id > 0) {
-      // Convert AccountRecord to MonthlyInputData format
-      const monthlyData = this.accountRecordToMonthlyInput(account, yearId);
-
-      console.log(`💡 Saving account data:`, {
-        statsId: monthlyData.statsId,
-        accountId: monthlyData.accountId,
-        accountName: account.accountName,
-        total: monthlyData.total
-      });
-
-      // Save to database
-      this.transformerService.saveMonthlyData(monthlyData, companyId, yearId)
-        .subscribe({
-          next: (result) => {
-            console.log(`✅ Successfully saved: ${account.accountName}`, result);
-          },
-          error: (error) => {
-            console.error(`❌ Failed to save: ${account.accountName}`, error);
-            // TODO: Add user notification for errors
-          }
-        });
-    } else {
-      console.log(`⏭️ Skipping new/empty account: ${account.accountName} (ID: ${account.id})`);
-    }
+    console.log(`🔄 Updated local account ID from ${oldAccountId} to ${newAccountId}`);
   }
 
   /**
@@ -537,7 +584,8 @@ export class CompanyRevenueCaptureComponent implements OnInit {
         account.months['m12'] || 0
       ],
       total: account.total,
-      statsId: account.id // yearly_stats.id for updates
+      statsId: account.id > 0 ? account.id : undefined, // Only include if valid existing record
+      financialYearId: financialYearId
     };
   }
 

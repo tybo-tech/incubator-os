@@ -16,6 +16,12 @@ export interface AccountRecord {
   total: number;
 }
 
+export interface AccountChangeEvent {
+  yearId: number;
+  account: AccountRecord;
+  action: 'insert' | 'update';
+}
+
 export interface MonthDisplay {
   key: string; // m1, m2, etc.
   label: string; // Mar, Apr, etc.
