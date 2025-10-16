@@ -97,8 +97,10 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
           *ngFor="let year of years(); trackBy: trackYear"
           [year]="year"
           [availableAccounts]="availableAccounts()"
+          [companyId]="companyId()"
           (yearChanged)="onYearChanged($event)"
-          (deleteYear)="deleteYear($event)">
+          (deleteYear)="deleteYear($event)"
+          (accountsUpdateRequested)="onDataUpdated()">
         </app-year-group>
       </section>
 
@@ -195,7 +197,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   private loadCompanyAccounts(): void {
     const companyId = this.companyId();
     if (companyId) {
-      this.companyAccountService.getAccountsByCompany(companyId, true).subscribe({
+      this.companyAccountService.getAccountsByCompany(companyId, false).subscribe({
         next: (response: any) => {
           if (response.success) {
             this.availableAccounts.set(response.data);

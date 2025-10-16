@@ -1,13 +1,14 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-capture.interface';
 import { CompanyAccount } from '../../../../services/company-account.interface';
+import { AccountManagementModalComponent } from './account-management-modal.component';
 
 @Component({
   selector: 'app-year-group',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AccountManagementModalComponent],
   template: `
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
       <!-- Header -->
@@ -62,7 +63,19 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
               <thead>
                 <tr class="bg-blue-50 text-blue-800">
                   <th class="px-4 py-3 text-left font-semibold min-w-[200px] sticky left-0 bg-blue-50 border-r border-blue-200 z-20">
-                    Account Name
+                    <div class="flex items-center justify-between">
+                      <span>Account Name</span>
+                      <button
+                        type="button"
+                        (click)="openAccountManagement()"
+                        class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
+                        title="Manage Accounts">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </th>
                   <th *ngFor="let month of months; trackBy: trackMonth"
                       class="px-3 py-3 text-center font-semibold min-w-[80px] border-r border-blue-100 bg-blue-50">
@@ -85,26 +98,15 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
                   <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
                       [class.bg-gray-50]="i % 2 === 1"
                       [class.bg-white]="i % 2 === 0">
-                    <div class="flex items-center gap-2">
-                      <select
-                        [(ngModel)]="account.accountName"
-                        (change)="onAccountChange()"
-                        class="flex-1 border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
-                        <option value="">Select account...</option>
-                        <option *ngFor="let availableAccount of availableAccounts" [value]="availableAccount.account_name">
-                          {{ getAccountDisplayName(availableAccount) }}
-                        </option>
-                      </select>
-                      <button
-                        type="button"
-                        (click)="openAccountManagement()"
-                        class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                        title="Manage Accounts">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                      </button>
-                    </div>
+                    <select
+                      [(ngModel)]="account.accountName"
+                      (change)="onAccountChange()"
+                      class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
+                      <option value="">Select account...</option>
+                      <option *ngFor="let availableAccount of availableAccounts" [value]="availableAccount.account_name">
+                        {{ getAccountDisplayName(availableAccount) }}
+                      </option>
+                    </select>
                   </td>
 
                   <!-- Month Inputs -->
@@ -188,14 +190,26 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
           </div>
         </div>
       </div>
+
+      <!-- Account Management Modal -->
+      <app-account-management-modal
+        #accountModal
+        [companyId]="companyId"
+        (closed)="onAccountModalClosed()"
+        (accountsUpdated)="onAccountsUpdated()">
+      </app-account-management-modal>
     </div>
   `
 })
 export class YearGroupComponent {
   @Input() year!: YearGroup;
   @Input() availableAccounts: CompanyAccount[] = [];
+  @Input() companyId: number = 1; // Default company ID
   @Output() yearChanged = new EventEmitter<YearGroup>();
   @Output() deleteYear = new EventEmitter<number>();
+  @Output() accountsUpdateRequested = new EventEmitter<void>();
+
+  @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
   // Month display configuration based on financial year (March to February)
   months: MonthDisplay[] = [
@@ -299,10 +313,24 @@ export class YearGroupComponent {
   }
 
   /**
-   * Open account management - placeholder for now
+   * Open account management modal
    */
   openAccountManagement(): void {
-    // TODO: Emit event to parent to open management modal
-    console.log('Open account management');
+    this.accountModal.open();
+  }
+
+  /**
+   * Handle account modal closed
+   */
+  onAccountModalClosed(): void {
+    // Modal closed, nothing special to do
+  }
+
+  /**
+   * Handle accounts updated
+   */
+  onAccountsUpdated(): void {
+    // Emit event to parent to refresh available accounts
+    this.accountsUpdateRequested.emit();
   }
 }
