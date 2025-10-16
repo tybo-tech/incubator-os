@@ -64,9 +64,9 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
       </div>
 
       <!-- Chart Display -->
-      <div class="bg-gray-50 rounded-lg p-6" *ngIf="hasData()">
-        <div class="relative" *ngIf="currentChartType() === 'line'">
-          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">
+      <div class="bg-gray-50 rounded-lg p-6" *ngIf="hasData() && !isLoadingCharts()">
+        <div class="relative" *ngIf="currentChartType() === 'line'" key="line-chart-container">
+          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm z-10">
             Monthly Trends
           </div>
           <app-line-chart
@@ -74,8 +74,8 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
             [data]="monthlyTrendsChart()">
           </app-line-chart>
         </div>
-        <div class="relative" *ngIf="currentChartType() === 'bar'">
-          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">
+        <div class="relative" *ngIf="currentChartType() === 'bar'" key="bar-chart-container">
+          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm z-10">
             Annual Totals
           </div>
           <app-bar-chart
@@ -83,11 +83,13 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
             [data]="annualTotalsChart()">
           </app-bar-chart>
         </div>
+      </div>
 
-        <!-- Chart Loading State -->
-        <div *ngIf="isLoadingCharts()" class="flex items-center justify-center py-8">
-          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span class="ml-2 text-gray-600 text-sm">Generating charts...</span>
+      <!-- Chart Loading State -->
+      <div *ngIf="hasData() && isLoadingCharts()" class="bg-gray-50 rounded-lg p-6">
+        <div class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span class="ml-2 text-gray-600">Generating comparison charts...</span>
         </div>
       </div>      <!-- Growth Rates Table -->
       <div class="bg-gray-50 rounded-lg p-4" *ngIf="comparisonSummary()?.growthRates && comparisonSummary()!.growthRates.length > 1">
@@ -183,7 +185,13 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
    * Toggle between line chart (trends) and bar chart (totals)
    */
   toggleChartType(): void {
-    this.currentChartType.update(type => type === 'line' ? 'bar' : 'line');
+    const newType = this.currentChartType() === 'line' ? 'bar' : 'line';
+    this.currentChartType.set(newType);
+    
+    // Force a brief delay to ensure proper rendering
+    setTimeout(() => {
+      console.log(`📊 Switched to ${newType} chart view`);
+    }, 50);
   }
 
   /**
@@ -197,41 +205,38 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
 
     this.isLoadingCharts.set(true);
 
-    try {
-      // Use setTimeout to prevent blocking the UI during chart generation
-      setTimeout(() => {
-        try {
-          // Generate monthly trends comparison
-          const monthlyChart = this.comparisonService.generateYearlyComparisonLineChart(this.years);
-          this.monthlyTrendsChart.set(monthlyChart);
+    // Use a longer timeout to ensure DOM is ready
+    setTimeout(() => {
+      try {
+        // Generate monthly trends comparison
+        const monthlyChart = this.comparisonService.generateYearlyComparisonLineChart(this.years);
+        this.monthlyTrendsChart.set(monthlyChart);
 
-          // Generate annual totals comparison
-          const annualChart = this.comparisonService.generateYearlyTotalsBarChart(this.years);
-          this.annualTotalsChart.set(annualChart);
+        // Generate annual totals comparison
+        const annualChart = this.comparisonService.generateYearlyTotalsBarChart(this.years);
+        this.annualTotalsChart.set(annualChart);
 
-          // Generate summary statistics
-          const summary = this.comparisonService.getComparisonSummary(this.years);
-          this.comparisonSummary.set(summary);
+        // Generate summary statistics
+        const summary = this.comparisonService.getComparisonSummary(this.years);
+        this.comparisonSummary.set(summary);
 
-          console.log('📊 Financial comparison charts updated:', {
-            years: this.years.length,
-            monthlyDatasets: monthlyChart.datasets.length,
-            annualDatasets: annualChart.datasets.length,
-            summary
-          });
+        console.log('📊 Financial comparison charts updated:', {
+          years: this.years.length,
+          monthlyDatasets: monthlyChart.datasets.length,
+          annualDatasets: annualChart.datasets.length,
+          summary
+        });
 
+        // Set loading to false after a brief delay to ensure charts render
+        setTimeout(() => {
           this.isLoadingCharts.set(false);
-        } catch (error) {
-          console.error('Failed to generate comparison charts:', error);
-          this.resetCharts();
-          this.isLoadingCharts.set(false);
-        }
-      }, 0);
-    } catch (error) {
-      console.error('Failed to initialize chart generation:', error);
-      this.resetCharts();
-      this.isLoadingCharts.set(false);
-    }
+        }, 100);
+
+      } catch (error) {
+        console.error('Failed to generate comparison charts:', error);
+        this.resetCharts();
+      }
+    }, 100);
   }
 
   /**

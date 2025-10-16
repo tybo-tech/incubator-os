@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Chart } from '../../../utils/chart-setup';
 import { ILineChart, initLineChart } from '../../../models/Charts';
 
@@ -9,16 +9,64 @@ import { ILineChart, initLineChart } from '../../../models/Charts';
   templateUrl: './line-chart.component.html',
   styleUrls: ['./line-chart.component.scss'],
 })
-export class LineChartComponent {
+export class LineChartComponent implements OnInit, OnDestroy {
   @Input() componentTitle = 'Line Chart';
   @Input() data: ILineChart = initLineChart();
+  
+  // Generate unique chart ID
+  chartId = `line-chart-${Math.random().toString(36).substr(2, 9)}`;
   config: any;
   chart: any;
+
   ngOnInit(): void {
-    this.config = {
-      type: 'line',
-      data: this.data,
-    };
-    this.chart = new Chart('line-chart', this.config);
+    // Wait for DOM to be ready
+    setTimeout(() => {
+      this.initializeChart();
+    }, 0);
+  }
+
+  ngOnDestroy(): void {
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  }
+
+  private initializeChart(): void {
+    try {
+      this.config = {
+        type: 'line',
+        data: this.data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.1)',
+              },
+            },
+            x: {
+              grid: {
+                color: 'rgba(0, 0, 0, 0.1)',
+              },
+            },
+          },
+          plugins: {
+            legend: {
+              position: 'top' as const,
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+            },
+          },
+        },
+      };
+      this.chart = new Chart(this.chartId, this.config);
+      console.log(`✅ Line chart initialized with ID: ${this.chartId}`);
+    } catch (error) {
+      console.error('Failed to initialize line chart:', error);
+    }
   }
 }
