@@ -40,9 +40,9 @@ export class CompanyAccountService {
       if (filters.company_id) {
         params = params.set('company_id', filters.company_id.toString());
       }
-      if (filters.is_active !== undefined) {
-        params = params.set('is_active', filters.is_active.toString());
-      }
+      // if (filters.is_active !== undefined) {
+      //   params = params.set('is_active', filters.is_active.toString());
+      // }
       if (filters.limit) {
         params = params.set('limit', filters.limit.toString());
       }

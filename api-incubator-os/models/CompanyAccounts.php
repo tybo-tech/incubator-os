@@ -56,11 +56,19 @@ class CompanyAccounts
                 $accountId = $this->pdo->lastInsertId();
                 $account = $this->getById($accountId);
 
-                return [
-                    'success' => true,
-                    'message' => 'Company account created successfully',
-                    'data' => $account['data']
-                ];
+                if ($account['success']) {
+                    return [
+                        'success' => true,
+                        'message' => 'Company account created successfully',
+                        'data' => $account['data']
+                    ];
+                } else {
+                    return [
+                        'success' => true,
+                        'message' => 'Company account created successfully',
+                        'data' => null
+                    ];
+                }
             } else {
                 return [
                     'success' => false,
@@ -350,11 +358,19 @@ class CompanyAccounts
 
             if ($success) {
                 $account = $this->getById($id);
-                return [
-                    'success' => true,
-                    'message' => 'Account status updated successfully',
-                    'data' => $account['data']
-                ];
+                if ($account['success']) {
+                    return [
+                        'success' => true,
+                        'message' => 'Account status updated successfully',
+                        'data' => $account['data']
+                    ];
+                } else {
+                    return [
+                        'success' => true,
+                        'message' => 'Account status updated successfully',
+                        'data' => null
+                    ];
+                }
             } else {
                 return [
                     'success' => false,

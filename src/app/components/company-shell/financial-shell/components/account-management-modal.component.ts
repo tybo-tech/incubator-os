@@ -157,30 +157,20 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
                         </svg>
                       </button>
 
-                      <!-- Toggle Active -->
+                      <!-- Status Toggle -->
                       <button
                         *ngIf="editingId() !== account.id"
                         type="button"
                         (click)="toggleStatus(account)"
                         [class.text-green-600]="!account.is_active"
                         [class.text-gray-600]="account.is_active"
-                        class="p-1 hover:bg-gray-50 rounded transition-colors"
-                        [title]="account.is_active ? 'Deactivate' : 'Activate'">
+                        [class.hover:bg-green-50]="!account.is_active"
+                        [class.hover:bg-gray-50]="account.is_active"
+                        class="p-1 rounded transition-colors"
+                        [title]="account.is_active ? 'Deactivate Account' : 'Activate Account'">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path *ngIf="!account.is_active" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           <path *ngIf="account.is_active" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                      </button>
-
-                      <!-- Delete -->
-                      <button
-                        *ngIf="editingId() !== account.id"
-                        type="button"
-                        (click)="deleteAccount(account)"
-                        class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                        title="Delete">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
                       </button>
                     </div>
@@ -261,7 +251,8 @@ export class AccountManagementModalComponent implements OnInit {
     if (!this.companyId) return;
 
     this.loading.set(true);
-    this.companyAccountService.getAccountsByCompany(this.companyId, true).subscribe({
+    // Load both active and inactive accounts for management
+    this.companyAccountService.getAccountsByCompany(this.companyId, false).subscribe({
       next: (response) => {
         this.loading.set(false);
         if (response.success) {
@@ -366,9 +357,16 @@ export class AccountManagementModalComponent implements OnInit {
   }
 
   /**
-   * Toggle account status
+   * Toggle account status between active and inactive
    */
   toggleStatus(account: CompanyAccount) {
+    const action = account.is_active ? 'deactivate' : 'activate';
+    const confirmMessage = `Are you sure you want to ${action} "${account.account_name}"?`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
     this.loading.set(true);
     this.companyAccountService.setAccountActive(account.id, !account.is_active).subscribe({
       next: (response) => {
@@ -377,40 +375,13 @@ export class AccountManagementModalComponent implements OnInit {
           this.loadAccounts();
           this.accountsUpdated.emit();
         } else {
-          alert('Failed to update account status. Please try again.');
+          alert(`Failed to ${action} account. Please try again.`);
         }
       },
       error: (error) => {
         this.loading.set(false);
-        console.error('Failed to toggle account status:', error);
-        alert('Failed to update account status. Please try again.');
-      }
-    });
-  }
-
-  /**
-   * Delete account
-   */
-  deleteAccount(account: CompanyAccount) {
-    if (!confirm(`Are you sure you want to delete "${account.account_name}"?`)) {
-      return;
-    }
-
-    this.loading.set(true);
-    this.companyAccountService.deleteAccount(account.id).subscribe({
-      next: (response) => {
-        this.loading.set(false);
-        if (response.success) {
-          this.loadAccounts();
-          this.accountsUpdated.emit();
-        } else {
-          alert('Failed to delete account. Please try again.');
-        }
-      },
-      error: (error) => {
-        this.loading.set(false);
-        console.error('Failed to delete account:', error);
-        alert('Failed to delete account. Please try again.');
+        console.error(`Failed to ${action} account:`, error);
+        alert(`Failed to ${action} account. Please try again.`);
       }
     });
   }
