@@ -8,7 +8,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
       <!-- Header -->
       <div
         class="flex justify-between items-center bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 cursor-pointer select-none hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
@@ -41,11 +41,11 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
             title="Delete year">
             🗑️
           </button>
-          <svg 
-            [class.rotate-180]="year.expanded" 
-            class="w-5 h-5 transition-transform duration-200" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            [class.rotate-180]="year.expanded"
+            class="w-5 h-5 transition-transform duration-200"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
@@ -56,21 +56,21 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
       <div *ngIf="year.expanded" class="transition-all duration-300 ease-in-out">
         <div class="p-4">
           <!-- Table Container -->
-          <div class="overflow-x-auto border border-gray-100 rounded-lg">
+          <div class="bg-white overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="bg-gray-50 text-gray-700">
-                  <th class="px-4 py-3 text-left font-semibold min-w-[200px] sticky left-0 bg-gray-50 border-r border-gray-200">
+                  <th class="px-4 py-3 text-left font-semibold min-w-[200px] sticky left-0 bg-gray-50 border-r border-gray-200 z-20">
                     Account Name
                   </th>
-                  <th *ngFor="let month of months; trackBy: trackMonth" 
-                      class="px-3 py-3 text-center font-semibold min-w-[80px] border-r border-gray-100">
+                  <th *ngFor="let month of months; trackBy: trackMonth"
+                      class="px-3 py-3 text-center font-semibold min-w-[80px] border-r border-gray-100 bg-gray-50">
                     {{ month.label }}
                   </th>
-                  <th class="px-4 py-3 text-right font-semibold min-w-[120px] bg-purple-50 text-purple-700">
+                  <th class="px-4 py-3 text-right font-semibold min-w-[120px] bg-purple-50 text-purple-700 border-r border-gray-200">
                     Total
                   </th>
-                  <th class="px-3 py-3 text-center font-semibold min-w-[80px]">
+                  <th class="px-3 py-3 text-center font-semibold min-w-[80px] bg-gray-50">
                     Actions
                   </th>
                 </tr>
@@ -78,36 +78,39 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
               <tbody>
                 <tr *ngFor="let account of year.accounts; trackBy: trackAccount; let i = index"
                     [class.bg-gray-50]="i % 2 === 1"
+                    [class.bg-white]="i % 2 === 0"
                     class="hover:bg-blue-50/30 transition-colors">
                   <!-- Account Name -->
-                  <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 bg-inherit border-r border-gray-200">
-                    <input 
+                  <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
+                      [class.bg-gray-50]="i % 2 === 1"
+                      [class.bg-white]="i % 2 === 0">
+                    <input
                       [(ngModel)]="account.accountName"
                       placeholder="Enter account name"
-                      class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all"
+                      class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all bg-white"
                       (blur)="onAccountChange()" />
                   </td>
-                  
+
                   <!-- Month Inputs -->
-                  <td *ngFor="let month of months; trackBy: trackMonth" 
-                      class="text-center border-r border-gray-100">
-                    <input 
-                      type="number" 
-                      [(ngModel)]="account.months[month.key]" 
+                  <td *ngFor="let month of months; trackBy: trackMonth"
+                      class="text-center border-r border-gray-100 bg-inherit">
+                    <input
+                      type="number"
+                      [(ngModel)]="account.months[month.key]"
                       (input)="updateTotal(account)"
                       placeholder="0"
                       min="0"
                       step="0.01"
-                      class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all hover:border-gray-300" />
+                      class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all hover:border-gray-300 bg-white" />
                   </td>
-                  
+
                   <!-- Total -->
-                  <td class="px-4 py-3 text-right font-semibold text-purple-700 bg-purple-50/50">
+                  <td class="px-4 py-3 text-right font-semibold text-purple-700 bg-purple-50/80 border-r border-gray-200">
                     R {{ account.total | number:'1.0-2' }}
                   </td>
-                  
+
                   <!-- Actions -->
-                  <td class="px-3 py-3 text-center">
+                  <td class="px-3 py-3 text-center bg-inherit">
                     <button
                       (click)="deleteAccount(account.id)"
                       class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors"
@@ -118,7 +121,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                     </button>
                   </td>
                 </tr>
-                
+
                 <!-- Empty State -->
                 <tr *ngIf="year.accounts.length === 0">
                   <td colspan="15" class="px-4 py-8 text-center text-gray-500">
@@ -127,7 +130,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                       </svg>
                       <span>No accounts yet</span>
-                      <button 
+                      <button
                         (click)="addAccount()"
                         class="text-purple-600 hover:text-purple-800 font-medium">
                         Add your first account
@@ -136,7 +139,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                   </td>
                 </tr>
               </tbody>
-              
+
               <!-- Footer with Year Total -->
               <tfoot *ngIf="year.accounts.length > 0">
                 <tr class="bg-gray-100 font-semibold text-gray-800 border-t-2 border-gray-200">
@@ -151,7 +154,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
               </tfoot>
             </table>
           </div>
-          
+
           <!-- Quick Actions -->
           <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
             <div class="flex items-center gap-4">
@@ -160,7 +163,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
               <span>Total: R {{ getYearTotal() | number:'1.0-2' }}</span>
             </div>
             <div class="flex gap-2">
-              <button 
+              <button
                 (click)="addAccount()"
                 class="px-3 py-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors">
                 + Add Account
@@ -223,7 +226,7 @@ export class YearGroupComponent {
       ...this.year,
       accounts: [...this.year.accounts, newAccount]
     };
-    
+
     this.yearChanged.emit(updatedYear);
   }
 
@@ -233,7 +236,7 @@ export class YearGroupComponent {
         ...this.year,
         accounts: this.year.accounts.filter(a => a.id !== accountId)
       };
-      
+
       this.yearChanged.emit(updatedYear);
     }
   }
@@ -243,7 +246,7 @@ export class YearGroupComponent {
     const total = Object.values(account.months).reduce((sum: number, value) => {
       return sum + (value || 0);
     }, 0);
-    
+
     account.total = total;
     this.onAccountChange();
   }
@@ -259,10 +262,10 @@ export class YearGroupComponent {
 
   confirmDeleteYear(): void {
     const accountCount = this.year.accounts.length;
-    const message = accountCount > 0 
+    const message = accountCount > 0
       ? `Are you sure you want to delete "${this.year.name}" and all ${accountCount} account(s)?`
       : `Are you sure you want to delete "${this.year.name}"?`;
-      
+
     if (confirm(message)) {
       this.deleteYear.emit(this.year.id);
     }

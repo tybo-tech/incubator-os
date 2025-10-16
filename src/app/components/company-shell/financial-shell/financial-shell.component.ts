@@ -52,7 +52,7 @@ import { filter } from 'rxjs/operators';
       </div>
 
       <!-- Content Area with Router Outlet -->
-      <div class="max-w-7xl mx-auto px-6 py-6">
+      <div class="w-full px-6 py-6">
         <router-outlet></router-outlet>
       </div>
     </div>

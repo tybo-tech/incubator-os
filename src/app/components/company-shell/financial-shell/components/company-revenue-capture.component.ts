@@ -9,15 +9,15 @@ import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, YearGroupComponent],
   template: `
-    <div class="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div class="p-6 space-y-8 bg-gray-50 min-h-screen w-full">
       <!-- Header -->
       <div class="flex justify-between items-center">
         <div>
           <h1 class="text-2xl font-semibold text-gray-800">Yearly Revenue Capture</h1>
           <p class="text-gray-600 mt-1">Manage monthly revenue data across financial years</p>
         </div>
-        <button 
-          (click)="addYear()" 
+        <button
+          (click)="addYear()"
           class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 shadow-sm flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -27,7 +27,7 @@ import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
       </div>
 
       <!-- Summary Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
           <div class="text-sm text-gray-500">Total Years</div>
           <div class="text-2xl font-semibold text-gray-800">{{ years().length }}</div>
@@ -43,15 +43,15 @@ import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
       </div>
 
       <!-- Year Groups -->
-      <div class="space-y-4">
+      <div class="space-y-8">
         <div *ngIf="years().length === 0" class="text-center py-12 bg-white rounded-lg border border-gray-200">
           <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
           <h3 class="text-lg font-medium text-gray-900 mb-2">No financial years yet</h3>
           <p class="text-gray-500 mb-4">Get started by adding your first financial year</p>
-          <button 
-            (click)="addYear()" 
+          <button
+            (click)="addYear()"
             class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
             Add First Year
           </button>
@@ -66,7 +66,7 @@ import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
       </div>
 
       <!-- Footer -->
-      <div class="text-center text-gray-500 text-sm py-4">
+      <div class="text-center text-gray-500 text-sm py-6">
         💡 Click on year headers to expand/collapse. Use tab to navigate between inputs.
       </div>
     </div>
@@ -75,7 +75,7 @@ import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
 export class CompanyRevenueCaptureComponent {
   // Reactive signals
   years = signal<YearGroup[]>([]);
-  
+
   // Computed values
   totalRevenue = computed(() => {
     return this.years().reduce((total, year) => {
@@ -98,7 +98,7 @@ export class CompanyRevenueCaptureComponent {
   addYear(): void {
     const currentYear = new Date().getFullYear();
     const newId = Math.max(...this.years().map(y => y.id), 0) + 1;
-    
+
     const newYear: YearGroup = {
       id: newId,
       name: `FY ${currentYear}/${(currentYear + 1).toString().slice(-2)}`,
@@ -117,7 +117,7 @@ export class CompanyRevenueCaptureComponent {
   }
 
   onYearChanged(updatedYear: YearGroup): void {
-    this.years.update(years => 
+    this.years.update(years =>
       years.map(year => year.id === updatedYear.id ? updatedYear : year)
     );
   }
