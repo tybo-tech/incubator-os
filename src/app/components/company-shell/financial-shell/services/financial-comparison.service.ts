@@ -21,8 +21,14 @@ export class FinancialComparisonService {
 
   /**
    * Generate line chart data for comparing financial years monthly trends
+   * @param years Array of YearGroup objects to compare
+   * @returns ILineChart formatted data for Chart.js
    */
   generateYearlyComparisonLineChart(years: YearGroup[]): ILineChart {
+    if (!years || years.length === 0) {
+      return { labels: [], datasets: [] };
+    }
+
     const monthLabels = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
 
     // Color palette for different years
@@ -36,20 +42,34 @@ export class FinancialComparisonService {
     ];
 
     const datasets: IChartDataset[] = years.map((year, index) => {
-      // Calculate monthly totals for this year
-      const monthlyTotals = this.calculateMonthlyTotals(year);
-      const colorSet = colors[index % colors.length];
+      try {
+        // Calculate monthly totals for this year
+        const monthlyTotals = this.calculateMonthlyTotals(year);
+        const colorSet = colors[index % colors.length];
+        const yearTotal = year.accounts.reduce((sum, acc) => sum + (acc.total || 0), 0);
 
-      return {
-        label: `${year.name} (Total: R${this.formatNumber(year.accounts.reduce((sum, acc) => sum + acc.total, 0))})`,
-        data: monthlyTotals,
-        backgroundColor: colorSet.bg,
-        borderColor: colorSet.border,
-        borderWidth: 3,
-        fill: false,
-        tension: 0.4,
-      };
-    });
+        return {
+          label: `${year.name} (Total: R${this.formatNumber(yearTotal)})`,
+          data: monthlyTotals,
+          backgroundColor: colorSet.bg,
+          borderColor: colorSet.border,
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+        };
+      } catch (error) {
+        console.error(`Failed to process year ${year.name}:`, error);
+        return {
+          label: `${year.name} (Error)`,
+          data: new Array(12).fill(0),
+          backgroundColor: 'rgba(156, 163, 175, 0.1)',
+          borderColor: 'rgba(156, 163, 175, 1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4,
+        };
+      }
+    }).filter(dataset => dataset !== null);
 
     return {
       labels: monthLabels,
@@ -59,14 +79,23 @@ export class FinancialComparisonService {
 
   /**
    * Generate bar chart data comparing yearly totals
+   * @param years Array of YearGroup objects to compare
+   * @returns IBarChart formatted data for Chart.js
    */
   generateYearlyTotalsBarChart(years: YearGroup[]): IBarChart {
-    const labels = years.map(year => year.name);
-    const data = years.map(year =>
-      year.accounts.reduce((sum, acc) => sum + acc.total, 0)
-    );
+    if (!years || years.length === 0) {
+      return { labels: [], datasets: [] };
+    }
 
-    // Generate gradient colors
+    const labels = years.map(year => year.name);
+    const data = years.map(year => {
+      try {
+        return year.accounts.reduce((sum, acc) => sum + (acc.total || 0), 0);
+      } catch (error) {
+        console.error(`Failed to calculate total for year ${year.name}:`, error);
+        return 0;
+      }
+    });    // Generate gradient colors
     const colors = this.generateGradientColors(years.length);
 
     return {

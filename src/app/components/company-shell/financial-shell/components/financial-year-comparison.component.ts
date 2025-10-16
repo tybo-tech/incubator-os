@@ -1,4 +1,4 @@
-import { Component, Input, signal, computed, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, signal, computed, OnInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LineChartComponent } from '../../../../charts/line-chart/line-chart.component';
 import { BarChartComponent } from '../../../../charts/bar-chart/bar-chart.component';
@@ -27,7 +27,14 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
           <button
             type="button"
             (click)="toggleChartType()"
-            class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors border border-gray-300">
+            [attr.aria-label]="currentChartType() === 'line' ? 'Switch to totals view' : 'Switch to trends view'"
+            class="px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="currentChartType() === 'line'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="currentChartType() === 'bar'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+            </svg>
             {{ currentChartType() === 'line' ? 'Show Totals' : 'Show Trends' }}
           </button>
         </div>
@@ -57,22 +64,32 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
       </div>
 
       <!-- Chart Display -->
-      <div class="bg-gray-50 rounded-lg p-4" *ngIf="hasData()">
-        <div *ngIf="currentChartType() === 'line'">
+      <div class="bg-gray-50 rounded-lg p-6" *ngIf="hasData()">
+        <div class="relative" *ngIf="currentChartType() === 'line'">
+          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">
+            Monthly Trends
+          </div>
           <app-line-chart
             [componentTitle]="'Monthly Revenue Trends Comparison'"
             [data]="monthlyTrendsChart()">
           </app-line-chart>
         </div>
-        <div *ngIf="currentChartType() === 'bar'">
+        <div class="relative" *ngIf="currentChartType() === 'bar'">
+          <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">
+            Annual Totals
+          </div>
           <app-bar-chart
             [componentTitle]="'Annual Revenue Totals Comparison'"
             [data]="annualTotalsChart()">
           </app-bar-chart>
         </div>
-      </div>
 
-      <!-- Growth Rates Table -->
+        <!-- Chart Loading State -->
+        <div *ngIf="isLoadingCharts()" class="flex items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          <span class="ml-2 text-gray-600 text-sm">Generating charts...</span>
+        </div>
+      </div>      <!-- Growth Rates Table -->
       <div class="bg-gray-50 rounded-lg p-4" *ngIf="comparisonSummary()?.growthRates && comparisonSummary()!.growthRates.length > 1">
         <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +149,7 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
     </div>
   `
 })
-export class FinancialYearComparisonComponent implements OnInit, OnChanges {
+export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDestroy {
   @Input() years: YearGroup[] = [];
 
   // Chart state
@@ -140,6 +157,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges {
   readonly monthlyTrendsChart = signal<ILineChart>({ labels: [], datasets: [] });
   readonly annualTotalsChart = signal<IBarChart>({ labels: [], datasets: [] });
   readonly comparisonSummary = signal<ReturnType<typeof this.comparisonService.getComparisonSummary> | null>(null);
+  readonly isLoadingCharts = signal<boolean>(false);
 
   // Computed properties
   readonly hasData = computed(() => this.years && this.years.length > 1);
@@ -154,6 +172,11 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges {
     if (changes['years']) {
       this.updateCharts();
     }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up any resources if needed
+    this.resetCharts();
   }
 
   /**
@@ -172,28 +195,42 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges {
       return;
     }
 
+    this.isLoadingCharts.set(true);
+
     try {
-      // Generate monthly trends comparison
-      const monthlyChart = this.comparisonService.generateYearlyComparisonLineChart(this.years);
-      this.monthlyTrendsChart.set(monthlyChart);
+      // Use setTimeout to prevent blocking the UI during chart generation
+      setTimeout(() => {
+        try {
+          // Generate monthly trends comparison
+          const monthlyChart = this.comparisonService.generateYearlyComparisonLineChart(this.years);
+          this.monthlyTrendsChart.set(monthlyChart);
 
-      // Generate annual totals comparison
-      const annualChart = this.comparisonService.generateYearlyTotalsBarChart(this.years);
-      this.annualTotalsChart.set(annualChart);
+          // Generate annual totals comparison
+          const annualChart = this.comparisonService.generateYearlyTotalsBarChart(this.years);
+          this.annualTotalsChart.set(annualChart);
 
-      // Generate summary statistics
-      const summary = this.comparisonService.getComparisonSummary(this.years);
-      this.comparisonSummary.set(summary);
+          // Generate summary statistics
+          const summary = this.comparisonService.getComparisonSummary(this.years);
+          this.comparisonSummary.set(summary);
 
-      console.log('📊 Financial comparison charts updated:', {
-        years: this.years.length,
-        monthlyDatasets: monthlyChart.datasets.length,
-        annualDatasets: annualChart.datasets.length,
-        summary
-      });
+          console.log('📊 Financial comparison charts updated:', {
+            years: this.years.length,
+            monthlyDatasets: monthlyChart.datasets.length,
+            annualDatasets: annualChart.datasets.length,
+            summary
+          });
+
+          this.isLoadingCharts.set(false);
+        } catch (error) {
+          console.error('Failed to generate comparison charts:', error);
+          this.resetCharts();
+          this.isLoadingCharts.set(false);
+        }
+      }, 0);
     } catch (error) {
-      console.error('Failed to generate comparison charts:', error);
+      console.error('Failed to initialize chart generation:', error);
       this.resetCharts();
+      this.isLoadingCharts.set(false);
     }
   }
 
@@ -204,6 +241,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges {
     this.monthlyTrendsChart.set({ labels: [], datasets: [] });
     this.annualTotalsChart.set({ labels: [], datasets: [] });
     this.comparisonSummary.set(null);
+    this.isLoadingCharts.set(false);
   }
 
   /**

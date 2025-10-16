@@ -83,7 +83,7 @@ import { map } from 'rxjs/operators';
       </section>
 
       <!-- Financial Years Comparison Chart -->
-      <section *ngIf="years().length > 1" role="region" aria-label="Financial Years Comparison">
+      <section *ngIf="years().length > 1" role="region" aria-label="Financial Years Comparison" class="animate-in fade-in duration-500">
         <app-financial-year-comparison [years]="years()"></app-financial-year-comparison>
       </section>
 
