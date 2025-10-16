@@ -100,7 +100,7 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
                       [class.bg-white]="i % 2 === 0">
                     <select
                       [(ngModel)]="account.accountName"
-                      (change)="onAccountChange()"
+                      (change)="onAccountNameChange(account)"
                       class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
                       <option value="">Select account...</option>
                       <option *ngFor="let availableAccount of availableAccounts" [value]="availableAccount.account_name">
@@ -115,7 +115,7 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
                     <input
                       type="number"
                       [(ngModel)]="account.months[month.key]"
-                      (input)="updateTotal(account)"
+                      (change)="onMonthlyValueChange(account)"
                       placeholder="0"
                       min="0"
                       step="0.01"
@@ -208,6 +208,7 @@ export class YearGroupComponent {
   @Output() yearChanged = new EventEmitter<YearGroup>();
   @Output() deleteYear = new EventEmitter<number>();
   @Output() accountsUpdateRequested = new EventEmitter<void>();
+  @Output() accountChanged = new EventEmitter<{yearId: number, account: AccountRecord}>();
 
   @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
@@ -273,6 +274,57 @@ export class YearGroupComponent {
     }
   }
 
+  /**
+   * Handle monthly value changes (triggered on blur/enter)
+   */
+  onMonthlyValueChange(account: AccountRecord): void {
+    // Calculate total from all month values
+    const total = Object.values(account.months).reduce((sum: number, value) => {
+      return sum + (value || 0);
+    }, 0);
+
+    account.total = total;
+
+    // Emit specific account change for targeted saving
+    this.accountChanged.emit({
+      yearId: this.year.id,
+      account: { ...account }
+    });
+
+    // Also update the year for UI consistency (but parent will only save the specific account)
+    this.onAccountChange();
+  }
+
+  /**
+   * Handle account name/selection changes
+   */
+  onAccountNameChange(account: AccountRecord): void {
+    console.log('Account name changed:', account.accountName);
+
+    // Find the selected account details
+    const selectedAccount = this.availableAccounts.find(
+      acc => acc.account_name === account.accountName
+    );
+
+    if (selectedAccount) {
+      // Update the account ID to match the selected account
+      account.accountId = selectedAccount.id;
+      console.log('Updated account ID:', account.accountId);
+    }
+
+    // Emit specific account change
+    this.accountChanged.emit({
+      yearId: this.year.id,
+      account: { ...account }
+    });
+
+    // Also update the year
+    this.onAccountChange();
+  }
+
+  /**
+   * Legacy method - still used for other changes
+   */
   updateTotal(account: AccountRecord): void {
     // Calculate total from all month values
     const total = Object.values(account.months).reduce((sum: number, value) => {
@@ -288,7 +340,7 @@ export class YearGroupComponent {
   }
 
   onAccountChange(): void {
-    // Emit the updated year to parent
+    // Emit the updated year to parent (for UI updates)
     this.yearChanged.emit({ ...this.year });
   }
 

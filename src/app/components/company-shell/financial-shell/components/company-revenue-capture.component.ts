@@ -115,6 +115,7 @@ import { map } from 'rxjs/operators';
           [availableAccounts]="availableAccounts()"
           [companyId]="companyId()"
           (yearChanged)="onYearChanged($event)"
+          (accountChanged)="onAccountChanged($event)"
           (deleteYear)="deleteYear($event)"
           (accountsUpdateRequested)="onDataUpdated()">
         </app-year-group>
@@ -169,6 +170,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
   // Debounced save mechanism
   private saveSubject = new Subject<YearGroup>();
+  private accountSaveSubject = new Subject<{yearId: number, account: AccountRecord}>();
 
   // Computed properties
   readonly totalRevenue = computed(() =>
@@ -193,11 +195,18 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Set up debounced save (wait 500ms after user stops typing)
+    // Set up debounced save for full year changes (wait 500ms after user stops typing)
     this.saveSubject.pipe(
       debounceTime(500)
     ).subscribe(year => {
       this.saveYearChangesToDatabase(year);
+    });
+
+    // Set up debounced save for individual account changes (wait 300ms)
+    this.accountSaveSubject.pipe(
+      debounceTime(300)
+    ).subscribe(({yearId, account}) => {
+      this.saveAccountToDatabase(yearId, account);
     });
 
     this.loadAllData();
@@ -409,47 +418,105 @@ export class CompanyRevenueCaptureComponent implements OnInit {
       years.map(year => year.id === updatedYear.id ? updatedYear : year)
     );
 
-    // Debounce the database save to avoid too many API calls
-    this.saveSubject.next(updatedYear);
+    // Note: Individual account changes are now handled by onAccountChanged()
+    // This method is mainly for structural changes (add/remove accounts, etc.)
   }
 
   /**
-   * Save year changes to the database
+   * Handle individual account changes from child components
+   * Updates local state and saves only the specific account that changed
+   */
+  onAccountChanged(event: {yearId: number, account: AccountRecord}): void {
+    const { yearId, account } = event;
+    console.log(`💰 Account changed: ${account.accountName} in year ID ${yearId}`);
+
+    // Update local state immediately for UI responsiveness
+    this.years.update(years =>
+      years.map(year => {
+        if (year.id === yearId) {
+          return {
+            ...year,
+            accounts: year.accounts.map(acc =>
+              acc.id === account.id ? { ...account } : acc
+            )
+          };
+        }
+        return year;
+      })
+    );
+
+    // Debounce the database save for this specific account
+    this.accountSaveSubject.next({ yearId, account });
+  }
+
+  /**
+   * Save a specific account's changes to the database
+   */
+  private saveAccountToDatabase(yearId: number, account: AccountRecord): void {
+    const companyId = this.companyId();
+    console.log(`🔄 Saving single account: ${account.accountName} (Company ID: ${companyId}, Year ID: ${yearId})`);
+
+    if (account.id && account.id > 0) {
+      // Convert AccountRecord to MonthlyInputData format
+      const monthlyData = this.accountRecordToMonthlyInput(account, yearId);
+
+      console.log(`💡 Saving account data:`, {
+        statsId: monthlyData.statsId,
+        accountId: monthlyData.accountId,
+        accountName: account.accountName,
+        total: monthlyData.total
+      });
+
+      // Save to database
+      this.transformerService.saveMonthlyData(monthlyData, companyId, yearId)
+        .subscribe({
+          next: (result) => {
+            console.log(`✅ Successfully saved: ${account.accountName}`, result);
+          },
+          error: (error) => {
+            console.error(`❌ Failed to save: ${account.accountName}`, error);
+            // TODO: Add user notification for errors
+          }
+        });
+    } else {
+      console.log(`⏭️ Skipping new/empty account: ${account.accountName} (ID: ${account.id})`);
+    }
+  }
+
+  /**
+   * Save year changes to the database (legacy method for bulk changes)
    */
   private saveYearChangesToDatabase(year: YearGroup): void {
     const companyId = this.companyId();
-    console.log(`🔄 Saving changes for ${year.name} (Company ID: ${companyId})`);
-    
-    // Save each account's monthly data
+    console.log(`🔄 Bulk saving changes for ${year.name} (Company ID: ${companyId}) - Legacy method`);
+    console.log(`ℹ️ Note: Individual account changes are now handled by saveAccountToDatabase()`);
+
+    // This method is now mainly for structural changes or bulk operations
+    // Individual account changes should use the new saveAccountToDatabase method
     year.accounts.forEach((account, index) => {
       if (account.id && account.id > 0) {
-        // Convert AccountRecord to MonthlyInputData format
         const monthlyData = this.accountRecordToMonthlyInput(account, year.id);
-        
-        console.log(`💡 Saving account ${index + 1}/${year.accounts.length}: ${account.accountName}`, {
+
+        console.log(`💡 Bulk saving account ${index + 1}/${year.accounts.length}: ${account.accountName}`, {
           statsId: monthlyData.statsId,
           accountId: monthlyData.accountId,
           total: monthlyData.total
         });
-        
-        // Save to database
+
         this.transformerService.saveMonthlyData(monthlyData, companyId, year.id)
           .subscribe({
             next: (result) => {
-              console.log(`✅ Saved: ${account.accountName}`, result);
+              console.log(`✅ Bulk saved: ${account.accountName}`, result);
             },
             error: (error) => {
-              console.error(`❌ Failed to save: ${account.accountName}`, error);
-              // TODO: Add user notification for errors
+              console.error(`❌ Failed to bulk save: ${account.accountName}`, error);
             }
           });
       } else {
-        console.log(`⏭️ Skipping new/empty account: ${account.accountName}`);
+        console.log(`⏭️ Skipping new/empty account in bulk save: ${account.accountName}`);
       }
     });
-  }
-
-  /**
+  }  /**
    * Convert AccountRecord to MonthlyInputData format for saving
    */
   private accountRecordToMonthlyInput(account: AccountRecord, financialYearId: number): any {
