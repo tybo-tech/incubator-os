@@ -8,8 +8,9 @@ import { FinancialYearService, FinancialYear } from '../../../../../services/fin
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { FinancialDataTransformerService } from '../../../../services/financial-data-transformer.service';
-import { CompanyFinancialYearlyStats, CompanyFinancialYearlyStatsService } from '../../../../../services/company-financial-yearly-stats.service';
+import { CompanyFinancialYearlyStatsService, CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
 import { forkJoin } from 'rxjs';
+import { debounceTime, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 /**
@@ -166,6 +167,9 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   // UI state
   readonly showManagementModal = signal(false);
 
+  // Debounced save mechanism
+  private saveSubject = new Subject<YearGroup>();
+
   // Computed properties
   readonly totalRevenue = computed(() =>
     this.years().reduce((total, year) => total + this.calculateYearTotal(year), 0)
@@ -189,6 +193,13 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Set up debounced save (wait 500ms after user stops typing)
+    this.saveSubject.pipe(
+      debounceTime(500)
+    ).subscribe(year => {
+      this.saveYearChangesToDatabase(year);
+    });
+
     this.loadAllData();
   }  /**
    * Track function for ngFor to optimize rendering
@@ -267,6 +278,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
           return {
             id: stat.id,
+            accountId: stat.account_id,
             accountName: account.account_name,
             months: {
               m1: stat.m1 || 0,
@@ -387,11 +399,79 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
   /**
    * Handle year changes from child components
+   * Updates the local state and debounces database saves
    */
   onYearChanged(updatedYear: YearGroup): void {
+    console.log('💾 Year data changed:', updatedYear.name);
+
+    // Update local state immediately for UI responsiveness
     this.years.update(years =>
       years.map(year => year.id === updatedYear.id ? updatedYear : year)
     );
+
+    // Debounce the database save to avoid too many API calls
+    this.saveSubject.next(updatedYear);
+  }
+
+  /**
+   * Save year changes to the database
+   */
+  private saveYearChangesToDatabase(year: YearGroup): void {
+    const companyId = this.companyId();
+    console.log(`🔄 Saving changes for ${year.name} (Company ID: ${companyId})`);
+    
+    // Save each account's monthly data
+    year.accounts.forEach((account, index) => {
+      if (account.id && account.id > 0) {
+        // Convert AccountRecord to MonthlyInputData format
+        const monthlyData = this.accountRecordToMonthlyInput(account, year.id);
+        
+        console.log(`💡 Saving account ${index + 1}/${year.accounts.length}: ${account.accountName}`, {
+          statsId: monthlyData.statsId,
+          accountId: monthlyData.accountId,
+          total: monthlyData.total
+        });
+        
+        // Save to database
+        this.transformerService.saveMonthlyData(monthlyData, companyId, year.id)
+          .subscribe({
+            next: (result) => {
+              console.log(`✅ Saved: ${account.accountName}`, result);
+            },
+            error: (error) => {
+              console.error(`❌ Failed to save: ${account.accountName}`, error);
+              // TODO: Add user notification for errors
+            }
+          });
+      } else {
+        console.log(`⏭️ Skipping new/empty account: ${account.accountName}`);
+      }
+    });
+  }
+
+  /**
+   * Convert AccountRecord to MonthlyInputData format for saving
+   */
+  private accountRecordToMonthlyInput(account: AccountRecord, financialYearId: number): any {
+    return {
+      accountId: account.accountId, // Use the actual account_id from the database
+      months: [
+        account.months['m1'] || 0,
+        account.months['m2'] || 0,
+        account.months['m3'] || 0,
+        account.months['m4'] || 0,
+        account.months['m5'] || 0,
+        account.months['m6'] || 0,
+        account.months['m7'] || 0,
+        account.months['m8'] || 0,
+        account.months['m9'] || 0,
+        account.months['m10'] || 0,
+        account.months['m11'] || 0,
+        account.months['m12'] || 0
+      ],
+      total: account.total,
+      statsId: account.id // yearly_stats.id for updates
+    };
   }
 
   /**

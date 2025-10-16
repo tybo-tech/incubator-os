@@ -9,7 +9,8 @@ export interface YearGroup {
 }
 
 export interface AccountRecord {
-  id: number;
+  id: number; // yearly_stats.id for updates
+  accountId: number | null; // account_id from the stats table (null for company total)
   accountName: string;
   months: { [key: string]: number | null }; // { m1: 0, m2: 0, ..., m12: 0 }
   total: number;

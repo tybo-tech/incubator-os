@@ -244,6 +244,7 @@ export class YearGroupComponent {
     const newAccountId = Math.max(...this.year.accounts.map(a => a.id), 0) + 1;
     const newAccount: AccountRecord = {
       id: newAccountId,
+      accountId: null, // Will be set when the user selects an account
       accountName: '',
       months: {
         m1: null, m2: null, m3: null, m4: null,
