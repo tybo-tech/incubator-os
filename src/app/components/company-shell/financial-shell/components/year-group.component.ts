@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, signal, computed } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-capture.interface';
+import { CompanyAccount } from '../../../../services/company-account.interface';
 
 @Component({
   selector: 'app-year-group',
@@ -11,7 +12,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
       <!-- Header -->
       <div
-        class="flex justify-between items-center bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-3 cursor-pointer select-none hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+        class="flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 cursor-pointer select-none hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
         (click)="toggleGroup()">
         <div class="flex items-center gap-3">
           <h2 class="text-lg font-medium">{{ year.name }}</h2>
@@ -59,18 +60,18 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
           <div class="bg-white overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table class="min-w-full text-sm">
               <thead>
-                <tr class="bg-gray-50 text-gray-700">
-                  <th class="px-4 py-3 text-left font-semibold min-w-[200px] sticky left-0 bg-gray-50 border-r border-gray-200 z-20">
+                <tr class="bg-blue-50 text-blue-800">
+                  <th class="px-4 py-3 text-left font-semibold min-w-[200px] sticky left-0 bg-blue-50 border-r border-blue-200 z-20">
                     Account Name
                   </th>
                   <th *ngFor="let month of months; trackBy: trackMonth"
-                      class="px-3 py-3 text-center font-semibold min-w-[80px] border-r border-gray-100 bg-gray-50">
+                      class="px-3 py-3 text-center font-semibold min-w-[80px] border-r border-blue-100 bg-blue-50">
                     {{ month.label }}
                   </th>
-                  <th class="px-4 py-3 text-right font-semibold min-w-[120px] bg-purple-50 text-purple-700 border-r border-gray-200">
+                  <th class="px-4 py-3 text-right font-semibold min-w-[120px] bg-blue-100 text-blue-800 border-r border-blue-200">
                     Total
                   </th>
-                  <th class="px-3 py-3 text-center font-semibold min-w-[80px] bg-gray-50">
+                  <th class="px-3 py-3 text-center font-semibold min-w-[80px] bg-blue-50">
                     Actions
                   </th>
                 </tr>
@@ -84,11 +85,26 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                   <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
                       [class.bg-gray-50]="i % 2 === 1"
                       [class.bg-white]="i % 2 === 0">
-                    <input
-                      [(ngModel)]="account.accountName"
-                      placeholder="Enter account name"
-                      class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all bg-white"
-                      (blur)="onAccountChange()" />
+                    <div class="flex items-center gap-2">
+                      <select
+                        [(ngModel)]="account.accountName"
+                        (change)="onAccountChange()"
+                        class="flex-1 border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
+                        <option value="">Select account...</option>
+                        <option *ngFor="let availableAccount of availableAccounts" [value]="availableAccount.account_name">
+                          {{ getAccountDisplayName(availableAccount) }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        (click)="openAccountManagement()"
+                        class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                        title="Manage Accounts">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
 
                   <!-- Month Inputs -->
@@ -101,11 +117,11 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                       placeholder="0"
                       min="0"
                       step="0.01"
-                      class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all hover:border-gray-300 bg-white" />
+                      class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all hover:border-gray-300 bg-white" />
                   </td>
 
                   <!-- Total -->
-                  <td class="px-4 py-3 text-right font-semibold text-purple-700 bg-purple-50/80 border-r border-gray-200">
+                  <td class="px-4 py-3 text-right font-semibold text-blue-800 bg-blue-100 border-r border-blue-200">
                     R {{ account.total | number:'1.0-2' }}
                   </td>
 
@@ -132,7 +148,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
                       <span>No accounts yet</span>
                       <button
                         (click)="addAccount()"
-                        class="text-purple-600 hover:text-purple-800 font-medium">
+                        class="text-blue-600 hover:text-blue-800 font-medium">
                         Add your first account
                       </button>
                     </div>
@@ -142,11 +158,11 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
 
               <!-- Footer with Year Total -->
               <tfoot *ngIf="year.accounts.length > 0">
-                <tr class="bg-gray-100 font-semibold text-gray-800 border-t-2 border-gray-200">
-                  <td class="px-4 py-3 text-right sticky left-0 bg-gray-100 border-r border-gray-200" colspan="13">
+                <tr class="bg-blue-50 font-semibold text-blue-800 border-t-2 border-blue-200">
+                  <td class="px-4 py-3 text-right sticky left-0 bg-blue-50 border-r border-blue-200" colspan="13">
                     <span class="text-lg">Year Total:</span>
                   </td>
-                  <td class="px-4 py-3 text-right text-purple-700 bg-purple-100">
+                  <td class="px-4 py-3 text-right text-blue-800 bg-blue-100">
                     <span class="text-lg font-bold">R {{ getYearTotal() | number:'1.0-2' }}</span>
                   </td>
                   <td class="px-3 py-3"></td>
@@ -165,7 +181,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
             <div class="flex gap-2">
               <button
                 (click)="addAccount()"
-                class="px-3 py-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors">
+                class="px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors">
                 + Add Account
               </button>
             </div>
@@ -177,6 +193,7 @@ import { YearGroup, AccountRecord, MonthDisplay } from '../models/revenue-captur
 })
 export class YearGroupComponent {
   @Input() year!: YearGroup;
+  @Input() availableAccounts: CompanyAccount[] = [];
   @Output() yearChanged = new EventEmitter<YearGroup>();
   @Output() deleteYear = new EventEmitter<number>();
 
@@ -269,5 +286,23 @@ export class YearGroupComponent {
     if (confirm(message)) {
       this.deleteYear.emit(this.year.id);
     }
+  }
+
+  /**
+   * Get display name for account dropdown
+   */
+  getAccountDisplayName(account: CompanyAccount): string {
+    if (account.account_number) {
+      return `${account.account_name} (${account.account_number})`;
+    }
+    return account.account_name;
+  }
+
+  /**
+   * Open account management - placeholder for now
+   */
+  openAccountManagement(): void {
+    // TODO: Emit event to parent to open management modal
+    console.log('Open account management');
   }
 }
