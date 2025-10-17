@@ -68,25 +68,31 @@ export class FinancialShellComponent implements OnInit {
 
   financialTabs = [
     {
-      label: 'Revenue Capture',
+      label: 'Monthly Revenue Capture',
       route: 'revenue-capture',
       icon: 'fas fa-table',
     },
-    {
-      label: 'Monthly Revenue',
-      route: 'monthly-revenue',
-      icon: 'fas fa-chart-line',
-    },
-    {
-      label: 'Bank Statements',
-      route: 'bank-statements',
-      icon: 'fas fa-university',
-    },
-    {
+        {
       label: 'Revenue',
       route: 'revenue',
       icon: 'fas fa-trending-up',
     },
+     {
+      label: 'Profits',
+      route: 'profits',
+      icon: 'fas fa-coins',
+    },
+    // {
+    //   label: 'Monthly Revenue',
+    //   route: 'monthly-revenue',
+    //   icon: 'fas fa-chart-line',
+    // },
+    // {
+    //   label: 'Bank Statements',
+    //   route: 'bank-statements',
+    //   icon: 'fas fa-university',
+    // },
+
 
     {
       label: 'Cost Structure',
@@ -98,11 +104,7 @@ export class FinancialShellComponent implements OnInit {
       route: 'balance-sheet',
       icon: 'fas fa-balance-scale',
     },
-    {
-      label: 'Profits',
-      route: 'profits',
-      icon: 'fas fa-coins',
-    },
+
 
     {
       label: 'Ratios',
@@ -153,7 +155,15 @@ export class FinancialShellComponent implements OnInit {
   }
 
   isTabActive(tabRoute: string): boolean {
-    return this.currentUrl.includes(`/financials/${tabRoute}`);
+    // Use exact route matching to prevent conflicts between similar routes
+    // e.g., "revenue-capture" vs "revenue"
+    const segments = this.currentUrl.split('/');
+    const lastSegment = segments[segments.length - 1];
+
+    // Handle query parameters by splitting on '?'
+    const routeWithoutQuery = lastSegment.split('?')[0];
+
+    return routeWithoutQuery === tabRoute;
   }
 
   /**

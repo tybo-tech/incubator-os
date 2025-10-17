@@ -44,7 +44,7 @@ interface RevenueDisplayRow {
   selector: 'app-revenue',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     LineChartComponent,
     BarChartComponent,
@@ -78,12 +78,12 @@ interface RevenueDisplayRow {
             <i class="fas fa-tachometer-alt text-purple-600 text-xl mr-3"></i>
             <h3 class="text-lg font-semibold text-gray-900">Key Revenue Metrics</h3>
           </div>
-          
+
           <!-- Horizontal Grid for 3 Revenue Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div *ngFor="let metric of keyMetrics" 
+            <div *ngFor="let metric of keyMetrics"
                  class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200">
-              
+
               <!-- Icon and Value -->
               <div class="flex items-center justify-between mb-4">
                 <div class="flex-1">
@@ -97,7 +97,7 @@ interface RevenueDisplayRow {
                     {{ metric.subtitle }}
                   </div>
                 </div>
-                
+
                 <!-- Icon -->
                 <div class="ml-4">
                   <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200">
@@ -105,7 +105,7 @@ interface RevenueDisplayRow {
                   </div>
                 </div>
               </div>
-              
+
               <!-- Progress Bar -->
               <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div class="h-full transition-all duration-500 rounded-full"
