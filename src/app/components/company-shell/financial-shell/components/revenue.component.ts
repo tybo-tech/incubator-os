@@ -8,7 +8,6 @@ import { CompanyFinancialYearlyStatsService, QuarterlyRevenue } from '../../../.
 import { LineChartComponent } from '../../../../charts/line-chart/line-chart.component';
 import { BarChartComponent } from '../../../../charts/bar-chart/bar-chart.component';
 import { DoughnutComponent } from '../../../../charts/doughnut/doughnut.component';
-import { NumbersChartComponent } from '../../../../charts/numbers-chart/numbers-chart.component';
 
 // Chart Data Interfaces
 import { ILineChart, IBarChart, IDoughnutChart } from '../../../../../models/Charts';
@@ -49,8 +48,7 @@ interface RevenueDisplayRow {
     FormsModule,
     LineChartComponent,
     BarChartComponent,
-    DoughnutComponent,
-    NumbersChartComponent
+    DoughnutComponent
   ],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
@@ -73,22 +71,57 @@ interface RevenueDisplayRow {
 
       <!-- Charts and Analytics Section -->
       <div *ngIf="!loading && revenueRows.length > 0" class="space-y-8 mb-12">
-        
+
         <!-- Key Metrics Cards -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center mb-6">
             <i class="fas fa-tachometer-alt text-purple-600 text-xl mr-3"></i>
             <h3 class="text-lg font-semibold text-gray-900">Key Revenue Metrics</h3>
           </div>
-          <app-numbers-chart [items]="keyMetrics"></app-numbers-chart>
+          
+          <!-- Horizontal Grid for 3 Revenue Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div *ngFor="let metric of keyMetrics" 
+                 class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+              
+              <!-- Icon and Value -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex-1">
+                  <div class="text-2xl font-bold mb-1" [ngClass]="metric.color || 'text-gray-800'">
+                    {{ metric.value }}
+                  </div>
+                  <div class="text-sm font-medium text-gray-600 capitalize">
+                    {{ metric.key }}
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    {{ metric.subtitle }}
+                  </div>
+                </div>
+                
+                <!-- Icon -->
+                <div class="ml-4">
+                  <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200">
+                    <i [class]="metric.icon || 'fas fa-chart-line'" [ngClass]="metric.color || 'text-gray-600'"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="h-full transition-all duration-500 rounded-full"
+                     [ngClass]="metric.color === 'text-green-600' ? 'bg-green-500' : 'bg-blue-500'"
+                     [style.width]="'85%'"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+
           <!-- Quarterly Trends Line Chart -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <app-line-chart 
+            <app-line-chart
               [componentTitle]="'Quarterly Revenue Trends'"
               [data]="quarterlyTrendsChart">
             </app-line-chart>
@@ -96,7 +129,7 @@ interface RevenueDisplayRow {
 
           <!-- Yearly Comparison Bar Chart -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <app-bar-chart 
+            <app-bar-chart
               [componentTitle]="'Revenue Comparison by Year'"
               [data]="yearlyComparisonChart">
             </app-bar-chart>
@@ -107,7 +140,7 @@ interface RevenueDisplayRow {
         <!-- Revenue Distribution -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="max-w-md mx-auto">
-            <app-doughnut 
+            <app-doughnut
               [componentTitle]="'Revenue Distribution (Latest Year)'"
               [data]="revenueDistributionChart">
             </app-doughnut>
@@ -561,7 +594,7 @@ export class RevenueComponent implements OnInit {
       { border: 'rgba(245, 158, 11, 1)', background: 'rgba(245, 158, 11, 0.2)' }, // Amber
       { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }    // Red
     ];
-    
+
     const colorIndex = index % colors.length;
     return colors[colorIndex][type];
   }
