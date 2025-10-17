@@ -1,29 +1,52 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { CompanyRevenueSummaryService, RevenueDisplayRow } from '../../../../../services/company-revenue-summary.service';
-import { CompanyRevenueSummary } from '../../../../../models/financial.models';
-import { YearModalComponent } from '../../../shared/year-modal/year-modal.component';
+import { CompanyFinancialYearlyStatsService, QuarterlyRevenue } from '../../../../../services/company-financial-yearly-stats.service';
+
+// Display row interface for UI binding
+interface RevenueDisplayRow {
+  financial_year_id: number;
+  financial_year_name: string;
+  fy_start_year: number;
+  fy_end_year: number;
+  start_month: number;
+  revenue_q1: number;
+  revenue_q2: number;
+  revenue_q3: number;
+  revenue_q4: number;
+  revenue_total: number;
+  export_q1: number;
+  export_q2: number;
+  export_q3: number;
+  export_q4: number;
+  export_total: number;
+  export_ratio: number;
+  quarter_details?: {
+    q1_months: string[];
+    q2_months: string[];
+    q3_months: string[];
+    q4_months: string[];
+  };
+  account_breakdown?: any[];
+}
 
 @Component({
   selector: 'app-revenue',
   standalone: true,
-  imports: [CommonModule, FormsModule, YearModalComponent],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center">
           <i class="fas fa-chart-line text-green-600 text-2xl mr-3"></i>
-          <h2 class="text-xl font-bold text-gray-900">Revenue</h2>
+          <h2 class="text-xl font-bold text-gray-900">Revenue Summary</h2>
+          <div class="ml-4 text-sm text-gray-600">
+            <i class="fas fa-info-circle mr-1"></i>
+            Live calculations from monthly financial data
+          </div>
         </div>
-        <button
-          (click)="openYearModal()"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-          <i class="fas fa-plus mr-2"></i>
-          Year
-        </button>
       </div>
 
       <!-- Loading State -->
@@ -57,89 +80,44 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
-                <th class="w-20 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index"
-                  [class.bg-blue-50]="row.isEditing"
-                  [class.bg-green-50]="row.isNew">
+              <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-gray-50">
                 <td class="w-32 px-4 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <input
-                      *ngIf="row.isEditing || row.isNew"
-                      type="number"
-                      [(ngModel)]="row.year"
-                      [min]="2000"
-                      [max]="2030"
-                      class="w-full px-2 py-1 text-sm font-medium border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <span *ngIf="!(row.isEditing || row.isNew)" class="text-sm font-medium text-gray-900">{{ row.year }}</span>
-                    <span *ngIf="row.isEditing" class="ml-2 text-xs text-blue-600">
-                      <i class="fas fa-edit"></i>
+                    <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
+                    <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
+                      ({{ getFinancialYearPeriod(row) }})
                     </span>
                   </div>
                 </td>
 
                 <!-- Q1 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.q1"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.q1) }}
+                  <span class="block text-sm text-center text-gray-900">
+                    {{ formatCurrency(row.revenue_q1) }}
                   </span>
                 </td>
 
                 <!-- Q2 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.q2"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.q2) }}
+                  <span class="block text-sm text-center text-gray-900">
+                    {{ formatCurrency(row.revenue_q2) }}
                   </span>
                 </td>
 
                 <!-- Q3 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.q3"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.q3) }}
+                  <span class="block text-sm text-center text-gray-900">
+                    {{ formatCurrency(row.revenue_q3) }}
                   </span>
                 </td>
 
                 <!-- Q4 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.q4"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.q4) }}
+                  <span class="block text-sm text-center text-gray-900">
+                    {{ formatCurrency(row.revenue_q4) }}
                   </span>
                 </td>
 
@@ -147,43 +125,9 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 <td class="w-32 px-4 py-4 whitespace-nowrap">
                   <div class="text-center">
                     <span class="text-sm font-semibold text-gray-900">
-                      {{ formatCurrency(row.total) }}
+                      {{ formatCurrency(row.revenue_total) }}
                     </span>
                     <span class="text-xs text-gray-500 block">USD</span>
-                  </div>
-                </td>
-
-                <!-- Actions -->
-                <td class="w-20 px-4 py-4 whitespace-nowrap text-center">
-                  <div class="flex justify-center space-x-2">
-                    <ng-container *ngIf="row.isEditing || row.isNew">
-                      <button
-                        (click)="saveRow(row)"
-                        class="text-green-600 hover:text-green-900"
-                        title="Save">
-                        <i class="fas fa-check"></i>
-                      </button>
-                      <button
-                        (click)="cancelEdit(row, i)"
-                        class="text-gray-600 hover:text-gray-900"
-                        title="Cancel">
-                        <i class="fas fa-times"></i>
-                      </button>
-                    </ng-container>
-                    <ng-container *ngIf="!(row.isEditing || row.isNew)">
-                      <button
-                        (click)="editRow(row)"
-                        class="text-blue-600 hover:text-blue-900"
-                        title="Edit">
-                        <i class="fas fa-edit"></i>
-                      </button>
-                      <button
-                        (click)="deleteRow(row, i)"
-                        class="text-red-600 hover:text-red-900"
-                        title="Delete">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </ng-container>
                   </div>
                 </td>
               </tr>
@@ -220,71 +164,37 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index"
-                  [class.bg-blue-50]="row.isEditing"
-                  [class.bg-green-50]="row.isNew">
+              <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-gray-50">
                 <td class="w-32 px-4 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900">{{ row.year }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
                   </div>
                 </td>
 
                 <!-- Export Q1 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.export_q1"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span class="block text-sm text-center text-gray-900">
                     {{ formatCurrency(row.export_q1) }}
                   </span>
                 </td>
 
                 <!-- Export Q2 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.export_q2"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span class="block text-sm text-center text-gray-900">
                     {{ formatCurrency(row.export_q2) }}
                   </span>
                 </td>
 
                 <!-- Export Q3 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.export_q3"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span class="block text-sm text-center text-gray-900">
                     {{ formatCurrency(row.export_q3) }}
                   </span>
                 </td>
 
                 <!-- Export Q4 -->
                 <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="row.isEditing || row.isNew"
-                    type="number"
-                    [(ngModel)]="row.export_q4"
-                    (input)="calculateRowTotals(row)"
-                    class="w-full px-2 py-1 text-sm text-center border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="0"
-                  />
-                  <span *ngIf="!(row.isEditing || row.isNew)" class="block text-sm text-center text-gray-900">
+                  <span class="block text-sm text-center text-gray-900">
                     {{ formatCurrency(row.export_q4) }}
                   </span>
                 </td>
@@ -303,7 +213,7 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
                 <td class="w-20 px-4 py-4 whitespace-nowrap">
                   <div class="text-center">
                     <span class="text-sm font-semibold text-blue-600">
-                      {{ formatPercentage(row.ratio) }}
+                      {{ formatPercentage(row.export_ratio) }}
                     </span>
                   </div>
                 </td>
@@ -318,39 +228,25 @@ import { YearModalComponent } from '../../../shared/year-modal/year-modal.compon
       <div *ngIf="!loading && revenueRows.length === 0" class="text-center py-12">
         <i class="fas fa-chart-line text-gray-400 text-4xl mb-4"></i>
         <h3 class="text-lg font-medium text-gray-900 mb-2">No Revenue Data</h3>
-        <p class="text-gray-600 mb-4">Start by adding your first year of revenue data.</p>
-        <button
-          (click)="openYearModal()"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
-          <i class="fas fa-plus mr-2"></i>
-          Add Year
-        </button>
+        <p class="text-gray-600 mb-4">
+          Revenue calculations are based on monthly financial data.<br>
+          Add monthly financial entries to see quarterly revenue summaries.
+        </p>
       </div>
-
-      <!-- Year Modal -->
-      <app-year-modal
-        #yearModal
-        [existingYears]="existingYears"
-        (yearSelected)="onYearSelected($event)"
-        (modalClosed)="onModalClosed()">
-      </app-year-modal>
 
     </div>
   `
 })
 export class RevenueComponent implements OnInit {
-  @ViewChild('yearModal') yearModal!: YearModalComponent;
-
   companyId!: number;
   clientId!: number;
   programId!: number;
   cohortId!: number;
   revenueRows: RevenueDisplayRow[] = [];
   loading = false;
-  originalRowData: RevenueDisplayRow | null = null;
 
   constructor(
-    private revenueService: CompanyRevenueSummaryService,
+    private financialService: CompanyFinancialYearlyStatsService,
     private route: ActivatedRoute
   ) {}
 
@@ -379,138 +275,69 @@ export class RevenueComponent implements OnInit {
     }
   }
 
-  get existingYears(): number[] {
-    return this.revenueRows.map(row => row.year);
-  }
-
   async loadRevenueData(): Promise<void> {
     this.loading = true;
     try {
-      const revenueRows = await this.revenueService.listAllCompanyRevenueSummary(this.companyId).toPromise();
-      this.revenueRows = revenueRows || [];
+      // Get quarterly revenue for all years - this is now live calculated from monthly data
+      const quarterlyData = await this.financialService.getQuarterlyRevenueAllYears(this.companyId).toPromise();
+      
+      // Map the API response to display rows
+      this.revenueRows = (quarterlyData || []).map(data => ({
+        financial_year_id: data.financial_year_id,
+        financial_year_name: data.financial_year_name,
+        fy_start_year: data.fy_start_year,
+        fy_end_year: data.fy_end_year,
+        start_month: data.start_month,
+        revenue_q1: data.revenue_q1,
+        revenue_q2: data.revenue_q2,
+        revenue_q3: data.revenue_q3,
+        revenue_q4: data.revenue_q4,
+        revenue_total: data.revenue_total,
+        export_q1: data.export_q1,
+        export_q2: data.export_q2,
+        export_q3: data.export_q3,
+        export_q4: data.export_q4,
+        export_total: data.export_total,
+        export_ratio: data.export_ratio,
+        quarter_details: data.quarter_details,
+        account_breakdown: data.account_breakdown
+      }));
+
+      console.log('Revenue Component - Live quarterly data loaded:', this.revenueRows);
+      
     } catch (error) {
-      console.error('Error loading revenue data:', error);
+      console.error('Error loading quarterly revenue data:', error);
       this.revenueRows = [];
     } finally {
       this.loading = false;
     }
   }
 
-  openYearModal(): void {
-    this.yearModal.open();
-  }
-
-  onYearSelected(year: number): void {
-    this.addYearWithValue(year);
-  }
-
-  onModalClosed(): void {
-    // Handle modal close if needed
-  }
-
-  addYearWithValue(year: number): void {
-    const newRow = this.revenueService.createNewRevenueRow(year);
-
-    // Insert in year order (newest first) using service method
-    const insertIndex = this.revenueRows.findIndex(row => row.year < year);
-    if (insertIndex === -1) {
-      this.revenueRows.push(newRow);
-    } else {
-      this.revenueRows.splice(insertIndex, 0, newRow);
-    }
-  }
-
-  editRow(row: RevenueDisplayRow): void {
-    // Store original data for cancel functionality
-    this.originalRowData = { ...row };
-    row.isEditing = true;
-  }
-
-  async saveRow(row: RevenueDisplayRow): Promise<void> {
-    // Validate the row using service method
-    const validation = this.revenueService.validateRevenueRow(row);
-    if (!validation.isValid) {
-      alert(`Validation errors:\n${validation.errors.join('\n')}`);
-      return;
-    }
-
-    // Check for duplicate years using service method
-    if (this.revenueService.checkForDuplicateYear(this.revenueRows, row, row.year)) {
-      alert(`Year ${row.year} already exists. Please choose a different year.`);
-      return;
-    }
-
-    try {
-      const saveData = this.revenueService.mapToSaveData(row, this.companyId, this.clientId, this.programId, this.cohortId);
-
-      console.log('Saving revenue data:', saveData);
-      console.log('Row totals before saving:', {
-        revenue_total: row.total,
-        export_total: row.export_total,
-        ratio: row.ratio
-      });
-
-      let savedData: CompanyRevenueSummary;
-
-      if (row.isNew) {
-        savedData = await this.revenueService.addCompanyRevenueSummary(saveData).toPromise() as CompanyRevenueSummary;
-      } else {
-        savedData = await this.revenueService.updateCompanyRevenueSummary(row.id!, saveData).toPromise() as CompanyRevenueSummary;
-      }
-
-      // Update the row with saved data using service method
-      Object.assign(row, this.revenueService.mapToDisplayRow(savedData));
-      row.isEditing = false;
-      row.isNew = false;
-      this.originalRowData = null;
-
-      // Sort rows using service method
-      this.revenueRows = this.revenueService.sortRowsByYear(this.revenueRows);
-
-    } catch (error) {
-      console.error('Error saving revenue data:', error);
-      alert('Error saving data. Please try again.');
-    }
-  }
-
-  cancelEdit(row: RevenueDisplayRow, index: number): void {
-    if (row.isNew) {
-      // Remove the new row
-      this.revenueRows.splice(index, 1);
-    } else {
-      // Restore original data
-      if (this.originalRowData) {
-        Object.assign(row, this.originalRowData);
-        row.isEditing = false;
-        this.originalRowData = null;
-      }
-    }
-  }
-
-  async deleteRow(row: RevenueDisplayRow, index: number): Promise<void> {
-    if (confirm(`Are you sure you want to delete the revenue data for ${row.year}?`)) {
-      try {
-        if (row.id) {
-          await this.revenueService.deleteCompanyRevenueSummary(row.id).toPromise();
-        }
-        this.revenueRows.splice(index, 1);
-      } catch (error) {
-        console.error('Error deleting revenue data:', error);
-        alert('Error deleting data. Please try again.');
-      }
-    }
-  }
-
-  calculateRowTotals(row: RevenueDisplayRow): void {
-    // Use service method for calculations
-    this.revenueService.updateRowTotals(row);
-  }
-
   formatCurrency(value: number | null): string {
-    return this.revenueService.formatCurrency(value);
+    if (value === null || value === undefined) return '$0.00';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   }
 
   formatPercentage(value: number | null): string {
-    return this.revenueService.formatPercentage(value);
+    if (value === null || value === undefined) return '0%';
+    return new Intl.NumberFormat('en-US', {
+      style: 'percent',
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    }).format(value / 100);
+  }
+
+  getFinancialYearPeriod(row: RevenueDisplayRow): string {
+    if (row.quarter_details) {
+      const q1Months = row.quarter_details.q1_months.join('-');
+      const q4Months = row.quarter_details.q4_months.join('-');
+      return `${q1Months} to ${q4Months}`;
+    }
+    return `${row.fy_start_year}-${row.fy_end_year}`;
   }
 }

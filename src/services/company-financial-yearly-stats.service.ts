@@ -81,6 +81,54 @@ export interface MonthlyBreakdown {
 }
 
 /**
+ * Quarterly revenue interface for live calculations
+ */
+export interface QuarterlyRevenue {
+  financial_year_id: number;
+  financial_year_name: string;
+  fy_start_year: number;
+  fy_end_year: number;
+  start_month: number;
+  revenue_q1: number;
+  revenue_q2: number;
+  revenue_q3: number;
+  revenue_q4: number;
+  revenue_total: number;
+  export_q1: number;
+  export_q2: number;
+  export_q3: number;
+  export_q4: number;
+  export_total: number;
+  export_ratio: number;
+  account_breakdown: AccountBreakdown[];
+  quarter_details: QuarterDetails;
+}
+
+/**
+ * Account breakdown interface
+ */
+export interface AccountBreakdown {
+  account_id: number;
+  account_name: string;
+  account_type: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
+  monthly_data: {
+    m1: number; m2: number; m3: number; m4: number; m5: number; m6: number;
+    m7: number; m8: number; m9: number; m10: number; m11: number; m12: number;
+  };
+  total: number;
+}
+
+/**
+ * Quarter details interface
+ */
+export interface QuarterDetails {
+  q1_months: string[];
+  q2_months: string[];
+  q3_months: string[];
+  q4_months: string[];
+}
+
+/**
  * 📊 Company Financial Yearly Stats Service
  * Handles all yearly financial statistics operations including monthly data,
  * revenue/expense tracking, and summary calculations.
@@ -216,6 +264,31 @@ export class CompanyFinancialYearlyStatsService {
 
     return this.http.get<MonthlyBreakdown[]>(`${this.apiUrl}/get-monthly-breakdown.php?${params.toString()}`)
       .pipe(catchError(this.handleError('Get monthly breakdown')));
+  }
+
+  /**
+   * Get quarterly revenue calculations for a specific company and financial year
+   */
+  getQuarterlyRevenue(companyId: number, financialYearId: number): Observable<QuarterlyRevenue> {
+    const params = new URLSearchParams({
+      company_id: companyId.toString(),
+      financial_year_id: financialYearId.toString()
+    });
+
+    return this.http.get<QuarterlyRevenue>(`${this.apiUrl}/get-quarterly-revenue.php?${params.toString()}`)
+      .pipe(catchError(this.handleError('Get quarterly revenue')));
+  }
+
+  /**
+   * Get quarterly revenue calculations for all years of a company
+   */
+  getQuarterlyRevenueAllYears(companyId: number): Observable<QuarterlyRevenue[]> {
+    const params = new URLSearchParams({
+      company_id: companyId.toString()
+    });
+
+    return this.http.get<QuarterlyRevenue[]>(`${this.apiUrl}/get-quarterly-revenue.php?${params.toString()}`)
+      .pipe(catchError(this.handleError('Get quarterly revenue for all years')));
   }
 
   /**

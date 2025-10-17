@@ -333,6 +333,185 @@ final class CompanyFinancialYearlyStats
         return array_map([$this, 'castEntity'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    /**
+     * Get quarterly revenue calculation for a company and financial year.
+     * Returns calculated quarterly totals from monthly data with proper financial year context.
+     */
+    public function getQuarterlyRevenue(int $companyId, int $financialYearId): array
+    {
+        // Get the financial year details and all stats for this company/year
+        $sql = "SELECT 
+                    fs.*, 
+                    acc.account_type, 
+                    acc.account_name,
+                    fy.start_month,
+                    fy.end_month,
+                    fy.fy_start_year,
+                    fy.fy_end_year,
+                    fy.name as financial_year_name
+                FROM company_financial_yearly_stats fs
+                LEFT JOIN company_accounts acc ON fs.account_id = acc.id
+                LEFT JOIN financial_years fy ON fs.financial_year_id = fy.id
+                WHERE fs.company_id = :company_id AND fs.financial_year_id = :financial_year_id";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            ':company_id' => $companyId,
+            ':financial_year_id' => $financialYearId
+        ]);
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$records) {
+            // If no records, still try to get financial year info for context
+            $fyStmt = $this->conn->prepare("SELECT * FROM financial_years WHERE id = :fy_id");
+            $fyStmt->execute([':fy_id' => $financialYearId]);
+            $fyInfo = $fyStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return [
+                'financial_year_id' => $financialYearId,
+                'financial_year_name' => $fyInfo['name'] ?? "FY $financialYearId",
+                'fy_start_year' => $fyInfo['fy_start_year'] ?? null,
+                'fy_end_year' => $fyInfo['fy_end_year'] ?? null,
+                'start_month' => $fyInfo['start_month'] ?? 1,
+                'revenue_q1' => 0,
+                'revenue_q2' => 0,
+                'revenue_q3' => 0,
+                'revenue_q4' => 0,
+                'revenue_total' => 0,
+                'export_q1' => 0,
+                'export_q2' => 0,
+                'export_q3' => 0,
+                'export_q4' => 0,
+                'export_total' => 0,
+                'export_ratio' => 0,
+                'account_breakdown' => []
+            ];
+        }
+
+        // Extract financial year information
+        $firstRecord = $records[0];
+        $startMonth = (int)($firstRecord['start_month'] ?? 1);
+        $financialYearName = $firstRecord['financial_year_name'] ?? "FY " . $firstRecord['fy_start_year'] . "/" . substr((string)$firstRecord['fy_end_year'], -2);
+
+        // Initialize monthly totals
+        $domestic = array_fill(1, 12, 0.0);
+        $export = array_fill(1, 12, 0.0);
+        $accountBreakdown = [];
+
+        // Aggregate monthly data by account type
+        foreach ($records as $record) {
+            $accountType = $record['account_type'] ?? 'domestic_revenue';
+            $accountName = $record['account_name'] ?? 'Unknown Account';
+            $accountId = $record['account_id'];
+            
+            // Track account-level breakdown
+            $accountTotal = 0;
+            $accountMonthly = [];
+            
+            for ($month = 1; $month <= 12; $month++) {
+                $monthlyValue = (float)($record["m$month"] ?? 0);
+                $accountMonthly["m$month"] = $monthlyValue;
+                $accountTotal += $monthlyValue;
+                
+                if ($accountType === 'export_revenue') {
+                    $export[$month] += $monthlyValue;
+                } elseif ($accountType === 'domestic_revenue') {
+                    $domestic[$month] += $monthlyValue;
+                }
+            }
+            
+            // Store account breakdown for detailed analysis
+            $accountBreakdown[] = [
+                'account_id' => $accountId,
+                'account_name' => $accountName,
+                'account_type' => $accountType,
+                'monthly_data' => $accountMonthly,
+                'total' => $accountTotal
+            ];
+        }
+
+        // Rotate months based on financial year start month
+        $rotate = function(array $months, int $startMonth): array {
+            $values = array_values($months);
+            return array_merge(
+                array_slice($values, $startMonth - 1),
+                array_slice($values, 0, $startMonth - 1)
+            );
+        };
+
+        $domesticRotated = $rotate($domestic, $startMonth);
+        $exportRotated = $rotate($export, $startMonth);
+
+        // Calculate quarterly totals
+        $sumQuarter = function(array $months, int $startIndex): float {
+            return array_sum(array_slice($months, $startIndex, 3));
+        };
+
+        $revenueQ1 = $sumQuarter($domesticRotated, 0);
+        $revenueQ2 = $sumQuarter($domesticRotated, 3);
+        $revenueQ3 = $sumQuarter($domesticRotated, 6);
+        $revenueQ4 = $sumQuarter($domesticRotated, 9);
+        $revenueTotal = array_sum($domesticRotated);
+
+        $exportQ1 = $sumQuarter($exportRotated, 0);
+        $exportQ2 = $sumQuarter($exportRotated, 3);
+        $exportQ3 = $sumQuarter($exportRotated, 6);
+        $exportQ4 = $sumQuarter($exportRotated, 9);
+        $exportTotal = array_sum($exportRotated);
+
+        // Calculate export ratio
+        $exportRatio = $revenueTotal > 0 ? ($exportTotal / $revenueTotal) * 100 : 0;
+
+        return [
+            'financial_year_id' => $financialYearId,
+            'financial_year_name' => $financialYearName,
+            'fy_start_year' => (int)$firstRecord['fy_start_year'],
+            'fy_end_year' => (int)$firstRecord['fy_end_year'],
+            'start_month' => $startMonth,
+            'revenue_q1' => $revenueQ1,
+            'revenue_q2' => $revenueQ2,
+            'revenue_q3' => $revenueQ3,
+            'revenue_q4' => $revenueQ4,
+            'revenue_total' => $revenueTotal,
+            'export_q1' => $exportQ1,
+            'export_q2' => $exportQ2,
+            'export_q3' => $exportQ3,
+            'export_q4' => $exportQ4,
+            'export_total' => $exportTotal,
+            'export_ratio' => $exportRatio,
+            'account_breakdown' => $accountBreakdown,
+            'quarter_details' => [
+                'q1_months' => $this->getQuarterMonthNames($startMonth, 0),
+                'q2_months' => $this->getQuarterMonthNames($startMonth, 3),
+                'q3_months' => $this->getQuarterMonthNames($startMonth, 6),
+                'q4_months' => $this->getQuarterMonthNames($startMonth, 9)
+            ]
+        ];
+    }
+
+    /**
+     * Get quarterly revenue for all years of a company.
+     */
+    public function getQuarterlyRevenueAllYears(int $companyId): array
+    {
+        // Get all financial years that have data for this company
+        $sql = "SELECT DISTINCT financial_year_id 
+                FROM company_financial_yearly_stats 
+                WHERE company_id = :company_id 
+                ORDER BY financial_year_id DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':company_id' => $companyId]);
+        $years = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $result = [];
+        foreach ($years as $year) {
+            $result[] = $this->getQuarterlyRevenue($companyId, (int)$year);
+        }
+
+        return $result;
+    }
+
     /* =========================================================================
        DELETE / STATUS
        ========================================================================= */
@@ -386,5 +565,24 @@ final class CompanyFinancialYearlyStats
         }
 
         return $row;
+    }
+
+    /**
+     * Get quarter month names based on financial year start month and quarter offset.
+     */
+    private function getQuarterMonthNames(int $startMonth, int $quarterOffset): array
+    {
+        $monthNames = [
+            1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
+            7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+        ];
+
+        $quarterMonths = [];
+        for ($i = 0; $i < 3; $i++) {
+            $monthIndex = (($startMonth - 1 + $quarterOffset + $i) % 12) + 1;
+            $quarterMonths[] = $monthNames[$monthIndex];
+        }
+
+        return $quarterMonths;
     }
 }
