@@ -4,6 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { CompanyFinancialYearlyStatsService, QuarterlyRevenue } from '../../../../../services/company-financial-yearly-stats.service';
 
+// Chart Components
+import { LineChartComponent } from '../../../../charts/line-chart/line-chart.component';
+import { BarChartComponent } from '../../../../charts/bar-chart/bar-chart.component';
+import { DoughnutComponent } from '../../../../charts/doughnut/doughnut.component';
+import { NumbersChartComponent } from '../../../../charts/numbers-chart/numbers-chart.component';
+
+// Chart Data Interfaces
+import { ILineChart, IBarChart, IDoughnutChart } from '../../../../../models/Charts';
+import { IKeyValue } from '../../../../../models/IKeyValue';
+
 // Display row interface for UI binding
 interface RevenueDisplayRow {
   financial_year_id: number;
@@ -34,7 +44,14 @@ interface RevenueDisplayRow {
 @Component({
   selector: 'app-revenue',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    LineChartComponent,
+    BarChartComponent,
+    DoughnutComponent,
+    NumbersChartComponent
+  ],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
@@ -52,6 +69,51 @@ interface RevenueDisplayRow {
       <!-- Loading State -->
       <div *ngIf="loading" class="flex justify-center items-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+
+      <!-- Charts and Analytics Section -->
+      <div *ngIf="!loading && revenueRows.length > 0" class="space-y-8 mb-12">
+        
+        <!-- Key Metrics Cards -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center mb-6">
+            <i class="fas fa-tachometer-alt text-purple-600 text-xl mr-3"></i>
+            <h3 class="text-lg font-semibold text-gray-900">Key Revenue Metrics</h3>
+          </div>
+          <app-numbers-chart [items]="keyMetrics"></app-numbers-chart>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          <!-- Quarterly Trends Line Chart -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <app-line-chart 
+              [componentTitle]="'Quarterly Revenue Trends'"
+              [data]="quarterlyTrendsChart">
+            </app-line-chart>
+          </div>
+
+          <!-- Yearly Comparison Bar Chart -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <app-bar-chart 
+              [componentTitle]="'Revenue Comparison by Year'"
+              [data]="yearlyComparisonChart">
+            </app-bar-chart>
+          </div>
+
+        </div>
+
+        <!-- Revenue Distribution -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="max-w-md mx-auto">
+            <app-doughnut 
+              [componentTitle]="'Revenue Distribution (Latest Year)'"
+              [data]="revenueDistributionChart">
+            </app-doughnut>
+          </div>
+        </div>
+
       </div>
 
       <!-- Revenue Tables -->
@@ -294,6 +356,12 @@ export class RevenueComponent implements OnInit {
   revenueRows: RevenueDisplayRow[] = [];
   loading = false;
 
+  // Chart Data Properties
+  quarterlyTrendsChart: ILineChart = { labels: [], datasets: [] };
+  yearlyComparisonChart: IBarChart = { labels: [], datasets: [] };
+  revenueDistributionChart: IDoughnutChart = { labels: [], datasets: [] };
+  keyMetrics: IKeyValue[] = [];
+
   constructor(
     private financialService: CompanyFinancialYearlyStatsService,
     private route: ActivatedRoute
@@ -354,6 +422,9 @@ export class RevenueComponent implements OnInit {
 
       console.log('Revenue Component - Live quarterly data loaded:', this.revenueRows);
 
+      // Prepare chart data
+      this.prepareChartData();
+
     } catch (error) {
       console.error('Error loading quarterly revenue data:', error);
       this.revenueRows = [];
@@ -392,5 +463,106 @@ export class RevenueComponent implements OnInit {
       return `${q1Months} to ${q4Months}`;
     }
     return `${row.fy_start_year}-${row.fy_end_year}`;
+  }
+
+  private prepareChartData(): void {
+    if (!this.revenueRows || this.revenueRows.length === 0) return;
+
+    // 1. Quarterly Trends Line Chart (Q1-Q4 across all years)
+    this.quarterlyTrendsChart = {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      datasets: this.revenueRows.map((row, index) => ({
+        label: row.financial_year_name,
+        data: [row.revenue_q1, row.revenue_q2, row.revenue_q3, row.revenue_q4],
+        borderColor: this.getYearColor(index, 'border'),
+        backgroundColor: this.getYearColor(index, 'background'),
+        borderWidth: 3,
+        fill: false,
+        tension: 0.4
+      }))
+    };
+
+    // 2. Yearly Comparison Bar Chart (Total Revenue by Year)
+    this.yearlyComparisonChart = {
+      labels: this.revenueRows.map(row => row.financial_year_name),
+      datasets: [
+        {
+          label: 'Domestic Revenue',
+          data: this.revenueRows.map(row => row.revenue_total),
+          backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue
+          borderColor: 'rgba(59, 130, 246, 1)',
+          borderWidth: 2
+        },
+        {
+          label: 'Export Revenue',
+          data: this.revenueRows.map(row => row.export_total),
+          backgroundColor: 'rgba(34, 197, 94, 0.8)', // Green
+          borderColor: 'rgba(34, 197, 94, 1)',
+          borderWidth: 2
+        }
+      ]
+    };
+
+    // 3. Revenue Distribution Doughnut Chart (Latest Year)
+    const latestYear = this.revenueRows[0]; // Assuming sorted by latest first
+    if (latestYear) {
+      this.revenueDistributionChart = {
+        labels: ['Domestic Revenue', 'Export Revenue'],
+        datasets: [{
+          data: [latestYear.revenue_total, latestYear.export_total],
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)', // Blue for Domestic
+            'rgba(34, 197, 94, 0.8)'   // Green for Export
+          ],
+          borderColor: [
+            'rgba(59, 130, 246, 1)',
+            'rgba(34, 197, 94, 1)'
+          ],
+          borderWidth: 2
+        }]
+      };
+    }
+
+    // 4. Key Metrics Cards - Calculate totals and create three main revenue metrics
+    const totalRevenue = this.revenueRows.reduce((sum, row) => sum + row.revenue_total + row.export_total, 0);
+    const totalDomestic = this.revenueRows.reduce((sum, row) => sum + row.revenue_total, 0);
+    const totalExport = this.revenueRows.reduce((sum, row) => sum + row.export_total, 0);
+
+    this.keyMetrics = [
+      {
+        key: 'Total Revenue',
+        value: this.formatCurrency(totalRevenue),
+        subtitle: 'All financial years',
+        icon: 'fas fa-chart-line',
+        color: 'text-blue-600'
+      },
+      {
+        key: 'Domestic Revenue',
+        value: this.formatCurrency(totalDomestic),
+        subtitle: 'Local market total',
+        icon: 'fas fa-home',
+        color: 'text-blue-600'
+      },
+      {
+        key: 'Export Revenue',
+        value: this.formatCurrency(totalExport),
+        subtitle: 'International market total',
+        icon: 'fas fa-globe',
+        color: 'text-green-600'
+      }
+    ];
+  }
+
+  private getYearColor(index: number, type: 'border' | 'background'): string {
+    const colors = [
+      { border: 'rgba(59, 130, 246, 1)', background: 'rgba(59, 130, 246, 0.2)' }, // Blue
+      { border: 'rgba(34, 197, 94, 1)', background: 'rgba(34, 197, 94, 0.2)' },   // Green
+      { border: 'rgba(168, 85, 247, 1)', background: 'rgba(168, 85, 247, 0.2)' }, // Purple
+      { border: 'rgba(245, 158, 11, 1)', background: 'rgba(245, 158, 11, 0.2)' }, // Amber
+      { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }    // Red
+    ];
+    
+    const colorIndex = index % colors.length;
+    return colors[colorIndex][type];
   }
 }
