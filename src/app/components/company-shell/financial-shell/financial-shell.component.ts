@@ -72,16 +72,12 @@ export class FinancialShellComponent implements OnInit {
       route: 'revenue-capture',
       icon: 'fas fa-table',
     },
-        {
+    {
       label: 'Revenue',
       route: 'revenue',
       icon: 'fas fa-trending-up',
     },
-     {
-      label: 'Profits',
-      route: 'profits',
-      icon: 'fas fa-coins',
-    },
+
     // {
     //   label: 'Monthly Revenue',
     //   route: 'monthly-revenue',
@@ -93,18 +89,21 @@ export class FinancialShellComponent implements OnInit {
     //   icon: 'fas fa-university',
     // },
 
-
     {
       label: 'Cost Structure',
       route: 'cost-structure',
       icon: 'fas fa-chart-pie',
     },
     {
+      label: 'Profits',
+      route: 'profits',
+      icon: 'fas fa-coins',
+    },
+    {
       label: 'Balance Sheet',
       route: 'balance-sheet',
       icon: 'fas fa-balance-scale',
     },
-
 
     {
       label: 'Ratios',
@@ -131,7 +130,7 @@ export class FinancialShellComponent implements OnInit {
 
   ngOnInit(): void {
     // Subscribe to context changes
-    this.contextService.context$.subscribe(context => {
+    this.contextService.context$.subscribe((context) => {
       this.clientId = context.clientId;
       this.programId = context.programId;
       this.cohortId = context.cohortId;
@@ -139,7 +138,7 @@ export class FinancialShellComponent implements OnInit {
       console.log('FinancialShell - Context updated from service:', {
         clientId: this.clientId,
         programId: this.programId,
-        cohortId: this.cohortId
+        cohortId: this.cohortId,
       });
     });
 
