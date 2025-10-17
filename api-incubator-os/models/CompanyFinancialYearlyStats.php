@@ -585,4 +585,187 @@ final class CompanyFinancialYearlyStats
 
         return $quarterMonths;
     }
+
+    /* =========================================================================
+       LIVE PROFIT CALCULATIONS (Integration with company_financial_items)
+       ========================================================================= */
+
+    /**
+     * Calculate live profit summary for a specific company and financial year
+     * Combines revenue data with cost data from company_financial_items
+     */
+    public function getProfitSummary(int $companyId, int $financialYearId): ?array
+    {
+        // 1. Get revenue data using existing method
+        $revenueData = $this->getQuarterlyRevenue($companyId, $financialYearId);
+        if (!$revenueData) return null;
+
+        // 2. Get the financial year details
+        $fyStmt = $this->conn->prepare("SELECT fy_start_year FROM financial_years WHERE id = ?");
+        $fyStmt->execute([$financialYearId]);
+        $fyStartYear = $fyStmt->fetchColumn();
+
+        if (!$fyStartYear) return null;
+
+        // 3. Get cost data from company_financial_items
+        $costStmt = $this->conn->prepare("
+            SELECT
+                item_type,
+                SUM(amount) AS total_amount
+            FROM company_financial_items
+            WHERE company_id = :company_id
+              AND year_ = :year
+            GROUP BY item_type
+        ");
+        $costStmt->execute([
+            ':company_id' => $companyId,
+            ':year' => (int)$fyStartYear
+        ]);
+
+        $costs = [];
+        while ($row = $costStmt->fetch(PDO::FETCH_ASSOC)) {
+            $costs[$row['item_type']] = (float)$row['total_amount'];
+        }
+
+        // 4. Calculate profit metrics
+        $revenue = $revenueData['revenue_total'];
+        $directCosts = $costs['direct_cost'] ?? 0;
+        $operationalCosts = $costs['operational_cost'] ?? 0;
+
+        $grossProfit = $revenue - $directCosts;
+        $operatingProfit = $grossProfit - $operationalCosts;
+
+        // Calculate margins safely (avoid division by zero)
+        $grossMargin = $revenue > 0 ? round(($grossProfit / $revenue) * 100, 2) : 0;
+        $operatingMargin = $revenue > 0 ? round(($operatingProfit / $revenue) * 100, 2) : 0;
+
+        return [
+            // Financial Year Details
+            'financial_year_id' => $revenueData['financial_year_id'],
+            'financial_year_name' => $revenueData['financial_year_name'],
+            'fy_start_year' => $revenueData['fy_start_year'],
+            'fy_end_year' => $revenueData['fy_end_year'],
+
+            // Revenue Breakdown
+            'revenue_q1' => $revenueData['revenue_q1'],
+            'revenue_q2' => $revenueData['revenue_q2'],
+            'revenue_q3' => $revenueData['revenue_q3'],
+            'revenue_q4' => $revenueData['revenue_q4'],
+            'revenue_total' => $revenue,
+
+            // Cost Breakdown
+            'direct_costs' => round($directCosts, 2),
+            'operational_costs' => round($operationalCosts, 2),
+            'total_costs' => round($directCosts + $operationalCosts, 2),
+
+            // Profit Metrics
+            'gross_profit' => round($grossProfit, 2),
+            'operating_profit' => round($operatingProfit, 2),
+            'gross_margin' => $grossMargin,
+            'operating_margin' => $operatingMargin,
+
+            // Export Revenue (if available)
+            'export_total' => $revenueData['export_total'] ?? 0,
+            'export_ratio' => $revenueData['export_ratio'] ?? 0,
+
+            // Quarter Details
+            'quarter_details' => $revenueData['quarter_details'] ?? null
+        ];
+    }
+
+    /**
+     * Get profit summaries for all financial years for a company
+     * Returns array of profit data across multiple years
+     */
+    public function getProfitSummaryAllYears(int $companyId): array
+    {
+        // Get all financial years that have either revenue or cost data
+        $sql = "
+            SELECT DISTINCT fy.id, fy.fy_start_year
+            FROM financial_years fy
+            WHERE EXISTS (
+                SELECT 1 FROM company_financial_yearly_stats cfys
+                WHERE cfys.company_id = :company_id1 AND cfys.financial_year_id = fy.id
+            )
+            OR EXISTS (
+                SELECT 1 FROM company_financial_items cfi
+                WHERE cfi.company_id = :company_id2 AND cfi.year_ = fy.fy_start_year
+            )
+            ORDER BY fy.fy_start_year DESC
+        ";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            ':company_id1' => $companyId,
+            ':company_id2' => $companyId
+        ]);
+
+        $financialYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $profitSummaries = [];
+
+        foreach ($financialYears as $fy) {
+            $profitData = $this->getProfitSummary($companyId, (int)$fy['id']);
+            if ($profitData) {
+                $profitSummaries[] = $profitData;
+            }
+        }
+
+        return $profitSummaries;
+    }
+
+    /**
+     * Get quarterly profit breakdown across years
+     * Similar to quarterly revenue but includes cost and profit calculations
+     */
+    public function getQuarterlyProfitAllYears(int $companyId): array
+    {
+        $profitData = $this->getProfitSummaryAllYears($companyId);
+        $quarterlyProfits = [];
+
+        foreach ($profitData as $yearData) {
+            // Calculate quarterly costs (distribute evenly for now - can be enhanced later)
+            $directCostQuarterly = $yearData['direct_costs'] / 4;
+            $operationalCostQuarterly = $yearData['operational_costs'] / 4;
+
+            $quarterlyProfits[] = [
+                'financial_year_id' => $yearData['financial_year_id'],
+                'financial_year_name' => $yearData['financial_year_name'],
+                'fy_start_year' => $yearData['fy_start_year'],
+                'fy_end_year' => $yearData['fy_end_year'],
+
+                // Quarterly Revenue
+                'revenue_q1' => $yearData['revenue_q1'],
+                'revenue_q2' => $yearData['revenue_q2'],
+                'revenue_q3' => $yearData['revenue_q3'],
+                'revenue_q4' => $yearData['revenue_q4'],
+
+                // Quarterly Gross Profit (Revenue - Direct Costs)
+                'gross_profit_q1' => round($yearData['revenue_q1'] - $directCostQuarterly, 2),
+                'gross_profit_q2' => round($yearData['revenue_q2'] - $directCostQuarterly, 2),
+                'gross_profit_q3' => round($yearData['revenue_q3'] - $directCostQuarterly, 2),
+                'gross_profit_q4' => round($yearData['revenue_q4'] - $directCostQuarterly, 2),
+
+                // Quarterly Operating Profit (Gross Profit - Operational Costs)
+                'operating_profit_q1' => round($yearData['revenue_q1'] - $directCostQuarterly - $operationalCostQuarterly, 2),
+                'operating_profit_q2' => round($yearData['revenue_q2'] - $directCostQuarterly - $operationalCostQuarterly, 2),
+                'operating_profit_q3' => round($yearData['revenue_q3'] - $directCostQuarterly - $operationalCostQuarterly, 2),
+                'operating_profit_q4' => round($yearData['revenue_q4'] - $directCostQuarterly - $operationalCostQuarterly, 2),
+
+                // Annual Totals
+                'gross_profit_total' => $yearData['gross_profit'],
+                'operating_profit_total' => $yearData['operating_profit'],
+                'gross_margin' => $yearData['gross_margin'],
+                'operating_margin' => $yearData['operating_margin'],
+
+                // Cost Details
+                'direct_costs' => $yearData['direct_costs'],
+                'operational_costs' => $yearData['operational_costs'],
+
+                // Quarter Details
+                'quarter_details' => $yearData['quarter_details']
+            ];
+        }
+
+        return $quarterlyProfits;
+    }
 }

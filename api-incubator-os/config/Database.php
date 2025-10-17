@@ -1,6 +1,6 @@
 <?php
 include_once 'headers.php';
-include_once '../../common/common.php';
+include_once '../common/common.php';
 
 class Database
 {
