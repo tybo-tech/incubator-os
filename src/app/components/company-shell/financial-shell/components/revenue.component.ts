@@ -262,7 +262,7 @@ interface RevenueDisplayRow {
                     <div class="text-center">
                       <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
                         <i class="fas fa-percentage mr-1 text-xs"></i>
-                        {{ (row.export_ratio * 100).toFixed(1) }}%
+                        {{ row.export_ratio.toFixed(1) }}%
                       </div>
                     </div>
                   </td>
