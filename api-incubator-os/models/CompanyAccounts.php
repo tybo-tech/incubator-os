@@ -36,16 +36,18 @@ class CompanyAccounts
             $sql = "INSERT INTO company_accounts (
                         company_id,
                         account_name,
+                        account_type,
                         description,
                         account_number,
                         attachments,
                         is_active
-                    ) VALUES (?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $this->pdo->prepare($sql);
             $success = $stmt->execute([
                 $data['company_id'],
                 $data['account_name'],
+                $data['account_type'] ?? 'domestic_revenue',
                 $data['description'] ?? null,
                 $data['account_number'] ?? null,
                 isset($data['attachments']) ? json_encode($data['attachments']) : null,
@@ -122,7 +124,7 @@ class CompanyAccounts
 
             // Build dynamic update query
             $updatableFields = [
-                'company_id', 'account_name', 'description',
+                'company_id', 'account_name', 'account_type', 'description',
                 'account_number', 'is_active'
             ];
 
@@ -220,7 +222,7 @@ class CompanyAccounts
     /**
      * Get all company accounts with optional filters
      *
-     * @param array $filters Optional filters (company_id, is_active, limit, offset)
+     * @param array $filters Optional filters (company_id, account_type, is_active, limit, offset)
      * @return array Result with success status and accounts data or error message
      */
     public function listAll($filters = [])
@@ -237,6 +239,11 @@ class CompanyAccounts
             if (isset($filters['company_id'])) {
                 $conditions[] = "ca.company_id = ?";
                 $params[] = $filters['company_id'];
+            }
+
+            if (isset($filters['account_type'])) {
+                $conditions[] = "ca.account_type = ?";
+                $params[] = $filters['account_type'];
             }
 
             if (isset($filters['is_active'])) {
@@ -301,6 +308,59 @@ class CompanyAccounts
         }
 
         return $this->listAll($filters);
+    }
+
+    /**
+     * Get accounts by company ID and account type
+     *
+     * @param int $companyId Company ID
+     * @param string $accountType Account type ('domestic_revenue', 'export_revenue', 'expense', 'other')
+     * @param bool $activeOnly Whether to return only active accounts
+     * @return array Result with success status and accounts data or error message
+     */
+    public function getByCompanyIdAndType($companyId, $accountType, $activeOnly = true)
+    {
+        $filters = [
+            'company_id' => $companyId,
+            'account_type' => $accountType
+        ];
+        if ($activeOnly) {
+            $filters['is_active'] = 1;
+        }
+
+        return $this->listAll($filters);
+    }
+
+    /**
+     * Get accounts by type across all companies
+     *
+     * @param string $accountType Account type ('domestic_revenue', 'export_revenue', 'expense', 'other')
+     * @param bool $activeOnly Whether to return only active accounts
+     * @return array Result with success status and accounts data or error message
+     */
+    public function getByType($accountType, $activeOnly = true)
+    {
+        $filters = ['account_type' => $accountType];
+        if ($activeOnly) {
+            $filters['is_active'] = 1;
+        }
+
+        return $this->listAll($filters);
+    }
+
+    /**
+     * Get available account types
+     *
+     * @return array List of valid account types
+     */
+    public function getValidAccountTypes()
+    {
+        return [
+            'domestic_revenue' => 'Domestic Revenue',
+            'export_revenue' => 'Export Revenue',
+            'expense' => 'Expense',
+            'other' => 'Other'
+        ];
     }
 
     /**
@@ -398,7 +458,11 @@ class CompanyAccounts
             $sql = "SELECT
                         COUNT(*) as total_accounts,
                         COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_accounts,
-                        COUNT(CASE WHEN is_active = 0 THEN 1 END) as inactive_accounts";
+                        COUNT(CASE WHEN is_active = 0 THEN 1 END) as inactive_accounts,
+                        COUNT(CASE WHEN account_type = 'domestic_revenue' THEN 1 END) as domestic_revenue_accounts,
+                        COUNT(CASE WHEN account_type = 'export_revenue' THEN 1 END) as export_revenue_accounts,
+                        COUNT(CASE WHEN account_type = 'expense' THEN 1 END) as expense_accounts,
+                        COUNT(CASE WHEN account_type = 'other' THEN 1 END) as other_accounts";
 
             $params = [];
 
@@ -458,6 +522,14 @@ class CompanyAccounts
                 $errors[] = 'Account name cannot be empty';
             } elseif (strlen($data['account_name']) > 150) {
                 $errors[] = 'Account name cannot exceed 150 characters';
+            }
+        }
+
+        // Validate account_type if provided
+        if (isset($data['account_type'])) {
+            $validTypes = ['domestic_revenue', 'export_revenue', 'expense', 'other'];
+            if (!in_array($data['account_type'], $validTypes)) {
+                $errors[] = 'Account type must be one of: ' . implode(', ', $validTypes);
             }
         }
 

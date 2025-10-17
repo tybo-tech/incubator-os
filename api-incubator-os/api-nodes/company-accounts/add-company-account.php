@@ -2,34 +2,14 @@
 include_once '../../config/Database.php';
 require_once __DIR__ . '/../../models/CompanyAccounts.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Method not allowed. Use POST.'
-    ]);
-    exit();
-}
+$data = json_decode(file_get_contents("php://input"), true);
 
 try {
     $database = new Database();
     $db = $database->connect();
     $companyAccounts = new CompanyAccounts($db);
 
-    // Get JSON input
-    $input = json_decode(file_get_contents('php://input'), true);
-
-    if (!$input) {
+    if (!$data) {
         http_response_code(400);
         echo json_encode([
             'success' => false,
@@ -38,7 +18,7 @@ try {
         exit();
     }
 
-    $result = $companyAccounts->add($input);
+    $result = $companyAccounts->add($data);
 
     if ($result['success']) {
         http_response_code(201);
@@ -49,11 +29,12 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log("Error in add-company-account.php: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Internal server error occurred'
+        'message' => 'Internal server error occurred',
+        'error' => $e->getMessage()
     ]);
 }
+?>
 ?>
