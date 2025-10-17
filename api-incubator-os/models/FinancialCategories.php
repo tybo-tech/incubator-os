@@ -21,9 +21,9 @@ final class FinancialCategories
     public function add(array $data): array
     {
         $sql = "INSERT INTO financial_categories (
-                    name, item_type, description, is_active, created_at, updated_at
+                    name, item_type, description, bg_color, text_color, is_active, created_at, updated_at
                 ) VALUES (
-                    :name, :item_type, :description, :is_active, NOW(), NOW()
+                    :name, :item_type, :description, :bg_color, :text_color, :is_active, NOW(), NOW()
                 )";
 
         $stmt = $this->conn->prepare($sql);
@@ -31,6 +31,8 @@ final class FinancialCategories
             ':name'        => $data['name'],
             ':item_type'   => strtolower($data['item_type']),
             ':description' => $data['description'] ?? null,
+            ':bg_color'    => $data['bg_color'] ?? '#16a085',
+            ':text_color'  => $data['text_color'] ?? '#ecf0f1',
             ':is_active'   => isset($data['is_active']) ? (int)$data['is_active'] : 1,
         ]);
 
@@ -42,7 +44,7 @@ final class FinancialCategories
      */
     public function update(int $id, array $fields): ?array
     {
-        $allowed = ['name', 'item_type', 'description', 'is_active'];
+        $allowed = ['name', 'item_type', 'description', 'bg_color', 'text_color', 'is_active'];
         $sets = [];
         $params = [];
 
@@ -62,6 +64,26 @@ final class FinancialCategories
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
+
+        return $this->getById($id);
+    }
+
+    /**
+     * Update category colors specifically for chart visualization.
+     */
+    public function updateColors(int $id, string $bgColor, string $textColor): ?array
+    {
+        $stmt = $this->conn->prepare("
+            UPDATE financial_categories
+            SET bg_color = :bg_color, text_color = :text_color, updated_at = NOW()
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            ':id' => $id,
+            ':bg_color' => $bgColor,
+            ':text_color' => $textColor
+        ]);
 
         return $this->getById($id);
     }
@@ -189,6 +211,8 @@ final class FinancialCategories
         $row['id'] = (int)($row['id'] ?? 0);
         $row['is_active'] = (bool)($row['is_active'] ?? 0);
         $row['item_type'] = strtolower((string)($row['item_type'] ?? ''));
+        $row['bg_color'] = (string)($row['bg_color'] ?? '#16a085');
+        $row['text_color'] = (string)($row['text_color'] ?? '#ecf0f1');
         return $row;
     }
 }

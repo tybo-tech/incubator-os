@@ -113,6 +113,8 @@ export interface FinancialCategory {
   name: string;
   item_type: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity';
   description?: string | null;
+  bg_color?: string;
+  text_color?: string;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
@@ -281,3 +283,68 @@ export interface BatchUpdateResponse {
     error?: string;
   }>;
 }
+
+/* ============================================================================
+ * 7. Financial Category Management Interfaces
+ * ============================================================================
+ */
+export interface FinancialCategoryWithColors extends FinancialCategory {
+  bg_color: string;
+  text_color: string;
+}
+
+export interface ColorTheme {
+  name: string;
+  bg_color: string;
+  text_color: string;
+  description?: string;
+}
+
+export interface CategoryColorUpdate {
+  id: number;
+  bg_color: string;
+  text_color: string;
+}
+
+export interface CategoryManagementState {
+  categories: FinancialCategory[];
+  loading: boolean;
+  editing: number | null;
+  colorPickerOpen: number | null;
+  selectedItemType: FinancialItemType | null;
+  hasUnsavedChanges: boolean;
+}
+
+// Predefined color themes for different category types
+export const DEFAULT_COLOR_THEMES: Record<FinancialItemType, ColorTheme> = {
+  direct_cost: {
+    name: 'Direct Costs',
+    bg_color: '#e74c3c',
+    text_color: '#ffffff',
+    description: 'Red theme for direct costs'
+  },
+  operational_cost: {
+    name: 'Operational Costs',
+    bg_color: '#f39c12',
+    text_color: '#ffffff',
+    description: 'Orange theme for operational costs'
+  },
+  asset: {
+    name: 'Assets',
+    bg_color: '#27ae60',
+    text_color: '#ffffff',
+    description: 'Green theme for assets'
+  },
+  liability: {
+    name: 'Liabilities',
+    bg_color: '#8e44ad',
+    text_color: '#ffffff',
+    description: 'Purple theme for liabilities'
+  },
+  equity: {
+    name: 'Equity',
+    bg_color: '#3498db',
+    text_color: '#ffffff',
+    description: 'Blue theme for equity'
+  }
+};

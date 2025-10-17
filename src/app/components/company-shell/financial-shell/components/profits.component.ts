@@ -145,14 +145,14 @@ interface ProfitDisplayRow {
         </div>
 
         <!-- Margin Distribution -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <!-- <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="max-w-md mx-auto">
             <app-doughnut
               [componentTitle]="'Margin Distribution (Latest Year)'"
               [data]="marginDistributionChart">
             </app-doughnut>
           </div>
-        </div>
+        </div> -->
 
       </div>
 

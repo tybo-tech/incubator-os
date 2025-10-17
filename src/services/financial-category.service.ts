@@ -15,6 +15,12 @@ export interface IFinancialCategoryFilters {
   offset?: number;
 }
 
+export interface IFinancialCategoryColorUpdate {
+  id: number;
+  bg_color: string;
+  text_color: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FinancialCategoryService {
   private apiUrl = `${Constants.ApiBase}/api-nodes/financial-categories`;
@@ -172,5 +178,60 @@ export class FinancialCategoryService {
    */
   toggleCategoryStatus(id: number, isActive: boolean): Observable<FinancialCategory> {
     return this.updateFinancialCategory(id, { is_active: isActive });
+  }
+
+  /* =========================================================================
+     COLOR MANAGEMENT METHODS
+     ========================================================================= */
+
+  /**
+   * Update category colors for chart visualization
+   * @param id The category ID
+   * @param bgColor Background color (hex format)
+   * @param textColor Text color (hex format)
+   */
+  updateCategoryColors(id: number, bgColor: string, textColor: string): Observable<FinancialCategory> {
+    const payload = { id, bg_color: bgColor, text_color: textColor };
+    console.log('FinancialCategoryService - updateCategoryColors called with:', payload);
+    return this.http.post<FinancialCategory>(`${this.apiUrl}/update-financial-category.php`, payload, this.httpOptions)
+      .pipe(catchError(this.handleError('Update category colors')));
+  }
+
+  /**
+   * Bulk update colors for multiple categories (useful for theme application)
+   * @param colorUpdates Array of category color updates
+   */
+  bulkUpdateCategoryColors(colorUpdates: IFinancialCategoryColorUpdate[]): Observable<FinancialCategory[]> {
+    const payload = { bulk_color_updates: colorUpdates };
+    console.log('FinancialCategoryService - bulkUpdateCategoryColors called with:', payload);
+    return this.http.post<FinancialCategory[]>(`${this.apiUrl}/bulk-update-colors.php`, payload, this.httpOptions)
+      .pipe(catchError(this.handleError('Bulk update category colors')));
+  }
+
+  /**
+   * Reset category colors to default theme
+   * @param id The category ID
+   */
+  resetCategoryColorsToDefault(id: number): Observable<FinancialCategory> {
+    return this.updateCategoryColors(id, '#16a085', '#ecf0f1');
+  }
+
+  /**
+   * Apply predefined color theme to categories by item type
+   * @param itemType The item type to apply theme to
+   * @param colorTheme The color theme to apply
+   */
+  applyColorThemeByType(
+    itemType: 'direct_cost' | 'operational_cost' | 'asset' | 'liability' | 'equity',
+    colorTheme: { bg_color: string; text_color: string }
+  ): Observable<FinancialCategory[]> {
+    const payload = {
+      item_type: itemType,
+      bg_color: colorTheme.bg_color,
+      text_color: colorTheme.text_color
+    };
+    console.log('FinancialCategoryService - applyColorThemeByType called with:', payload);
+    return this.http.post<FinancialCategory[]>(`${this.apiUrl}/apply-theme-by-type.php`, payload, this.httpOptions)
+      .pipe(catchError(this.handleError('Apply color theme by type')));
   }
 }
