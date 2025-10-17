@@ -1,3 +1,31 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.2
+-- https://www.phpmyadmin.net/
+--
+-- Host: mysql
+-- Generation Time: Oct 17, 2025 at 06:15 AM
+-- Server version: 8.0.43
+-- PHP Version: 8.2.27
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `incubator_os`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `categories`
+--
 
 CREATE TABLE `categories` (
   `id` bigint NOT NULL,
@@ -17,27 +45,29 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `type`, `description`, `image_url`, `parent_id`, `depth`, `created_at`, `updated_at`) VALUES
-(1, 'Principal 1', 'client', NULL, NULL, NULL, 1, '2025-08-27 16:08:01', '2025-09-02 06:53:58'),
-(2, 'Grant Funding 2025', 'program', NULL, NULL, 1, 2, '2025-08-27 16:08:25', '2025-08-27 16:08:25'),
-(3, 'Cohorts 1', 'cohort', NULL, NULL, 2, 3, '2025-08-27 16:08:41', '2025-08-27 16:08:41'),
-(4, 'Cohort 2', 'cohort', NULL, NULL, 2, 3, '2025-08-27 16:11:21', '2025-08-27 16:11:21'),
-(5, 'FY24 Cohort', 'program', '', NULL, 1, 2, '2025-09-12 06:01:53', '2025-09-12 06:01:53'),
-(6, 'Cohort 1', 'cohort', '', NULL, 5, 3, '2025-09-12 06:03:18', '2025-09-12 06:03:18'),
-(7, 'Personnel', 'metric', 'employees', NULL, NULL, 1, '2025-09-25 00:14:43', '2025-09-25 00:14:43'),
-(8, 'Sales and Marketing', 'metric', 'marketing', NULL, NULL, 1, '2025-09-25 00:14:43', '2025-09-25 00:14:43'),
-(9, 'Transportation and Travel', 'metric', 'travel', NULL, NULL, 1, '2025-09-25 00:14:43', '2025-09-25 00:14:43'),
-(10, 'Supplies', 'metric', 'materials for training', NULL, NULL, 1, '2025-09-25 00:17:10', '2025-09-25 00:17:10'),
-(11, 'Direct Labor', 'metric', 'staff', NULL, NULL, 1, '2025-09-25 00:17:10', '2025-09-25 00:17:10'),
-(12, 'Cash in bank', 'metric', 'bank account', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(13, 'Accounts receivable', 'metric', 'A/R', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(14, 'Inventory', 'metric', 'program materials', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(15, 'Equipment', 'metric', 'computers', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(16, 'Accounts payable', 'metric', 'XYZ supplier', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(17, 'Loans payable', 'metric', 'Bank loan', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(18, 'Credit line', 'metric', 'line of credit', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(19, 'Credit cards', 'metric', 'credit card', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(20, 'Share capital', 'metric', 'equity contribution', NULL, NULL, 1, '2025-09-25 02:51:16', '2025-09-25 02:51:16'),
-(21, 'Rates & Taxis', 'metric', 'Transportation and taxi services', NULL, NULL, 1, '2025-09-26 10:37:49', '2025-09-26 10:37:49');
+(1, 'Principal 1', 'client', NULL, NULL, NULL, 1, '2025-08-27 14:08:01', '2025-09-02 04:53:58'),
+(2, 'Grant Funding 2025', 'program', NULL, NULL, 1, 2, '2025-08-27 14:08:25', '2025-08-27 14:08:25'),
+(3, 'Cohorts 1', 'cohort', NULL, NULL, 2, 3, '2025-08-27 14:08:41', '2025-08-27 14:08:41'),
+(4, 'Cohort 2', 'cohort', NULL, NULL, 2, 3, '2025-08-27 14:11:21', '2025-08-27 14:11:21'),
+(5, 'FY24 Cohort', 'program', '', NULL, 1, 2, '2025-09-12 04:01:53', '2025-09-12 04:01:53'),
+(6, 'Cohort 1', 'cohort', '', NULL, 5, 3, '2025-09-12 04:03:18', '2025-09-12 04:03:18'),
+(7, 'Personnel', 'metric', 'employees', NULL, NULL, 1, '2025-09-24 22:14:43', '2025-09-24 22:14:43'),
+(8, 'Sales and Marketing', 'metric', 'marketing', NULL, NULL, 1, '2025-09-24 22:14:43', '2025-09-24 22:14:43'),
+(9, 'Transportation and Travel', 'metric', 'travel', NULL, NULL, 1, '2025-09-24 22:14:43', '2025-09-24 22:14:43'),
+(10, 'Supplies', 'metric', 'materials for training', NULL, NULL, 1, '2025-09-24 22:17:10', '2025-09-24 22:17:10'),
+(11, 'Direct Labor', 'metric', 'staff', NULL, NULL, 1, '2025-09-24 22:17:10', '2025-09-24 22:17:10'),
+(12, 'Cash in bank', 'metric', 'bank account', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(13, 'Accounts receivable', 'metric', 'A/R', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(14, 'Inventory', 'metric', 'program materials', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(15, 'Equipment', 'metric', 'computers', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(16, 'Accounts payable', 'metric', 'XYZ supplier', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(17, 'Loans payable', 'metric', 'Bank loan', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(18, 'Credit line', 'metric', 'line of credit', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(19, 'Credit cards', 'metric', 'credit card', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(20, 'Share capital', 'metric', 'equity contribution', NULL, NULL, 1, '2025-09-25 00:51:16', '2025-09-25 00:51:16'),
+(21, 'Rates & Taxis', 'metric', 'Transportation and taxi services', NULL, NULL, 1, '2025-09-26 08:37:49', '2025-09-26 08:37:49'),
+(22, 'Principal 2', 'client', NULL, NULL, NULL, 1, '2025-10-05 04:50:35', '2025-10-05 04:50:35'),
+(23, 'Principal 3', 'client', NULL, NULL, NULL, 1, '2025-10-05 04:55:32', '2025-10-05 04:55:32');
 
 -- --------------------------------------------------------
 
@@ -64,85 +94,85 @@ CREATE TABLE `categories_item` (
 --
 
 INSERT INTO `categories_item` (`id`, `cohort_id`, `program_id`, `client_id`, `company_id`, `status`, `joined_at`, `left_at`, `notes`, `added_by_user_id`, `created_at`) VALUES
-(1, 3, 2, 1, 1, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(2, 3, 2, 1, 2, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(3, 3, 2, 1, 3, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(4, 3, 2, 1, 4, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(5, 3, 2, 1, 5, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(6, 3, 2, 1, 6, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(7, 3, 2, 1, 7, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(8, 3, 2, 1, 8, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(9, 3, 2, 1, 9, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(10, 3, 2, 1, 10, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(11, 3, 2, 1, 11, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(12, 3, 2, 1, 12, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(13, 3, 2, 1, 13, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(14, 3, 2, 1, 14, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(15, 3, 2, 1, 15, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(16, 3, 2, 1, 16, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(17, 3, 2, 1, 17, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(18, 3, 2, 1, 18, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(19, 3, 2, 1, 19, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(21, 3, 2, 1, 21, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(22, 3, 2, 1, 22, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(23, 3, 2, 1, 23, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(24, 3, 2, 1, 24, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(25, 3, 2, 1, 25, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(26, 3, 2, 1, 26, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(27, 3, 2, 1, 27, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(28, 3, 2, 1, 28, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(29, 3, 2, 1, 29, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(30, 3, 2, 1, 30, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(31, 3, 2, 1, 31, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(32, 3, 2, 1, 32, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(33, 3, 2, 1, 33, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(34, 3, 2, 1, 34, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(35, 3, 2, 1, 35, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(36, 3, 2, 1, 36, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(37, 3, 2, 1, 37, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(38, 3, 2, 1, 38, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(39, 3, 2, 1, 39, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(40, 3, 2, 1, 40, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-28 01:26:11'),
-(41, 3, 2, 1, 20, 'active', '2025-08-28 06:16:28', NULL, NULL, NULL, '2025-08-28 02:16:28'),
-(42, 6, 5, 1, 59, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(43, 6, 5, 1, 60, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(44, 6, 5, 1, 61, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(45, 6, 5, 1, 62, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(46, 6, 5, 1, 63, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(47, 6, 5, 1, 64, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(48, 6, 5, 1, 65, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(49, 6, 5, 1, 66, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(50, 6, 5, 1, 67, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(51, 6, 5, 1, 68, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(52, 6, 5, 1, 69, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(53, 6, 5, 1, 70, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(54, 6, 5, 1, 71, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(55, 6, 5, 1, 72, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(56, 6, 5, 1, 73, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(57, 6, 5, 1, 74, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(58, 6, 5, 1, 75, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(59, 6, 5, 1, 76, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(60, 6, 5, 1, 77, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(61, 6, 5, 1, 78, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(62, 6, 5, 1, 79, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(63, 6, 5, 1, 80, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(64, 6, 5, 1, 81, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(65, 6, 5, 1, 82, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(66, 6, 5, 1, 83, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(67, 6, 5, 1, 84, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(68, 6, 5, 1, 85, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(69, 6, 5, 1, 86, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(70, 6, 5, 1, 87, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(71, 6, 5, 1, 88, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(72, 6, 5, 1, 89, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(73, 6, 5, 1, 90, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(74, 6, 5, 1, 91, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(75, 6, 5, 1, 92, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(76, 6, 5, 1, 93, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(77, 6, 5, 1, 94, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(78, 6, 5, 1, 95, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(79, 6, 5, 1, 96, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36'),
-(80, 6, 5, 1, 97, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 06:38:36');
+(1, 3, 2, 1, 1, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(2, 3, 2, 1, 2, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(3, 3, 2, 1, 3, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(4, 3, 2, 1, 4, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(5, 3, 2, 1, 5, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(6, 3, 2, 1, 6, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(7, 3, 2, 1, 7, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(8, 3, 2, 1, 8, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(9, 3, 2, 1, 9, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(10, 3, 2, 1, 10, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(11, 3, 2, 1, 11, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(12, 3, 2, 1, 12, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(13, 3, 2, 1, 13, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(14, 3, 2, 1, 14, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(15, 3, 2, 1, 15, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(16, 3, 2, 1, 16, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(17, 3, 2, 1, 17, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(18, 3, 2, 1, 18, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(19, 3, 2, 1, 19, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(21, 3, 2, 1, 21, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(22, 3, 2, 1, 22, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(23, 3, 2, 1, 23, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(24, 3, 2, 1, 24, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(25, 3, 2, 1, 25, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(26, 3, 2, 1, 26, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(27, 3, 2, 1, 27, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(28, 3, 2, 1, 28, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(29, 3, 2, 1, 29, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(30, 3, 2, 1, 30, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(31, 3, 2, 1, 31, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(32, 3, 2, 1, 32, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(33, 3, 2, 1, 33, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(34, 3, 2, 1, 34, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(35, 3, 2, 1, 35, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(36, 3, 2, 1, 36, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(37, 3, 2, 1, 37, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(38, 3, 2, 1, 38, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(39, 3, 2, 1, 39, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(40, 3, 2, 1, 40, 'active', '2025-08-28 05:26:11', NULL, NULL, NULL, '2025-08-27 23:26:11'),
+(41, 3, 2, 1, 20, 'active', '2025-08-28 06:16:28', NULL, NULL, NULL, '2025-08-28 00:16:28'),
+(42, 6, 5, 1, 59, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(43, 6, 5, 1, 60, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(44, 6, 5, 1, 61, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(45, 6, 5, 1, 62, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(46, 6, 5, 1, 63, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(47, 6, 5, 1, 64, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(48, 6, 5, 1, 65, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(49, 6, 5, 1, 66, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(50, 6, 5, 1, 67, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(51, 6, 5, 1, 68, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(52, 6, 5, 1, 69, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(53, 6, 5, 1, 70, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(54, 6, 5, 1, 71, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(55, 6, 5, 1, 72, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(56, 6, 5, 1, 73, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(57, 6, 5, 1, 74, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(58, 6, 5, 1, 75, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(59, 6, 5, 1, 76, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(60, 6, 5, 1, 77, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(61, 6, 5, 1, 78, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(62, 6, 5, 1, 79, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(63, 6, 5, 1, 80, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(64, 6, 5, 1, 81, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(65, 6, 5, 1, 82, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(66, 6, 5, 1, 83, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(67, 6, 5, 1, 84, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(68, 6, 5, 1, 85, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(69, 6, 5, 1, 86, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(70, 6, 5, 1, 87, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(71, 6, 5, 1, 88, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(72, 6, 5, 1, 89, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(73, 6, 5, 1, 90, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(74, 6, 5, 1, 91, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(75, 6, 5, 1, 92, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(76, 6, 5, 1, 93, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(77, 6, 5, 1, 94, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(78, 6, 5, 1, 95, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(79, 6, 5, 1, 96, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36'),
+(80, 6, 5, 1, 97, 'active', '2025-09-19 06:38:36', NULL, NULL, NULL, '2025-09-19 04:38:36');
 
 -- --------------------------------------------------------
 
@@ -152,7 +182,6 @@ INSERT INTO `categories_item` (`id`, `cohort_id`, `program_id`, `client_id`, `co
 
 CREATE TABLE `companies` (
   `id` int NOT NULL,
-  `sector_name` varchar(255) DEFAULT NULL,
   `contact_person` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `registration_no` varchar(64) DEFAULT NULL,
@@ -198,86 +227,192 @@ CREATE TABLE `companies` (
 -- Dumping data for table `companies`
 --
 
-INSERT INTO `companies` (`id`, `sector_name`, `contact_person`, `name`, `registration_no`, `bbbee_level`, `cipc_status`, `service_offering`, `description`, `city`, `suburb`, `address`, `postal_code`, `business_location`, `contact_number`, `email_address`, `trading_name`, `youth_owned`, `black_ownership`, `black_women_ownership`, `youth_owned_text`, `black_ownership_text`, `black_women_ownership_text`, `compliance_notes`, `has_valid_bbbbee`, `has_tax_clearance`, `is_sars_registered`, `has_cipc_registration`, `bbbee_valid_status`, `bbbee_expiry_date`, `tax_valid_status`, `tax_pin_expiry_date`, `vat_number`, `turnover_estimated`, `turnover_actual`, `permanent_employees`, `temporary_employees`, `locations`, `created_at`, `updated_at`, `industry_id`) VALUES
-(1, 'Construction', 'Smangele Shandu', 'Agrimika Holdings', '2023/746304/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0780937592', 'smangelevictoria89@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-11', 'Valid', '2026-03-11', NULL, 281826.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:45:19', NULL),
-(2, 'Cleaning', 'Siphelele Ngema', 'Alondekuhle', '2019/102060/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '0734449396', 'siphelelengema400@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-03-18', 'Valid', '2026-02-28', NULL, 146086.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(3, 'Food', 'Lusizo Sithole', 'Amatshana Holdings', '2017/436963/07', 'EME', 'AR DEREGISTRATION', 'Fast Food', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '07211657360615757152', 'sizwelusizo1@gmail.com', 'Lasizwe Enterprise', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 0, 'Expired', '2025-01-23', 'Valid', '2026-03-09', NULL, 253623.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(4, 'Retail', 'Sithunywa Manele', 'Asakhe Hardware', '2016/272236/07', 'EME', 'IN BUSINESS', 'Hardware', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0614413419', 'sithunywa@asakhehardware.co.za', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-11-10', 'Valid', '2025-12-03', NULL, 396171.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(5, 'Cleaning', 'Simiso Nxumalo', 'Bafisha', '2021/689534/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Kwadlangezwa', '0659419322', 'bafishagroup@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 0, 0, 1, 'Expired', '2025-08-13', 'Expired', '2025-08-15', NULL, 162235.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(6, 'Beauty', 'Rebecca Khambule', 'Bayanolwa', '2021/011803/07', 'EME', 'IN BUSINESS', 'Hair Salon', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0730913513', 'rebeccakhambule79@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-11', 'Valid', '2026-01-17', NULL, 73485.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(7, 'Engineering', 'Thubelihle Ndlela', 'Bourwa Project and Consulting', '2018/619193/07', 'EME', 'IN BUSINESS', 'Borehole installation', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '06034009290645223037', 'mpendulorespect@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-09-02', 'Valid', '2026-02-13', NULL, 250977.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(8, 'Maintenance', 'Siyabonga Chaliluque', 'Chaliluque Services', '2020/075428/07', 'EME', 'IN BUSINESS', 'Multiple services', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '0835183009', 'siyabongachaliluque@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-30', 'Valid', '2026-02-27', NULL, 71774.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(9, 'Logistics', 'Ntando Gwala', 'Chule Enterprise and Logistics', '2019/487002/07', 'EME', 'IN BUSINESS', 'Trucking', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '0735508687', 'chuleel@outlook.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-29', 'Valid', '2025-08-28', NULL, 363445.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(10, 'Retail', 'Sifiso Mngomezulu', 'Dlakadla Holdings', '2014/155924/07', 'EME', 'IN BUSINESS', 'POS sales', NULL, NULL, NULL, NULL, NULL, 'Richards Bay', '0684305527', 'sfisopro@yahoo.com', 'Agnel Capital / Agnel Consulting', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-03', 'Valid', '2025-11-12', NULL, 146395.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(11, 'Clothing & Textile', 'Samukelisiwe Shabalala', 'Dongelihle Enterprises', '2024/075054/07', 'EME', 'IN BUSINESS', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'Eshowe', '0833534171', 'fezimshengu@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2025-09-02', 'Valid', '2026-03-10', NULL, 75838.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-09-26 09:42:04', NULL),
-(12, 'Beauty', 'Nomfundo Buthelezi', 'Fefe Willy Beauty', '2024/457350/07', 'EME', 'IN BUSINESS', 'Nail Bar', NULL, NULL, NULL, NULL, NULL, 'Richards Bay', '0784851911', 'nomfundo266@icloud.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-07-23', 'Valid', '2026-01-21', NULL, 554330.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(13, 'Media', 'Mnqobi Ngobese', 'FNS Visuals', '2024/361079/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0723753870', 'mnqobifa@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-03-09', 'Valid', '2026-03-11', NULL, 92384.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(14, 'Clothing & Textile', 'Mildred Dlamini', 'Ikhonabox Lifestyle', '2017/530842/07', 'EME', 'IN BUSINESS', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'Ngwelezane', '06728551150688158228', 'ikhonaboxlifestyle@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expiring Today', '2025-08-21', 'Valid', '2026-02-27', NULL, 90119.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(15, 'Media', 'Sibonelo Mthethwa', 'Illuminous Pictures', '2018/393347/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0739567960', 'illuminous.pictures@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-17', 'Valid', '2026-03-14', NULL, 126249.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(16, 'Construction', 'Sizwe Mkhwanazi', 'Izwelethu Developments', '2016/068478/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '08337327560659478758', 'izwelethu.development@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-08-27', 'Expired', '2025-08-18', NULL, 130517.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(17, 'Transport', 'Sanele Myeza', 'Legendary S Academy and Training', '2023/959908/07', 'EME', 'IN BUSINESS', 'Driving School', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0817727642', 'sanelemyz06@gmail.com', 'Legendary Driving School ', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2026-02-11', 'No Date Captured', NULL, NULL, 314414.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(18, 'Tourism', 'Nana Mthembu', 'Mesda Bed and Breakfast', '2020/890421/07', 'EME', 'IN BUSINESS', 'B & B', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0832641470', 'mesda8owl@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', NULL, 'Valid', NULL, NULL, 173870.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(19, 'Construction', 'Thandazani Sibiya', 'Mkhunji Trading and Enterprises', '2018/439514/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '06788504430608814514', 'thandazanisotobe@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-03-11', 'Valid', '2026-03-11', NULL, 153305.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(20, 'Energy', 'Noluthando Mkhize', 'Ntwaworld (Pty) Ltd', '2016/254868/07', 'EME', 'IN BUSINESS', 'Oil Purification', NULL, NULL, NULL, NULL, NULL, 'Macekane', '0614440871', 'thndmkhz@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-05-21', 'Valid', '2026-02-28', NULL, 328663.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(21, 'Clothing & Textile', 'Ntombizine Mbatha', 'Perfectionist Fashion Design', '2014/068729/07', 'EME', 'AR DEREGISTRATION', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0735110558', 'zinembatha@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 0, 'Expired', '2023-10-09', 'No Date Captured', NULL, NULL, 155645.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(22, 'Water', 'Nakhokonke Mngadi', 'Pure Vawter', '2019/215376/07', 'EME', 'IN BUSINESS', 'Water purification', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0814205506', 'tysync@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-02-13', 'Valid', '2026-02-14', NULL, 178412.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(23, 'Finance', 'Nikiwe Zele', 'Recovery Credit Dispute', '2019/581789/07', 'EME', 'IN BUSINESS', 'Credit Recovery', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '0783024501', 'z.creditrelief@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-02-26', 'Valid', '2026-02-23', NULL, 490909.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(24, 'Maintenance', 'Sanele Dube', 'S Dube Services', '2024/463937/07', 'EME', 'IN BUSINESS', 'Landscaping', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '08187100910785872986', 'sanelerduberr@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-07-25', 'Valid', '2025-08-22', NULL, 173207.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(25, 'ICT', 'Sinqobile Mahlambi', 'Shepard Media and Communications', '2022/450529/07', 'EME', 'IN BUSINESS', 'Multiple services', NULL, NULL, NULL, NULL, NULL, 'Meerensee', '0847055171', 'shepherdmediac@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-12', 'Valid', '2026-03-13', NULL, 428430.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:52:43', NULL),
-(26, 'Media', 'Wandile Cebekhulu', 'Signergy Signs (Pty) Ltd', '2020/699762/07', 'EME', 'IN BUSINESS', 'Printing', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0836203205', 'bradley@signergysigns.co.za', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 1, 'Expired', '2025-04-02', 'No Date Captured', NULL, NULL, 296115.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(27, 'Engineering', 'Thokozani Madonsela', 'Siyaqhuba Electrical', '2020/043018/07', 'EME', 'IN BUSINESS', 'Electrical Engineering', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0618005612', 'thokozani@siyaqhubasa.co.za', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-01-23', 'Valid', '2025-12-13', NULL, 337753.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(28, 'Printing', 'Sikhumbuzo Ndlovu', 'SK and Mvelo Holdings', '2023/214831/07', 'EME', 'IN BUSINESS', 'Number Plates', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '07396946490633695802', 'skhumbuzo.nkosie@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-03-14', 'Valid', '2026-03-14', NULL, 163831.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(29, 'Agriculture', 'Simangele Khuzwayo', 'SmaEve Designs ', '2020/056612/07', 'EME', 'IN BUSINESS', 'Bee Keeper', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '07491144250658274840', 'simangeled186@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 1, 'Expired', '2025-05-18', 'Expired', '2025-02-13', NULL, 241391.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(30, 'Nil', 'Snethemba Koza', 'Snekhethelo Business Enterprise', '2015/133546/07', 'EME', 'IN BUSINESS', 'Nil', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '07204112250787009428', 'grekhoza@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-06-30', 'Valid', '2026-03-13', NULL, 137037.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(31, 'Supply', 'Sphamandla Shange', 'SNV Solutions', '2020/890217/07', 'EME', 'IN BUSINESS', 'Office Equipment', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0783838282', 'shangesphamandla@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-09', 'Valid', '2025-10-10', NULL, 395396.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(32, 'Transport', 'Mzamo Mthiyane', 'Sokhulu and Partners Car Hire', '2023/550319/07', 'EME', 'IN BUSINESS', 'car hire', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '0631601738', 'okuhle628@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2024-02-03', 'Valid', '2026-03-07', NULL, 426305.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(33, 'Beauty', 'Silondile Gumede', 'Solwakhe', '2019/145519/07', 'EME', 'IN BUSINESS', 'Spa', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '06339889930724660386', 'mkhunji2023@gmail.com', 'Solwakhe Spa', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 0, 0, 1, 'Valid', '2026-03-14', 'No Date Captured', NULL, NULL, 312904.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(34, 'Media', 'Nzuzo Ngema', 'Sthenjwa Visuals', '2021/957893/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0662077657', 'nzuzongema.17@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2026-02-02', 'No Date Captured', NULL, NULL, 140461.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(35, 'ICT', 'Patrick Mtshali', 'Thabza Net', '2024/191837/07', 'EME', 'IN BUSINESS', 'Internet café', NULL, NULL, NULL, NULL, NULL, 'Esikhawini', '0765516515', 'thabzanet.cafe@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-04-03', 'Valid', '2026-06-02', NULL, 70947.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(36, 'Food', 'Nokuthula Ngezeni Mbokazi', 'Thulys Fast Food', '2021/986248/07', 'EME', 'IN BUSINESS', 'Fast Food', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '06033027980640656573', 'buyii6624@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 0, 0, 1, 'Valid', NULL, 'Expired', NULL, NULL, 47621.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(37, 'Cleaning', 'Themba Gwala', 'TSCUAA', '2023/614785/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0738508163', 'senzi.sbambo@gmail.com', 'TSCUAA Cleaning & Laundry Services', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-11-14', 'Expired', '2025-03-13', NULL, 138917.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(38, 'Manufacturing', 'Nonhle Sithole', 'Umathole Amahle', '2020/279239/07', 'EME', 'IN BUSINESS', 'Detergents', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0681590864', 'nonhlembali2@icloud.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2025-12-02', 'Valid', '2025-09-26', NULL, 147174.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 15:19:28', NULL),
-(39, 'Food', 'Vukani Mpotshane', 'VBM Legacy', '2019/074760/07', 'EME', 'IN BUSINESS', 'Shisanyama', NULL, NULL, NULL, NULL, NULL, 'Esikhawini', '07365981890691781445', 'thanivevukanimpontshane@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-12-05', 'Expired', '2025-04-30', NULL, 150420.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(40, 'Engineering', 'Vukile Ndlovu', 'Vuks Engineering and Construction', '2006/060191/23', 'EME', 'IN BUSINESS', 'Fabrication', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0632215332', 'nvndlovuh@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 0, 0, 1, 'No Date Captured', NULL, 'No Date Captured', NULL, NULL, 127095.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-08-21 12:47:26', NULL),
-(59, NULL, NULL, '035 Freshcuts (Pty) Ltd', '2022/827697/07', NULL, 'No returns filed 23/24 O/S - Deregistered status', 'Barbor', '#fy24', 'Richards Bay', NULL, NULL, NULL, 'Richards Bay', '078 273 5369', 'mduduziskhumbuzomadondo@gmail.com', '035 Freshcuts (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Richards Bay', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(60, NULL, NULL, 'Amorh  Group ', '2023/129904/07', NULL, 'No returns filed 23/24 O/S - In Business', 'Agriculture', '#fy24', 'Mzingazi', NULL, NULL, NULL, 'Mzingazi', '665771716', 'slindilekhumalo020@gmail.com', 'Amorh  Group ', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2025-06-10', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mzingazi', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(61, NULL, NULL, 'Avukile Amancwane', '2020/719839/07', NULL, 'Up to date - In Business', 'Clothing & Textiles', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0633545978', 'nonhlanhlaphilile2@gmail.com', 'Avukile Amancwane', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-03-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(62, NULL, NULL, 'Basi Group (Pty) Ltd', '2018/573529/07', NULL, '2024 Returns O/S - In Business', 'Agriculture', '#fy24', 'Mandlazini', NULL, NULL, NULL, 'Mandlazini', '062 216 9616', 'vsandile.lukele1@gmail.com', 'Basi Group (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-05-12', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mandlazini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(63, NULL, NULL, 'Chalah04 Mixed Farm (Pty) Ltd', '2023/129344/07', NULL, '2024 Returns O/S - In Business', 'Agriculture', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0633545978', 'chalaha04productionfarm@gmail.com', 'Chalah04 Mixed Farm (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(64, NULL, NULL, 'Gugulethu Plumbing and renovations', '2009/101895/23', NULL, '2025 Returns O/S - In Business', 'Plumbing', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '073 334 4225', 'gugulethu.mabuza@gmail.com', 'Gugulethu Plumbing and renovations', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-07-10', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(65, NULL, NULL, 'Ikhaya Lezimomondiya', '2021/633820/07', NULL, 'Up to date - In Business', 'Clothing & Textiles', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0765290825', 'ikhayacorporate@gmail.com', 'Ikhaya Lezimomondiya', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(66, NULL, NULL, 'Imamba Crafters (Pty) Ltd', '2021/724572/07', NULL, '2025 Returns O/S - In Business', 'Leather Manufacturing', '#fy24', 'Aquadene', NULL, NULL, NULL, 'Aquadene', '0790431928', 'vukanimandla@gmail.com', 'Imamba Crafters (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2025-10-31', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Aquadene', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(67, NULL, NULL, 'Impilo Entertainment', '2013/178899/07', NULL, 'Up to date - In Business', 'Events', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0630350140', 'impilotainment@gmail.com', 'Impilo Entertainment', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-03-06', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(68, NULL, NULL, 'Jele Group t/a Wynes Acessories', '2019/428871/07', NULL, '23/24/25 Returns O/S - Deregistration in progress', 'Leather Manufacturing', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0607480151/ 067 206 6847', 'wynethemba4@gmail.com', 'Jele Group t/a Wynes Acessories', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-07-14', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(69, NULL, NULL, 'Kapito Arts (Pty) Ltd', '2023/130250/07', NULL, 'Up to date - In Business', 'Art', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '076 512 4883', 'nhlakaniphokapitomdletshe@gmail.com', 'Kapito Arts (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(70, NULL, NULL, 'KU Greenhands', '2019/424973/07', NULL, '2025 Returns O/S - In Business', 'Waste Management', '#fy24', 'Alton', NULL, NULL, NULL, 'Alton', '069 263 2528', 'kugreenhands@gmail.com', 'KU Greenhands', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-01-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Alton', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(71, NULL, NULL, 'KwaRichboy Trading', '2015/413098/07', NULL, 'Up to date - In Business', 'Gas', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0637627096 / 0783009053', 'fanelesiyaya2@gmail.com ', 'KwaRichboy Trading', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2025-02-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(72, NULL, NULL, 'M2023 Projects (Pty) Ltd', '2023/134685/07', NULL, '2024 Returns O/S - In Business', 'Car wash', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '078 030 0706', 'cybersengwayo447@gmail.com', 'M2023 Projects (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(73, NULL, NULL, 'Mazikode Bakery ', '2023/126859/07', NULL, '2024 Returns O/S - In Business', 'Baking', '#fy24', 'Nkandla', NULL, NULL, NULL, 'Nkandla', '0818474624', 'zwanesusan89@gmail.com ', 'Mazikode Bakery ', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Nkandla', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(74, NULL, NULL, 'MDK Hair Salon', '2023/127081/07', NULL, '2024 Returns O/S - In Business', 'Hair & Beauty', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '066 000 3823', 'sliemthembu066@gmail.com', 'MDK Hair Salon', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(75, NULL, NULL, 'Mhlengi Woodwork', '2023/125764/07', NULL, '2024 Returns O/S - In Business', 'Manufacturing', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '062 596 3980', 'nompiloharmonite94@gmail.com', 'Mhlengi Woodwork', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(76, NULL, NULL, 'Mkhiloshi Consultants and projects', '2019/247819/07', NULL, 'Up to date - In Business', 'Internet Cafe', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0732975803/681022067', 'mkhiloshiconsultants@gmail.com', 'Mkhiloshi Consultants and projects', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2026-08-29', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(77, NULL, NULL, 'NG Xulu T/A Zandu Events', '2023/117388/07', NULL, 'Up to date - In Business', 'Events', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0818806590', 'singayex@gmail.com', 'NG Xulu T/A Zandu Events', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(78, NULL, NULL, 'Ngesibindi Enterprise', '2020/153716/07', NULL, '2025 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Merensee', NULL, NULL, NULL, 'Merensee', '0761737592', 'andilemokoatlo@gmail.com', 'Ngesibindi Enterprise', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Merensee', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(79, NULL, NULL, 'Nomnisi the event  planner ', '2023/872847/07', NULL, '2025 Returns O/S - In Business', 'Events', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '061 8842 855', 'nokwe.mthembu@icloud.com', 'Nomnisi the event  planner ', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2026-02-18', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(80, NULL, NULL, 'Nothani Carpentry Solutions (Pty) Ltd', '2023/123776/07', NULL, '2024 Returns O/S - In Business', 'Manufacturing', '#fy24', 'Ngwelezana', NULL, NULL, NULL, 'Ngwelezana', '081 3535 270', 'mthethwathubelihle1@gmail.com', 'Nothani Carpentry Solutions (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Ngwelezana', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(81, NULL, NULL, 'Owecebo-Mpangazitha Enterprise', '2023/842253/07', NULL, 'No returns filed 24/25 O/S - In Business', 'Internet Café', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '081 244 1377', 'junephakathi95@gmail.com', 'Owecebo-Mpangazitha Enterprise', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-06-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(82, NULL, NULL, 'Papas Spice café', '2016/052918/07', NULL, '2025 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0829590031', 'bhavanipather@gmail.com', 'Papas Spice café', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2023-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(83, NULL, NULL, 'Phelokazi\'s Devine Eats (Pty) Ltd', '2023/122096/07', NULL, '2024 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0723566534', 'phelokazigxumisa20@gmail.com', 'Phelokazi\'s Devine Eats (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-26', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(84, NULL, NULL, 'Phumelobala Catering and Fashion Designers', '2006/066326/23', NULL, '2024/2025 O/S - In Business', 'Food & Beverage', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0725578176', 'lungilendunakazi4@gmail.com', 'Phumelobala Catering and Fashion Designers', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(85, NULL, NULL, 'Phumusuthi Restaurant (Pty) Ltd', '2023/129157/07', NULL, '2024 Returns O/S - In Business', 'Food', '#fy24', 'Mzingazi', NULL, NULL, NULL, 'Mzingazi', NULL, 'nokuphilagen@gmail.com', 'Phumusuthi Restaurant (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-01', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mzingazi', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(86, NULL, NULL, 'Queen Oyster (Pty) Ltd', '2023/126060/07', NULL, 'Up to date - In Business', 'Mushroom farmer', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0729114008', 'ntombizonke.shandy@gmail.com', 'Queen Oyster (Pty) Ltd', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-19', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(87, NULL, NULL, 'Rodco Engineering & Contruction', '2015/128540/07', NULL, '2024/2025 O/S - In Business', 'Engineering', '#fy24', 'Arboretum', NULL, NULL, NULL, 'Arboretum', '0718076435', 'rodcoeng@outlook.com', 'Rodco Engineering & Contruction', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-02-16', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Arboretum', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(88, NULL, NULL, 'Saito', '2016/007643/07', NULL, 'Up to date - In Business', 'Appliance Rental', '#fy24', 'Kwa Dlangezwa', NULL, NULL, NULL, 'Kwa Dlangezwa', '0732256522', 'saitoappliances@gmail.com', 'Saito', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2026-08-21', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Kwa Dlangezwa', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(89, NULL, NULL, 'Sakhumuzi Hand Craft Art ', '2023/811522/07', NULL, '24/25 O/S - Deregistration in progress', 'Manufacturing', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0712665298', 'sakhumuzizungu678@gmail.com', 'Sakhumuzi Hand Craft Art ', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-06-12', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(90, NULL, NULL, 'SHE Inter Café (Pty) Ltd', '2023/129679/07', NULL, '2024 Returns O/S - In Business', 'Internet Café', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '072-525-6303', 'ernestandvusiinternetcafe@gmail.com', 'SHE Inter Café (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(91, NULL, NULL, 'Sifezekile Shiya (PTY) Ltd', '2023/804600/07', NULL, '2024/2025 O/S - In Business', 'Baking', '#fy24', 'Felixton', NULL, NULL, NULL, 'Felixton', '0767653139', 'lindelwendlazi@gmail.com', 'Sifezekile Shiya (PTY) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Felixton', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(92, NULL, NULL, 'Sydney Mabaso Arts (Pty) Ltd', '2023/124978/07', NULL, '2024/2025 O/S - In Business', 'Art', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '083 580 9803/ 083 691 3270', 'thulanisydney932@gmail.com', 'Sydney Mabaso Arts (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(93, NULL, NULL, 'Treacly Treats', '2023/132428/07', NULL, '2024/2025 O/S - In Business', 'Baking', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0815953644', 'phiwortile@icloud.com', 'Treacly Treats', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(94, NULL, NULL, 'Under African Skies', '2007/141891/23', NULL, 'Up to date - In Business', 'Tourism', '#fy24', 'Richards Bay', NULL, NULL, NULL, 'Richards Bay', '0761496051', 'info@underafricanskies.africa', 'Under African Skies', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-04-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Richards Bay', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(95, NULL, NULL, 'V3 Auto', '2021/139799/07', NULL, 'Up to date - In Business', 'Automotive', '#fy24', 'Aquadene', NULL, NULL, NULL, 'Aquadene', '076 945 0867', 'v3auto.info@gmail.com', 'V3 Auto', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2025-07-16', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Aquadene', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(96, NULL, NULL, 'Zano Magic Hands', '2023/831307/07', NULL, '2024/2025 O/S - In Business', 'Hair & Beauty', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '076 559 9540', 'gzanokuhlehlengiwe@gmail.com', 'Zano Magic Hands', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2022-06-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL),
-(97, NULL, NULL, 'Zanokuhle Trading and General Service', '2022/752286/07', NULL, 'Up to date - In Business', 'Food & Beverage', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0783628777', 'sqinisekomyeza@yahoo.com/ thandekafakude959@gmail.com', 'Zanokuhle Trading and General Service', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-05-14', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-09-19 06:27:14', NULL);
+INSERT INTO `companies` (`id`, `contact_person`, `name`, `registration_no`, `bbbee_level`, `cipc_status`, `service_offering`, `description`, `city`, `suburb`, `address`, `postal_code`, `business_location`, `contact_number`, `email_address`, `trading_name`, `youth_owned`, `black_ownership`, `black_women_ownership`, `youth_owned_text`, `black_ownership_text`, `black_women_ownership_text`, `compliance_notes`, `has_valid_bbbbee`, `has_tax_clearance`, `is_sars_registered`, `has_cipc_registration`, `bbbee_valid_status`, `bbbee_expiry_date`, `tax_valid_status`, `tax_pin_expiry_date`, `vat_number`, `turnover_estimated`, `turnover_actual`, `permanent_employees`, `temporary_employees`, `locations`, `created_at`, `updated_at`, `industry_id`) VALUES
+(1, 'Smangele Shandu', 'Agrimika Holdings', '2023/746304/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0780937592', 'smangelevictoria89@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-11', 'Valid', '2026-03-11', NULL, 281826.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 5),
+(2, 'Siphelele Ngema', 'Alondekuhle', '2019/102060/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '0734449396', 'siphelelengema400@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-03-18', 'Valid', '2026-02-28', NULL, 146086.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 3),
+(3, 'Lusizo Sithole', 'Amatshana Holdings', '2017/436963/07', 'EME', 'AR DEREGISTRATION', 'Fast Food', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '07211657360615757152', 'sizwelusizo1@gmail.com', 'Lasizwe Enterprise', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 0, 'Expired', '2025-01-23', 'Valid', '2026-03-09', NULL, 253623.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 9),
+(4, 'Sithunywa Manele', 'Asakhe Hardware', '2016/272236/07', 'EME', 'IN BUSINESS', 'Hardware', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0614413419', 'sithunywa@asakhehardware.co.za', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-11-10', 'Valid', '2025-12-03', NULL, 396171.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 17),
+(5, 'Simiso Nxumalo', 'Bafisha', '2021/689534/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Kwadlangezwa', '0659419322', 'bafishagroup@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 0, 0, 1, 'Expired', '2025-08-13', 'Expired', '2025-08-15', NULL, 162235.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 3),
+(6, 'Rebecca Khambule', 'Bayanolwa', '2021/011803/07', 'EME', 'IN BUSINESS', 'Hair Salon', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0730913513', 'rebeccakhambule79@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-11', 'Valid', '2026-01-17', NULL, 73485.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 2),
+(7, 'Thubelihle Ndlela', 'Bourwa Project and Consulting', '2018/619193/07', 'EME', 'IN BUSINESS', 'Borehole installation', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '06034009290645223037', 'mpendulorespect@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-09-02', 'Valid', '2026-02-13', NULL, 250977.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 7),
+(8, 'Siyabonga Chaliluque', 'Chaliluque Services', '2020/075428/07', 'EME', 'IN BUSINESS', 'Multiple services', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '0835183009', 'siyabongachaliluque@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-30', 'Valid', '2026-02-27', NULL, 71774.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 12),
+(9, 'Ntando Gwala', 'Chule Enterprise and Logistics', '2019/487002/07', 'EME', 'IN BUSINESS', 'Trucking', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '0735508687', 'chuleel@outlook.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-29', 'Valid', '2025-08-28', NULL, 363445.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 11),
+(10, 'Sifiso Mngomezulu', 'Dlakadla Holdings', '2014/155924/07', 'EME', 'IN BUSINESS', 'POS sales', NULL, NULL, NULL, NULL, NULL, 'Richards Bay', '0684305527', 'sfisopro@yahoo.com', 'Agnel Capital / Agnel Consulting', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-03', 'Valid', '2025-11-12', NULL, 146395.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 17),
+(11, 'Samukelisiwe Shabalala', 'Dongelihle Enterprises', '2024/075054/07', 'EME', 'IN BUSINESS', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'Eshowe', '0833534171', 'fezimshengu@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2025-09-02', 'Valid', '2026-03-10', NULL, 75838.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 4),
+(12, 'Nomfundo Buthelezi', 'Fefe Willy Beauty', '2024/457350/07', 'EME', 'IN BUSINESS', 'Nail Bar', NULL, NULL, NULL, NULL, NULL, 'Richards Bay', '0784851911', 'nomfundo266@icloud.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-07-23', 'Valid', '2026-01-21', NULL, 554330.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 2),
+(13, 'Mnqobi Ngobese', 'FNS Visuals', '2024/361079/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0723753870', 'mnqobifa@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-03-09', 'Valid', '2026-03-11', NULL, 92384.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 14),
+(14, 'Mildred Dlamini', 'Ikhonabox Lifestyle', '2017/530842/07', 'EME', 'IN BUSINESS', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'Ngwelezane', '06728551150688158228', 'ikhonaboxlifestyle@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expiring Today', '2025-08-21', 'Valid', '2026-02-27', NULL, 90119.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 4),
+(15, 'Sibonelo Mthethwa', 'Illuminous Pictures', '2018/393347/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0739567960', 'illuminous.pictures@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-17', 'Valid', '2026-03-14', NULL, 126249.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 14),
+(16, 'Sizwe Mkhwanazi', 'Izwelethu Developments', '2016/068478/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '08337327560659478758', 'izwelethu.development@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-08-27', 'Expired', '2025-08-18', NULL, 130517.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 5),
+(17, 'Sanele Myeza', 'Legendary S Academy and Training', '2023/959908/07', 'EME', 'IN BUSINESS', 'Driving School', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0817727642', 'sanelemyz06@gmail.com', 'Legendary Driving School ', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2026-02-11', 'No Date Captured', NULL, NULL, 314414.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 20),
+(18, 'Nana Mthembu', 'Mesda Bed and Breakfast', '2020/890421/07', 'EME', 'IN BUSINESS', 'B & B', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0832641470', 'mesda8owl@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', NULL, 'Valid', NULL, NULL, 173870.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 19),
+(19, 'Thandazani Sibiya', 'Mkhunji Trading and Enterprises', '2018/439514/07', 'EME', 'IN BUSINESS', 'Building Services', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '06788504430608814514', 'thandazanisotobe@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-03-11', 'Valid', '2026-03-11', NULL, 153305.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 5),
+(20, 'Noluthando Mkhize', 'Ntwaworld (Pty) Ltd', '2016/254868/07', 'EME', 'IN BUSINESS', 'Oil Purification', NULL, NULL, NULL, NULL, NULL, 'Macekane', '0614440871', 'thndmkhz@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-05-21', 'Valid', '2026-02-28', NULL, 328663.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 6),
+(21, 'Ntombizine Mbatha', 'Perfectionist Fashion Design', '2014/068729/07', 'EME', 'AR DEREGISTRATION', 'Seamtress', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0735110558', 'zinembatha@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 0, 'Expired', '2023-10-09', 'No Date Captured', NULL, NULL, 155645.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 4),
+(22, 'Nakhokonke Mngadi', 'Pure Vawter', '2019/215376/07', 'EME', 'IN BUSINESS', 'Water purification', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0814205506', 'tysync@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-02-13', 'Valid', '2026-02-14', NULL, 178412.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 21),
+(23, 'Nikiwe Zele', 'Recovery Credit Dispute', '2019/581789/07', 'EME', 'IN BUSINESS', 'Credit Recovery', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '0783024501', 'z.creditrelief@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-02-26', 'Valid', '2026-02-23', NULL, 490909.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 8),
+(24, 'Sanele Dube', 'S Dube Services', '2024/463937/07', 'EME', 'IN BUSINESS', 'Landscaping', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '08187100910785872986', 'sanelerduberr@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-07-25', 'Valid', '2025-08-22', NULL, 173207.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 12),
+(25, 'Sinqobile Mahlambi', 'Shepard Media and Communications', '2022/450529/07', 'EME', 'IN BUSINESS', 'Multiple services', NULL, NULL, NULL, NULL, NULL, 'Meerensee', '0847055171', 'shepherdmediac@gmail.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2026-03-12', 'Valid', '2026-03-13', NULL, 428430.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 10),
+(26, 'Wandile Cebekhulu', 'Signergy Signs (Pty) Ltd', '2020/699762/07', 'EME', 'IN BUSINESS', 'Printing', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0836203205', 'bradley@signergysigns.co.za', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 1, 'Expired', '2025-04-02', 'No Date Captured', NULL, NULL, 296115.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 14),
+(27, 'Thokozani Madonsela', 'Siyaqhuba Electrical', '2020/043018/07', 'EME', 'IN BUSINESS', 'Electrical Engineering', NULL, NULL, NULL, NULL, NULL, 'Aquadene', '0618005612', 'thokozani@siyaqhubasa.co.za', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-01-23', 'Valid', '2025-12-13', NULL, 337753.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 7),
+(28, 'Sikhumbuzo Ndlovu', 'SK and Mvelo Holdings', '2023/214831/07', 'EME', 'IN BUSINESS', 'Number Plates', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '07396946490633695802', 'skhumbuzo.nkosie@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2026-03-14', 'Valid', '2026-03-14', NULL, 163831.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 16),
+(29, 'Simangele Khuzwayo', 'SmaEve Designs ', '2020/056612/07', 'EME', 'IN BUSINESS', 'Bee Keeper', NULL, NULL, NULL, NULL, NULL, 'Arboretum', '07491144250658274840', 'simangeled186@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 0, 0, 1, 'Expired', '2025-05-18', 'Expired', '2025-02-13', NULL, 241391.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 1),
+(30, 'Snethemba Koza', 'Snekhethelo Business Enterprise', '2015/133546/07', 'EME', 'IN BUSINESS', 'Nil', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '07204112250787009428', 'grekhoza@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 0, 1, 0, 1, 'Expired', '2025-06-30', 'Valid', '2026-03-13', NULL, 137037.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 64),
+(31, 'Sphamandla Shange', 'SNV Solutions', '2020/890217/07', 'EME', 'IN BUSINESS', 'Office Equipment', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0783838282', 'shangesphamandla@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 1, 0, 1, 'Valid', '2025-10-09', 'Valid', '2025-10-10', NULL, 395396.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 18),
+(32, 'Mzamo Mthiyane', 'Sokhulu and Partners Car Hire', '2023/550319/07', 'EME', 'IN BUSINESS', 'car hire', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '0631601738', 'okuhle628@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2024-02-03', 'Valid', '2026-03-07', NULL, 426305.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 20),
+(33, 'Silondile Gumede', 'Solwakhe', '2019/145519/07', 'EME', 'IN BUSINESS', 'Spa', NULL, NULL, NULL, NULL, NULL, 'Nseleni', '06339889930724660386', 'mkhunji2023@gmail.com', 'Solwakhe Spa', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 0, 0, 1, 'Valid', '2026-03-14', 'No Date Captured', NULL, NULL, 312904.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 2),
+(34, 'Nzuzo Ngema', 'Sthenjwa Visuals', '2021/957893/07', 'EME', 'IN BUSINESS', 'Photography', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0662077657', 'nzuzongema.17@gmail.com', 'Nil', 1, 1, 0, 'Yes', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2026-02-02', 'No Date Captured', NULL, NULL, 140461.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 14),
+(35, 'Patrick Mtshali', 'Thabza Net', '2024/191837/07', 'EME', 'IN BUSINESS', 'Internet café', NULL, NULL, NULL, NULL, NULL, 'Esikhawini', '0765516515', 'thabzanet.cafe@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 1, 0, 1, 'Expired', '2025-04-03', 'Valid', '2026-06-02', NULL, 70947.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 10),
+(36, 'Nokuthula Ngezeni Mbokazi', 'Thulys Fast Food', '2021/986248/07', 'EME', 'IN BUSINESS', 'Fast Food', NULL, NULL, NULL, NULL, NULL, 'Kwambonambi', '06033027980640656573', 'buyii6624@gmail.com', 'Nil', 0, 1, 1, 'No', 'Yes', 'Yes', NULL, 1, 0, 0, 1, 'Valid', NULL, 'Expired', NULL, NULL, 47621.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 9),
+(37, 'Themba Gwala', 'TSCUAA', '2023/614785/07', 'EME', 'IN BUSINESS', 'Cleaning Services', NULL, NULL, NULL, NULL, NULL, 'Mzingazi', '0738508163', 'senzi.sbambo@gmail.com', 'TSCUAA Cleaning & Laundry Services', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-11-14', 'Expired', '2025-03-13', NULL, 138917.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 3),
+(38, 'Nonhle Sithole', 'Umathole Amahle', '2020/279239/07', 'EME', 'IN BUSINESS', 'Detergents', NULL, NULL, NULL, NULL, NULL, 'eSikhawini', '0681590864', 'nonhlembali2@icloud.com', 'Nil', 1, 1, 1, 'Yes', 'Yes', 'Yes', NULL, 1, 1, 0, 1, 'Valid', '2025-12-02', 'Valid', '2025-09-26', NULL, 147174.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 13),
+(39, 'Vukani Mpotshane', 'VBM Legacy', '2019/074760/07', 'EME', 'IN BUSINESS', 'Shisanyama', NULL, NULL, NULL, NULL, NULL, 'Esikhawini', '07365981890691781445', 'thanivevukanimpontshane@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 1, 0, 0, 1, 'Valid', '2025-12-05', 'Expired', '2025-04-30', NULL, 150420.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 9),
+(40, 'Vukile Ndlovu', 'Vuks Engineering and Construction', '2006/060191/23', 'EME', 'IN BUSINESS', 'Fabrication', NULL, NULL, NULL, NULL, NULL, 'Empangeni', '0632215332', 'nvndlovuh@gmail.com', 'Nil', 0, 1, 0, 'No', 'Yes', 'No', NULL, 0, 0, 0, 1, 'No Date Captured', NULL, 'No Date Captured', NULL, NULL, 127095.00, NULL, 0, 0, NULL, '2025-08-21 09:35:11', '2025-10-04 07:00:30', 7),
+(59, NULL, '035 Freshcuts (Pty) Ltd', '2022/827697/07', NULL, 'No returns filed 23/24 O/S - Deregistered status', 'Barbor', '#fy24', 'Richards Bay', NULL, NULL, NULL, 'Richards Bay', '078 273 5369', 'mduduziskhumbuzomadondo@gmail.com', '035 Freshcuts (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Richards Bay', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(60, NULL, 'Amorh  Group ', '2023/129904/07', NULL, 'No returns filed 23/24 O/S - In Business', 'Agriculture', '#fy24', 'Mzingazi', NULL, NULL, NULL, 'Mzingazi', '665771716', 'slindilekhumalo020@gmail.com', 'Amorh  Group ', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2025-06-10', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mzingazi', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(61, NULL, 'Avukile Amancwane', '2020/719839/07', NULL, 'Up to date - In Business', 'Clothing & Textiles', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0633545978', 'nonhlanhlaphilile2@gmail.com', 'Avukile Amancwane', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-03-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(62, NULL, 'Basi Group (Pty) Ltd', '2018/573529/07', NULL, '2024 Returns O/S - In Business', 'Agriculture', '#fy24', 'Mandlazini', NULL, NULL, NULL, 'Mandlazini', '062 216 9616', 'vsandile.lukele1@gmail.com', 'Basi Group (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-05-12', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mandlazini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(63, NULL, 'Chalah04 Mixed Farm (Pty) Ltd', '2023/129344/07', NULL, '2024 Returns O/S - In Business', 'Agriculture', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0633545978', 'chalaha04productionfarm@gmail.com', 'Chalah04 Mixed Farm (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(64, NULL, 'Gugulethu Plumbing and renovations', '2009/101895/23', NULL, '2025 Returns O/S - In Business', 'Plumbing', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '073 334 4225', 'gugulethu.mabuza@gmail.com', 'Gugulethu Plumbing and renovations', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-07-10', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(65, NULL, 'Ikhaya Lezimomondiya', '2021/633820/07', NULL, 'Up to date - In Business', 'Clothing & Textiles', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0765290825', 'ikhayacorporate@gmail.com', 'Ikhaya Lezimomondiya', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(66, NULL, 'Imamba Crafters (Pty) Ltd', '2021/724572/07', NULL, '2025 Returns O/S - In Business', 'Leather Manufacturing', '#fy24', 'Aquadene', NULL, NULL, NULL, 'Aquadene', '0790431928', 'vukanimandla@gmail.com', 'Imamba Crafters (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2025-10-31', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Aquadene', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(67, NULL, 'Impilo Entertainment', '2013/178899/07', NULL, 'Up to date - In Business', 'Events', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0630350140', 'impilotainment@gmail.com', 'Impilo Entertainment', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-03-06', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(68, NULL, 'Jele Group t/a Wynes Acessories', '2019/428871/07', NULL, '23/24/25 Returns O/S - Deregistration in progress', 'Leather Manufacturing', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0607480151/ 067 206 6847', 'wynethemba4@gmail.com', 'Jele Group t/a Wynes Acessories', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-07-14', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(69, NULL, 'Kapito Arts (Pty) Ltd', '2023/130250/07', NULL, 'Up to date - In Business', 'Art', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '076 512 4883', 'nhlakaniphokapitomdletshe@gmail.com', 'Kapito Arts (Pty) Ltd', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(70, NULL, 'KU Greenhands', '2019/424973/07', NULL, '2025 Returns O/S - In Business', 'Waste Management', '#fy24', 'Alton', NULL, NULL, NULL, 'Alton', '069 263 2528', 'kugreenhands@gmail.com', 'KU Greenhands', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 1, 0, 0, 1, 'Valid', '2026-01-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Alton', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(71, NULL, 'KwaRichboy Trading', '2015/413098/07', NULL, 'Up to date - In Business', 'Gas', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0637627096 / 0783009053', 'fanelesiyaya2@gmail.com ', 'KwaRichboy Trading', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2025-02-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(72, NULL, 'M2023 Projects (Pty) Ltd', '2023/134685/07', NULL, '2024 Returns O/S - In Business', 'Car wash', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '078 030 0706', 'cybersengwayo447@gmail.com', 'M2023 Projects (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-03', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(73, NULL, 'Mazikode Bakery ', '2023/126859/07', NULL, '2024 Returns O/S - In Business', 'Baking', '#fy24', 'Nkandla', NULL, NULL, NULL, 'Nkandla', '0818474624', 'zwanesusan89@gmail.com ', 'Mazikode Bakery ', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Nkandla', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(74, NULL, 'MDK Hair Salon', '2023/127081/07', NULL, '2024 Returns O/S - In Business', 'Hair & Beauty', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '066 000 3823', 'sliemthembu066@gmail.com', 'MDK Hair Salon', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(75, NULL, 'Mhlengi Woodwork', '2023/125764/07', NULL, '2024 Returns O/S - In Business', 'Manufacturing', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '062 596 3980', 'nompiloharmonite94@gmail.com', 'Mhlengi Woodwork', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(76, NULL, 'Mkhiloshi Consultants and projects', '2019/247819/07', NULL, 'Up to date - In Business', 'Internet Cafe', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0732975803/681022067', 'mkhiloshiconsultants@gmail.com', 'Mkhiloshi Consultants and projects', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2026-08-29', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(77, NULL, 'NG Xulu T/A Zandu Events', '2023/117388/07', NULL, 'Up to date - In Business', 'Events', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0818806590', 'singayex@gmail.com', 'NG Xulu T/A Zandu Events', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(78, NULL, 'Ngesibindi Enterprise', '2020/153716/07', NULL, '2025 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Merensee', NULL, NULL, NULL, 'Merensee', '0761737592', 'andilemokoatlo@gmail.com', 'Ngesibindi Enterprise', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Merensee', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(79, NULL, 'Nomnisi the event  planner ', '2023/872847/07', NULL, '2025 Returns O/S - In Business', 'Events', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '061 8842 855', 'nokwe.mthembu@icloud.com', 'Nomnisi the event  planner ', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2026-02-18', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(80, NULL, 'Nothani Carpentry Solutions (Pty) Ltd', '2023/123776/07', NULL, '2024 Returns O/S - In Business', 'Manufacturing', '#fy24', 'Ngwelezana', NULL, NULL, NULL, 'Ngwelezana', '081 3535 270', 'mthethwathubelihle1@gmail.com', 'Nothani Carpentry Solutions (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Ngwelezana', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(81, NULL, 'Owecebo-Mpangazitha Enterprise', '2023/842253/07', NULL, 'No returns filed 24/25 O/S - In Business', 'Internet Café', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '081 244 1377', 'junephakathi95@gmail.com', 'Owecebo-Mpangazitha Enterprise', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-06-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(82, NULL, 'Papas Spice café', '2016/052918/07', NULL, '2025 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0829590031', 'bhavanipather@gmail.com', 'Papas Spice café', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2023-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(83, NULL, 'Phelokazi\'s Devine Eats (Pty) Ltd', '2023/122096/07', NULL, '2024 Returns O/S - In Business', 'Food & Beverage', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0723566534', 'phelokazigxumisa20@gmail.com', 'Phelokazi\'s Devine Eats (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-26', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(84, NULL, 'Phumelobala Catering and Fashion Designers', '2006/066326/23', NULL, '2024/2025 O/S - In Business', 'Food & Beverage', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '0725578176', 'lungilendunakazi4@gmail.com', 'Phumelobala Catering and Fashion Designers', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-09-28', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(85, NULL, 'Phumusuthi Restaurant (Pty) Ltd', '2023/129157/07', NULL, '2024 Returns O/S - In Business', 'Food', '#fy24', 'Mzingazi', NULL, NULL, NULL, 'Mzingazi', NULL, 'nokuphilagen@gmail.com', 'Phumusuthi Restaurant (Pty) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-01', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Mzingazi', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(86, NULL, 'Queen Oyster (Pty) Ltd', '2023/126060/07', NULL, 'Up to date - In Business', 'Mushroom farmer', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0729114008', 'ntombizonke.shandy@gmail.com', 'Queen Oyster (Pty) Ltd', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-19', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(87, NULL, 'Rodco Engineering & Contruction', '2015/128540/07', NULL, '2024/2025 O/S - In Business', 'Engineering', '#fy24', 'Arboretum', NULL, NULL, NULL, 'Arboretum', '0718076435', 'rodcoeng@outlook.com', 'Rodco Engineering & Contruction', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-02-16', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Arboretum', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(88, NULL, 'Saito', '2016/007643/07', NULL, 'Up to date - In Business', 'Appliance Rental', '#fy24', 'Kwa Dlangezwa', NULL, NULL, NULL, 'Kwa Dlangezwa', '0732256522', 'saitoappliances@gmail.com', 'Saito', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 1, 0, 0, 1, 'Valid', '2026-08-21', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Kwa Dlangezwa', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(89, NULL, 'Sakhumuzi Hand Craft Art ', '2023/811522/07', NULL, '24/25 O/S - Deregistration in progress', 'Manufacturing', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0712665298', 'sakhumuzizungu678@gmail.com', 'Sakhumuzi Hand Craft Art ', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-06-12', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(90, NULL, 'SHE Inter Café (Pty) Ltd', '2023/129679/07', NULL, '2024 Returns O/S - In Business', 'Internet Café', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '072-525-6303', 'ernestandvusiinternetcafe@gmail.com', 'SHE Inter Café (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(91, NULL, 'Sifezekile Shiya (PTY) Ltd', '2023/804600/07', NULL, '2024/2025 O/S - In Business', 'Baking', '#fy24', 'Felixton', NULL, NULL, NULL, 'Felixton', '0767653139', 'lindelwendlazi@gmail.com', 'Sifezekile Shiya (PTY) Ltd', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Felixton', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(92, NULL, 'Sydney Mabaso Arts (Pty) Ltd', '2023/124978/07', NULL, '2024/2025 O/S - In Business', 'Art', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '083 580 9803/ 083 691 3270', 'thulanisydney932@gmail.com', 'Sydney Mabaso Arts (Pty) Ltd', 0, 1, 0, 'Over 35', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-09-27', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(93, NULL, 'Treacly Treats', '2023/132428/07', NULL, '2024/2025 O/S - In Business', 'Baking', '#fy24', 'Empangeni', NULL, NULL, NULL, 'Empangeni', '0815953644', 'phiwortile@icloud.com', 'Treacly Treats', 1, 1, 1, 'Youth', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-10-02', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Empangeni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(94, NULL, 'Under African Skies', '2007/141891/23', NULL, 'Up to date - In Business', 'Tourism', '#fy24', 'Richards Bay', NULL, NULL, NULL, 'Richards Bay', '0761496051', 'info@underafricanskies.africa', 'Under African Skies', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2024-04-23', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Richards Bay', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(95, NULL, 'V3 Auto', '2021/139799/07', NULL, 'Up to date - In Business', 'Automotive', '#fy24', 'Aquadene', NULL, NULL, NULL, 'Aquadene', '076 945 0867', 'v3auto.info@gmail.com', 'V3 Auto', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2025-07-16', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Aquadene', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(96, NULL, 'Zano Magic Hands', '2023/831307/07', NULL, '2024/2025 O/S - In Business', 'Hair & Beauty', '#fy24', 'Esikhawini', NULL, NULL, NULL, 'Esikhawini', '076 559 9540', 'gzanokuhlehlengiwe@gmail.com', 'Zano Magic Hands', 0, 1, 1, 'Over 35', 'Black Owned', 'BlackWomen', NULL, 0, 0, 0, 1, 'Expired', '2022-06-22', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Esikhawini', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64),
+(97, NULL, 'Zanokuhle Trading and General Service', '2022/752286/07', NULL, 'Up to date - In Business', 'Food & Beverage', '#fy24', 'Enseleni', NULL, NULL, NULL, 'Enseleni', '0783628777', 'sqinisekomyeza@yahoo.com/ thandekafakude959@gmail.com', 'Zanokuhle Trading and General Service', 1, 1, 0, 'Youth', 'Black Owned', NULL, NULL, 0, 0, 0, 1, 'Expired', '2024-05-14', NULL, NULL, NULL, NULL, NULL, 0, 0, 'Enseleni', '2025-09-19 06:27:14', '2025-10-04 07:03:25', 64);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_accounts`
+--
+
+CREATE TABLE `company_accounts` (
+  `id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `account_name` varchar(150) NOT NULL,
+  `account_type` enum('domestic_revenue','export_revenue','expense','other') DEFAULT 'domestic_revenue',
+  `description` text,
+  `account_number` varchar(50) DEFAULT NULL,
+  `attachments` json DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_accounts`
+--
+
+INSERT INTO `company_accounts` (`id`, `company_id`, `account_name`, `account_type`, `description`, `account_number`, `attachments`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 59, 'Main Account', 'domestic_revenue', 'Default primary account for 035 Freshcuts (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(2, 1, 'The Main Account', 'domestic_revenue', 'Default primary account for Agrimika Holdings', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-16 03:37:42'),
+(3, 2, 'Main Account', 'domestic_revenue', 'Default primary account for Alondekuhle', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(4, 3, 'Main Account', 'domestic_revenue', 'Default primary account for Amatshana Holdings', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(5, 60, 'Main Account', 'domestic_revenue', 'Default primary account for Amorh  Group ', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(6, 4, 'Main Account', 'domestic_revenue', 'Default primary account for Asakhe Hardware', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(7, 61, 'Main Account', 'domestic_revenue', 'Default primary account for Avukile Amancwane', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(8, 5, 'Main Account', 'domestic_revenue', 'Default primary account for Bafisha', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(9, 62, 'Main Account', 'domestic_revenue', 'Default primary account for Basi Group (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(10, 6, 'Main Account', 'domestic_revenue', 'Default primary account for Bayanolwa', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(11, 7, 'Main Account', 'domestic_revenue', 'Default primary account for Bourwa Project and Consulting', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(12, 63, 'Main Account', 'domestic_revenue', 'Default primary account for Chalah04 Mixed Farm (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(13, 8, 'Main Account', 'domestic_revenue', 'Default primary account for Chaliluque Services', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(14, 9, 'Main Account', 'domestic_revenue', 'Default primary account for Chule Enterprise and Logistics', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(15, 10, 'Main Account', 'domestic_revenue', 'Default primary account for Dlakadla Holdings', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(16, 11, 'Main Account', 'domestic_revenue', 'Default primary account for Dongelihle Enterprises', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(17, 12, 'Main Account', 'domestic_revenue', 'Default primary account for Fefe Willy Beauty', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(18, 13, 'Main Account', 'domestic_revenue', 'Default primary account for FNS Visuals', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(19, 64, 'Main Account', 'domestic_revenue', 'Default primary account for Gugulethu Plumbing and renovations', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(20, 65, 'Main Account', 'domestic_revenue', 'Default primary account for Ikhaya Lezimomondiya', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(21, 14, 'Main Account', 'domestic_revenue', 'Default primary account for Ikhonabox Lifestyle', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(22, 15, 'Main Account', 'domestic_revenue', 'Default primary account for Illuminous Pictures', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(23, 66, 'Main Account', 'domestic_revenue', 'Default primary account for Imamba Crafters (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(24, 67, 'Main Account', 'domestic_revenue', 'Default primary account for Impilo Entertainment', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(25, 16, 'Main Account', 'domestic_revenue', 'Default primary account for Izwelethu Developments', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(26, 68, 'Main Account', 'domestic_revenue', 'Default primary account for Jele Group t/a Wynes Acessories', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(27, 69, 'Main Account', 'domestic_revenue', 'Default primary account for Kapito Arts (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(28, 70, 'Main Account', 'domestic_revenue', 'Default primary account for KU Greenhands', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(29, 71, 'Main Account', 'domestic_revenue', 'Default primary account for KwaRichboy Trading', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(30, 17, 'Main Account', 'domestic_revenue', 'Default primary account for Legendary S Academy and Training', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(31, 72, 'Main Account', 'domestic_revenue', 'Default primary account for M2023 Projects (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(32, 73, 'Main Account', 'domestic_revenue', 'Default primary account for Mazikode Bakery ', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(33, 74, 'Main Account', 'domestic_revenue', 'Default primary account for MDK Hair Salon', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(34, 18, 'Main Account', 'domestic_revenue', 'Default primary account for Mesda Bed and Breakfast', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(35, 75, 'Main Account', 'domestic_revenue', 'Default primary account for Mhlengi Woodwork', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(36, 76, 'Main Account', 'domestic_revenue', 'Default primary account for Mkhiloshi Consultants and projects', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(37, 19, 'Main Account', 'domestic_revenue', 'Default primary account for Mkhunji Trading and Enterprises', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(38, 77, 'Main Account', 'domestic_revenue', 'Default primary account for NG Xulu T/A Zandu Events', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(39, 78, 'Main Account', 'domestic_revenue', 'Default primary account for Ngesibindi Enterprise', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(40, 79, 'Main Account', 'domestic_revenue', 'Default primary account for Nomnisi the event  planner ', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(41, 80, 'Main Account', 'domestic_revenue', 'Default primary account for Nothani Carpentry Solutions (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(42, 20, 'Main Account', 'domestic_revenue', 'Default primary account for Ntwaworld (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(43, 81, 'Main Account', 'domestic_revenue', 'Default primary account for Owecebo-Mpangazitha Enterprise', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(44, 82, 'Main Account', 'domestic_revenue', 'Default primary account for Papas Spice café', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(45, 21, 'Main Account', 'domestic_revenue', 'Default primary account for Perfectionist Fashion Design', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(46, 83, 'Main Account', 'domestic_revenue', 'Default primary account for Phelokazi\'s Devine Eats (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(47, 84, 'Main Account', 'domestic_revenue', 'Default primary account for Phumelobala Catering and Fashion Designers', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(48, 85, 'Main Account', 'domestic_revenue', 'Default primary account for Phumusuthi Restaurant (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(49, 22, 'Main Account', 'domestic_revenue', 'Default primary account for Pure Vawter', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(50, 86, 'Main Account', 'domestic_revenue', 'Default primary account for Queen Oyster (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(51, 23, 'Main Account', 'domestic_revenue', 'Default primary account for Recovery Credit Dispute', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(52, 87, 'Main Account', 'domestic_revenue', 'Default primary account for Rodco Engineering & Contruction', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(53, 24, 'Main Account', 'domestic_revenue', 'Default primary account for S Dube Services', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(54, 88, 'Main Account', 'domestic_revenue', 'Default primary account for Saito', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(55, 89, 'Main Account', 'domestic_revenue', 'Default primary account for Sakhumuzi Hand Craft Art ', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(56, 90, 'Main Account', 'domestic_revenue', 'Default primary account for SHE Inter Café (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(57, 25, 'Main Account', 'domestic_revenue', 'Default primary account for Shepard Media and Communications', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(58, 91, 'Main Account', 'domestic_revenue', 'Default primary account for Sifezekile Shiya (PTY) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(59, 26, 'Main Account', 'domestic_revenue', 'Default primary account for Signergy Signs (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(60, 27, 'Main Account', 'domestic_revenue', 'Default primary account for Siyaqhuba Electrical', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(61, 28, 'Main Account', 'domestic_revenue', 'Default primary account for SK and Mvelo Holdings', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(62, 29, 'Main Account', 'domestic_revenue', 'Default primary account for SmaEve Designs ', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(63, 30, 'Main Account', 'domestic_revenue', 'Default primary account for Snekhethelo Business Enterprise', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(64, 31, 'Main Account', 'domestic_revenue', 'Default primary account for SNV Solutions', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(65, 32, 'Main Account', 'domestic_revenue', 'Default primary account for Sokhulu and Partners Car Hire', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(66, 33, 'Main Account', 'domestic_revenue', 'Default primary account for Solwakhe', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(67, 34, 'Main Account', 'domestic_revenue', 'Default primary account for Sthenjwa Visuals', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(68, 92, 'Main Account', 'domestic_revenue', 'Default primary account for Sydney Mabaso Arts (Pty) Ltd', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(69, 35, 'Main Account', 'domestic_revenue', 'Default primary account for Thabza Net', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(70, 36, 'Main Account', 'domestic_revenue', 'Default primary account for Thulys Fast Food', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(71, 93, 'Main Account', 'domestic_revenue', 'Default primary account for Treacly Treats', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(72, 37, 'Main Account', 'domestic_revenue', 'Default primary account for TSCUAA', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(73, 38, 'Main Account', 'domestic_revenue', 'Default primary account for Umathole Amahle', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(74, 94, 'Main Account', 'domestic_revenue', 'Default primary account for Under African Skies', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(75, 95, 'Main Account', 'domestic_revenue', 'Default primary account for V3 Auto', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(76, 39, 'Main Account', 'domestic_revenue', 'Default primary account for VBM Legacy', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(77, 40, 'Main Account', 'domestic_revenue', 'Default primary account for Vuks Engineering and Construction', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(78, 96, 'Main Account', 'domestic_revenue', 'Default primary account for Zano Magic Hands', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(79, 97, 'Main Account', 'domestic_revenue', 'Default primary account for Zanokuhle Trading and General Service', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
+(80, 1, 'KZN Art Inst ', 'domestic_revenue', '', '', NULL, 1, '2025-10-16 02:35:24', '2025-10-16 04:16:10'),
+(84, 1, 'Final Test Account 045346', 'domestic_revenue', 'Final test after all fixes', 'FIN-861', NULL, 1, '2025-10-16 02:53:46', '2025-10-16 02:56:18');
 
 -- --------------------------------------------------------
 
@@ -292,9 +427,9 @@ CREATE TABLE `company_financials` (
   `year` smallint NOT NULL,
   `month` tinyint NOT NULL,
   `turnover_monthly_avg` decimal(14,2) DEFAULT NULL,
-  `quarter` tinyint GENERATED ALWAYS AS (quarter(`period_date`)) STORED,
+  `quarter` tinyint DEFAULT NULL,
   `is_pre_ignition` tinyint(1) NOT NULL DEFAULT '0',
-  `quarter_label` varchar(2) GENERATED ALWAYS AS (concat(_utf8mb4'Q',`quarter`)) STORED,
+  `quarter_label` varchar(2) DEFAULT NULL,
   `turnover` decimal(14,2) DEFAULT NULL,
   `cost_of_sales` decimal(14,2) DEFAULT NULL,
   `business_expenses` decimal(14,2) DEFAULT NULL,
@@ -317,445 +452,626 @@ CREATE TABLE `company_financials` (
 -- Dumping data for table `company_financials`
 --
 
-INSERT INTO `company_financials` (`id`, `company_id`, `period_date`, `year`, `month`, `turnover_monthly_avg`, `is_pre_ignition`, `turnover`, `cost_of_sales`, `business_expenses`, `gross_profit`, `net_profit`, `gp_margin`, `np_margin`, `cash_on_hand`, `debtors`, `creditors`, `inventory_on_hand`, `working_capital_ratio`, `net_assets`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 1, '2025-02-01', 2025, 2, 14236.00, 0, 14236.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(2, 1, '2025-01-01', 2025, 1, 43010.00, 0, 43010.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(3, 1, '2024-12-01', 2024, 12, 56091.00, 0, 56091.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(4, 1, '2024-11-01', 2024, 11, 23108.00, 0, 23108.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(5, 1, '2024-10-01', 2024, 10, 12669.00, 0, 12669.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(6, 1, '2024-09-01', 2024, 9, 17529.00, 0, 17529.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(7, 1, '2024-08-01', 2024, 8, 30842.00, 0, 30842.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(8, 1, '2024-07-01', 2024, 7, 12176.00, 0, 12176.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(9, 1, '2024-06-01', 2024, 6, 15062.00, 0, 15062.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(10, 1, '2024-05-01', 2024, 5, 18922.00, 0, 18922.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(11, 1, '2024-04-01', 2024, 4, 22436.00, 0, 22436.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(12, 1, '2024-03-01', 2024, 3, 15745.00, 0, 15745.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(13, 2, '2025-02-01', 2025, 2, 89.00, 0, 89.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(14, 2, '2025-01-01', 2025, 1, 14007.00, 0, 14007.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(15, 2, '2024-12-01', 2024, 12, 17097.00, 0, 17097.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(16, 2, '2024-11-01', 2024, 11, 15100.00, 0, 15100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(17, 2, '2024-10-01', 2024, 10, 5437.00, 0, 5437.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(18, 2, '2024-09-01', 2024, 9, 7042.00, 0, 7042.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(19, 2, '2024-08-01', 2024, 8, 5238.00, 0, 5238.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(20, 2, '2024-07-01', 2024, 7, 16350.00, 0, 16350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(21, 2, '2024-06-01', 2024, 6, 12660.00, 0, 12660.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(22, 2, '2024-05-01', 2024, 5, 16586.00, 0, 16586.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(23, 2, '2024-04-01', 2024, 4, 11310.00, 0, 11310.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(24, 2, '2024-03-01', 2024, 3, 25170.00, 0, 25170.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(25, 3, '2025-02-01', 2025, 2, 32371.00, 0, 32371.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(26, 3, '2025-01-01', 2025, 1, 21012.00, 0, 21012.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(27, 3, '2024-12-01', 2024, 12, 35988.00, 0, 35988.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(28, 3, '2024-11-01', 2024, 11, 30176.00, 0, 30176.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(29, 3, '2024-10-01', 2024, 10, 28659.00, 0, 28659.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(30, 3, '2024-09-01', 2024, 9, 26044.00, 0, 26044.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(31, 3, '2024-08-01', 2024, 8, 12500.00, 0, 12500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(32, 3, '2024-07-01', 2024, 7, 10852.00, 0, 10852.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(33, 3, '2024-06-01', 2024, 6, 6913.00, 0, 6913.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(34, 3, '2024-05-01', 2024, 5, 16607.00, 0, 16607.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(35, 3, '2024-04-01', 2024, 4, 15607.00, 0, 15607.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(36, 3, '2024-03-01', 2024, 3, 16894.00, 0, 16894.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(37, 4, '2025-01-01', 2025, 1, 30438.00, 0, 30438.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(38, 4, '2024-12-01', 2024, 12, 550.00, 0, 550.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(39, 4, '2024-11-01', 2024, 11, 74173.00, 0, 74173.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(40, 4, '2024-10-01', 2024, 10, 49712.00, 0, 49712.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(41, 4, '2024-09-01', 2024, 9, 19466.00, 0, 19466.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(42, 4, '2024-08-01', 2024, 8, 35194.00, 0, 35194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(43, 4, '2024-07-01', 2024, 7, 70345.00, 0, 70345.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(44, 4, '2024-06-01', 2024, 6, 10770.00, 0, 10770.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(45, 4, '2024-05-01', 2024, 5, 57851.00, 0, 57851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(46, 4, '2024-04-01', 2024, 4, 46672.00, 0, 46672.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(47, 4, '2024-03-01', 2024, 3, 1000.00, 0, 1000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(48, 5, '2025-02-01', 2025, 2, 15127.00, 0, 15127.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(49, 5, '2025-01-01', 2025, 1, 6714.00, 0, 6714.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(50, 5, '2024-12-01', 2024, 12, 7824.00, 0, 7824.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(51, 5, '2024-11-01', 2024, 11, 9908.00, 0, 9908.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(52, 5, '2024-10-01', 2024, 10, 10765.00, 0, 10765.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(53, 5, '2024-09-01', 2024, 9, 21838.00, 0, 21838.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(54, 5, '2024-08-01', 2024, 8, 13996.00, 0, 13996.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(55, 5, '2024-07-01', 2024, 7, 20699.00, 0, 20699.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(56, 5, '2024-06-01', 2024, 6, 11106.00, 0, 11106.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(57, 5, '2024-05-01', 2024, 5, 19470.00, 0, 19470.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(58, 5, '2024-04-01', 2024, 4, 11385.00, 0, 11385.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(59, 5, '2024-03-01', 2024, 3, 13403.00, 0, 13403.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(60, 6, '2025-02-01', 2025, 2, 3106.00, 0, 3106.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(61, 6, '2025-01-01', 2025, 1, 15568.00, 0, 15568.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(62, 6, '2024-12-01', 2024, 12, 8347.00, 0, 8347.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(63, 6, '2024-11-01', 2024, 11, 4721.00, 0, 4721.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(64, 6, '2024-10-01', 2024, 10, 5688.00, 0, 5688.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(65, 6, '2024-09-01', 2024, 9, 1867.00, 0, 1867.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(66, 6, '2024-08-01', 2024, 8, 12904.00, 0, 12904.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(67, 6, '2024-07-01', 2024, 7, 4560.00, 0, 4560.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(68, 6, '2024-06-01', 2024, 6, 6882.00, 0, 6882.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(69, 6, '2024-05-01', 2024, 5, 3170.00, 0, 3170.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(70, 6, '2024-04-01', 2024, 4, 1930.00, 0, 1930.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(71, 6, '2024-03-01', 2024, 3, 4742.00, 0, 4742.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(72, 7, '2025-01-01', 2025, 1, 80855.00, 0, 80855.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(73, 7, '2024-12-01', 2024, 12, 531.00, 0, 531.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(74, 7, '2024-11-01', 2024, 11, 488.00, 0, 488.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(75, 7, '2024-08-01', 2024, 8, 40141.00, 0, 40141.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(76, 7, '2024-07-01', 2024, 7, 24001.00, 0, 24001.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(77, 7, '2024-06-01', 2024, 6, 130.00, 0, 130.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(78, 7, '2024-05-01', 2024, 5, 28579.00, 0, 28579.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(79, 7, '2024-04-01', 2024, 4, 76252.00, 0, 76252.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(80, 8, '2025-02-01', 2025, 2, 1100.00, 0, 1100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(81, 8, '2025-01-01', 2025, 1, 2150.00, 0, 2150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(82, 8, '2024-12-01', 2024, 12, 7200.00, 0, 7200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(83, 8, '2024-11-01', 2024, 11, 24087.00, 0, 24087.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(84, 8, '2024-10-01', 2024, 10, 2150.00, 0, 2150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(85, 8, '2024-08-01', 2024, 8, 21937.00, 0, 21937.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(86, 8, '2024-06-01', 2024, 6, 1500.00, 0, 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(87, 8, '2024-05-01', 2024, 5, 1200.00, 0, 1200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(88, 8, '2024-04-01', 2024, 4, 5075.00, 0, 5075.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(89, 8, '2024-03-01', 2024, 3, 5375.00, 0, 5375.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(90, 9, '2025-02-01', 2025, 2, 51520.00, 0, 51520.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(91, 9, '2025-01-01', 2025, 1, 20978.00, 0, 20978.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(92, 9, '2024-12-01', 2024, 12, 25240.00, 0, 25240.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(93, 9, '2024-11-01', 2024, 11, 14248.00, 0, 14248.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(94, 9, '2024-10-01', 2024, 10, 25483.00, 0, 25483.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(95, 9, '2024-09-01', 2024, 9, 12060.00, 0, 12060.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(96, 9, '2024-08-01', 2024, 8, 22034.00, 0, 22034.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(97, 9, '2024-07-01', 2024, 7, 17954.00, 0, 17954.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(98, 9, '2024-06-01', 2024, 6, 10563.00, 0, 10563.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(99, 9, '2024-05-01', 2024, 5, 25544.00, 0, 25544.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(100, 9, '2024-04-01', 2024, 4, 121001.00, 0, 121001.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(101, 9, '2024-03-01', 2024, 3, 16820.00, 0, 16820.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(102, 10, '2025-02-01', 2025, 2, 5700.00, 0, 5700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(103, 10, '2025-01-01', 2025, 1, 27372.00, 0, 27372.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(104, 10, '2024-12-01', 2024, 12, 7490.00, 0, 7490.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(105, 10, '2024-11-01', 2024, 11, 25496.00, 0, 25496.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(106, 10, '2024-10-01', 2024, 10, 32827.00, 0, 32827.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(107, 10, '2024-09-01', 2024, 9, 4730.00, 0, 4730.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(108, 10, '2024-08-01', 2024, 8, 11830.00, 0, 11830.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(109, 10, '2024-07-01', 2024, 7, 13450.00, 0, 13450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(110, 10, '2024-06-01', 2024, 6, 1500.00, 0, 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(111, 10, '2024-05-01', 2024, 5, 16000.00, 0, 16000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(112, 12, '2025-02-01', 2025, 2, 38000.00, 0, 38000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(113, 12, '2025-01-01', 2025, 1, 52000.00, 0, 52000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(114, 12, '2024-12-01', 2024, 12, 60000.00, 0, 60000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(115, 12, '2024-11-01', 2024, 11, 29000.00, 0, 29000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(116, 12, '2024-10-01', 2024, 10, 57000.00, 0, 57000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(117, 12, '2024-09-01', 2024, 9, 53000.00, 0, 53000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(118, 12, '2024-08-01', 2024, 8, 41000.00, 0, 41000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(119, 12, '2024-07-01', 2024, 7, 35000.00, 0, 35000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(120, 12, '2024-06-01', 2024, 6, 28200.00, 0, 28200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(121, 12, '2024-05-01', 2024, 5, 67815.00, 0, 67815.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(122, 12, '2024-04-01', 2024, 4, 40206.00, 0, 40206.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(123, 12, '2024-03-01', 2024, 3, 53109.00, 0, 53109.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(124, 13, '2025-02-01', 2025, 2, 8003.00, 0, 8003.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(125, 13, '2025-01-01', 2025, 1, 10.00, 0, 10.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(126, 13, '2024-12-01', 2024, 12, 10058.00, 0, 10058.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(127, 13, '2024-11-01', 2024, 11, 1651.00, 0, 1651.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(128, 13, '2024-10-01', 2024, 10, 10512.00, 0, 10512.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(129, 13, '2024-09-01', 2024, 9, 6252.00, 0, 6252.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(130, 13, '2024-08-01', 2024, 8, 1710.00, 0, 1710.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(131, 13, '2024-07-01', 2024, 7, 12054.00, 0, 12054.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(132, 13, '2024-06-01', 2024, 6, 11324.00, 0, 11324.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(133, 13, '2024-05-01', 2024, 5, 11408.00, 0, 11408.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(134, 13, '2024-04-01', 2024, 4, 12783.00, 0, 12783.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(135, 13, '2024-03-01', 2024, 3, 6619.00, 0, 6619.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(136, 14, '2025-02-01', 2025, 2, 14443.00, 0, 14443.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(137, 14, '2025-01-01', 2025, 1, 15673.00, 0, 15673.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(138, 14, '2024-12-01', 2024, 12, 22845.00, 0, 22845.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(139, 14, '2024-11-01', 2024, 11, 17541.00, 0, 17541.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(140, 14, '2024-10-01', 2024, 10, 10577.00, 0, 10577.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(141, 14, '2024-09-01', 2024, 9, 3650.00, 0, 3650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(142, 14, '2024-08-01', 2024, 8, 750.00, 0, 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(143, 14, '2024-06-01', 2024, 6, 320.00, 0, 320.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(144, 14, '2024-05-01', 2024, 5, 4120.00, 0, 4120.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(145, 14, '2024-03-01', 2024, 3, 200.00, 0, 200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(146, 15, '2025-02-01', 2025, 2, 7215.00, 0, 7215.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(147, 15, '2025-01-01', 2025, 1, 1560.00, 0, 1560.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(148, 15, '2024-12-01', 2024, 12, 9460.00, 0, 9460.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(149, 15, '2024-11-01', 2024, 11, 55425.00, 0, 55425.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(150, 15, '2024-10-01', 2024, 10, 2750.00, 0, 2750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(151, 15, '2024-09-01', 2024, 9, 10700.00, 0, 10700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(152, 15, '2024-08-01', 2024, 8, 4291.00, 0, 4291.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(153, 15, '2024-07-01', 2024, 7, 1000.00, 0, 1000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(154, 15, '2024-06-01', 2024, 6, 12925.00, 0, 12925.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(155, 15, '2024-05-01', 2024, 5, 7584.00, 0, 7584.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(156, 15, '2024-04-01', 2024, 4, 3999.00, 0, 3999.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(157, 15, '2024-03-01', 2024, 3, 9340.00, 0, 9340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(158, 16, '2025-02-01', 2025, 2, 3500.00, 0, 3500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(159, 16, '2025-01-01', 2025, 1, 1500.00, 0, 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(160, 16, '2024-12-01', 2024, 12, 12708.00, 0, 12708.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(161, 16, '2024-11-01', 2024, 11, 10876.00, 0, 10876.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(162, 16, '2024-10-01', 2024, 10, 9549.00, 0, 9549.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(163, 16, '2024-09-01', 2024, 9, 22057.00, 0, 22057.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(164, 16, '2024-08-01', 2024, 8, 7154.00, 0, 7154.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(165, 16, '2024-07-01', 2024, 7, 11300.00, 0, 11300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(166, 16, '2024-06-01', 2024, 6, 33000.00, 0, 33000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(167, 16, '2024-05-01', 2024, 5, 1200.00, 0, 1200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(168, 16, '2024-04-01', 2024, 4, 12673.00, 0, 12673.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(169, 16, '2024-03-01', 2024, 3, 5000.00, 0, 5000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(170, 17, '2025-02-01', 2025, 2, 36796.00, 0, 36796.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(171, 17, '2025-01-01', 2025, 1, 49904.00, 0, 49904.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(172, 17, '2024-12-01', 2024, 12, 17451.00, 0, 17451.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(173, 17, '2024-11-01', 2024, 11, 29481.00, 0, 29481.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(174, 17, '2024-10-01', 2024, 10, 25858.00, 0, 25858.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(175, 17, '2024-08-01', 2024, 8, 24103.00, 0, 24103.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(176, 17, '2024-07-01', 2024, 7, 37132.00, 0, 37132.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(177, 17, '2024-06-01', 2024, 6, 12534.00, 0, 12534.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(178, 17, '2024-05-01', 2024, 5, 24044.00, 0, 24044.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(179, 17, '2024-04-01', 2024, 4, 42722.00, 0, 42722.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(180, 17, '2024-03-01', 2024, 3, 14389.00, 0, 14389.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(181, 18, '2024-12-01', 2024, 12, 5703.00, 0, 5703.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(182, 18, '2024-11-01', 2024, 11, 18250.00, 0, 18250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(183, 18, '2024-10-01', 2024, 10, 40950.00, 0, 40950.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(184, 18, '2024-09-01', 2024, 9, 38917.00, 0, 38917.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(185, 18, '2024-08-01', 2024, 8, 33835.00, 0, 33835.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(186, 18, '2024-07-01', 2024, 7, 25365.00, 0, 25365.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(187, 18, '2024-06-01', 2024, 6, 10850.00, 0, 10850.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(188, 19, '2025-02-01', 2025, 2, 7200.00, 0, 7200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(189, 19, '2025-01-01', 2025, 1, 16712.00, 0, 16712.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(190, 19, '2024-12-01', 2024, 12, 10100.00, 0, 10100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(191, 19, '2024-11-01', 2024, 11, 27150.00, 0, 27150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(192, 19, '2024-10-01', 2024, 10, 25250.00, 0, 25250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(193, 19, '2024-09-01', 2024, 9, 26653.00, 0, 26653.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(194, 19, '2024-08-01', 2024, 8, 8020.00, 0, 8020.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(195, 19, '2024-07-01', 2024, 7, 8120.00, 0, 8120.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(196, 19, '2024-06-01', 2024, 6, 8150.00, 0, 8150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(197, 19, '2024-05-01', 2024, 5, 4400.00, 0, 4400.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(198, 19, '2024-04-01', 2024, 4, 10000.00, 0, 10000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(199, 19, '2024-03-01', 2024, 3, 1550.00, 0, 1550.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(200, 20, '2025-02-01', 2025, 2, 150.00, 0, 150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(201, 20, '2025-01-01', 2025, 1, 230.00, 0, 230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(202, 20, '2024-12-01', 2024, 12, 700.00, 0, 700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(203, 20, '2024-11-01', 2024, 11, 131900.00, 0, 131900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(204, 20, '2024-10-01', 2024, 10, 3950.00, 0, 3950.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(205, 20, '2024-09-01', 2024, 9, 7655.00, 0, 7655.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(206, 20, '2024-08-01', 2024, 8, 65194.00, 0, 65194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(207, 20, '2024-07-01', 2024, 7, 8000.00, 0, 8000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(208, 20, '2024-06-01', 2024, 6, 31084.00, 0, 31084.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(209, 20, '2024-05-01', 2024, 5, 14800.00, 0, 14800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(210, 20, '2024-04-01', 2024, 4, 64800.00, 0, 64800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(211, 20, '2024-03-01', 2024, 3, 200.00, 0, 200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(212, 21, '2025-02-01', 2025, 2, 2300.00, 0, 2300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(213, 21, '2025-01-01', 2025, 1, 5295.00, 0, 5295.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(214, 21, '2024-12-01', 2024, 12, 23520.00, 0, 23520.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(215, 21, '2024-11-01', 2024, 11, 18682.00, 0, 18682.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(216, 21, '2024-10-01', 2024, 10, 20557.00, 0, 20557.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(217, 21, '2024-09-01', 2024, 9, 3190.00, 0, 3190.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(218, 21, '2024-08-01', 2024, 8, 6202.00, 0, 6202.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(219, 21, '2024-07-01', 2024, 7, 28668.00, 0, 28668.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(220, 21, '2024-06-01', 2024, 6, 16524.00, 0, 16524.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(221, 21, '2024-05-01', 2024, 5, 18980.00, 0, 18980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(222, 21, '2024-04-01', 2024, 4, 7127.00, 0, 7127.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(223, 21, '2024-03-01', 2024, 3, 4600.00, 0, 4600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(224, 22, '2025-02-01', 2025, 2, 11223.00, 0, 11223.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(225, 22, '2025-01-01', 2025, 1, 16899.00, 0, 16899.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(226, 22, '2024-12-01', 2024, 12, 11980.00, 0, 11980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(227, 22, '2024-11-01', 2024, 11, 37987.00, 0, 37987.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(228, 22, '2024-10-01', 2024, 10, 17313.00, 0, 17313.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(229, 22, '2024-09-01', 2024, 9, 8592.00, 0, 8592.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(230, 22, '2024-08-01', 2024, 8, 34082.00, 0, 34082.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(231, 22, '2024-07-01', 2024, 7, 9230.00, 0, 9230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(232, 22, '2024-06-01', 2024, 6, 5080.00, 0, 5080.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(233, 22, '2024-05-01', 2024, 5, 4934.00, 0, 4934.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(234, 22, '2024-04-01', 2024, 4, 7271.00, 0, 7271.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(235, 22, '2024-03-01', 2024, 3, 13821.00, 0, 13821.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(236, 23, '2025-02-01', 2025, 2, 38540.00, 0, 38540.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(237, 23, '2025-01-01', 2025, 1, 34134.00, 0, 34134.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(238, 23, '2024-12-01', 2024, 12, 44333.00, 0, 44333.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(239, 23, '2024-11-01', 2024, 11, 51729.00, 0, 51729.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(240, 23, '2024-10-01', 2024, 10, 40122.00, 0, 40122.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(241, 23, '2024-09-01', 2024, 9, 41508.00, 0, 41508.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(242, 23, '2024-08-01', 2024, 8, 47328.00, 0, 47328.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(243, 23, '2024-07-01', 2024, 7, 54309.00, 0, 54309.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(244, 23, '2024-06-01', 2024, 6, 50101.00, 0, 50101.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(245, 23, '2024-05-01', 2024, 5, 37594.00, 0, 37594.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(246, 23, '2024-04-01', 2024, 4, 47402.00, 0, 47402.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(247, 23, '2024-03-01', 2024, 3, 3809.00, 0, 3809.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(248, 24, '2025-02-01', 2025, 2, 8330.00, 0, 8330.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(249, 24, '2025-01-01', 2025, 1, 23254.00, 0, 23254.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(250, 24, '2024-12-01', 2024, 12, 20063.00, 0, 20063.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(251, 24, '2024-11-01', 2024, 11, 19962.00, 0, 19962.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(252, 24, '2024-10-01', 2024, 10, 15445.00, 0, 15445.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(253, 24, '2024-09-01', 2024, 9, 3747.00, 0, 3747.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(254, 24, '2024-08-01', 2024, 8, 16800.00, 0, 16800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(255, 24, '2024-07-01', 2024, 7, 25241.00, 0, 25241.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(256, 24, '2024-06-01', 2024, 6, 18347.00, 0, 18347.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(257, 24, '2024-05-01', 2024, 5, 16600.00, 0, 16600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(258, 24, '2024-04-01', 2024, 4, 3475.00, 0, 3475.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(259, 24, '2024-03-01', 2024, 3, 1943.00, 0, 1943.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(260, 27, '2025-02-01', 2025, 2, 20260.00, 0, 20260.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(261, 27, '2025-01-01', 2025, 1, 15981.00, 0, 15981.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(262, 27, '2024-12-01', 2024, 12, 17844.00, 0, 17844.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(263, 27, '2024-11-01', 2024, 11, 73817.00, 0, 73817.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(264, 27, '2024-10-01', 2024, 10, 27776.00, 0, 27776.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(265, 27, '2024-09-01', 2024, 9, 23423.00, 0, 23423.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(266, 27, '2024-08-01', 2024, 8, 22781.00, 0, 22781.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(267, 27, '2024-07-01', 2024, 7, 15043.00, 0, 15043.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(268, 27, '2024-06-01', 2024, 6, 17936.00, 0, 17936.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(269, 27, '2024-05-01', 2024, 5, 50785.00, 0, 50785.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(270, 27, '2024-04-01', 2024, 4, 10577.00, 0, 10577.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(271, 27, '2024-03-01', 2024, 3, 41530.00, 0, 41530.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(272, 28, '2025-02-01', 2025, 2, 21622.00, 0, 21622.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(273, 28, '2025-01-01', 2025, 1, 20340.00, 0, 20340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(274, 28, '2024-12-01', 2024, 12, 33970.00, 0, 33970.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(275, 28, '2024-11-01', 2024, 11, 23200.00, 0, 23200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(276, 28, '2024-10-01', 2024, 10, 18460.00, 0, 18460.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(277, 28, '2024-09-01', 2024, 9, 17749.00, 0, 17749.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(278, 28, '2024-08-01', 2024, 8, 10540.00, 0, 10540.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(279, 28, '2024-07-01', 2024, 7, 250.00, 0, 250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03');
-INSERT INTO `company_financials` (`id`, `company_id`, `period_date`, `year`, `month`, `turnover_monthly_avg`, `is_pre_ignition`, `turnover`, `cost_of_sales`, `business_expenses`, `gross_profit`, `net_profit`, `gp_margin`, `np_margin`, `cash_on_hand`, `debtors`, `creditors`, `inventory_on_hand`, `working_capital_ratio`, `net_assets`, `notes`, `created_at`, `updated_at`) VALUES
-(280, 28, '2024-06-01', 2024, 6, 750.00, 0, 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(281, 28, '2024-05-01', 2024, 5, 8350.00, 0, 8350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(282, 28, '2024-04-01', 2024, 4, 8000.00, 0, 8000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(283, 28, '2024-03-01', 2024, 3, 600.00, 0, 600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(284, 30, '2025-02-01', 2025, 2, 8625.00, 0, 8625.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(285, 30, '2025-01-01', 2025, 1, 4973.00, 0, 4973.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(286, 30, '2024-12-01', 2024, 12, 6787.00, 0, 6787.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(287, 30, '2024-11-01', 2024, 11, 7677.00, 0, 7677.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(288, 30, '2024-10-01', 2024, 10, 11775.00, 0, 11775.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(289, 30, '2024-09-01', 2024, 9, 8941.00, 0, 8941.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(290, 30, '2024-08-01', 2024, 8, 15702.00, 0, 15702.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(291, 30, '2024-07-01', 2024, 7, 15182.00, 0, 15182.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(292, 30, '2024-06-01', 2024, 6, 15820.00, 0, 15820.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(293, 30, '2024-05-01', 2024, 5, 20922.00, 0, 20922.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(294, 30, '2024-04-01', 2024, 4, 19863.00, 0, 19863.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(295, 30, '2024-03-01', 2024, 3, 770.00, 0, 770.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(296, 31, '2025-02-01', 2025, 2, 11708.00, 0, 11708.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(297, 31, '2025-01-01', 2025, 1, 41695.00, 0, 41695.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(298, 31, '2024-12-01', 2024, 12, 76200.00, 0, 76200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(299, 31, '2024-11-01', 2024, 11, 34185.00, 0, 34185.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(300, 31, '2024-10-01', 2024, 10, 56406.00, 0, 56406.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(301, 31, '2024-09-01', 2024, 9, 13975.00, 0, 13975.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(302, 31, '2024-08-01', 2024, 8, 25477.00, 0, 25477.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(303, 31, '2024-07-01', 2024, 7, 32461.00, 0, 32461.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(304, 31, '2024-06-01', 2024, 6, 39516.00, 0, 39516.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(305, 31, '2024-05-01', 2024, 5, 23403.00, 0, 23403.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(306, 31, '2024-04-01', 2024, 4, 20449.00, 0, 20449.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(307, 31, '2024-03-01', 2024, 3, 19921.00, 0, 19921.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(308, 32, '2025-02-01', 2025, 2, 4900.00, 0, 4900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(309, 32, '2025-01-01', 2025, 1, 14310.00, 0, 14310.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(310, 32, '2024-12-01', 2024, 12, 34360.00, 0, 34360.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(311, 32, '2024-11-01', 2024, 11, 11340.00, 0, 11340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(312, 32, '2024-10-01', 2024, 10, 22400.00, 0, 22400.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(313, 32, '2024-09-01', 2024, 9, 7450.00, 0, 7450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(314, 32, '2024-08-01', 2024, 8, 13000.00, 0, 13000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(315, 32, '2024-07-01', 2024, 7, 223900.00, 0, 223900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(316, 32, '2024-06-01', 2024, 6, 16650.00, 0, 16650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(317, 32, '2024-05-01', 2024, 5, 39010.00, 0, 39010.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(318, 32, '2024-04-01', 2024, 4, 13160.00, 0, 13160.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(319, 32, '2024-03-01', 2024, 3, 25825.00, 0, 25825.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(320, 33, '2025-02-01', 2025, 2, 31699.00, 0, 31699.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(321, 33, '2025-01-01', 2025, 1, 38862.00, 0, 38862.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(322, 33, '2024-12-01', 2024, 12, 36159.00, 0, 36159.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(323, 33, '2024-11-01', 2024, 11, 32793.00, 0, 32793.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(324, 33, '2024-10-01', 2024, 10, 29318.00, 0, 29318.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(325, 33, '2024-09-01', 2024, 9, 24409.00, 0, 24409.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(326, 33, '2024-08-01', 2024, 8, 12814.00, 0, 12814.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(327, 33, '2024-07-01', 2024, 7, 20381.00, 0, 20381.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(328, 33, '2024-06-01', 2024, 6, 10814.00, 0, 10814.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(329, 33, '2024-05-01', 2024, 5, 26672.00, 0, 26672.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(330, 33, '2024-04-01', 2024, 4, 28132.00, 0, 28132.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(331, 33, '2024-03-01', 2024, 3, 20851.00, 0, 20851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(332, 34, '2025-02-01', 2025, 2, 12900.00, 0, 12900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(333, 34, '2025-01-01', 2025, 1, 9065.00, 0, 9065.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(334, 34, '2024-12-01', 2024, 12, 13200.00, 0, 13200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(335, 34, '2024-11-01', 2024, 11, 17420.00, 0, 17420.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(336, 34, '2024-10-01', 2024, 10, 13330.00, 0, 13330.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(337, 34, '2024-09-01', 2024, 9, 12285.00, 0, 12285.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(338, 34, '2024-08-01', 2024, 8, 9100.00, 0, 9100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(339, 34, '2024-07-01', 2024, 7, 14323.00, 0, 14323.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(340, 34, '2024-06-01', 2024, 6, 4650.00, 0, 4650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(341, 34, '2024-05-01', 2024, 5, 3040.00, 0, 3040.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(342, 34, '2024-04-01', 2024, 4, 7250.00, 0, 7250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(343, 34, '2024-03-01', 2024, 3, 23898.00, 0, 23898.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(344, 35, '2025-02-01', 2025, 2, 11276.00, 0, 11276.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(345, 35, '2025-01-01', 2025, 1, 10268.00, 0, 10268.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(346, 35, '2024-12-01', 2024, 12, 3610.00, 0, 3610.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(347, 35, '2024-11-01', 2024, 11, 6851.00, 0, 6851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(348, 35, '2024-10-01', 2024, 10, 2945.00, 0, 2945.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(349, 35, '2024-09-01', 2024, 9, 5322.00, 0, 5322.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(350, 35, '2024-08-01', 2024, 8, 5889.00, 0, 5889.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(351, 35, '2024-07-01', 2024, 7, 10353.00, 0, 10353.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(352, 35, '2024-06-01', 2024, 6, 3108.00, 0, 3108.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(353, 35, '2024-05-01', 2024, 5, 5845.00, 0, 5845.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(354, 35, '2024-04-01', 2024, 4, 4250.00, 0, 4250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(355, 35, '2024-03-01', 2024, 3, 1230.00, 0, 1230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(356, 36, '2025-02-01', 2025, 2, 3558.00, 0, 3558.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(357, 36, '2025-01-01', 2025, 1, 2479.00, 0, 2479.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(358, 36, '2024-12-01', 2024, 12, 3901.00, 0, 3901.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(359, 36, '2024-11-01', 2024, 11, 4424.00, 0, 4424.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(360, 36, '2024-10-01', 2024, 10, 4379.00, 0, 4379.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(361, 36, '2024-09-01', 2024, 9, 3200.00, 0, 3200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(362, 36, '2024-08-01', 2024, 8, 2071.00, 0, 2071.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(363, 36, '2024-07-01', 2024, 7, 3585.00, 0, 3585.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(364, 36, '2024-06-01', 2024, 6, 5249.00, 0, 5249.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(365, 36, '2024-05-01', 2024, 5, 3364.00, 0, 3364.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(366, 36, '2024-04-01', 2024, 4, 4683.00, 0, 4683.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(367, 36, '2024-03-01', 2024, 3, 6728.00, 0, 6728.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(368, 37, '2025-02-01', 2025, 2, 14740.00, 0, 14740.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(369, 37, '2025-01-01', 2025, 1, 15871.00, 0, 15871.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(370, 37, '2024-12-01', 2024, 12, 11420.00, 0, 11420.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(371, 37, '2024-11-01', 2024, 11, 11194.00, 0, 11194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(372, 37, '2024-10-01', 2024, 10, 12140.00, 0, 12140.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(373, 37, '2024-09-01', 2024, 9, 14036.00, 0, 14036.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(374, 37, '2024-08-01', 2024, 8, 1430.00, 0, 1430.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(375, 37, '2024-07-01', 2024, 7, 6450.00, 0, 6450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(376, 37, '2024-06-01', 2024, 6, 17381.00, 0, 17381.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(377, 37, '2024-05-01', 2024, 5, 7000.00, 0, 7000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(378, 37, '2024-04-01', 2024, 4, 12933.00, 0, 12933.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(379, 37, '2024-03-01', 2024, 3, 14322.00, 0, 14322.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(380, 38, '2025-02-01', 2025, 2, 15980.00, 0, 15980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(381, 38, '2025-01-01', 2025, 1, 18675.00, 0, 18675.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(382, 38, '2024-12-01', 2024, 12, 19900.00, 0, 19900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(383, 38, '2024-11-01', 2024, 11, 28196.00, 0, 28196.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(384, 38, '2024-10-01', 2024, 10, 1747.00, 0, 1747.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(385, 38, '2024-09-01', 2024, 9, 14313.00, 0, 14313.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(386, 38, '2024-08-01', 2024, 8, 16265.00, 0, 16265.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(387, 38, '2024-07-01', 2024, 7, 11055.00, 0, 11055.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(388, 38, '2024-06-01', 2024, 6, 4206.00, 0, 4206.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(389, 38, '2024-05-01', 2024, 5, 4850.00, 0, 4850.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(390, 38, '2024-04-01', 2024, 4, 6720.00, 0, 6720.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(391, 38, '2024-03-01', 2024, 3, 5267.00, 0, 5267.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(392, 39, '2025-02-01', 2025, 2, 9736.00, 0, 9736.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(393, 39, '2025-01-01', 2025, 1, 6350.00, 0, 6350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(394, 39, '2024-12-01', 2024, 12, 9882.00, 0, 9882.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(395, 39, '2024-11-01', 2024, 11, 39286.00, 0, 39286.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(396, 39, '2024-10-01', 2024, 10, 10368.00, 0, 10368.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(397, 39, '2024-09-01', 2024, 9, 8376.00, 0, 8376.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(398, 39, '2024-08-01', 2024, 8, 10636.00, 0, 10636.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(399, 39, '2024-07-01', 2024, 7, 20276.00, 0, 20276.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(400, 39, '2024-06-01', 2024, 6, 12899.00, 0, 12899.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(401, 39, '2024-05-01', 2024, 5, 10392.00, 0, 10392.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(402, 39, '2024-04-01', 2024, 4, 7724.00, 0, 7724.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(403, 39, '2024-03-01', 2024, 3, 4495.00, 0, 4495.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(404, 40, '2025-02-01', 2025, 2, 38245.00, 0, 38245.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(405, 40, '2025-01-01', 2025, 1, 3200.00, 0, 3200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(406, 40, '2024-12-01', 2024, 12, 9300.00, 0, 9300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(407, 40, '2024-11-01', 2024, 11, 6650.00, 0, 6650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(408, 40, '2024-10-01', 2024, 10, 10000.00, 0, 10000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(409, 40, '2024-08-01', 2024, 8, 14450.00, 0, 14450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(410, 40, '2024-07-01', 2024, 7, 750.00, 0, 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(411, 40, '2024-04-01', 2024, 4, 44500.00, 0, 44500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
-(424, 25, '2025-02-01', 2025, 2, 5290.00, 0, 5290.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(425, 25, '2025-01-01', 2025, 1, 12070.00, 0, 12070.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(426, 25, '2024-12-01', 2024, 12, 54870.00, 0, 54870.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(427, 25, '2024-11-01', 2024, 11, 65187.00, 0, 65187.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(428, 25, '2024-10-01', 2024, 10, 46057.00, 0, 46057.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(429, 25, '2024-09-01', 2024, 9, 1717.00, 0, 1717.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(430, 25, '2024-08-01', 2024, 8, 19940.00, 0, 19940.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(431, 25, '2024-07-01', 2024, 7, 7299.00, 0, 7299.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(432, 25, '2024-06-01', 2024, 6, 56010.00, 0, 56010.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(433, 25, '2024-05-01', 2024, 5, 143700.00, 0, 143700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(434, 25, '2024-04-01', 2024, 4, 2641.00, 0, 2641.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(435, 25, '2024-03-01', 2024, 3, 13649.00, 0, 13649.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
-(436, 11, '2025-02-01', 2025, 2, 4880.00, 0, 4880.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 08:18:39'),
-(437, 11, '2025-01-01', 2025, 1, 25490.00, 0, 25490.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(438, 11, '2024-12-01', 2024, 12, 1900.00, 0, 1900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(439, 11, '2024-11-01', 2024, 11, 4430.00, 0, 4430.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(440, 11, '2024-10-01', 2024, 10, 4090.00, 0, 4090.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(441, 11, '2024-09-01', 2024, 9, 9455.00, 0, 9455.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(442, 11, '2024-08-01', 2024, 8, 13080.00, 0, 13080.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(443, 11, '2024-07-01', 2024, 7, 2775.00, 0, 2775.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(444, 11, '2024-06-01', 2024, 6, 1380.00, 0, 1380.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(445, 11, '2024-05-01', 2024, 5, 2860.00, 0, 2860.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(446, 11, '2024-04-01', 2024, 4, 4928.00, 0, 4928.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(447, 11, '2024-03-01', 2024, 3, 570.00, 0, 570.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 08:19:14'),
-(448, 11, '2024-02-01', 2024, 2, 0.00, 0, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
-(449, 11, '2024-01-01', 2024, 1, 0.00, 0, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23');
+INSERT INTO `company_financials` (`id`, `company_id`, `period_date`, `year`, `month`, `turnover_monthly_avg`, `quarter`, `is_pre_ignition`, `quarter_label`, `turnover`, `cost_of_sales`, `business_expenses`, `gross_profit`, `net_profit`, `gp_margin`, `np_margin`, `cash_on_hand`, `debtors`, `creditors`, `inventory_on_hand`, `working_capital_ratio`, `net_assets`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 1, '2025-04-01', 2025, 4, 14236.00, 2, 0, 'Q2', 35000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Updated test record with quarter label', '2025-08-21 09:44:01', '2025-10-07 03:33:37'),
+(2, 1, '2025-01-01', 2025, 1, 43010.00, 1, 0, 'Q1', 50000.00, 20000.00, 15000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-10-07 03:38:18'),
+(3, 1, '2024-12-01', 2024, 12, 56091.00, 4, 0, 'Q4', 56091.00, NULL, NULL, 25000.00, 10000.00, 0.5000, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-10-07 03:38:25'),
+(4, 1, '2024-11-01', 2024, 11, 23108.00, 4, 0, 'Q4', 23108.00, NULL, NULL, NULL, NULL, NULL, NULL, 75000.00, 30000.00, 20000.00, NULL, NULL, NULL, 'Balance sheet test', '2025-08-21 09:44:01', '2025-10-07 03:38:52'),
+(5, 1, '2024-10-01', 2024, 10, 12669.00, 4, 0, 'Q4', 12669.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(6, 1, '2024-09-01', 2024, 9, 17529.00, 3, 0, 'Q3', 17529.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(7, 1, '2024-08-01', 2024, 8, 30842.00, 3, 0, 'Q3', 30842.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(8, 1, '2024-07-01', 2024, 7, 12176.00, 3, 0, 'Q3', 12176.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(9, 1, '2024-06-01', 2024, 6, 15062.00, 2, 0, 'Q2', 15062.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(10, 1, '2024-05-01', 2024, 5, 18922.00, 2, 0, 'Q2', 18922.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(11, 1, '2024-04-01', 2024, 4, 22436.00, 2, 0, 'Q2', 22436.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(12, 1, '2024-03-01', 2024, 3, 15745.00, 1, 0, 'Q1', 15745.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(13, 2, '2025-02-01', 2025, 2, 89.00, 1, 0, 'Q1', 89.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(14, 2, '2025-01-01', 2025, 1, 14007.00, 1, 0, 'Q1', 14007.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(15, 2, '2024-12-01', 2024, 12, 17097.00, 4, 0, 'Q4', 17097.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(16, 2, '2024-11-01', 2024, 11, 15100.00, 4, 0, 'Q4', 15100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(17, 2, '2024-10-01', 2024, 10, 5437.00, 4, 0, 'Q4', 5437.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(18, 2, '2024-09-01', 2024, 9, 7042.00, 3, 0, 'Q3', 7042.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(19, 2, '2024-08-01', 2024, 8, 5238.00, 3, 0, 'Q3', 5238.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(20, 2, '2024-07-01', 2024, 7, 16350.00, 3, 0, 'Q3', 16350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(21, 2, '2024-06-01', 2024, 6, 12660.00, 2, 0, 'Q2', 12660.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(22, 2, '2024-05-01', 2024, 5, 16586.00, 2, 0, 'Q2', 16586.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(23, 2, '2024-04-01', 2024, 4, 11310.00, 2, 0, 'Q2', 11310.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(24, 2, '2024-03-01', 2024, 3, 25170.00, 1, 0, 'Q1', 25170.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(25, 3, '2025-02-01', 2025, 2, 32371.00, 1, 0, 'Q1', 32371.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(26, 3, '2025-01-01', 2025, 1, 21012.00, 1, 0, 'Q1', 21012.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(27, 3, '2024-12-01', 2024, 12, 35988.00, 4, 0, 'Q4', 35988.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(28, 3, '2024-11-01', 2024, 11, 30176.00, 4, 0, 'Q4', 30176.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(29, 3, '2024-10-01', 2024, 10, 28659.00, 4, 0, 'Q4', 28659.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(30, 3, '2024-09-01', 2024, 9, 26044.00, 3, 0, 'Q3', 26044.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(31, 3, '2024-08-01', 2024, 8, 12500.00, 3, 0, 'Q3', 12500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(32, 3, '2024-07-01', 2024, 7, 10852.00, 3, 0, 'Q3', 10852.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(33, 3, '2024-06-01', 2024, 6, 6913.00, 2, 0, 'Q2', 6913.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(34, 3, '2024-05-01', 2024, 5, 16607.00, 2, 0, 'Q2', 16607.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(35, 3, '2024-04-01', 2024, 4, 15607.00, 2, 0, 'Q2', 15607.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(36, 3, '2024-03-01', 2024, 3, 16894.00, 1, 0, 'Q1', 16894.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(37, 4, '2025-01-01', 2025, 1, 30438.00, 1, 0, 'Q1', 30438.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(38, 4, '2024-12-01', 2024, 12, 550.00, 4, 0, 'Q4', 550.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(39, 4, '2024-11-01', 2024, 11, 74173.00, 4, 0, 'Q4', 74173.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(40, 4, '2024-10-01', 2024, 10, 49712.00, 4, 0, 'Q4', 49712.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(41, 4, '2024-09-01', 2024, 9, 19466.00, 3, 0, 'Q3', 19466.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(42, 4, '2024-08-01', 2024, 8, 35194.00, 3, 0, 'Q3', 35194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(43, 4, '2024-07-01', 2024, 7, 70345.00, 3, 0, 'Q3', 70345.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(44, 4, '2024-06-01', 2024, 6, 10770.00, 2, 0, 'Q2', 10770.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(45, 4, '2024-05-01', 2024, 5, 57851.00, 2, 0, 'Q2', 57851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(46, 4, '2024-04-01', 2024, 4, 46672.00, 2, 0, 'Q2', 46672.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(47, 4, '2024-03-01', 2024, 3, 1000.00, 1, 0, 'Q1', 1000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(48, 5, '2025-02-01', 2025, 2, 15127.00, 1, 0, 'Q1', 15127.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(49, 5, '2025-01-01', 2025, 1, 6714.00, 1, 0, 'Q1', 6714.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(50, 5, '2024-12-01', 2024, 12, 7824.00, 4, 0, 'Q4', 7824.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(51, 5, '2024-11-01', 2024, 11, 9908.00, 4, 0, 'Q4', 9908.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(52, 5, '2024-10-01', 2024, 10, 10765.00, 4, 0, 'Q4', 10765.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(53, 5, '2024-09-01', 2024, 9, 21838.00, 3, 0, 'Q3', 21838.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(54, 5, '2024-08-01', 2024, 8, 13996.00, 3, 0, 'Q3', 13996.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(55, 5, '2024-07-01', 2024, 7, 20699.00, 3, 0, 'Q3', 20699.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(56, 5, '2024-06-01', 2024, 6, 11106.00, 2, 0, 'Q2', 11106.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(57, 5, '2024-05-01', 2024, 5, 19470.00, 2, 0, 'Q2', 19470.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(58, 5, '2024-04-01', 2024, 4, 11385.00, 2, 0, 'Q2', 11385.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(59, 5, '2024-03-01', 2024, 3, 13403.00, 1, 0, 'Q1', 13403.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(60, 6, '2025-02-01', 2025, 2, 3106.00, 1, 0, 'Q1', 3106.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(61, 6, '2025-01-01', 2025, 1, 15568.00, 1, 0, 'Q1', 15568.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(62, 6, '2024-12-01', 2024, 12, 8347.00, 4, 0, 'Q4', 8347.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(63, 6, '2024-11-01', 2024, 11, 4721.00, 4, 0, 'Q4', 4721.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(64, 6, '2024-10-01', 2024, 10, 5688.00, 4, 0, 'Q4', 5688.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(65, 6, '2024-09-01', 2024, 9, 1867.00, 3, 0, 'Q3', 1867.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(66, 6, '2024-08-01', 2024, 8, 12904.00, 3, 0, 'Q3', 12904.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(67, 6, '2024-07-01', 2024, 7, 4560.00, 3, 0, 'Q3', 4560.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(68, 6, '2024-06-01', 2024, 6, 6882.00, 2, 0, 'Q2', 6882.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(69, 6, '2024-05-01', 2024, 5, 3170.00, 2, 0, 'Q2', 3170.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(70, 6, '2024-04-01', 2024, 4, 1930.00, 2, 0, 'Q2', 1930.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(71, 6, '2024-03-01', 2024, 3, 4742.00, 1, 0, 'Q1', 4742.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(72, 7, '2025-01-01', 2025, 1, 80855.00, 1, 0, 'Q1', 80855.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(73, 7, '2024-12-01', 2024, 12, 531.00, 4, 0, 'Q4', 531.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(74, 7, '2024-11-01', 2024, 11, 488.00, 4, 0, 'Q4', 488.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(75, 7, '2024-08-01', 2024, 8, 40141.00, 3, 0, 'Q3', 40141.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(76, 7, '2024-07-01', 2024, 7, 24001.00, 3, 0, 'Q3', 24001.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(77, 7, '2024-06-01', 2024, 6, 130.00, 2, 0, 'Q2', 130.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(78, 7, '2024-05-01', 2024, 5, 28579.00, 2, 0, 'Q2', 28579.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(79, 7, '2024-04-01', 2024, 4, 76252.00, 2, 0, 'Q2', 76252.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(80, 8, '2025-02-01', 2025, 2, 1100.00, 1, 0, 'Q1', 1100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(81, 8, '2025-01-01', 2025, 1, 2150.00, 1, 0, 'Q1', 2150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(82, 8, '2024-12-01', 2024, 12, 7200.00, 4, 0, 'Q4', 7200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(83, 8, '2024-11-01', 2024, 11, 24087.00, 4, 0, 'Q4', 24087.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(84, 8, '2024-10-01', 2024, 10, 2150.00, 4, 0, 'Q4', 2150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(85, 8, '2024-08-01', 2024, 8, 21937.00, 3, 0, 'Q3', 21937.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(86, 8, '2024-06-01', 2024, 6, 1500.00, 2, 0, 'Q2', 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(87, 8, '2024-05-01', 2024, 5, 1200.00, 2, 0, 'Q2', 1200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(88, 8, '2024-04-01', 2024, 4, 5075.00, 2, 0, 'Q2', 5075.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(89, 8, '2024-03-01', 2024, 3, 5375.00, 1, 0, 'Q1', 5375.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(90, 9, '2025-02-01', 2025, 2, 51520.00, 1, 0, 'Q1', 51520.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(91, 9, '2025-01-01', 2025, 1, 20978.00, 1, 0, 'Q1', 20978.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(92, 9, '2024-12-01', 2024, 12, 25240.00, 4, 0, 'Q4', 25240.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(93, 9, '2024-11-01', 2024, 11, 14248.00, 4, 0, 'Q4', 14248.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(94, 9, '2024-10-01', 2024, 10, 25483.00, 4, 0, 'Q4', 25483.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(95, 9, '2024-09-01', 2024, 9, 12060.00, 3, 0, 'Q3', 12060.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(96, 9, '2024-08-01', 2024, 8, 22034.00, 3, 0, 'Q3', 22034.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(97, 9, '2024-07-01', 2024, 7, 17954.00, 3, 0, 'Q3', 17954.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(98, 9, '2024-06-01', 2024, 6, 10563.00, 2, 0, 'Q2', 10563.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(99, 9, '2024-05-01', 2024, 5, 25544.00, 2, 0, 'Q2', 25544.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(100, 9, '2024-04-01', 2024, 4, 121001.00, 2, 0, 'Q2', 121001.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(101, 9, '2024-03-01', 2024, 3, 16820.00, 1, 0, 'Q1', 16820.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(102, 10, '2025-02-01', 2025, 2, 5700.00, 1, 0, 'Q1', 5700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(103, 10, '2025-01-01', 2025, 1, 27372.00, 1, 0, 'Q1', 27372.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(104, 10, '2024-12-01', 2024, 12, 7490.00, 4, 0, 'Q4', 7490.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(105, 10, '2024-11-01', 2024, 11, 25496.00, 4, 0, 'Q4', 25496.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(106, 10, '2024-10-01', 2024, 10, 32827.00, 4, 0, 'Q4', 32827.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(107, 10, '2024-09-01', 2024, 9, 4730.00, 3, 0, 'Q3', 4730.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(108, 10, '2024-08-01', 2024, 8, 11830.00, 3, 0, 'Q3', 11830.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(109, 10, '2024-07-01', 2024, 7, 13450.00, 3, 0, 'Q3', 13450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(110, 10, '2024-06-01', 2024, 6, 1500.00, 2, 0, 'Q2', 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(111, 10, '2024-05-01', 2024, 5, 16000.00, 2, 0, 'Q2', 16000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(112, 12, '2025-02-01', 2025, 2, 38000.00, 1, 0, 'Q1', 38000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(113, 12, '2025-01-01', 2025, 1, 52000.00, 1, 0, 'Q1', 52000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(114, 12, '2024-12-01', 2024, 12, 60000.00, 4, 0, 'Q4', 60000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(115, 12, '2024-11-01', 2024, 11, 29000.00, 4, 0, 'Q4', 29000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(116, 12, '2024-10-01', 2024, 10, 57000.00, 4, 0, 'Q4', 57000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(117, 12, '2024-09-01', 2024, 9, 53000.00, 3, 0, 'Q3', 53000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(118, 12, '2024-08-01', 2024, 8, 41000.00, 3, 0, 'Q3', 41000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(119, 12, '2024-07-01', 2024, 7, 35000.00, 3, 0, 'Q3', 35000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(120, 12, '2024-06-01', 2024, 6, 28200.00, 2, 0, 'Q2', 28200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(121, 12, '2024-05-01', 2024, 5, 67815.00, 2, 0, 'Q2', 67815.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(122, 12, '2024-04-01', 2024, 4, 40206.00, 2, 0, 'Q2', 40206.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(123, 12, '2024-03-01', 2024, 3, 53109.00, 1, 0, 'Q1', 53109.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(124, 13, '2025-02-01', 2025, 2, 8003.00, 1, 0, 'Q1', 8003.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(125, 13, '2025-01-01', 2025, 1, 10.00, 1, 0, 'Q1', 10.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(126, 13, '2024-12-01', 2024, 12, 10058.00, 4, 0, 'Q4', 10058.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(127, 13, '2024-11-01', 2024, 11, 1651.00, 4, 0, 'Q4', 1651.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(128, 13, '2024-10-01', 2024, 10, 10512.00, 4, 0, 'Q4', 10512.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(129, 13, '2024-09-01', 2024, 9, 6252.00, 3, 0, 'Q3', 6252.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(130, 13, '2024-08-01', 2024, 8, 1710.00, 3, 0, 'Q3', 1710.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(131, 13, '2024-07-01', 2024, 7, 12054.00, 3, 0, 'Q3', 12054.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(132, 13, '2024-06-01', 2024, 6, 11324.00, 2, 0, 'Q2', 11324.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(133, 13, '2024-05-01', 2024, 5, 11408.00, 2, 0, 'Q2', 11408.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(134, 13, '2024-04-01', 2024, 4, 12783.00, 2, 0, 'Q2', 12783.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(135, 13, '2024-03-01', 2024, 3, 6619.00, 1, 0, 'Q1', 6619.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(136, 14, '2025-02-01', 2025, 2, 14443.00, 1, 0, 'Q1', 14443.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(137, 14, '2025-01-01', 2025, 1, 15673.00, 1, 0, 'Q1', 15673.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(138, 14, '2024-12-01', 2024, 12, 22845.00, 4, 0, 'Q4', 22845.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(139, 14, '2024-11-01', 2024, 11, 17541.00, 4, 0, 'Q4', 17541.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(140, 14, '2024-10-01', 2024, 10, 10577.00, 4, 0, 'Q4', 10577.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(141, 14, '2024-09-01', 2024, 9, 3650.00, 3, 0, 'Q3', 3650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(142, 14, '2024-08-01', 2024, 8, 750.00, 3, 0, 'Q3', 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(143, 14, '2024-06-01', 2024, 6, 320.00, 2, 0, 'Q2', 320.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(144, 14, '2024-05-01', 2024, 5, 4120.00, 2, 0, 'Q2', 4120.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(145, 14, '2024-03-01', 2024, 3, 200.00, 1, 0, 'Q1', 200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(146, 15, '2025-02-01', 2025, 2, 7215.00, 1, 0, 'Q1', 7215.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(147, 15, '2025-01-01', 2025, 1, 1560.00, 1, 0, 'Q1', 1560.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(148, 15, '2024-12-01', 2024, 12, 9460.00, 4, 0, 'Q4', 9460.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(149, 15, '2024-11-01', 2024, 11, 55425.00, 4, 0, 'Q4', 55425.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(150, 15, '2024-10-01', 2024, 10, 2750.00, 4, 0, 'Q4', 2750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(151, 15, '2024-09-01', 2024, 9, 10700.00, 3, 0, 'Q3', 10700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(152, 15, '2024-08-01', 2024, 8, 4291.00, 3, 0, 'Q3', 4291.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(153, 15, '2024-07-01', 2024, 7, 1000.00, 3, 0, 'Q3', 1000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(154, 15, '2024-06-01', 2024, 6, 12925.00, 2, 0, 'Q2', 12925.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(155, 15, '2024-05-01', 2024, 5, 7584.00, 2, 0, 'Q2', 7584.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(156, 15, '2024-04-01', 2024, 4, 3999.00, 2, 0, 'Q2', 3999.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(157, 15, '2024-03-01', 2024, 3, 9340.00, 1, 0, 'Q1', 9340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(158, 16, '2025-02-01', 2025, 2, 3500.00, 1, 0, 'Q1', 3500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(159, 16, '2025-01-01', 2025, 1, 1500.00, 1, 0, 'Q1', 1500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(160, 16, '2024-12-01', 2024, 12, 12708.00, 4, 0, 'Q4', 12708.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(161, 16, '2024-11-01', 2024, 11, 10876.00, 4, 0, 'Q4', 10876.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(162, 16, '2024-10-01', 2024, 10, 9549.00, 4, 0, 'Q4', 9549.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(163, 16, '2024-09-01', 2024, 9, 22057.00, 3, 0, 'Q3', 22057.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(164, 16, '2024-08-01', 2024, 8, 7154.00, 3, 0, 'Q3', 7154.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(165, 16, '2024-07-01', 2024, 7, 11300.00, 3, 0, 'Q3', 11300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(166, 16, '2024-06-01', 2024, 6, 33000.00, 2, 0, 'Q2', 33000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(167, 16, '2024-05-01', 2024, 5, 1200.00, 2, 0, 'Q2', 1200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(168, 16, '2024-04-01', 2024, 4, 12673.00, 2, 0, 'Q2', 12673.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(169, 16, '2024-03-01', 2024, 3, 5000.00, 1, 0, 'Q1', 5000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(170, 17, '2025-02-01', 2025, 2, 36796.00, 1, 0, 'Q1', 36796.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(171, 17, '2025-01-01', 2025, 1, 49904.00, 1, 0, 'Q1', 49904.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(172, 17, '2024-12-01', 2024, 12, 17451.00, 4, 0, 'Q4', 17451.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(173, 17, '2024-11-01', 2024, 11, 29481.00, 4, 0, 'Q4', 29481.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(174, 17, '2024-10-01', 2024, 10, 25858.00, 4, 0, 'Q4', 25858.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(175, 17, '2024-08-01', 2024, 8, 24103.00, 3, 0, 'Q3', 24103.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(176, 17, '2024-07-01', 2024, 7, 37132.00, 3, 0, 'Q3', 37132.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(177, 17, '2024-06-01', 2024, 6, 12534.00, 2, 0, 'Q2', 12534.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(178, 17, '2024-05-01', 2024, 5, 24044.00, 2, 0, 'Q2', 24044.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(179, 17, '2024-04-01', 2024, 4, 42722.00, 2, 0, 'Q2', 42722.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(180, 17, '2024-03-01', 2024, 3, 14389.00, 1, 0, 'Q1', 14389.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(181, 18, '2024-12-01', 2024, 12, 5703.00, 4, 0, 'Q4', 5703.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(182, 18, '2024-11-01', 2024, 11, 18250.00, 4, 0, 'Q4', 18250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(183, 18, '2024-10-01', 2024, 10, 40950.00, 4, 0, 'Q4', 40950.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(184, 18, '2024-09-01', 2024, 9, 38917.00, 3, 0, 'Q3', 38917.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(185, 18, '2024-08-01', 2024, 8, 33835.00, 3, 0, 'Q3', 33835.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(186, 18, '2024-07-01', 2024, 7, 25365.00, 3, 0, 'Q3', 25365.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(187, 18, '2024-06-01', 2024, 6, 10850.00, 2, 0, 'Q2', 10850.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(188, 19, '2025-02-01', 2025, 2, 7200.00, 1, 0, 'Q1', 7200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(189, 19, '2025-01-01', 2025, 1, 16712.00, 1, 0, 'Q1', 16712.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(190, 19, '2024-12-01', 2024, 12, 10100.00, 4, 0, 'Q4', 10100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(191, 19, '2024-11-01', 2024, 11, 27150.00, 4, 0, 'Q4', 27150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(192, 19, '2024-10-01', 2024, 10, 25250.00, 4, 0, 'Q4', 25250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(193, 19, '2024-09-01', 2024, 9, 26653.00, 3, 0, 'Q3', 26653.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(194, 19, '2024-08-01', 2024, 8, 8020.00, 3, 0, 'Q3', 8020.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(195, 19, '2024-07-01', 2024, 7, 8120.00, 3, 0, 'Q3', 8120.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(196, 19, '2024-06-01', 2024, 6, 8150.00, 2, 0, 'Q2', 8150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(197, 19, '2024-05-01', 2024, 5, 4400.00, 2, 0, 'Q2', 4400.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(198, 19, '2024-04-01', 2024, 4, 10000.00, 2, 0, 'Q2', 10000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(199, 19, '2024-03-01', 2024, 3, 1550.00, 1, 0, 'Q1', 1550.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(200, 20, '2025-02-01', 2025, 2, 150.00, 1, 0, 'Q1', 150.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(201, 20, '2025-01-01', 2025, 1, 230.00, 1, 0, 'Q1', 230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(202, 20, '2024-12-01', 2024, 12, 700.00, 4, 0, 'Q4', 700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(203, 20, '2024-11-01', 2024, 11, 131900.00, 4, 0, 'Q4', 131900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(204, 20, '2024-10-01', 2024, 10, 3950.00, 4, 0, 'Q4', 3950.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(205, 20, '2024-09-01', 2024, 9, 7655.00, 3, 0, 'Q3', 7655.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(206, 20, '2024-08-01', 2024, 8, 65194.00, 3, 0, 'Q3', 65194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(207, 20, '2024-07-01', 2024, 7, 8000.00, 3, 0, 'Q3', 8000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(208, 20, '2024-06-01', 2024, 6, 31084.00, 2, 0, 'Q2', 31084.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(209, 20, '2024-05-01', 2024, 5, 14800.00, 2, 0, 'Q2', 14800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(210, 20, '2024-04-01', 2024, 4, 64800.00, 2, 0, 'Q2', 64800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(211, 20, '2024-03-01', 2024, 3, 200.00, 1, 0, 'Q1', 200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(212, 21, '2025-02-01', 2025, 2, 2300.00, 1, 0, 'Q1', 2300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(213, 21, '2025-01-01', 2025, 1, 5295.00, 1, 0, 'Q1', 5295.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(214, 21, '2024-12-01', 2024, 12, 23520.00, 4, 0, 'Q4', 23520.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(215, 21, '2024-11-01', 2024, 11, 18682.00, 4, 0, 'Q4', 18682.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(216, 21, '2024-10-01', 2024, 10, 20557.00, 4, 0, 'Q4', 20557.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(217, 21, '2024-09-01', 2024, 9, 3190.00, 3, 0, 'Q3', 3190.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(218, 21, '2024-08-01', 2024, 8, 6202.00, 3, 0, 'Q3', 6202.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(219, 21, '2024-07-01', 2024, 7, 28668.00, 3, 0, 'Q3', 28668.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(220, 21, '2024-06-01', 2024, 6, 16524.00, 2, 0, 'Q2', 16524.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(221, 21, '2024-05-01', 2024, 5, 18980.00, 2, 0, 'Q2', 18980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(222, 21, '2024-04-01', 2024, 4, 7127.00, 2, 0, 'Q2', 7127.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(223, 21, '2024-03-01', 2024, 3, 4600.00, 1, 0, 'Q1', 4600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(224, 22, '2025-02-01', 2025, 2, 11223.00, 1, 0, 'Q1', 11223.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(225, 22, '2025-01-01', 2025, 1, 16899.00, 1, 0, 'Q1', 16899.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(226, 22, '2024-12-01', 2024, 12, 11980.00, 4, 0, 'Q4', 11980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(227, 22, '2024-11-01', 2024, 11, 37987.00, 4, 0, 'Q4', 37987.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(228, 22, '2024-10-01', 2024, 10, 17313.00, 4, 0, 'Q4', 17313.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(229, 22, '2024-09-01', 2024, 9, 8592.00, 3, 0, 'Q3', 8592.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(230, 22, '2024-08-01', 2024, 8, 34082.00, 3, 0, 'Q3', 34082.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(231, 22, '2024-07-01', 2024, 7, 9230.00, 3, 0, 'Q3', 9230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(232, 22, '2024-06-01', 2024, 6, 5080.00, 2, 0, 'Q2', 5080.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(233, 22, '2024-05-01', 2024, 5, 4934.00, 2, 0, 'Q2', 4934.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(234, 22, '2024-04-01', 2024, 4, 7271.00, 2, 0, 'Q2', 7271.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(235, 22, '2024-03-01', 2024, 3, 13821.00, 1, 0, 'Q1', 13821.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(236, 23, '2025-02-01', 2025, 2, 38540.00, 1, 0, 'Q1', 38540.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(237, 23, '2025-01-01', 2025, 1, 34134.00, 1, 0, 'Q1', 34134.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(238, 23, '2024-12-01', 2024, 12, 44333.00, 4, 0, 'Q4', 44333.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(239, 23, '2024-11-01', 2024, 11, 51729.00, 4, 0, 'Q4', 51729.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(240, 23, '2024-10-01', 2024, 10, 40122.00, 4, 0, 'Q4', 40122.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(241, 23, '2024-09-01', 2024, 9, 41508.00, 3, 0, 'Q3', 41508.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(242, 23, '2024-08-01', 2024, 8, 47328.00, 3, 0, 'Q3', 47328.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(243, 23, '2024-07-01', 2024, 7, 54309.00, 3, 0, 'Q3', 54309.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(244, 23, '2024-06-01', 2024, 6, 50101.00, 2, 0, 'Q2', 50101.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(245, 23, '2024-05-01', 2024, 5, 37594.00, 2, 0, 'Q2', 37594.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(246, 23, '2024-04-01', 2024, 4, 47402.00, 2, 0, 'Q2', 47402.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(247, 23, '2024-03-01', 2024, 3, 3809.00, 1, 0, 'Q1', 3809.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(248, 24, '2025-02-01', 2025, 2, 8330.00, 1, 0, 'Q1', 8330.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(249, 24, '2025-01-01', 2025, 1, 23254.00, 1, 0, 'Q1', 23254.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(250, 24, '2024-12-01', 2024, 12, 20063.00, 4, 0, 'Q4', 20063.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(251, 24, '2024-11-01', 2024, 11, 19962.00, 4, 0, 'Q4', 19962.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(252, 24, '2024-10-01', 2024, 10, 15445.00, 4, 0, 'Q4', 15445.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(253, 24, '2024-09-01', 2024, 9, 3747.00, 3, 0, 'Q3', 3747.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(254, 24, '2024-08-01', 2024, 8, 16800.00, 3, 0, 'Q3', 16800.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(255, 24, '2024-07-01', 2024, 7, 25241.00, 3, 0, 'Q3', 25241.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(256, 24, '2024-06-01', 2024, 6, 18347.00, 2, 0, 'Q2', 18347.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(257, 24, '2024-05-01', 2024, 5, 16600.00, 2, 0, 'Q2', 16600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(258, 24, '2024-04-01', 2024, 4, 3475.00, 2, 0, 'Q2', 3475.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(259, 24, '2024-03-01', 2024, 3, 1943.00, 1, 0, 'Q1', 1943.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(260, 27, '2025-02-01', 2025, 2, 20260.00, 1, 0, 'Q1', 20260.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(261, 27, '2025-01-01', 2025, 1, 15981.00, 1, 0, 'Q1', 15981.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(262, 27, '2024-12-01', 2024, 12, 17844.00, 4, 0, 'Q4', 17844.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(263, 27, '2024-11-01', 2024, 11, 73817.00, 4, 0, 'Q4', 73817.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(264, 27, '2024-10-01', 2024, 10, 27776.00, 4, 0, 'Q4', 27776.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(265, 27, '2024-09-01', 2024, 9, 23423.00, 3, 0, 'Q3', 23423.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03');
+INSERT INTO `company_financials` (`id`, `company_id`, `period_date`, `year`, `month`, `turnover_monthly_avg`, `quarter`, `is_pre_ignition`, `quarter_label`, `turnover`, `cost_of_sales`, `business_expenses`, `gross_profit`, `net_profit`, `gp_margin`, `np_margin`, `cash_on_hand`, `debtors`, `creditors`, `inventory_on_hand`, `working_capital_ratio`, `net_assets`, `notes`, `created_at`, `updated_at`) VALUES
+(266, 27, '2024-08-01', 2024, 8, 22781.00, 3, 0, 'Q3', 22781.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(267, 27, '2024-07-01', 2024, 7, 15043.00, 3, 0, 'Q3', 15043.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(268, 27, '2024-06-01', 2024, 6, 17936.00, 2, 0, 'Q2', 17936.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(269, 27, '2024-05-01', 2024, 5, 50785.00, 2, 0, 'Q2', 50785.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(270, 27, '2024-04-01', 2024, 4, 10577.00, 2, 0, 'Q2', 10577.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(271, 27, '2024-03-01', 2024, 3, 41530.00, 1, 0, 'Q1', 41530.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(272, 28, '2025-02-01', 2025, 2, 21622.00, 1, 0, 'Q1', 21622.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(273, 28, '2025-01-01', 2025, 1, 20340.00, 1, 0, 'Q1', 20340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(274, 28, '2024-12-01', 2024, 12, 33970.00, 4, 0, 'Q4', 33970.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(275, 28, '2024-11-01', 2024, 11, 23200.00, 4, 0, 'Q4', 23200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(276, 28, '2024-10-01', 2024, 10, 18460.00, 4, 0, 'Q4', 18460.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(277, 28, '2024-09-01', 2024, 9, 17749.00, 3, 0, 'Q3', 17749.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(278, 28, '2024-08-01', 2024, 8, 10540.00, 3, 0, 'Q3', 10540.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(279, 28, '2024-07-01', 2024, 7, 250.00, 3, 0, 'Q3', 250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(280, 28, '2024-06-01', 2024, 6, 750.00, 2, 0, 'Q2', 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(281, 28, '2024-05-01', 2024, 5, 8350.00, 2, 0, 'Q2', 8350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(282, 28, '2024-04-01', 2024, 4, 8000.00, 2, 0, 'Q2', 8000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(283, 28, '2024-03-01', 2024, 3, 600.00, 1, 0, 'Q1', 600.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(284, 30, '2025-02-01', 2025, 2, 8625.00, 1, 0, 'Q1', 8625.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(285, 30, '2025-01-01', 2025, 1, 4973.00, 1, 0, 'Q1', 4973.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(286, 30, '2024-12-01', 2024, 12, 6787.00, 4, 0, 'Q4', 6787.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(287, 30, '2024-11-01', 2024, 11, 7677.00, 4, 0, 'Q4', 7677.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(288, 30, '2024-10-01', 2024, 10, 11775.00, 4, 0, 'Q4', 11775.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(289, 30, '2024-09-01', 2024, 9, 8941.00, 3, 0, 'Q3', 8941.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(290, 30, '2024-08-01', 2024, 8, 15702.00, 3, 0, 'Q3', 15702.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(291, 30, '2024-07-01', 2024, 7, 15182.00, 3, 0, 'Q3', 15182.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(292, 30, '2024-06-01', 2024, 6, 15820.00, 2, 0, 'Q2', 15820.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(293, 30, '2024-05-01', 2024, 5, 20922.00, 2, 0, 'Q2', 20922.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(294, 30, '2024-04-01', 2024, 4, 19863.00, 2, 0, 'Q2', 19863.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(295, 30, '2024-03-01', 2024, 3, 770.00, 1, 0, 'Q1', 770.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(296, 31, '2025-02-01', 2025, 2, 11708.00, 1, 0, 'Q1', 11708.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(297, 31, '2025-01-01', 2025, 1, 41695.00, 1, 0, 'Q1', 41695.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(298, 31, '2024-12-01', 2024, 12, 76200.00, 4, 0, 'Q4', 76200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(299, 31, '2024-11-01', 2024, 11, 34185.00, 4, 0, 'Q4', 34185.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(300, 31, '2024-10-01', 2024, 10, 56406.00, 4, 0, 'Q4', 56406.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(301, 31, '2024-09-01', 2024, 9, 13975.00, 3, 0, 'Q3', 13975.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(302, 31, '2024-08-01', 2024, 8, 25477.00, 3, 0, 'Q3', 25477.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(303, 31, '2024-07-01', 2024, 7, 32461.00, 3, 0, 'Q3', 32461.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(304, 31, '2024-06-01', 2024, 6, 39516.00, 2, 0, 'Q2', 39516.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(305, 31, '2024-05-01', 2024, 5, 23403.00, 2, 0, 'Q2', 23403.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(306, 31, '2024-04-01', 2024, 4, 20449.00, 2, 0, 'Q2', 20449.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(307, 31, '2024-03-01', 2024, 3, 19921.00, 1, 0, 'Q1', 19921.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(308, 32, '2025-02-01', 2025, 2, 4900.00, 1, 0, 'Q1', 4900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(309, 32, '2025-01-01', 2025, 1, 14310.00, 1, 0, 'Q1', 14310.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(310, 32, '2024-12-01', 2024, 12, 34360.00, 4, 0, 'Q4', 34360.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(311, 32, '2024-11-01', 2024, 11, 11340.00, 4, 0, 'Q4', 11340.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(312, 32, '2024-10-01', 2024, 10, 22400.00, 4, 0, 'Q4', 22400.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(313, 32, '2024-09-01', 2024, 9, 7450.00, 3, 0, 'Q3', 7450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(314, 32, '2024-08-01', 2024, 8, 13000.00, 3, 0, 'Q3', 13000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(315, 32, '2024-07-01', 2024, 7, 223900.00, 3, 0, 'Q3', 223900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(316, 32, '2024-06-01', 2024, 6, 16650.00, 2, 0, 'Q2', 16650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(317, 32, '2024-05-01', 2024, 5, 39010.00, 2, 0, 'Q2', 39010.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(318, 32, '2024-04-01', 2024, 4, 13160.00, 2, 0, 'Q2', 13160.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(319, 32, '2024-03-01', 2024, 3, 25825.00, 1, 0, 'Q1', 25825.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(320, 33, '2025-02-01', 2025, 2, 31699.00, 1, 0, 'Q1', 31699.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(321, 33, '2025-01-01', 2025, 1, 38862.00, 1, 0, 'Q1', 38862.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(322, 33, '2024-12-01', 2024, 12, 36159.00, 4, 0, 'Q4', 36159.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(323, 33, '2024-11-01', 2024, 11, 32793.00, 4, 0, 'Q4', 32793.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(324, 33, '2024-10-01', 2024, 10, 29318.00, 4, 0, 'Q4', 29318.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(325, 33, '2024-09-01', 2024, 9, 24409.00, 3, 0, 'Q3', 24409.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(326, 33, '2024-08-01', 2024, 8, 12814.00, 3, 0, 'Q3', 12814.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(327, 33, '2024-07-01', 2024, 7, 20381.00, 3, 0, 'Q3', 20381.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(328, 33, '2024-06-01', 2024, 6, 10814.00, 2, 0, 'Q2', 10814.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(329, 33, '2024-05-01', 2024, 5, 26672.00, 2, 0, 'Q2', 26672.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(330, 33, '2024-04-01', 2024, 4, 28132.00, 2, 0, 'Q2', 28132.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(331, 33, '2024-03-01', 2024, 3, 20851.00, 1, 0, 'Q1', 20851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(332, 34, '2025-02-01', 2025, 2, 12900.00, 1, 0, 'Q1', 12900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(333, 34, '2025-01-01', 2025, 1, 9065.00, 1, 0, 'Q1', 9065.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(334, 34, '2024-12-01', 2024, 12, 13200.00, 4, 0, 'Q4', 13200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(335, 34, '2024-11-01', 2024, 11, 17420.00, 4, 0, 'Q4', 17420.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(336, 34, '2024-10-01', 2024, 10, 13330.00, 4, 0, 'Q4', 13330.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(337, 34, '2024-09-01', 2024, 9, 12285.00, 3, 0, 'Q3', 12285.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(338, 34, '2024-08-01', 2024, 8, 9100.00, 3, 0, 'Q3', 9100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(339, 34, '2024-07-01', 2024, 7, 14323.00, 3, 0, 'Q3', 14323.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(340, 34, '2024-06-01', 2024, 6, 4650.00, 2, 0, 'Q2', 4650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(341, 34, '2024-05-01', 2024, 5, 3040.00, 2, 0, 'Q2', 3040.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(342, 34, '2024-04-01', 2024, 4, 7250.00, 2, 0, 'Q2', 7250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(343, 34, '2024-03-01', 2024, 3, 23898.00, 1, 0, 'Q1', 23898.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(344, 35, '2025-02-01', 2025, 2, 11276.00, 1, 0, 'Q1', 11276.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(345, 35, '2025-01-01', 2025, 1, 10268.00, 1, 0, 'Q1', 10268.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(346, 35, '2024-12-01', 2024, 12, 3610.00, 4, 0, 'Q4', 3610.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(347, 35, '2024-11-01', 2024, 11, 6851.00, 4, 0, 'Q4', 6851.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(348, 35, '2024-10-01', 2024, 10, 2945.00, 4, 0, 'Q4', 2945.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(349, 35, '2024-09-01', 2024, 9, 5322.00, 3, 0, 'Q3', 5322.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(350, 35, '2024-08-01', 2024, 8, 5889.00, 3, 0, 'Q3', 5889.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(351, 35, '2024-07-01', 2024, 7, 10353.00, 3, 0, 'Q3', 10353.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(352, 35, '2024-06-01', 2024, 6, 3108.00, 2, 0, 'Q2', 3108.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(353, 35, '2024-05-01', 2024, 5, 5845.00, 2, 0, 'Q2', 5845.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(354, 35, '2024-04-01', 2024, 4, 4250.00, 2, 0, 'Q2', 4250.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(355, 35, '2024-03-01', 2024, 3, 1230.00, 1, 0, 'Q1', 1230.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(356, 36, '2025-02-01', 2025, 2, 3558.00, 1, 0, 'Q1', 3558.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(357, 36, '2025-01-01', 2025, 1, 2479.00, 1, 0, 'Q1', 2479.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(358, 36, '2024-12-01', 2024, 12, 3901.00, 4, 0, 'Q4', 3901.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(359, 36, '2024-11-01', 2024, 11, 4424.00, 4, 0, 'Q4', 4424.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(360, 36, '2024-10-01', 2024, 10, 4379.00, 4, 0, 'Q4', 4379.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(361, 36, '2024-09-01', 2024, 9, 3200.00, 3, 0, 'Q3', 3200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(362, 36, '2024-08-01', 2024, 8, 2071.00, 3, 0, 'Q3', 2071.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(363, 36, '2024-07-01', 2024, 7, 3585.00, 3, 0, 'Q3', 3585.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(364, 36, '2024-06-01', 2024, 6, 5249.00, 2, 0, 'Q2', 5249.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(365, 36, '2024-05-01', 2024, 5, 3364.00, 2, 0, 'Q2', 3364.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(366, 36, '2024-04-01', 2024, 4, 4683.00, 2, 0, 'Q2', 4683.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(367, 36, '2024-03-01', 2024, 3, 6728.00, 1, 0, 'Q1', 6728.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(368, 37, '2025-02-01', 2025, 2, 14740.00, 1, 0, 'Q1', 14740.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(369, 37, '2025-01-01', 2025, 1, 15871.00, 1, 0, 'Q1', 15871.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(370, 37, '2024-12-01', 2024, 12, 11420.00, 4, 0, 'Q4', 11420.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(371, 37, '2024-11-01', 2024, 11, 11194.00, 4, 0, 'Q4', 11194.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(372, 37, '2024-10-01', 2024, 10, 12140.00, 4, 0, 'Q4', 12140.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(373, 37, '2024-09-01', 2024, 9, 14036.00, 3, 0, 'Q3', 14036.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(374, 37, '2024-08-01', 2024, 8, 1430.00, 3, 0, 'Q3', 1430.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(375, 37, '2024-07-01', 2024, 7, 6450.00, 3, 0, 'Q3', 6450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(376, 37, '2024-06-01', 2024, 6, 17381.00, 2, 0, 'Q2', 17381.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(377, 37, '2024-05-01', 2024, 5, 7000.00, 2, 0, 'Q2', 7000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(378, 37, '2024-04-01', 2024, 4, 12933.00, 2, 0, 'Q2', 12933.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(379, 37, '2024-03-01', 2024, 3, 14322.00, 1, 0, 'Q1', 14322.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(380, 38, '2025-02-01', 2025, 2, 15980.00, 1, 0, 'Q1', 15980.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(381, 38, '2025-01-01', 2025, 1, 18675.00, 1, 0, 'Q1', 18675.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(382, 38, '2024-12-01', 2024, 12, 19900.00, 4, 0, 'Q4', 19900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(383, 38, '2024-11-01', 2024, 11, 28196.00, 4, 0, 'Q4', 28196.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(384, 38, '2024-10-01', 2024, 10, 1747.00, 4, 0, 'Q4', 1747.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(385, 38, '2024-09-01', 2024, 9, 14313.00, 3, 0, 'Q3', 14313.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(386, 38, '2024-08-01', 2024, 8, 16265.00, 3, 0, 'Q3', 16265.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(387, 38, '2024-07-01', 2024, 7, 11055.00, 3, 0, 'Q3', 11055.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(388, 38, '2024-06-01', 2024, 6, 4206.00, 2, 0, 'Q2', 4206.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(389, 38, '2024-05-01', 2024, 5, 4850.00, 2, 0, 'Q2', 4850.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(390, 38, '2024-04-01', 2024, 4, 6720.00, 2, 0, 'Q2', 6720.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(391, 38, '2024-03-01', 2024, 3, 5267.00, 1, 0, 'Q1', 5267.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(392, 39, '2025-02-01', 2025, 2, 9736.00, 1, 0, 'Q1', 9736.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(393, 39, '2025-01-01', 2025, 1, 6350.00, 1, 0, 'Q1', 6350.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(394, 39, '2024-12-01', 2024, 12, 9882.00, 4, 0, 'Q4', 9882.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(395, 39, '2024-11-01', 2024, 11, 39286.00, 4, 0, 'Q4', 39286.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(396, 39, '2024-10-01', 2024, 10, 10368.00, 4, 0, 'Q4', 10368.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(397, 39, '2024-09-01', 2024, 9, 8376.00, 3, 0, 'Q3', 8376.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(398, 39, '2024-08-01', 2024, 8, 10636.00, 3, 0, 'Q3', 10636.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(399, 39, '2024-07-01', 2024, 7, 20276.00, 3, 0, 'Q3', 20276.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(400, 39, '2024-06-01', 2024, 6, 12899.00, 2, 0, 'Q2', 12899.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(401, 39, '2024-05-01', 2024, 5, 10392.00, 2, 0, 'Q2', 10392.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(402, 39, '2024-04-01', 2024, 4, 7724.00, 2, 0, 'Q2', 7724.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(403, 39, '2024-03-01', 2024, 3, 4495.00, 1, 0, 'Q1', 4495.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(404, 40, '2025-02-01', 2025, 2, 38245.00, 1, 0, 'Q1', 38245.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(405, 40, '2025-01-01', 2025, 1, 3200.00, 1, 0, 'Q1', 3200.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(406, 40, '2024-12-01', 2024, 12, 9300.00, 4, 0, 'Q4', 9300.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(407, 40, '2024-11-01', 2024, 11, 6650.00, 4, 0, 'Q4', 6650.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(408, 40, '2024-10-01', 2024, 10, 10000.00, 4, 0, 'Q4', 10000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(409, 40, '2024-08-01', 2024, 8, 14450.00, 3, 0, 'Q3', 14450.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(410, 40, '2024-07-01', 2024, 7, 750.00, 3, 0, 'Q3', 750.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(411, 40, '2024-04-01', 2024, 4, 44500.00, 2, 0, 'Q2', 44500.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 09:44:01', '2025-08-21 17:06:03'),
+(424, 25, '2025-02-01', 2025, 2, 5290.00, 1, 0, 'Q1', 5290.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(425, 25, '2025-01-01', 2025, 1, 12070.00, 1, 0, 'Q1', 12070.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(426, 25, '2024-12-01', 2024, 12, 54870.00, 4, 0, 'Q4', 54870.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(427, 25, '2024-11-01', 2024, 11, 65187.00, 4, 0, 'Q4', 65187.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(428, 25, '2024-10-01', 2024, 10, 46057.00, 4, 0, 'Q4', 46057.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(429, 25, '2024-09-01', 2024, 9, 1717.00, 3, 0, 'Q3', 1717.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(430, 25, '2024-08-01', 2024, 8, 19940.00, 3, 0, 'Q3', 19940.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(431, 25, '2024-07-01', 2024, 7, 7299.00, 3, 0, 'Q3', 7299.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(432, 25, '2024-06-01', 2024, 6, 56010.00, 2, 0, 'Q2', 56010.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(433, 25, '2024-05-01', 2024, 5, 143700.00, 2, 0, 'Q2', 143700.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(434, 25, '2024-04-01', 2024, 4, 2641.00, 2, 0, 'Q2', 2641.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(435, 25, '2024-03-01', 2024, 3, 13649.00, 1, 0, 'Q1', 13649.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-08-21 15:52:43', '2025-08-21 17:06:03'),
+(436, 11, '2025-02-01', 2025, 2, 4880.00, 1, 0, 'Q1', 4880.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-10-07 02:35:50'),
+(437, 11, '2025-01-01', 2025, 1, 25490.00, 1, 0, 'Q1', 25490.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-10-07 02:35:49'),
+(438, 11, '2024-12-01', 2024, 12, 1900.00, 4, 0, 'Q4', 1900.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(439, 11, '2024-11-01', 2024, 11, 4430.00, 4, 0, 'Q4', 4430.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(440, 11, '2024-10-01', 2024, 10, 4090.00, 4, 0, 'Q4', 4090.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(441, 11, '2024-09-01', 2024, 9, 9455.00, 3, 0, 'Q3', 9455.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(442, 11, '2028-08-01', 2028, 8, 13080.00, 3, 0, 'Q3', 13080.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-10-07 04:27:30'),
+(443, 11, '2024-07-01', 2024, 7, 2775.00, 3, 0, 'Q3', 2775.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(444, 11, '2024-06-01', 2024, 6, 1380.00, 2, 0, 'Q2', 1380.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(445, 11, '2024-05-01', 2024, 5, 2860.00, 2, 0, 'Q2', 2860.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-10-11 08:17:30'),
+(446, 11, '2024-04-01', 2024, 4, 4928.00, 2, 0, 'Q2', 4928.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-10-11 08:17:18'),
+(447, 11, '2024-03-01', 2024, 3, 570.00, 1, 0, 'Q1', 570.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 08:19:14'),
+(448, 11, '2024-02-01', 2024, 2, 0.00, 1, 0, 'Q1', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(449, 11, '2024-01-01', 2024, 1, 0.00, 1, 0, 'Q1', 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-25 04:30:46', '2025-09-25 04:35:23'),
+(450, 88, '2025-10-01', 2025, 10, 100.00, 4, 0, 'Q4', 100.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 12:06:06', '2025-10-03 12:06:06'),
+(451, 11, '2025-10-01', 2025, 10, NULL, 4, 0, 'Q4', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-07 02:35:37', '2025-10-07 02:35:37'),
+(459, 88, '2025-11-01', 2025, 11, 3000.00, 4, 0, 'Q4', 3000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-07 02:53:41', '2025-10-07 03:01:02'),
+(461, 88, '2025-06-01', 2025, 6, 20000.00, 2, 0, 'Q2', 20000.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Custom financial year Q4', '2025-10-07 02:57:04', '2025-10-07 04:04:22'),
+(463, 88, '2023-03-01', 2023, 3, NULL, 1, 0, 'Q1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-07 02:57:12', '2025-10-07 04:25:43'),
+(465, 88, '2019-12-01', 2019, 12, NULL, 4, 0, 'Q4', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-07 04:25:23', '2025-10-07 04:26:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_financial_items`
+--
+
+CREATE TABLE `company_financial_items` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `year_` int NOT NULL,
+  `item_type` enum('direct_cost','operational_cost','asset','liability','equity') NOT NULL,
+  `category_id` int DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `amount` decimal(15,2) DEFAULT '0.00',
+  `note` text,
+  `status_id` int DEFAULT '1',
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_financial_items`
+--
+
+INSERT INTO `company_financial_items` (`id`, `tenant_id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `year_`, `item_type`, `category_id`, `name`, `amount`, `note`, `status_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(21, NULL, 1, 11, 2, 3, 2025, 'direct_cost', 1, 'Supplies', 2000.00, '', 1, NULL, NULL, '2025-10-12 10:26:49', '2025-10-12 17:14:17'),
+(22, NULL, 1, 11, 2, 3, 2025, 'direct_cost', 2, 'Direct Labor', 2500.00, 'Test item with category', 1, NULL, NULL, '2025-10-12 10:31:04', '2025-10-12 11:06:08'),
+(49, NULL, 1, 11, 2, 3, 2025, 'operational_cost', 3, 'New item', 5000.00, '', 1, NULL, NULL, '2025-10-12 13:39:49', '2025-10-12 13:40:00'),
+(50, NULL, 1, 11, 2, 3, 2025, 'operational_cost', 4, 'New item', 30000.00, '', 1, NULL, NULL, '2025-10-12 13:39:49', '2025-10-12 13:40:00'),
+(57, NULL, 1, 11, 2, 3, 2025, 'asset', 7, 'New item', 10000.00, 'As of today', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
+(58, NULL, 1, 11, 2, 3, 2025, 'asset', 9, 'New item', 7500.00, 'Store 1', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
+(59, NULL, 1, 11, 2, 3, 2025, 'liability', 13, 'New item', 4000.00, 'Ask CEO Form Statement', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
+(60, NULL, 1, 11, 2, 3, 2025, 'liability', 12, 'New item', 5000.00, 'Nedbank loan', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
+(61, NULL, 1, 11, 2, 3, 2025, 'direct_cost', 15, 'New item', 2500.00, '', 1, NULL, NULL, '2025-10-12 17:14:17', '2025-10-12 17:14:17');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_financial_yearly_stats`
+--
+
+CREATE TABLE `company_financial_yearly_stats` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL DEFAULT '1',
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `account_id` int DEFAULT NULL,
+  `financial_year_id` int NOT NULL,
+  `m1` decimal(14,2) DEFAULT '0.00',
+  `m2` decimal(14,2) DEFAULT '0.00',
+  `m3` decimal(14,2) DEFAULT '0.00',
+  `m4` decimal(14,2) DEFAULT '0.00',
+  `m5` decimal(14,2) DEFAULT '0.00',
+  `m6` decimal(14,2) DEFAULT '0.00',
+  `m7` decimal(14,2) DEFAULT '0.00',
+  `m8` decimal(14,2) DEFAULT '0.00',
+  `m9` decimal(14,2) DEFAULT '0.00',
+  `m10` decimal(14,2) DEFAULT '0.00',
+  `m11` decimal(14,2) DEFAULT '0.00',
+  `m12` decimal(14,2) DEFAULT '0.00',
+  `total_amount` decimal(14,2) GENERATED ALWAYS AS ((((((((((((coalesce(`m1`,0) + coalesce(`m2`,0)) + coalesce(`m3`,0)) + coalesce(`m4`,0)) + coalesce(`m5`,0)) + coalesce(`m6`,0)) + coalesce(`m7`,0)) + coalesce(`m8`,0)) + coalesce(`m9`,0)) + coalesce(`m10`,0)) + coalesce(`m11`,0)) + coalesce(`m12`,0))) STORED,
+  `notes` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_financial_yearly_stats`
+--
+
+INSERT INTO `company_financial_yearly_stats` (`id`, `tenant_id`, `client_id`, `program_id`, `cohort_id`, `company_id`, `account_id`, `financial_year_id`, `m1`, `m2`, `m3`, `m4`, `m5`, `m6`, `m7`, `m8`, `m9`, `m10`, `m11`, `m12`, `notes`, `created_at`, `updated_at`) VALUES
+(1, NULL, 1, 2, 3, 1, 2, 5, 10000.00, 2000.00, 40000.00, 0.00, 10000.00, 188.00, 855.00, 8854.00, 8222.00, 8855.00, 8225.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-16 04:04:07'),
+(2, NULL, 1, 2, 3, 1, 80, 5, 7999.99, 588.00, 558.00, 0.01, 0.00, 0.00, 8200.00, 8200.00, 810.00, 0.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-16 04:16:44'),
+(3, NULL, 1, 2, 3, 3, NULL, 1, 16894.00, 15607.00, 16607.00, 6913.00, 10852.00, 12500.00, 26044.00, 28659.00, 30176.00, 35988.00, 21012.00, 32371.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(4, NULL, 1, 2, 3, 4, NULL, 1, 1000.00, 46672.00, 57851.00, 10770.00, 70345.00, 35194.00, 19466.00, 49712.00, 74173.00, 550.00, 30438.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(5, NULL, 1, 2, 3, 5, NULL, 1, 13403.00, 11385.00, 19470.00, 11106.00, 20699.00, 13996.00, 21838.00, 10765.00, 9908.00, 7824.00, 6714.00, 15127.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(6, NULL, 1, 2, 3, 6, NULL, 1, 4742.00, 1930.00, 3170.00, 6882.00, 4560.00, 12904.00, 1867.00, 5688.00, 4721.00, 8347.00, 15568.00, 3106.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(7, NULL, 1, 2, 3, 7, NULL, 1, 0.00, 76252.00, 28579.00, 130.00, 24001.00, 40141.00, 0.00, 0.00, 488.00, 531.00, 80855.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(8, NULL, 1, 2, 3, 8, NULL, 1, 5375.00, 5075.00, 1200.00, 1500.00, 0.00, 21937.00, 0.00, 2150.00, 24087.00, 7200.00, 2150.00, 1100.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(9, NULL, 1, 2, 3, 9, NULL, 1, 16820.00, 121001.00, 25544.00, 10563.00, 17954.00, 22034.00, 12060.00, 25483.00, 14248.00, 25240.00, 20978.00, 51520.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(10, NULL, 1, 2, 3, 10, NULL, 1, 0.00, 0.00, 16000.00, 1500.00, 13450.00, 11830.00, 4730.00, 32827.00, 25496.00, 7490.00, 27372.00, 5700.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(11, NULL, 1, 2, 3, 12, NULL, 1, 53109.00, 40206.00, 67815.00, 28200.00, 35000.00, 41000.00, 53000.00, 57000.00, 29000.00, 60000.00, 52000.00, 38000.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(12, NULL, 1, 2, 3, 13, NULL, 1, 6619.00, 12783.00, 11408.00, 11324.00, 12054.00, 1710.00, 6252.00, 10512.00, 1651.00, 10058.00, 10.00, 8003.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(13, NULL, 1, 2, 3, 14, NULL, 1, 200.00, 0.00, 4120.00, 320.00, 0.00, 750.00, 3650.00, 10577.00, 17541.00, 22845.00, 15673.00, 14443.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(14, NULL, 1, 2, 3, 15, NULL, 1, 9340.00, 3999.00, 7584.00, 12925.00, 1000.00, 4291.00, 10700.00, 2750.00, 55425.00, 9460.00, 1560.00, 7215.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(15, NULL, 1, 2, 3, 16, NULL, 1, 5000.00, 12673.00, 1200.00, 33000.00, 11300.00, 7154.00, 22057.00, 9549.00, 10876.00, 12708.00, 1500.00, 3500.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(16, NULL, 1, 2, 3, 17, NULL, 1, 14389.00, 42722.00, 24044.00, 12534.00, 37132.00, 24103.00, 0.00, 25858.00, 29481.00, 17451.00, 49904.00, 36796.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(17, NULL, 1, 2, 3, 18, NULL, 1, 0.00, 0.00, 0.00, 10850.00, 25365.00, 33835.00, 38917.00, 40950.00, 18250.00, 5703.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(18, NULL, 1, 2, 3, 19, NULL, 1, 1550.00, 10000.00, 4400.00, 8150.00, 8120.00, 8020.00, 26653.00, 25250.00, 27150.00, 10100.00, 16712.00, 7200.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(19, NULL, 1, 2, 3, 20, NULL, 1, 200.00, 64800.00, 14800.00, 31084.00, 8000.00, 65194.00, 7655.00, 3950.00, 131900.00, 700.00, 230.00, 150.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(20, NULL, 1, 2, 3, 21, NULL, 1, 4600.00, 7127.00, 18980.00, 16524.00, 28668.00, 6202.00, 3190.00, 20557.00, 18682.00, 23520.00, 5295.00, 2300.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(21, NULL, 1, 2, 3, 22, NULL, 1, 13821.00, 7271.00, 4934.00, 5080.00, 9230.00, 34082.00, 8592.00, 17313.00, 37987.00, 11980.00, 16899.00, 11223.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(22, NULL, 1, 2, 3, 23, NULL, 1, 3809.00, 47402.00, 37594.00, 50101.00, 54309.00, 47328.00, 41508.00, 40122.00, 51729.00, 44333.00, 34134.00, 38540.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(23, NULL, 1, 2, 3, 24, NULL, 1, 1943.00, 3475.00, 16600.00, 18347.00, 25241.00, 16800.00, 3747.00, 15445.00, 19962.00, 20063.00, 23254.00, 8330.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(24, NULL, 1, 2, 3, 27, NULL, 1, 41530.00, 10577.00, 50785.00, 17936.00, 15043.00, 22781.00, 23423.00, 27776.00, 73817.00, 17844.00, 15981.00, 20260.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(25, NULL, 1, 2, 3, 28, NULL, 1, 600.00, 8000.00, 8350.00, 750.00, 250.00, 10540.00, 17749.00, 18460.00, 23200.00, 33970.00, 20340.00, 21622.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(26, NULL, 1, 2, 3, 30, NULL, 1, 770.00, 19863.00, 20922.00, 15820.00, 15182.00, 15702.00, 8941.00, 11775.00, 7677.00, 6787.00, 4973.00, 8625.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(27, NULL, 1, 2, 3, 31, NULL, 1, 19921.00, 20449.00, 23403.00, 39516.00, 32461.00, 25477.00, 13975.00, 56406.00, 34185.00, 76200.00, 41695.00, 11708.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(28, NULL, 1, 2, 3, 32, NULL, 1, 25825.00, 13160.00, 39010.00, 16650.00, 223900.00, 13000.00, 7450.00, 22400.00, 11340.00, 34360.00, 14310.00, 4900.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(29, NULL, 1, 2, 3, 33, NULL, 1, 20851.00, 28132.00, 26672.00, 10814.00, 20381.00, 12814.00, 24409.00, 29318.00, 32793.00, 36159.00, 38862.00, 31699.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(30, NULL, 1, 2, 3, 34, NULL, 1, 23898.00, 7250.00, 3040.00, 4650.00, 14323.00, 9100.00, 12285.00, 13330.00, 17420.00, 13200.00, 9065.00, 12900.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(31, NULL, 1, 2, 3, 35, NULL, 1, 1230.00, 4250.00, 5845.00, 3108.00, 10353.00, 5889.00, 5322.00, 2945.00, 6851.00, 3610.00, 10268.00, 11276.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(32, NULL, 1, 2, 3, 36, NULL, 1, 6728.00, 4683.00, 3364.00, 5249.00, 3585.00, 2071.00, 3200.00, 4379.00, 4424.00, 3901.00, 2479.00, 3558.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(33, NULL, 1, 2, 3, 37, NULL, 1, 14322.00, 12933.00, 7000.00, 17381.00, 6450.00, 1430.00, 14036.00, 12140.00, 11194.00, 11420.00, 15871.00, 14740.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(34, NULL, 1, 2, 3, 38, NULL, 1, 5267.00, 6720.00, 4850.00, 4206.00, 11055.00, 16265.00, 14313.00, 1747.00, 28196.00, 19900.00, 18675.00, 15980.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(35, NULL, 1, 2, 3, 39, NULL, 1, 4495.00, 7724.00, 10392.00, 12899.00, 20276.00, 10636.00, 8376.00, 10368.00, 39286.00, 9882.00, 6350.00, 9736.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(36, NULL, 1, 2, 3, 40, NULL, 1, 0.00, 44500.00, 0.00, 0.00, 750.00, 14450.00, 0.00, 10000.00, 6650.00, 9300.00, 3200.00, 38245.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(37, NULL, 1, 2, 3, 25, NULL, 1, 13649.00, 2641.00, 143700.00, 56010.00, 7299.00, 19940.00, 1717.00, 46057.00, 65187.00, 54870.00, 12070.00, 5290.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(38, NULL, 1, 2, 3, 11, NULL, 1, 570.00, 4928.00, 2860.00, 1380.00, 2775.00, 0.00, 9455.00, 4090.00, 4430.00, 1900.00, 25490.00, 4880.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
+(39, NULL, 1, NULL, NULL, 1, 2, 1, 5000.00, 6000.00, 7000.00, 8000.00, 9000.00, 10000.00, 11000.00, 12000.00, 13000.00, 14000.00, 15000.00, 16000.00, 'Test data via PowerShell', '2025-10-16 03:06:53', '2025-10-16 03:44:29'),
+(40, NULL, 1, NULL, NULL, 1, 80, 1, 8000.00, 2000.00, 5000.00, 50000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:17:07', '2025-10-16 04:24:18'),
+(41, NULL, 1, NULL, NULL, 1, 80, 4, 40000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:26:24', '2025-10-16 04:26:49'),
+(42, NULL, 1, NULL, NULL, 1, 2, 4, 2000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:26:28', '2025-10-16 04:26:47');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_profit_summary`
+--
+
+CREATE TABLE `company_profit_summary` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `year_` int NOT NULL,
+  `gross_q1` decimal(15,2) DEFAULT '0.00',
+  `gross_q2` decimal(15,2) DEFAULT '0.00',
+  `gross_q3` decimal(15,2) DEFAULT '0.00',
+  `gross_q4` decimal(15,2) DEFAULT '0.00',
+  `gross_total` decimal(15,2) GENERATED ALWAYS AS ((((`gross_q1` + `gross_q2`) + `gross_q3`) + `gross_q4`)) STORED,
+  `gross_margin` decimal(5,2) DEFAULT '0.00',
+  `operating_q1` decimal(15,2) DEFAULT '0.00',
+  `operating_q2` decimal(15,2) DEFAULT '0.00',
+  `operating_q3` decimal(15,2) DEFAULT '0.00',
+  `operating_q4` decimal(15,2) DEFAULT '0.00',
+  `operating_total` decimal(15,2) GENERATED ALWAYS AS ((((`operating_q1` + `operating_q2`) + `operating_q3`) + `operating_q4`)) STORED,
+  `operating_margin` decimal(5,2) DEFAULT '0.00',
+  `npbt_q1` decimal(15,2) DEFAULT '0.00',
+  `npbt_q2` decimal(15,2) DEFAULT '0.00',
+  `npbt_q3` decimal(15,2) DEFAULT '0.00',
+  `npbt_q4` decimal(15,2) DEFAULT '0.00',
+  `npbt_total` decimal(15,2) GENERATED ALWAYS AS ((((`npbt_q1` + `npbt_q2`) + `npbt_q3`) + `npbt_q4`)) STORED,
+  `npbt_margin` decimal(5,2) DEFAULT '0.00',
+  `unit` varchar(10) DEFAULT 'USD',
+  `notes` text,
+  `title` varchar(255) DEFAULT NULL,
+  `status_id` int DEFAULT '1',
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_profit_summary`
+--
+
+INSERT INTO `company_profit_summary` (`id`, `tenant_id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `year_`, `gross_q1`, `gross_q2`, `gross_q3`, `gross_q4`, `gross_margin`, `operating_q1`, `operating_q2`, `operating_q3`, `operating_q4`, `operating_margin`, `npbt_q1`, `npbt_q2`, `npbt_q3`, `npbt_q4`, `npbt_margin`, `unit`, `notes`, `title`, `status_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, NULL, 0, 11, 0, 0, 2023, 30000.00, 3000.00, 8000.00, 3000.00, 11.10, 20000.00, 22000.00, 22000.00, 25000.00, 22.45, 15000.00, 17000.00, 19000.00, 18000.00, 17.41, 'USD', 'Partial update test - Q1 and Q2 revised', 'Updated 2023 Profit Summary', 1, NULL, NULL, '2025-10-07 09:10:01', '2025-10-12 02:54:24'),
+(2, NULL, 0, 11, 0, 0, 2024, 50000.00, 3000.00, 7000.00, 3000.00, 95.00, 30000.00, 35000.00, 40000.00, 45000.00, 50.00, 25000.00, 28000.00, 32000.00, 35000.00, 40.00, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 08:51:58', '2025-10-11 19:52:40'),
+(4, NULL, 0, 11, 0, 0, 2025, 3000.00, 3000.00, 30500.00, NULL, 12.37, 50000.00, 55000.00, 60000.00, 65000.00, 77.97, 20000.00, 2000.00, 1000.00, 3000.00, 8.81, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 08:52:11', '2025-10-11 20:41:17'),
+(5, NULL, 1, 11, 1, 1, 2026, 32000.00, 90000.00, 90000.00, 10000.00, 100.00, 60000.00, 65000.00, 70000.00, 75000.00, 60.00, 50000.00, 55000.00, 60000.00, 65000.00, 50.00, 'USD', 'Updated via PowerShell test script', 'Updated API Test Record', 1, NULL, NULL, '2025-10-11 08:54:38', '2025-10-11 17:43:24'),
+(8, NULL, 0, 11, NULL, NULL, 2022, 5000.00, 0.00, 0.00, 0.00, 0.00, 600.00, 0.00, 0.00, 0.00, 0.00, 1000.00, 0.00, 0.00, 0.00, 0.00, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 20:15:57', '2025-10-11 20:16:17');
 
 -- --------------------------------------------------------
 
@@ -897,6 +1213,156 @@ INSERT INTO `company_purchases` (`id`, `company_id`, `purchase_type`, `service_p
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `company_revenue_summary`
+--
+
+CREATE TABLE `company_revenue_summary` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `year_` int NOT NULL,
+  `revenue_q1` decimal(15,2) DEFAULT '0.00',
+  `revenue_q2` decimal(15,2) DEFAULT '0.00',
+  `revenue_q3` decimal(15,2) DEFAULT '0.00',
+  `revenue_q4` decimal(15,2) DEFAULT '0.00',
+  `revenue_total` decimal(15,2) GENERATED ALWAYS AS ((((`revenue_q1` + `revenue_q2`) + `revenue_q3`) + `revenue_q4`)) STORED,
+  `export_q1` decimal(15,2) DEFAULT '0.00',
+  `export_q2` decimal(15,2) DEFAULT '0.00',
+  `export_q3` decimal(15,2) DEFAULT '0.00',
+  `export_q4` decimal(15,2) DEFAULT '0.00',
+  `export_total` decimal(15,2) GENERATED ALWAYS AS ((((`export_q1` + `export_q2`) + `export_q3`) + `export_q4`)) STORED,
+  `export_ratio` decimal(5,2) GENERATED ALWAYS AS ((case when (`revenue_total` > 0) then ((`export_total` / `revenue_total`) * 100) else 0 end)) STORED,
+  `category_id` int DEFAULT NULL,
+  `cycle_id` int DEFAULT NULL,
+  `unit` varchar(10) DEFAULT 'USD',
+  `notes` text,
+  `title` varchar(255) DEFAULT NULL,
+  `status_id` int DEFAULT '1',
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_revenue_summary`
+--
+
+INSERT INTO `company_revenue_summary` (`id`, `tenant_id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `year_`, `revenue_q1`, `revenue_q2`, `revenue_q3`, `revenue_q4`, `export_q1`, `export_q2`, `export_q3`, `export_q4`, `category_id`, `cycle_id`, `unit`, `notes`, `title`, `status_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, NULL, 1, 11, 2, 3, 2025, 100000.00, 150000.00, 20000.00, 25001.00, 8000.00, 12000.00, 15000.00, 20000.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-07 06:44:19', '2025-10-11 20:36:58'),
+(2, NULL, 1, 11, 2, 3, 2023, 125000.00, 100585.00, 85555.00, 85255.00, 3000.00, 4000.00, 0.00, 40000.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-07 06:44:32', '2025-10-11 20:36:34'),
+(3, NULL, 0, 11, 0, 0, 2024, 2000.00, 2200.00, 0.00, 0.00, 500.00, 500.00, 0.00, 0.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 08:19:18', '2025-10-11 10:07:12');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financial_categories`
+--
+
+CREATE TABLE `financial_categories` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `item_type` enum('direct_cost','operational_cost','asset','liability','equity') NOT NULL,
+  `description` text,
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `financial_categories`
+--
+
+INSERT INTO `financial_categories` (`id`, `name`, `item_type`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Supplies', 'direct_cost', 'Materials or goods used in production', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(2, 'Direct Labor', 'direct_cost', 'Staff directly involved in producing goods or services', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(3, 'Personnel', 'operational_cost', 'Employee and HR related expenses', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(4, 'Sales & Marketing', 'operational_cost', 'Marketing and promotion costs', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(5, 'Transportation & Travel', 'operational_cost', 'Travel and logistics expenses', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(6, 'Facilities & Supplies', 'operational_cost', 'Rent, utilities, and office costs', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(7, 'Cash in Bank', 'asset', 'Company cash balance in bank', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(8, 'Accounts Receivable', 'asset', 'Money owed to the company by clients', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(9, 'Inventory', 'asset', 'Stock or materials held for sale or production', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(10, 'Equipment', 'asset', 'Machinery or tools owned by the company', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(11, 'Accounts Payable', 'liability', 'Money owed to suppliers', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(12, 'Loans Payable', 'liability', 'Outstanding loans from banks or lenders', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(13, 'Credit Line', 'liability', 'Credit facility or overdraft', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(14, 'Share Capital', 'equity', 'Owner’s equity contribution', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(15, 'Kitchen', 'direct_cost', NULL, 1, '2025-10-12 17:14:05', '2025-10-12 17:14:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financial_ratios`
+--
+
+CREATE TABLE `financial_ratios` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `year_` int NOT NULL,
+  `group_name` varchar(100) NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `variable1_name` varchar(100) DEFAULT NULL,
+  `variable1_value` decimal(15,2) DEFAULT NULL,
+  `variable2_name` varchar(100) DEFAULT NULL,
+  `variable2_value` decimal(15,2) DEFAULT NULL,
+  `ratio_value` decimal(10,2) DEFAULT NULL,
+  `min_target` decimal(10,2) DEFAULT NULL,
+  `ideal_target` decimal(10,2) DEFAULT NULL,
+  `notes` text,
+  `status_id` int DEFAULT '1',
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financial_years`
+--
+
+CREATE TABLE `financial_years` (
+  `id` int NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `start_month` tinyint NOT NULL,
+  `end_month` tinyint NOT NULL,
+  `fy_start_year` smallint NOT NULL,
+  `fy_end_year` smallint NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '0',
+  `description` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `financial_years`
+--
+
+INSERT INTO `financial_years` (`id`, `name`, `start_month`, `end_month`, `fy_start_year`, `fy_end_year`, `is_active`, `description`, `created_at`, `updated_at`) VALUES
+(1, 'FY 2024/2025', 3, 2, 2024, 2025, 1, 'Financial year running from March 2024 to February 2025', '2025-10-15 00:58:53', '2025-10-15 00:58:53'),
+(2, 'FY 2020/2021', 3, 2, 2020, 2021, 0, 'Financial year running from March 2020 to February 2021', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(3, 'FY 2021/2022', 3, 2, 2021, 2022, 0, 'Financial year running from March 2021 to February 2022', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(4, 'FY 2022/2023', 3, 2, 2022, 2023, 0, 'Financial year running from March 2022 to February 2023', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(5, 'FY 2023/2024', 3, 2, 2023, 2024, 0, 'Financial year running from March 2023 to February 2024', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(6, 'FY 2024/2025', 3, 2, 2024, 2025, 1, 'Financial year running from March 2024 to February 2025', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(7, 'FY 2025/2026', 3, 2, 2025, 2026, 0, 'Financial year running from March 2025 to February 2026', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(8, 'FY 2026/2027', 3, 2, 2026, 2027, 0, 'Financial year running from March 2026 to February 2027', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(9, 'FY 2027/2028', 3, 2, 2027, 2028, 0, 'Financial year running from March 2027 to February 2028', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(10, 'FY 2028/2029', 3, 2, 2028, 2029, 0, 'Financial year running from March 2028 to February 2029', '2025-10-15 02:01:51', '2025-10-15 02:01:51'),
+(11, 'FY 2029/2030', 3, 2, 2029, 2030, 0, 'Financial year running from March 2029 to February 2030', '2025-10-15 02:01:51', '2025-10-15 02:01:51');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `forms`
 --
 
@@ -980,7 +1446,18 @@ CREATE TABLE `form_sessions` (
 CREATE TABLE `industries` (
   `id` int NOT NULL,
   `name` varchar(128) NOT NULL,
+  `slug` varchar(128) GENERATED ALWAYS AS (lower(replace(`name`,_utf8mb4' ',_utf8mb4'-'))) STORED,
   `parent_id` int DEFAULT NULL,
+  `description` text,
+  `notes` text,
+  `image_url` varchar(255) DEFAULT NULL,
+  `icon_class` varchar(128) DEFAULT NULL,
+  `color_theme` varchar(32) DEFAULT NULL,
+  `background_theme` varchar(32) DEFAULT NULL,
+  `tags` json DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `display_order` int DEFAULT '0',
+  `created_by` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -989,35 +1466,60 @@ CREATE TABLE `industries` (
 -- Dumping data for table `industries`
 --
 
-INSERT INTO `industries` (`id`, `name`, `parent_id`, `created_at`, `updated_at`) VALUES
-(1, 'Agriculture', 38, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(2, 'Beauty', 32, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(3, 'Cleaning', 32, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(4, 'Clothing & Textile', 37, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(5, 'Construction', 34, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(6, 'Energy', 39, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(7, 'Engineering', 34, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(8, 'Finance', 8, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(9, 'Food', 37, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(10, 'ICT', 10, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(11, 'Logistics', 33, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(12, 'Maintenance', 32, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(13, 'Manufacturing', 37, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(14, 'Media', 35, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(16, 'Printing', 35, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(17, 'Retail', 36, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(18, 'Supply', 32, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(19, 'Tourism', 32, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(20, 'Transport', 33, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(21, 'Water', 39, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
-(32, 'Services', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(33, 'Transport & Logistics', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(34, 'Construction & Engineering', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(35, 'Media & Printing', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(36, 'Retail & Wholesale', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(37, 'Manufacturing & Food', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(38, 'Primary (Agriculture)', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
-(39, 'Energy & Utilities', NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43');
+INSERT INTO `industries` (`id`, `name`, `parent_id`, `description`, `notes`, `image_url`, `icon_class`, `color_theme`, `background_theme`, `tags`, `is_active`, `display_order`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'Agriculture', 38, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(2, 'Beauty', 32, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(3, 'Cleaning', 32, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(4, 'Clothing & Textile', 37, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(5, 'Construction', 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(6, 'Energy', 39, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(7, 'Engineering', 34, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(8, 'Finance', 8, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(9, 'Food', 37, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(10, 'ICT', 10, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(11, 'Logistics', 33, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(12, 'Maintenance', 32, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(13, 'Manufacturing', 37, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(14, 'Media', 35, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(16, 'Printing', 35, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(17, 'Retail', 36, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(18, 'Supply', 32, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(19, 'Tourism', 32, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(20, 'Transport', 33, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(21, 'Water', 39, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:15:10', '2025-08-18 00:18:43'),
+(32, 'Services', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(33, 'Transport & Logistics', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(34, 'Construction & Engineering', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(35, 'Media & Printing', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(36, 'Retail & Wholesale', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(37, 'Manufacturing & Food', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(38, 'Primary (Agriculture)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(39, 'Energy & Utilities', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-08-18 00:18:43', '2025-08-18 00:18:43'),
+(41, 'Forestry', 38, 'Cultivation and management of forest resources.', NULL, NULL, 'fa-solid fa-tree', '#2e7d32', 'bg-green-100', '[\"wood\", \"trees\", \"logging\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(42, 'Fisheries', 38, 'Commercial and small-scale fish production and processing.', NULL, NULL, 'fa-solid fa-fish', '#0277bd', 'bg-blue-100', '[\"seafood\", \"aquaculture\", \"fishery\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(43, 'Architecture', 34, 'Architectural design and structural planning.', NULL, NULL, 'fa-solid fa-drafting-compass', '#6d4c41', 'bg-orange-50', '[\"design\", \"urban\", \"infrastructure\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(44, 'Civil Works', 34, 'Roads, bridges, and public infrastructure construction.', NULL, NULL, 'fa-solid fa-road', '#616161', 'bg-gray-100', '[\"civil\", \"infrastructure\", \"roads\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(45, 'Food Processing', 37, 'Value-added food and beverage production.', NULL, NULL, 'fa-solid fa-burger', '#ef6c00', 'bg-orange-100', '[\"processing\", \"snacks\", \"manufacturing\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(46, 'Beverage Production', 37, 'Manufacturing and bottling of beverages.', NULL, NULL, 'fa-solid fa-bottle-water', '#2196f3', 'bg-blue-50', '[\"drinks\", \"juice\", \"brewery\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(47, 'Furniture Manufacturing', 37, 'Wood and steel furniture manufacturing.', NULL, NULL, 'fa-solid fa-couch', '#795548', 'bg-amber-50', '[\"woodwork\", \"furniture\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(48, 'Events & Entertainment', 32, 'Event planning, coordination, and entertainment services.', NULL, NULL, 'fa-solid fa-music', '#e91e63', 'bg-pink-50', '[\"events\", \"wedding\", \"entertainment\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(49, 'Education & Training', 32, 'Skills training, private tutoring, and education services.', NULL, NULL, 'fa-solid fa-graduation-cap', '#283593', 'bg-indigo-50', '[\"training\", \"learning\", \"courses\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(50, 'Health & Wellness', 32, 'Gyms, spas, wellness coaches, and health support services.', NULL, NULL, 'fa-solid fa-heart-pulse', '#c2185b', 'bg-rose-50', '[\"fitness\", \"spa\", \"therapy\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(51, 'Photography & Videography', 32, 'Media capture services for personal and corporate clients.', NULL, NULL, 'fa-solid fa-camera', '#5d4037', 'bg-amber-100', '[\"media\", \"photo\", \"film\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(52, 'Courier Services', 33, 'Parcel delivery and express logistics.', NULL, NULL, 'fa-solid fa-truck-fast', '#1565c0', 'bg-blue-50', '[\"delivery\", \"courier\", \"transport\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(53, 'Freight Forwarding', 33, 'Import/export freight and customs management.', NULL, NULL, 'fa-solid fa-ship', '#0d47a1', 'bg-cyan-50', '[\"shipping\", \"logistics\", \"cargo\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(54, 'Renewable Energy', 39, 'Solar, wind, and green energy solutions.', NULL, NULL, 'fa-solid fa-solar-panel', '#f9a825', 'bg-yellow-50', '[\"solar\", \"wind\", \"renewable\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(55, 'Waste Management', 39, 'Recycling, waste collection, and environmental cleanup.', NULL, NULL, 'fa-solid fa-recycle', '#2e7d32', 'bg-green-50', '[\"recycling\", \"environment\", \"waste\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(56, 'E-Commerce', 36, 'Online retail and digital storefront businesses.', NULL, NULL, 'fa-solid fa-store', '#8e24aa', 'bg-purple-50', '[\"online\", \"shop\", \"store\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(57, 'Wholesale Distribution', 36, 'Bulk product reselling and supply chain management.', NULL, NULL, 'fa-solid fa-boxes-stacked', '#6a1b9a', 'bg-purple-100', '[\"distribution\", \"supply\", \"inventory\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(58, 'Software Development', 10, 'Custom app, web, and software solutions.', NULL, NULL, 'fa-solid fa-code', '#1976d2', 'bg-blue-100', '[\"apps\", \"software\", \"development\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(59, 'Networking & IT Support', 10, 'IT maintenance, cabling, and network support.', NULL, NULL, 'fa-solid fa-network-wired', '#0288d1', 'bg-cyan-50', '[\"IT\", \"support\", \"network\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(60, 'Insurance Services', 8, 'Personal and business insurance providers.', NULL, NULL, 'fa-solid fa-shield-halved', '#00695c', 'bg-teal-50', '[\"insurance\", \"cover\", \"policy\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(61, 'Microfinance & Lending', 8, 'Small loans, microcredit, and fintech operations.', NULL, NULL, 'fa-solid fa-hand-holding-dollar', '#2e7d32', 'bg-green-50', '[\"finance\", \"loans\", \"microcredit\"]', 1, 0, NULL, '2025-10-04 06:30:41', '2025-10-04 06:30:41'),
+(62, 'Chicken Farming', 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-10-04 06:43:40', '2025-10-04 06:43:40'),
+(63, 'Updated Test Industry API v2', NULL, 'Updated test industry via PowerShell v2', NULL, NULL, NULL, NULL, NULL, NULL, 1, 300, NULL, '2025-10-04 06:44:40', '2025-10-04 06:46:13'),
+(64, 'Unknow', NULL, 'Unspecified or unknown sector.', NULL, NULL, 'fa-solid fa-circle-question', '#9e9e9e', 'bg-gray-50', NULL, 0, 0, NULL, '2025-10-04 06:53:09', '2025-10-04 08:57:53'),
+(65, 'Technology', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 0, NULL, '2025-10-04 09:07:21', '2025-10-04 09:07:21');
 
 -- --------------------------------------------------------
 
@@ -1044,13 +1546,13 @@ CREATE TABLE `metric_groups` (
 --
 
 INSERT INTO `metric_groups` (`id`, `client_id`, `code`, `name`, `description`, `show_total`, `show_margin`, `graph_color`, `created_at`, `updated_at`, `order_no`) VALUES
-(1, 1, 'REVENUE', 'Revenue', 'Tracks all revenue-related metrics such as total revenue and export revenue.', 1, 0, '#77b31e', '2025-09-19 09:02:07', '2025-09-25 10:05:25', 1),
-(2, 1, 'PROFITS', 'Profits', 'Tracks profitability at various stages: gross, operating, and net profit before tax.', 1, 1, '#2ca02c', '2025-09-19 09:02:07', '2025-09-25 08:36:25', 2),
-(3, 1, 'EMPLOYEES', 'Employee Count', 'Tracks the number of employees across different categories such as full-time, part-time, temporary, and seasonal.', 1, 0, '#0f8bff', '2025-09-19 09:02:07', '2025-09-25 09:56:45', 7),
-(4, 1, 'COST_STRUCTURE', 'Cost Structure', 'Tracks company costs such as direct costs and operational costs.', 1, 0, '#9467bd', '2025-09-24 13:23:04', '2025-09-24 13:23:04', 3),
-(5, 1, 'BALANCE_SHEET', 'Balance Sheet', 'Tracks company assets, liabilities, and equity.', 1, 0, '#8c564b', '2025-09-24 13:23:04', '2025-09-24 13:23:04', 4),
-(6, 1, 'RATIOS', 'Ratios', 'Financial ratios such as current ratio, quick ratio, debt-to-equity, etc.', 1, 0, '#e377c2', '2025-09-24 13:23:04', '2025-09-24 13:23:04', 5),
-(7, 1, 'FUNDS_RECEIVED', 'Funds Received', 'Grants, investments, and other funds received by the company.', 1, 0, '#7f7f7f', '2025-09-24 13:23:04', '2025-09-24 13:23:04', 6);
+(1, 1, 'REVENUE', 'Revenue', 'Tracks all revenue-related metrics such as total revenue and export revenue.', 1, 0, '#77b31e', '2025-09-19 07:02:07', '2025-09-25 08:05:25', 1),
+(2, 1, 'PROFITS', 'Profits', 'Tracks profitability at various stages: gross, operating, and net profit before tax.', 1, 1, '#2ca02c', '2025-09-19 07:02:07', '2025-09-25 06:36:25', 2),
+(3, 1, 'EMPLOYEES', 'Employee Count', 'Tracks the number of employees across different categories such as full-time, part-time, temporary, and seasonal.', 1, 0, '#0f8bff', '2025-09-19 07:02:07', '2025-09-25 07:56:45', 7),
+(4, 1, 'COST_STRUCTURE', 'Cost Structure', 'Tracks company costs such as direct costs and operational costs.', 1, 0, '#9467bd', '2025-09-24 11:23:04', '2025-09-24 11:23:04', 3),
+(5, 1, 'BALANCE_SHEET', 'Balance Sheet', 'Tracks company assets, liabilities, and equity.', 1, 0, '#8c564b', '2025-09-24 11:23:04', '2025-09-24 11:23:04', 4),
+(6, 1, 'RATIOS', 'Ratios', 'Financial ratios such as current ratio, quick ratio, debt-to-equity, etc.', 1, 0, '#e377c2', '2025-09-24 11:23:04', '2025-09-24 11:23:04', 5),
+(7, 1, 'FUNDS_RECEIVED', 'Funds Received', 'Grants, investments, and other funds received by the company.', 1, 0, '#7f7f7f', '2025-09-24 11:23:04', '2025-09-24 11:23:04', 6);
 
 -- --------------------------------------------------------
 
@@ -1085,69 +1587,69 @@ CREATE TABLE `metric_records` (
 --
 
 INSERT INTO `metric_records` (`id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `metric_type_id`, `category_id`, `year_`, `q1`, `q2`, `q3`, `q4`, `total`, `margin_pct`, `unit`, `notes`, `created_at`, `updated_at`, `title`) VALUES
-(1, 1, 11, 2, 3, 1, NULL, 2024, 155000.00, 162000.00, 168000.00, 175000.00, 660000.00, NULL, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:51:43', NULL),
-(2, 1, 11, 2, 3, 1, NULL, 2025, 180000.00, 188000.00, 195000.00, 205000.00, 768000.00, NULL, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:51:43', NULL),
-(3, 1, 11, 2, 3, 2, NULL, 2024, 9300.00, 9800.00, 10204.05, 10600.00, 39904.05, NULL, 'ZAR', '', '2025-09-19 09:04:39', '2025-09-25 04:36:06', NULL),
-(4, 1, 11, 2, 3, 2, NULL, 2025, 100.03, 100.00, 100.05, 101.09, 401.17, NULL, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-24 15:12:11', NULL),
-(5, 1, 11, 2, 3, 3, NULL, 2024, 80001.00, 85000.00, 87001.00, 89005.00, 341007.00, 0.52, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:02:16', NULL),
-(6, 1, 11, 2, 3, 3, NULL, 2025, 1001.00, 99000.00, 102001.00, 105002.00, 307004.00, 0.40, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:02:16', NULL),
-(7, 1, 11, 2, 3, 4, NULL, 2024, 25001.00, 27000.00, 28000.00, 30003.00, 110004.00, 0.17, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:02:16', NULL),
-(8, 1, 11, 2, 3, 4, NULL, 2025, 31001.00, 33000.00, 35000.00, 37003.00, 136004.00, 0.18, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:02:16', NULL),
-(9, 1, 11, 2, 3, 5, NULL, 2024, 18000.00, 19000.00, 20000.00, 21001.00, 78000.00, NULL, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 03:37:30', NULL),
-(10, 1, 11, 2, 3, 5, NULL, 2025, 22001.00, 23000.00, 24000.00, 26001.00, 95002.00, 0.12, 'ZAR', NULL, '2025-09-19 09:04:39', '2025-09-20 04:02:16', NULL),
-(11, 1, 11, 2, 3, 6, NULL, 2024, 20.00, 22.00, 2.00, 25.00, 69.00, NULL, 'count', '', '2025-09-19 09:04:39', '2025-09-25 03:34:10', NULL),
-(13, 1, 11, 2, 3, 7, NULL, 2024, 10.00, 51.00, 6.00, 12.00, 79.00, NULL, 'count', '', '2025-09-19 09:04:39', '2025-09-25 04:24:36', NULL),
-(15, 1, 11, 2, 3, 8, NULL, 2024, 5.00, 6.00, 6.00, 7.00, 24.00, NULL, 'count', '', '2025-09-19 09:04:39', '2025-09-25 03:34:44', NULL),
-(17, 1, 11, 2, 3, 9, NULL, 2024, 2.00, 3.00, 3.00, 4.00, 12.00, NULL, 'count', '', '2025-09-19 09:04:39', '2025-09-25 03:34:18', NULL),
-(22, 1, 11, 2, 3, 3, NULL, 2026, 1003.00, 504.00, 8002.00, 8784.00, 18293.00, NULL, 'ZAR', NULL, '2025-09-20 03:31:05', '2025-09-24 15:18:08', NULL),
-(23, 1, 11, 2, 3, 5, NULL, 2026, 801.00, 200.00, 501.05, 501.00, 2003.05, NULL, 'ZAR', NULL, '2025-09-20 03:36:07', '2025-09-24 13:48:04', NULL),
-(24, 1, 11, 2, 3, 4, NULL, 2026, 101.00, 100.00, 100.00, 100.00, 401.00, NULL, 'ZAR', NULL, '2025-09-20 04:00:42', '2025-09-20 04:02:16', NULL),
-(27, 1, 11, 2, 3, 1, NULL, 2023, 4500.00, 6000.00, 5500.00, 11500.00, 27500.00, NULL, 'ZAR', NULL, '2025-09-20 04:50:37', '2025-09-20 04:51:20', NULL),
-(28, 1, 11, 2, 3, 9, NULL, 2025, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', '', '2025-09-20 04:56:13', '2025-09-25 03:34:16', NULL),
-(29, 1, 11, 2, 3, 1, NULL, 2026, 210000.00, 220000.00, 230000.00, 0.05, 660000.05, NULL, 'ZAR', NULL, '2025-09-24 11:12:57', '2025-09-24 13:56:45', NULL),
-(30, 1, 11, 2, 3, 12, NULL, 2024, NULL, NULL, NULL, NULL, 850000.00, NULL, 'ZAR', NULL, '2025-09-24 13:26:52', '2025-09-24 15:17:53', NULL),
-(31, 1, 11, 2, 3, 13, NULL, 2024, NULL, NULL, NULL, NULL, 500000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(32, 1, 11, 2, 3, 14, NULL, 2024, NULL, NULL, NULL, NULL, 200000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(33, 1, 11, 2, 3, 15, NULL, 2024, NULL, NULL, NULL, NULL, 300000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(34, 1, 11, 2, 3, 13, NULL, 2025, NULL, NULL, NULL, NULL, 600000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(35, 1, 11, 2, 3, 14, NULL, 2025, NULL, NULL, NULL, NULL, 250000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(36, 1, 11, 2, 3, 15, NULL, 2025, NULL, NULL, NULL, NULL, 350000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(37, 1, 11, 2, 3, 16, NULL, 2024, NULL, NULL, NULL, NULL, 75000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(38, 1, 11, 2, 3, 17, NULL, 2024, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(39, 1, 11, 2, 3, 18, NULL, 2024, NULL, NULL, NULL, NULL, 30000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(40, 1, 11, 2, 3, 16, NULL, 2025, NULL, NULL, NULL, NULL, 100000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(41, 1, 11, 2, 3, 17, NULL, 2025, NULL, NULL, NULL, NULL, 60000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(42, 1, 11, 2, 3, 18, NULL, 2025, NULL, NULL, NULL, NULL, 40000.00, NULL, 'ZAR', NULL, '2025-09-24 13:30:07', '2025-09-24 13:30:07', NULL),
-(43, 1, 11, 2, 3, 19, NULL, 2024, NULL, NULL, NULL, NULL, 500000.00, NULL, 'ZAR', NULL, '2025-09-24 13:47:32', '2025-09-24 13:47:32', NULL),
-(44, 1, 11, 2, 3, 20, NULL, 2024, NULL, NULL, NULL, NULL, 200000.00, NULL, 'ZAR', NULL, '2025-09-24 13:47:32', '2025-09-24 13:47:32', NULL),
-(45, 1, 11, 2, 3, 21, NULL, 2024, NULL, NULL, NULL, NULL, 300000.00, NULL, 'ZAR', NULL, '2025-09-24 13:47:32', '2025-09-24 13:47:32', NULL),
-(52, 1, 11, 2, 3, 25, NULL, 2024, NULL, NULL, NULL, NULL, 12.00, NULL, '%', NULL, '2025-09-24 14:01:26', '2025-09-24 14:01:26', NULL),
-(53, 1, 11, 2, 3, 26, NULL, 2024, NULL, NULL, NULL, NULL, 1.80, NULL, 'ratio', NULL, '2025-09-24 14:01:26', '2025-09-24 14:01:26', NULL),
-(54, 1, 11, 2, 3, 27, NULL, 2024, NULL, NULL, NULL, NULL, 0.65, NULL, 'ratio', NULL, '2025-09-24 14:01:26', '2025-09-24 14:01:26', NULL),
-(55, 1, 11, 2, 3, 25, NULL, 2025, NULL, NULL, NULL, NULL, 14.00, NULL, '%', NULL, '2025-09-24 14:01:26', '2025-09-24 14:01:26', NULL),
-(56, 1, 11, 2, 3, 26, NULL, 2025, NULL, NULL, NULL, NULL, 2.00, NULL, 'ratio', '', '2025-09-24 14:01:26', '2025-09-25 03:26:03', NULL),
-(57, 1, 11, 2, 3, 27, NULL, 2025, NULL, NULL, NULL, NULL, 0.55, NULL, 'ratio', NULL, '2025-09-24 14:01:26', '2025-09-24 14:01:26', NULL),
-(60, 1, 11, 2, 3, 10, NULL, 2026, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-24 14:09:27', '2025-09-25 00:34:27', NULL),
-(62, 1, 11, 2, 3, 2, NULL, 2026, 500.00, 20000.00, 500.00, 5000.00, 26000.00, NULL, 'ZAR', '', '2025-09-24 15:01:04', '2025-09-25 04:37:25', NULL),
-(63, 1, 11, 2, 3, 2, NULL, 2023, 6000.00, 12000.00, 10000.00, 14000.00, 42000.00, NULL, 'ZAR', '', '2025-09-24 15:12:34', '2025-09-25 04:36:15', NULL),
-(64, 1, 11, 2, 3, 10, NULL, 2024, 50000.00, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-25 02:17:50', '2025-09-25 02:17:50', NULL),
-(65, 1, 11, 2, 3, 10, 1, 2024, NULL, 75000.00, NULL, NULL, NULL, NULL, 'ZAR', 'Q2 test record with category and notes - Updated API', '2025-09-25 02:18:13', '2025-09-25 02:18:13', NULL),
-(66, 1, 11, 2, 3, 10, 11, 2025, NULL, NULL, NULL, NULL, 105.00, NULL, 'ZAR', 'payments', '2025-09-25 02:34:42', '2025-09-25 02:49:53', NULL),
-(67, 1, 11, 2, 3, 11, 7, 2025, NULL, NULL, NULL, NULL, 5000.00, NULL, 'ZAR', 'Salary', '2025-09-25 02:42:56', '2025-09-25 02:43:25', NULL),
-(68, 1, 11, 2, 3, 11, 9, 2025, NULL, NULL, NULL, NULL, 10000.00, NULL, 'ZAR', 'Travel', '2025-09-25 02:43:09', '2025-09-25 02:43:18', NULL),
-(71, 1, 11, 2, 3, 19, 12, 2025, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', '', '2025-09-25 02:52:35', '2025-09-25 02:52:41', NULL),
-(72, 1, 11, 2, 3, 21, 20, 2025, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', '', '2025-09-25 02:52:56', '2025-09-25 02:53:00', NULL),
-(73, 1, 11, 2, 3, 20, 17, 2025, NULL, NULL, NULL, NULL, 30000.00, NULL, 'ZAR', '', '2025-09-25 02:56:40', '2025-09-25 02:56:45', NULL),
-(74, 1, 11, 2, 3, 22, NULL, 2025, NULL, NULL, NULL, NULL, 10000.00, NULL, 'ZAR', 'Tools & Equipment valued to 100K', '2025-09-25 03:25:03', '2025-09-27 06:33:45', NULL),
-(75, 1, 11, 2, 3, 9, NULL, 2023, 10.00, 8.00, 6.00, 1.00, 25.00, NULL, 'ZAR', '', '2025-09-25 03:34:25', '2025-09-25 03:34:35', NULL),
-(76, 1, 11, 2, 3, 8, NULL, 2025, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-25 03:34:47', '2025-09-25 03:34:47', NULL),
-(77, 1, 11, 2, 3, 10, 8, 2025, NULL, NULL, NULL, NULL, 5000.00, NULL, 'ZAR', 'Promotions', '2025-09-25 03:35:34', '2025-09-25 03:36:20', NULL),
-(79, 1, 11, 2, 3, 11, 8, 2025, NULL, NULL, NULL, NULL, 501.00, NULL, 'ZAR', '', '2025-09-25 03:39:34', '2025-09-25 03:40:10', NULL),
-(80, 1, 11, 2, 3, 19, 14, 2025, NULL, NULL, NULL, NULL, 25000.00, NULL, 'ZAR', '', '2025-09-25 03:40:52', '2025-09-25 03:41:05', NULL),
-(81, 1, 11, 2, 3, 20, 19, 2025, NULL, NULL, NULL, NULL, 45000.00, NULL, 'ZAR', '', '2025-09-25 03:41:20', '2025-09-25 03:41:37', NULL),
-(82, 1, 11, 2, 3, 22, NULL, 2026, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', '', '2025-09-25 03:44:16', '2025-09-27 06:33:46', NULL),
-(83, 1, 11, 2, 3, 7, NULL, 2025, 5.00, 10.00, 5.00, 22.00, 42.00, NULL, 'ZAR', '', '2025-09-25 04:24:39', '2025-09-25 04:24:51', NULL),
-(84, 1, 11, 2, 3, 10, 21, 2025, NULL, NULL, NULL, NULL, 2150.00, NULL, 'ZAR', '', '2025-09-26 11:07:41', '2025-09-26 11:07:52', NULL);
+(1, 1, 11, 2, 3, 1, NULL, 2024, 155000.00, 162000.00, 168000.00, 175000.00, 660000.00, NULL, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:51:43', NULL),
+(2, 1, 11, 2, 3, 1, NULL, 2025, 180000.00, 188000.00, 195000.00, 205000.00, 768000.00, NULL, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:51:43', NULL),
+(3, 1, 11, 2, 3, 2, NULL, 2024, 9300.00, 9800.00, 10204.05, 10600.00, 39904.05, NULL, 'ZAR', '', '2025-09-19 07:04:39', '2025-09-25 02:36:06', NULL),
+(4, 1, 11, 2, 3, 2, NULL, 2025, 100.03, 100.00, 100.05, 101.09, 401.17, NULL, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-24 13:12:11', NULL),
+(5, 1, 11, 2, 3, 3, NULL, 2024, 80001.00, 85000.00, 87001.00, 89005.00, 341007.00, 0.52, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:02:16', NULL),
+(6, 1, 11, 2, 3, 3, NULL, 2025, 1001.00, 99000.00, 102001.00, 105002.00, 307004.00, 0.40, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:02:16', NULL),
+(7, 1, 11, 2, 3, 4, NULL, 2024, 25001.00, 27000.00, 28000.00, 30003.00, 110004.00, 0.17, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:02:16', NULL),
+(8, 1, 11, 2, 3, 4, NULL, 2025, 31001.00, 33000.00, 35000.00, 37003.00, 136004.00, 0.18, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:02:16', NULL),
+(9, 1, 11, 2, 3, 5, NULL, 2024, 18000.00, 19000.00, 20000.00, 21001.00, 78000.00, NULL, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 01:37:30', NULL),
+(10, 1, 11, 2, 3, 5, NULL, 2025, 22001.00, 23000.00, 24000.00, 26001.00, 95002.00, 0.12, 'ZAR', NULL, '2025-09-19 07:04:39', '2025-09-20 02:02:16', NULL),
+(11, 1, 11, 2, 3, 6, NULL, 2024, 20.00, 22.00, 2.00, 25.00, 69.00, NULL, 'count', '', '2025-09-19 07:04:39', '2025-09-25 01:34:10', NULL),
+(13, 1, 11, 2, 3, 7, NULL, 2024, 10.00, 51.00, 6.00, 12.00, 79.00, NULL, 'count', '', '2025-09-19 07:04:39', '2025-09-25 02:24:36', NULL),
+(15, 1, 11, 2, 3, 8, NULL, 2024, 5.00, 6.00, 6.00, 7.00, 24.00, NULL, 'count', '', '2025-09-19 07:04:39', '2025-09-25 01:34:44', NULL),
+(17, 1, 11, 2, 3, 9, NULL, 2024, 2.00, 3.00, 3.00, 4.00, 12.00, NULL, 'count', '', '2025-09-19 07:04:39', '2025-09-25 01:34:18', NULL),
+(22, 1, 11, 2, 3, 3, NULL, 2026, 1003.00, 504.00, 8002.00, 8784.00, 18293.00, NULL, 'ZAR', NULL, '2025-09-20 01:31:05', '2025-09-24 13:18:08', NULL),
+(23, 1, 11, 2, 3, 5, NULL, 2026, 801.00, 200.00, 501.05, 501.00, 2003.05, NULL, 'ZAR', NULL, '2025-09-20 01:36:07', '2025-09-24 11:48:04', NULL),
+(24, 1, 11, 2, 3, 4, NULL, 2026, 101.00, 100.00, 100.00, 100.00, 401.00, NULL, 'ZAR', NULL, '2025-09-20 02:00:42', '2025-09-20 02:02:16', NULL),
+(27, 1, 11, 2, 3, 1, NULL, 2023, 4500.00, 6000.00, 5500.00, 11500.00, 27500.00, NULL, 'ZAR', NULL, '2025-09-20 02:50:37', '2025-09-20 02:51:20', NULL),
+(28, 1, 11, 2, 3, 9, NULL, 2025, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', '', '2025-09-20 02:56:13', '2025-09-25 01:34:16', NULL),
+(29, 1, 11, 2, 3, 1, NULL, 2026, 210000.00, 220000.00, 230000.00, 0.05, 660000.05, NULL, 'ZAR', NULL, '2025-09-24 09:12:57', '2025-09-24 11:56:45', NULL),
+(30, 1, 11, 2, 3, 12, NULL, 2024, NULL, NULL, NULL, NULL, 850000.00, NULL, 'ZAR', NULL, '2025-09-24 11:26:52', '2025-09-24 13:17:53', NULL),
+(31, 1, 11, 2, 3, 13, NULL, 2024, NULL, NULL, NULL, NULL, 500000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(32, 1, 11, 2, 3, 14, NULL, 2024, NULL, NULL, NULL, NULL, 200000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(33, 1, 11, 2, 3, 15, NULL, 2024, NULL, NULL, NULL, NULL, 300000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(34, 1, 11, 2, 3, 13, NULL, 2025, NULL, NULL, NULL, NULL, 600000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(35, 1, 11, 2, 3, 14, NULL, 2025, NULL, NULL, NULL, NULL, 250000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(36, 1, 11, 2, 3, 15, NULL, 2025, NULL, NULL, NULL, NULL, 350000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(37, 1, 11, 2, 3, 16, NULL, 2024, NULL, NULL, NULL, NULL, 75000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(38, 1, 11, 2, 3, 17, NULL, 2024, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(39, 1, 11, 2, 3, 18, NULL, 2024, NULL, NULL, NULL, NULL, 30000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(40, 1, 11, 2, 3, 16, NULL, 2025, NULL, NULL, NULL, NULL, 100000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(41, 1, 11, 2, 3, 17, NULL, 2025, NULL, NULL, NULL, NULL, 60000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(42, 1, 11, 2, 3, 18, NULL, 2025, NULL, NULL, NULL, NULL, 40000.00, NULL, 'ZAR', NULL, '2025-09-24 11:30:07', '2025-09-24 11:30:07', NULL),
+(43, 1, 11, 2, 3, 19, NULL, 2024, NULL, NULL, NULL, NULL, 500000.00, NULL, 'ZAR', NULL, '2025-09-24 11:47:32', '2025-09-24 11:47:32', NULL),
+(44, 1, 11, 2, 3, 20, NULL, 2024, NULL, NULL, NULL, NULL, 200000.00, NULL, 'ZAR', NULL, '2025-09-24 11:47:32', '2025-09-24 11:47:32', NULL),
+(45, 1, 11, 2, 3, 21, NULL, 2024, NULL, NULL, NULL, NULL, 300000.00, NULL, 'ZAR', NULL, '2025-09-24 11:47:32', '2025-09-24 11:47:32', NULL),
+(52, 1, 11, 2, 3, 25, NULL, 2024, NULL, NULL, NULL, NULL, 12.00, NULL, '%', NULL, '2025-09-24 12:01:26', '2025-09-24 12:01:26', NULL),
+(53, 1, 11, 2, 3, 26, NULL, 2024, NULL, NULL, NULL, NULL, 1.80, NULL, 'ratio', NULL, '2025-09-24 12:01:26', '2025-09-24 12:01:26', NULL),
+(54, 1, 11, 2, 3, 27, NULL, 2024, NULL, NULL, NULL, NULL, 0.65, NULL, 'ratio', NULL, '2025-09-24 12:01:26', '2025-09-24 12:01:26', NULL),
+(55, 1, 11, 2, 3, 25, NULL, 2025, NULL, NULL, NULL, NULL, 14.00, NULL, '%', NULL, '2025-09-24 12:01:26', '2025-09-24 12:01:26', NULL),
+(56, 1, 11, 2, 3, 26, NULL, 2025, NULL, NULL, NULL, NULL, 2.00, NULL, 'ratio', '', '2025-09-24 12:01:26', '2025-09-25 01:26:03', NULL),
+(57, 1, 11, 2, 3, 27, NULL, 2025, NULL, NULL, NULL, NULL, 0.55, NULL, 'ratio', NULL, '2025-09-24 12:01:26', '2025-09-24 12:01:26', NULL),
+(60, 1, 11, 2, 3, 10, NULL, 2026, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-24 12:09:27', '2025-09-24 22:34:27', NULL),
+(62, 1, 11, 2, 3, 2, NULL, 2026, 500.00, 20000.00, 500.00, 5000.00, 26000.00, NULL, 'ZAR', '', '2025-09-24 13:01:04', '2025-09-25 02:37:25', NULL),
+(63, 1, 11, 2, 3, 2, NULL, 2023, 6000.00, 12000.00, 10000.00, 14000.00, 42000.00, NULL, 'ZAR', '', '2025-09-24 13:12:34', '2025-09-25 02:36:15', NULL),
+(64, 1, 11, 2, 3, 10, NULL, 2024, 50000.00, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-25 00:17:50', '2025-09-25 00:17:50', NULL),
+(65, 1, 11, 2, 3, 10, 1, 2024, NULL, 75000.00, NULL, NULL, NULL, NULL, 'ZAR', 'Q2 test record with category and notes - Updated API', '2025-09-25 00:18:13', '2025-09-25 00:18:13', NULL),
+(66, 1, 11, 2, 3, 10, 11, 2025, NULL, NULL, NULL, NULL, 105.00, NULL, 'ZAR', 'payments', '2025-09-25 00:34:42', '2025-09-25 00:49:53', NULL),
+(67, 1, 11, 2, 3, 11, 7, 2025, NULL, NULL, NULL, NULL, 5000.00, NULL, 'ZAR', 'Salary', '2025-09-25 00:42:56', '2025-09-25 00:43:25', NULL),
+(68, 1, 11, 2, 3, 11, 9, 2025, NULL, NULL, NULL, NULL, 10000.00, NULL, 'ZAR', 'Travel', '2025-09-25 00:43:09', '2025-09-25 00:43:18', NULL),
+(71, 1, 11, 2, 3, 19, 12, 2025, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', '', '2025-09-25 00:52:35', '2025-09-25 00:52:41', NULL),
+(72, 1, 11, 2, 3, 21, 20, 2025, NULL, NULL, NULL, NULL, 50000.00, NULL, 'ZAR', '', '2025-09-25 00:52:56', '2025-09-25 00:53:00', NULL),
+(73, 1, 11, 2, 3, 20, 17, 2025, NULL, NULL, NULL, NULL, 30000.00, NULL, 'ZAR', '', '2025-09-25 00:56:40', '2025-09-25 00:56:45', NULL),
+(74, 1, 11, 2, 3, 22, NULL, 2025, NULL, NULL, NULL, NULL, 10000.00, NULL, 'ZAR', 'Tools & Equipment valued to 100K', '2025-09-25 01:25:03', '2025-09-27 04:33:45', NULL),
+(75, 1, 11, 2, 3, 9, NULL, 2023, 10.00, 8.00, 6.00, 1.00, 25.00, NULL, 'ZAR', '', '2025-09-25 01:34:25', '2025-09-25 01:34:35', NULL),
+(76, 1, 11, 2, 3, 8, NULL, 2025, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', NULL, '2025-09-25 01:34:47', '2025-09-25 01:34:47', NULL),
+(77, 1, 11, 2, 3, 10, 8, 2025, NULL, NULL, NULL, NULL, 5000.00, NULL, 'ZAR', 'Promotions', '2025-09-25 01:35:34', '2025-09-25 01:36:20', NULL),
+(79, 1, 11, 2, 3, 11, 8, 2025, NULL, NULL, NULL, NULL, 501.00, NULL, 'ZAR', '', '2025-09-25 01:39:34', '2025-09-25 01:40:10', NULL),
+(80, 1, 11, 2, 3, 19, 14, 2025, NULL, NULL, NULL, NULL, 25000.00, NULL, 'ZAR', '', '2025-09-25 01:40:52', '2025-09-25 01:41:05', NULL),
+(81, 1, 11, 2, 3, 20, 19, 2025, NULL, NULL, NULL, NULL, 45000.00, NULL, 'ZAR', '', '2025-09-25 01:41:20', '2025-09-25 01:41:37', NULL),
+(82, 1, 11, 2, 3, 22, NULL, 2026, NULL, NULL, NULL, NULL, NULL, NULL, 'ZAR', '', '2025-09-25 01:44:16', '2025-09-27 04:33:46', NULL),
+(83, 1, 11, 2, 3, 7, NULL, 2025, 5.00, 10.00, 5.00, 22.00, 42.00, NULL, 'ZAR', '', '2025-09-25 02:24:39', '2025-09-25 02:24:51', NULL),
+(84, 1, 11, 2, 3, 10, 21, 2025, NULL, NULL, NULL, NULL, 2150.00, NULL, 'ZAR', '', '2025-09-26 09:07:41', '2025-09-26 09:07:52', NULL);
 
 -- --------------------------------------------------------
 
@@ -1167,34 +1669,37 @@ CREATE TABLE `metric_types` (
   `graph_color` varchar(16) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `period_type` enum('QUARTERLY','YEARLY','YEARLY_SIDE_BY_SIDE') DEFAULT 'QUARTERLY'
+  `period_type` enum('QUARTERLY','YEARLY','YEARLY_SIDE_BY_SIDE') DEFAULT 'QUARTERLY',
+  `min_target` decimal(10,2) DEFAULT NULL,
+  `ideal_target` decimal(10,2) DEFAULT NULL,
+  `formula_metadata` json DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Updated to support YEARLY_SIDE_BY_SIDE layout for category-based metrics';
 
 --
 -- Dumping data for table `metric_types`
 --
 
-INSERT INTO `metric_types` (`id`, `group_id`, `code`, `name`, `description`, `unit`, `show_total`, `show_margin`, `graph_color`, `created_at`, `updated_at`, `period_type`) VALUES
-(1, 1, 'REVENUE_TOTAL', 'Revenue', 'Total revenue earned during the year, tracked quarterly.', 'ZAR', 1, 0, '#1f77b4', '2025-09-19 09:03:13', '2025-09-19 09:03:13', 'QUARTERLY'),
-(2, 1, 'REVENUE_EXPORT', 'Export Revenue', 'Revenue generated from exports outside the home country.', 'ZAR', 1, 0, '#ff7f0e', '2025-09-19 09:03:13', '2025-09-19 09:03:13', 'QUARTERLY'),
-(3, 2, 'GROSS_PROFIT', 'Gross Profit', 'Revenue minus cost of goods sold (COGS).', 'ZAR', 1, 1, '#9613dd', '2025-09-19 09:03:13', '2025-09-24 16:39:47', 'QUARTERLY'),
-(4, 2, 'OPERATING_PROFIT', 'Operating Profit', 'Profit from core operations (EBIT).', 'ZAR', 1, 1, '#98df8a', '2025-09-19 09:03:13', '2025-09-19 09:03:13', 'QUARTERLY'),
-(5, 2, 'NET_PROFIT_BEFORE_TAX', 'Net Profit Before Tax', 'Profit after all operating and finance costs, before income tax.', 'ZAR', 1, 1, '#bcbd22', '2025-09-19 09:03:13', '2025-09-19 09:03:13', 'QUARTERLY'),
-(6, 3, 'EMP_FULLTIME', 'Full-time Employees', 'Number of full-time employees.', 'COUNT', 0, 0, '#d62728', '2025-09-19 09:03:13', '2025-09-24 16:41:51', 'QUARTERLY'),
-(7, 3, 'EMP_PARTTIME', 'Part-time Employees', 'Number of part-time employees.', 'COUNT', 0, 0, '#ff9896', '2025-09-19 09:03:13', '2025-09-24 16:41:59', 'QUARTERLY'),
-(8, 3, 'EMP_TEMP', 'Temporary Employees', 'Number of temporary employees.', 'COUNT', 0, 0, '#9467bd', '2025-09-19 09:03:13', '2025-09-24 16:42:12', 'QUARTERLY'),
-(9, 3, 'EMP_SEASONAL', 'Seasonal Employees', 'Number of seasonal employees.', 'COUNT', 0, 0, '#c5b0d5', '2025-09-19 09:03:13', '2025-09-24 16:42:06', 'QUARTERLY'),
-(10, 4, 'DIRECT_COSTS', 'Direct Costs', 'Cost of goods/services sold (COGS).', 'ZAR', 1, 0, '#bcbd22', '2025-09-24 13:23:29', '2025-09-26 11:06:53', 'YEARLY_SIDE_BY_SIDE'),
-(11, 4, 'OPERATING_COSTS', 'Operational Costs', 'Overhead and operating expenses.', 'ZAR', 1, 0, '#17becf', '2025-09-24 13:23:29', '2025-09-25 01:49:44', 'YEARLY_SIDE_BY_SIDE'),
-(12, 1, 'REVENUE_ANNUAL', 'Annual Revenue Summary', 'Yearly revenue overview', 'ZAR', 1, 0, '#ff6b6b', '2025-09-24 13:24:50', '2025-09-24 13:24:50', 'YEARLY'),
-(19, 5, 'ASSETS_TOTAL', 'Total Assets', 'Sum of all assets owned by the company.', 'ZAR', 1, 0, '#1f77b4', '2025-09-24 13:38:38', '2025-09-25 02:50:36', 'YEARLY_SIDE_BY_SIDE'),
-(20, 5, 'LIABILITIES_TOTAL', 'Total Liabilities', 'Sum of all debts and obligations owed by the company.', 'ZAR', 1, 0, '#ff7f0e', '2025-09-24 13:38:38', '2025-09-25 02:50:36', 'YEARLY_SIDE_BY_SIDE'),
-(22, 7, 'FUNDS_GRANTS', 'Grants Received', 'Grant funding received by the company.', 'ZAR', 1, 0, '#9467bd', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY'),
-(23, 7, 'FUNDS_INVESTMENTS', 'Investments Received', 'Equity or capital investments received.', 'ZAR', 1, 0, '#8c564b', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY'),
-(24, 7, 'FUNDS_LOANS', 'Loans Received', 'Loans and credit facilities received.', 'ZAR', 1, 0, '#e377c2', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY'),
-(25, 6, 'RATIO_PROFIT_MARGIN', 'Profit Margin %', 'Net profit as a percentage of revenue.', '%', 0, 0, '#17becf', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY'),
-(26, 6, 'RATIO_CURRENT', 'Current Ratio', 'Current assets divided by current liabilities.', 'ratio', 0, 0, '#bcbd22', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY'),
-(27, 6, 'RATIO_DEBT_EQUITY', 'Debt-to-Equity Ratio', 'Total liabilities divided by equity.', 'ratio', 0, 0, '#ff9896', '2025-09-24 13:38:39', '2025-09-24 13:38:39', 'YEARLY');
+INSERT INTO `metric_types` (`id`, `group_id`, `code`, `name`, `description`, `unit`, `show_total`, `show_margin`, `graph_color`, `created_at`, `updated_at`, `period_type`, `min_target`, `ideal_target`, `formula_metadata`) VALUES
+(1, 1, 'REVENUE_TOTAL', 'Revenue', 'Total revenue earned during the year, tracked quarterly.', 'ZAR', 1, 0, '#1f77b4', '2025-09-19 07:03:13', '2025-09-19 07:03:13', 'QUARTERLY', NULL, NULL, NULL),
+(2, 1, 'REVENUE_EXPORT', 'Export Revenue', 'Revenue generated from exports outside the home country.', 'ZAR', 1, 0, '#ff7f0e', '2025-09-19 07:03:13', '2025-09-19 07:03:13', 'QUARTERLY', NULL, NULL, NULL),
+(3, 2, 'GROSS_PROFIT', 'Gross Profit', 'Revenue minus cost of goods sold (COGS).', 'ZAR', 1, 1, '#9613dd', '2025-09-19 07:03:13', '2025-09-24 14:39:47', 'QUARTERLY', NULL, NULL, NULL),
+(4, 2, 'OPERATING_PROFIT', 'Operating Profit', 'Profit from core operations (EBIT).', 'ZAR', 1, 1, '#98df8a', '2025-09-19 07:03:13', '2025-09-19 07:03:13', 'QUARTERLY', NULL, NULL, NULL),
+(5, 2, 'NET_PROFIT_BEFORE_TAX', 'Net Profit Before Tax', 'Profit after all operating and finance costs, before income tax.', 'ZAR', 1, 1, '#bcbd22', '2025-09-19 07:03:13', '2025-09-19 07:03:13', 'QUARTERLY', NULL, NULL, NULL),
+(6, 3, 'EMP_FULLTIME', 'Full-time Employees', 'Number of full-time employees.', 'COUNT', 0, 0, '#d62728', '2025-09-19 07:03:13', '2025-09-24 14:41:51', 'QUARTERLY', NULL, NULL, NULL),
+(7, 3, 'EMP_PARTTIME', 'Part-time Employees', 'Number of part-time employees.', 'COUNT', 0, 0, '#ff9896', '2025-09-19 07:03:13', '2025-09-24 14:41:59', 'QUARTERLY', NULL, NULL, NULL),
+(8, 3, 'EMP_TEMP', 'Temporary Employees', 'Number of temporary employees.', 'COUNT', 0, 0, '#9467bd', '2025-09-19 07:03:13', '2025-09-24 14:42:12', 'QUARTERLY', NULL, NULL, NULL),
+(9, 3, 'EMP_SEASONAL', 'Seasonal Employees', 'Number of seasonal employees.', 'COUNT', 0, 0, '#c5b0d5', '2025-09-19 07:03:13', '2025-09-24 14:42:06', 'QUARTERLY', NULL, NULL, NULL),
+(10, 4, 'DIRECT_COSTS', 'Direct Costs', 'Cost of goods/services sold (COGS).', 'ZAR', 1, 0, '#bcbd22', '2025-09-24 11:23:29', '2025-09-26 09:06:53', 'YEARLY_SIDE_BY_SIDE', NULL, NULL, NULL),
+(11, 4, 'OPERATING_COSTS', 'Operational Costs', 'Overhead and operating expenses.', 'ZAR', 1, 0, '#17becf', '2025-09-24 11:23:29', '2025-09-24 23:49:44', 'YEARLY_SIDE_BY_SIDE', NULL, NULL, NULL),
+(12, 1, 'REVENUE_ANNUAL', 'Annual Revenue Summary', 'Yearly revenue overview', 'ZAR', 1, 0, '#ff6b6b', '2025-09-24 11:24:50', '2025-09-24 11:24:50', 'YEARLY', NULL, NULL, NULL),
+(19, 5, 'ASSETS_TOTAL', 'Total Assets', 'Sum of all assets owned by the company.', 'ZAR', 1, 0, '#1f77b4', '2025-09-24 11:38:38', '2025-09-25 00:50:36', 'YEARLY_SIDE_BY_SIDE', NULL, NULL, NULL),
+(20, 5, 'LIABILITIES_TOTAL', 'Total Liabilities', 'Sum of all debts and obligations owed by the company.', 'ZAR', 1, 0, '#ff7f0e', '2025-09-24 11:38:38', '2025-09-25 00:50:36', 'YEARLY_SIDE_BY_SIDE', NULL, NULL, NULL),
+(22, 7, 'FUNDS_GRANTS', 'Grants Received', 'Grant funding received by the company.', 'ZAR', 1, 0, '#9467bd', '2025-09-24 11:38:39', '2025-09-24 11:38:39', 'YEARLY', NULL, NULL, NULL),
+(23, 7, 'FUNDS_INVESTMENTS', 'Investments Received', 'Equity or capital investments received.', 'ZAR', 1, 0, '#8c564b', '2025-09-24 11:38:39', '2025-09-24 11:38:39', 'YEARLY', NULL, NULL, NULL),
+(24, 7, 'FUNDS_LOANS', 'Loans Received', 'Loans and credit facilities received.', 'ZAR', 1, 0, '#e377c2', '2025-09-24 11:38:39', '2025-09-24 11:38:39', 'YEARLY', NULL, NULL, NULL),
+(25, 6, 'RATIO_PROFIT_MARGIN', 'Profit Margin %', 'Net profit as a percentage of revenue.', '%', 0, 0, '#17becf', '2025-09-24 11:38:39', '2025-10-03 09:28:15', 'YEARLY', 40.00, 60.00, '{\"unit\": \"%\", \"formula\": \"GROSS_PROFIT / REVENUE_TOTAL\", \"decimals\": 1, \"variables\": [\"GROSS_PROFIT\", \"REVENUE_TOTAL\"]}'),
+(26, 6, 'RATIO_CURRENT', 'Current Ratio', 'Current assets divided by current liabilities.', 'ratio', 0, 0, '#bcbd22', '2025-09-24 11:38:39', '2025-10-03 09:28:15', 'YEARLY', 1.00, 2.00, '{\"unit\": \"ratio\", \"formula\": \"ASSETS_TOTAL / LIABILITIES_TOTAL\", \"decimals\": 2, \"variables\": [\"ASSETS_TOTAL\", \"LIABILITIES_TOTAL\"]}'),
+(27, 6, 'RATIO_DEBT_EQUITY', 'Debt-to-Equity Ratio', 'Total liabilities divided by equity.', 'ratio', 0, 0, '#ff9896', '2025-09-24 11:38:39', '2025-10-03 09:28:15', 'YEARLY', 0.50, 1.50, '{\"unit\": \"ratio\", \"formula\": \"LIABILITIES_TOTAL / EQUITY_TOTAL\", \"decimals\": 2, \"variables\": [\"LIABILITIES_TOTAL\", \"EQUITY_TOTAL\"]}');
 
 -- --------------------------------------------------------
 
@@ -1743,12 +2248,15 @@ INSERT INTO `nodes` (`id`, `type`, `company_id`, `data`, `parent_id`, `created_b
 (1987, 'compliance_questionnaire', 11, '{\"notes\": \"\", \"company_id\": \"11\", \"last_updated\": \"2025-08-29T09:52:54.001Z\", \"compliance_items\": [{\"id\": \"compliance_1\", \"status\": \"pending\", \"category\": \"financial\", \"priority\": \"high\", \"description\": \"Has an appointed monthly bookkeeper that processes business finances. Either has a Raizcorp Bookkeeper, External Bookkeeper, Internal Bookkeeper or can evidence that he does his own books\", \"sustainability_brick_name\": \"Bookkeeper\"}, {\"id\": \"compliance_2\", \"status\": \"pending\", \"category\": \"financial\", \"priority\": \"high\", \"description\": \"Has in-house accounting software or bookkeeper and uses software such Sage, Xero or similar (Not Microsoft Excel)\", \"sustainability_brick_name\": \"Accounting System\"}, {\"id\": \"compliance_3\", \"status\": \"pending\", \"category\": \"regulatory\", \"priority\": \"medium\", \"description\": \"Has legal, current and paid-for antivirus software loaded on all company computers and servers\", \"sustainability_brick_name\": \"Anti-Virus Software\"}, {\"id\": \"compliance_4\", \"status\": \"pending\", \"category\": \"regulatory\", \"priority\": \"critical\", \"description\": \"Meets specific compliance requirements based on business / industry research. Can evidence that he has industry specific certifications or accreditations\", \"sustainability_brick_name\": \"Industry Specific Regulatory Compliance\"}, {\"id\": \"compliance_5\", \"status\": \"pending\", \"category\": \"financial\", \"priority\": \"high\", \"description\": \"Can produce professional, up to date and high quality management accounts for the last 12 months\", \"sustainability_brick_name\": \"12 Months Management Accounts\"}, {\"id\": \"compliance_6\", \"status\": \"pending\", \"category\": \"legal\", \"priority\": \"high\", \"description\": \"Has an understanding of the legal compliance landscape especially with respect to employment of staff:- e.g., BCEA,SDL,OHS, EE, Tax\", \"sustainability_brick_name\": \"Getting Compliant\"}, {\"id\": \"compliance_7\", \"status\": \"pending\", \"category\": \"legal\", \"priority\": \"medium\", \"description\": \"Has a central digital or paper - based policy file in which policies are filed and can be easily accessed\", \"sustainability_brick_name\": \"Policy File\"}, {\"id\": \"compliance_8\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"high\", \"description\": \"Has an effective payroll system that does all statutory calculations or has an outsourced payroll service provider\", \"sustainability_brick_name\": \"Payroll System\"}, {\"id\": \"compliance_9\", \"status\": \"pending\", \"category\": \"tax\", \"priority\": \"critical\", \"description\": \"All staff are registered for PAYE. All outstanding PAYE is paid\", \"sustainability_brick_name\": \"PAYE Registered and Paid\"}, {\"id\": \"compliance_10\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"critical\", \"description\": \"The company meets Basic Conditions of Employment Legislative Compliance requirements\", \"sustainability_brick_name\": \"Basic Conditions of Employment Compliance\"}, {\"id\": \"compliance_11\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"critical\", \"description\": \"The company is registered with The Unemployment Insurance Fund and all outstanding Unemployment Insurance for employees is paid\", \"sustainability_brick_name\": \"Unemployment Insurance Registered and Paid\"}, {\"id\": \"compliance_12\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"high\", \"description\": \"The company is registered to pay Skills Development Levies for its employees and all outstanding Skills Development Levies are paid\", \"sustainability_brick_name\": \"SDL Registered and Paid\"}, {\"id\": \"compliance_13\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"medium\", \"description\": \"The legal leave policy has been put in place by the company\", \"sustainability_brick_name\": \"Leave Policy\"}, {\"id\": \"compliance_14\", \"status\": \"pending\", \"category\": \"tax\", \"priority\": \"critical\", \"description\": \"The company is registered to pay company tax and all outstanding company tax is paid\", \"sustainability_brick_name\": \"Company Tax Registered and Paid\"}, {\"id\": \"compliance_15\", \"status\": \"pending\", \"category\": \"intellectual_property\", \"priority\": \"low\", \"description\": \"The company has valuable Intellectual Property, that is patented / registered or copyright protected\", \"sustainability_brick_name\": \"Registered Patents, Trademarks and Copyrights\"}, {\"id\": \"compliance_16\", \"status\": \"pending\", \"category\": \"intellectual_property\", \"priority\": \"low\", \"description\": \"The company has a logo and name and logo are registered with CIPC\", \"sustainability_brick_name\": \"Logo Registration\"}, {\"id\": \"compliance_17\", \"status\": \"pending\", \"category\": \"financial\", \"priority\": \"medium\", \"description\": \"The company has a standardised management pack used to report on the overall status of the business on a monthly / quarterly basis\", \"sustainability_brick_name\": \"Management Pack\"}, {\"id\": \"compliance_18\", \"status\": \"pending\", \"category\": \"insurance\", \"priority\": \"medium\", \"description\": \"The company has a short-term insurance policy to cover assets\", \"sustainability_brick_name\": \"Short Term Insurance\"}, {\"id\": \"compliance_19\", \"status\": \"pending\", \"category\": \"employment\", \"priority\": \"high\", \"description\": \"The company meets Employment Equity compliance requirements (employs 50 or more employees or exceeds annual turnover threshold for your sector)\", \"sustainability_brick_name\": \"Employment Equity\"}, {\"id\": \"compliance_20\", \"status\": \"pending\", \"category\": \"health_safety\", \"priority\": \"critical\", \"description\": \"The company meets Occupational Health and Safety requirements\", \"sustainability_brick_name\": \"Occupational Health & Safety\"}, {\"id\": \"compliance_21\", \"status\": \"pending\", \"category\": \"health_safety\", \"priority\": \"critical\", \"description\": \"Has a current compensation certificate for occupational injuries and diseases at the company\", \"sustainability_brick_name\": \"COIDA\"}, {\"id\": \"compliance_22\", \"status\": \"pending\", \"category\": \"tax\", \"priority\": \"high\", \"description\": \"Renewal of company VAT registration\", \"sustainability_brick_name\": \"VAT Registered\"}, {\"id\": \"compliance_23\", \"status\": \"pending\", \"category\": \"tax\", \"priority\": \"critical\", \"description\": \"Payment of company VAT\", \"sustainability_brick_name\": \"VAT Paid\"}], \"overall_compliance_score\": 0}', NULL, NULL, NULL, '2025-08-29 11:52:54', '2025-08-29 11:52:54'),
 (1988, 'assessment_introduction', 20, '{\"section_id\": \"introduction\", \"is_complete\": false, \"last_updated\": \"2025-09-02T03:43:13.282Z\", \"response_date\": \"2025-09-02T03:43:13.282Z\", \"questionnaire_id\": \"business-assessment-v1\", \"question_responses\": [{\"value\": \"ssd\", \"question_id\": \"intro_business_description\", \"response_date\": \"2025-09-02T03:43:13.282Z\"}, {\"value\": \"ju\", \"question_id\": \"intro_business_motivation\", \"response_date\": \"2025-09-02T03:43:13.282Z\"}]}', NULL, NULL, NULL, '2025-08-29 12:34:51', '2025-09-02 05:43:13'),
 (1989, 'gps_targets', 20, '{\"finance\": {\"name\": \"Finance Targets\", \"targets\": [{\"status\": \"not_started\", \"due_date\": \"2024-03-31\", \"evidence\": \"\", \"priority\": \"critical\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"assigned_to\": \"CFO\", \"description\": \"Introduce inhouse accounting system\", \"progress_percentage\": 0}, {\"status\": \"in_progress\", \"due_date\": \"2024-03-15\", \"evidence\": \"\", \"priority\": \"high\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"assigned_to\": \"Finance Manager\", \"description\": \"Create a budget for the business\", \"progress_percentage\": 60}, {\"status\": \"not_started\", \"due_date\": \"2024-03-15\", \"evidence\": \"\", \"priority\": \"high\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Set targets based on budget for the business\", \"progress_percentage\": 0}, {\"status\": \"in_progress\", \"due_date\": \"2024-03-15\", \"evidence\": \"\", \"priority\": \"medium\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Introduce booking system.\", \"progress_percentage\": 30}], \"completion_percentage\": 0}, \"company_id\": \"20\", \"is_complete\": false, \"target_date\": \"2025-09-01T08:57:31.407Z\", \"last_updated\": \"2025-09-01T08:57:41.249Z\", \"sales_marketing\": {\"name\": \"Sales & Marketing Targets\", \"targets\": [{\"status\": \"not_started\", \"due_date\": \"\", \"evidence\": \"\", \"priority\": \"high\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"assigned_to\": \"Marketing Manager\", \"description\": \"Create a marketing strategy for the business.\", \"progress_percentage\": 0}, {\"status\": \"not_started\", \"due_date\": \"\", \"evidence\": \"\", \"priority\": \"low\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Visit the Ixopo Buddhist retreat for Ideas.\", \"progress_percentage\": 0}], \"completion_percentage\": 0}, \"strategy_general\": {\"name\": \"Strategy/General Targets\", \"targets\": [{\"status\": \"in_progress\", \"due_date\": \"2024-04-30\", \"evidence\": \"\", \"priority\": \"high\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Complete the business certification.\", \"progress_percentage\": 25}, {\"status\": \"not_started\", \"due_date\": \"2024-04-30\", \"evidence\": \"\", \"priority\": \"high\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Complete the certification of the equipment.\", \"progress_percentage\": 0}, {\"status\": \"in_progress\", \"due_date\": \"2024-03-15\", \"evidence\": \"\", \"priority\": \"medium\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Implement business systems manual\", \"progress_percentage\": 50}, {\"status\": \"in_progress\", \"due_date\": \"2024-03-15\", \"evidence\": \"CIPC documents showing directors and shareholding\", \"priority\": \"critical\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Remove existing partner from Share holding in the business.\", \"progress_percentage\": 75}, {\"status\": \"completed\", \"due_date\": \"2024-03-31\", \"evidence\": \"New Brochure is done and service is in place.\", \"priority\": \"medium\", \"date_added\": \"2025-09-01T08:57:31.407Z\", \"description\": \"Introduce new service like perm make up and IV drips.\", \"progress_percentage\": 100}], \"completion_percentage\": 0}, \"personal_development\": {\"name\": \"Personal Development Targets\", \"targets\": [{\"status\": \"not_started\", \"priority\": \"medium\", \"date_added\": \"2025-09-01T08:57:39.241Z\", \"description\": \"\", \"progress_percentage\": 0}], \"completion_percentage\": 0}}', NULL, NULL, NULL, '2025-09-01 10:57:32', '2025-09-01 10:57:32'),
-(1990, 'consolidated_assessment', 20, '{\"id\": \"assessment_20_business-assessment-v1\", \"metadata\": {\"started_at\": \"2025-09-02T03:43:13.282Z\", \"is_complete\": false, \"last_activity\": \"2025-09-03T02:03:41.578Z\", \"total_questions\": 26, \"current_section_index\": 0, \"total_answered_questions\": 2, \"overall_completion_percentage\": 8}, \"responses\": {\"intro_business_motivation\": \"ju\", \"intro_business_description\": \"ssd\"}, \"company_id\": 20, \"created_at\": \"2025-09-02T03:43:13.282Z\", \"updated_at\": \"2025-09-03T02:03:41.578Z\", \"questionnaire_id\": \"business-assessment-v1\", \"section_completion\": {\"introduction\": {\"section_id\": \"introduction\", \"is_complete\": false, \"last_updated\": \"2025-09-02T03:43:13.282Z\", \"total_questions\": 5, \"answered_questions\": 2}, \"sars_compliance\": {\"section_id\": \"sars_compliance\", \"is_complete\": false, \"last_updated\": \"2025-09-03T02:03:41.579Z\", \"total_questions\": 6, \"answered_questions\": 0}, \"self_assessment\": {\"section_id\": \"self_assessment\", \"is_complete\": false, \"last_updated\": \"2025-09-03T02:03:41.579Z\", \"total_questions\": 6, \"answered_questions\": 0}, \"strategy_cascade\": {\"section_id\": \"strategy_cascade\", \"is_complete\": false, \"last_updated\": \"2025-09-03T02:03:41.579Z\", \"total_questions\": 5, \"answered_questions\": 0}, \"products_services\": {\"section_id\": \"products_services\", \"is_complete\": false, \"last_updated\": \"2025-09-03T02:03:41.579Z\", \"total_questions\": 4, \"answered_questions\": 0}}}', NULL, NULL, NULL, '2025-09-03 02:03:41', '2025-09-03 02:03:41'),
+(1990, 'consolidated_assessment', 20, '{\"metadata\": {\"last_updated\": \"2025-10-03T10:51:46.359Z\", \"current_section\": \"sars_compliance\", \"answered_questions\": 26, \"progress_percentage\": 104}, \"responses\": {\"sc_how_win\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sa_strengths\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sc_where_play\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sars_vat_status\": \"non_compliant\", \"sc_capabilities\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"ps_primary_focus\": \"products\", \"ps_target_market\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sa_sales_ability\": 7, \"sars_paye_status\": \"compliant\", \"ps_offerings_list\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"ps_revenue_streams\": 1, \"sars_tax_clearance\": true, \"intro_business_stage\": \"growth\", \"sa_improvement_areas\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sa_leadership_skills\": 9, \"sa_marketing_ability\": 7, \"sars_compliance_notes\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sc_management_systems\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sc_winning_aspiration\": \"Okay, perfect. That\'s definitely worked. Now, the issue that I have is this with the assessment tab\", \"sars_income_tax_status\": \"non_compliant\", \"intro_registration_date\": \"2006-10-31\", \"sars_outstanding_issues\": true, \"intro_operating_duration\": \"1_to_3_years\", \"intro_business_motivation\": \"Please provide a brief description of your business *\\n\", \"intro_business_description\": \"Please provide a brief description of your business *\\n\", \"sa_accounting_understanding\": 5}, \"updated_at\": \"2025-10-03T10:51:46.359Z\"}', NULL, NULL, NULL, '2025-09-03 02:03:41', '2025-10-03 12:51:47'),
 (1991, 'consolidated_assessment', 11, '{\"metadata\": {\"last_updated\": \"2025-09-03T10:23:07.777Z\", \"current_section\": \"introduction\", \"answered_questions\": 25, \"progress_percentage\": 100}, \"responses\": {\"sc_how_win\": \"uniqueness - collaboration with other industry players. \", \"sa_strengths\": \"time keeping; ensure quality control of clients-garments. excellent communication skills. \", \"sc_where_play\": \"I want to play locally, be a local supplier within KCD. channels - schools; medical practitioners; corporates and farmers. including the hospitality industry. \", \"sars_vat_status\": \"non_compliant\", \"sc_capabilities\": \"sewing and designing skills and manufacturing skills. management skills, marketing skills and strategies.\", \"ps_primary_focus\": \"products\", \"ps_target_market\": \"Individuals, schools, businesses using PPE, medical practitioners.\", \"sa_sales_ability\": 6, \"sars_paye_status\": \"non_compliant\", \"ps_offerings_list\": \"Uniforms for schools, PPE and Scrubs. Customized outfits and bags.\", \"ps_revenue_streams\": \"1\", \"sars_tax_clearance\": true, \"intro_business_stage\": \"startup\", \"sa_improvement_areas\": \"need help with patternmaking, assistance with financial management skills including costing. need more business skills and mentoring ie HR, \", \"sa_leadership_skills\": 7, \"sa_marketing_ability\": 6, \"sars_compliance_notes\": \"New business venture.\", \"sc_management_systems\": \"SACAS - ISO systems - quality control systems: use whiteboard to tracks orders. need a sales and marketing system. accounting systems, HR and payroll systems. Health and Safety systems.\", \"sc_winning_aspiration\": \"I see myself supplying uniforms, PPE locally and sewing for individuals.\", \"sars_income_tax_status\": \"non_compliant\", \"intro_registration_date\": \"2024-02-07\", \"sars_outstanding_issues\": false, \"intro_business_motivation\": \"I want to make money, and this is my passion. Current state of the business. Currently sales of R 20 000. Cash in the bank R9000. There is no sales coming in at the moment....\", \"intro_business_description\": \"Sewing and tailoring for individual. Want to upgrade to do bulk sewing. Focusing on uniforms and PPE and scrubs.\", \"sa_accounting_understanding\": 5}, \"updated_at\": \"2025-09-03T10:23:07.777Z\"}', NULL, NULL, NULL, '2025-09-03 02:05:02', '2025-09-03 12:23:07'),
 (1992, 'session_feedback', 11, '{\"session_date\": \"2025-09-03\", \"key_takeaways\": \"Financial palming is key\", \"other_comments\": \"\", \"session_rating\": 3, \"signature_data\": \"data:image/png;base64,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\", \"consultant_name\": \"Mar\", \"client_signature\": \"Ndu\", \"next_session_focus\": \"HR\"}', NULL, NULL, NULL, '2025-09-03 03:32:27', '2025-09-03 03:57:21');
 INSERT INTO `nodes` (`id`, `type`, `company_id`, `data`, `parent_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
 (1993, 'session_feedback', 11, '{\"session_date\": \"2025-09-03\", \"key_takeaways\": \"Financial palming is key\", \"other_comments\": \"\", \"session_rating\": 3, \"signature_data\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADICAYAAAAeGRPoAAAQAElEQVR4AeydC7xmU/2H10v3C0MUpQzdDJUZSiIZJgyhi0u5ziH6hGqUMo1LGpcUCSXKSEOSDJVbxqXMSMxIYyS3yMitxnUoRE3+/2eP9drnnXPe855z3v2++/LM57PP3nvttdde61l73u9ea/3Wby313HPPPe8mA98B3wHfAd8B34FivwNLBf9JQAISkIAEJFB4AtkKeuHxWAAJSEACEpBAMQgo6MWoJ3MpAQlIQAISaEqgyILetGBelIAEJCABCVSJgIJepdq2rBKQgAQkUFoCCnp/VWu4BCQgAQlIoEAEFPQCVZZZlYAEJCABCfRHQEHvj0y24aYuAQlIQAISaCsBBb2tOE1MAhKQgAQk0B0CCnp3uGf7VFOXgAQkIIHKEVDQK1flFlgCEpCABMpIQEEvY61mWyZTl4AEJCCBHBJQ0HNYKWZJAhKQgAQkMFgCCvpgiRk/WwKmLgEJSEACQyKgoA8JmzdJQAISkIAE8kVAQc9XfZibbAmYugQkIIHSElDQS1u1FkwCEpCABKpEQEGvUm1b1mwJmLoEJCCBLhJQ0LsI30dLQAISkIAE2kVAQW8XSdORQLYETF0CEpBAUwIKelM8XpSABCQgAQkUg4CCXox6MpcSyJaAqUtAAoUnoKAXvgotgAQkIAEJSCAEBd23QAISyJqA6UtAAh0goKB3ALKPkIAEJCABCWRNQEHPmrDpS0AC2RIwdQlIICGgoCcY/CMBCUhAAhIoNgEFvdj1Z+4lIIFsCZi6BApDQEEvTFWZUQlIQAISkED/BBT0/tl4RQISkEC2BExdAm0koKC3EaZJSUACEpCABLpFQEHvFnmfKwEJSCBbAqZeMQIKesUq3OJKQAISkEA5CSjo5axXSyUBCUggWwKmnjsCCnruqsQMSUACEpCABAZPQEEfPDPvkIAEJCCBbAmY+hAIKOhDgOYtEpCABCQggbwRUNDzViPmRwISkIAEsiVQ0tQV9JJWrMWSgAQkIIFqEVDQq1XfllYCEpCABLIl0LXUFfSuoffBEpCABCQggfYRUNDbx9KUJCABCUhAAtkSaJK6gt4EjpckIAEJSEACRSGgoBelpsynBCQgAQlIoAmBNgh6k9S9JAEJSEACEpBARwgo6B3B7EMkIAEJSEAC2RLIvaBnW3xTl4AEJCABCZSDgIJejnq0FBKQgAQkUHECFRf0ite+xZeABCQggdIQUNBLU5UWRAISkIAEqkxAQc+w9k1aAhKQgAQk0CkCCnqnSLf5OXPnzg0HH3xw2GyzzcL5558f7r///jY/weQkIAEJSKBIBBT0nNXWggULwllnnRUmTZoUTjvttHDEEUeEfffdN9kQ78033zysueaaYf311w/HHntsmDVrVthpp53CFltsEdZdd91w+OGH56xEZkcCEpCABDpBQEHvBOUmz7j88svDIYccErbeeuswduzYMHLkyLDnnnuG448/PhFxBB1hZ0O8Z86cGe66664lUrzzzjvDzTffHI488shw7bXXLnHdAAlIQAISKDcBBb3D9bto0aJw2WWXhW233Ta87GUvS4T8mGOOCQg7Qsz1VrO0zjrrJK31xvh8IDSGDfbc+BKQgAQkUCwCCnqG9fXQQw+FCy64IGltT5kyJey+++6JAG+zzTZhxowZfT75pS99afjQhz6UjI2ffPLJ4dBDDw1XXHFFmD17dtIF39PTE8aMGROmTZuWhM2bNy8JX2WVVerpXXPNNeHcc8+tn3sgAQlIQALlJ6CgZ1DHd999d9h5550DIrvDDjsk4+FHHXVUOOecc8L8+fN7PXGZZZYJ48ePDwj+pZdeGh588MFw5ZVXhksuuSTstddeiaBvvPHGgdY4HwSnnnpqmDNnTpJ+TIjwq666Kiy33HIxKEycODEsXLiwfp6vA3MjAQlIQALtJqCgt5HoU089lRilrb322uG8887rN+VRo0aFAw44IFx//fXh4YcfDhdeeGGYPHlyGDduXFh22WX7va/ZhVVXXTUZP49xHn300cQKPp67l4AEJCCBchNQ0NtQv3StH3bYYWGttdZKRPXZZ5+tp0orHQv0CRMmhJ7/7y6nO/zGG28MRx99dBg9enSo1Wr1uMM9IP33ve999WSmTp0a7rjjjvp5VQ4spwQkIIEqElDQh1nrt912W3jrW9+aCDTd5SRXq9XClltumXSdY31+0UUXBcSV7vL11lsvLLVUNtgZf8fAjjzE7cADD4yH7iUgAQlIoMQEslGWEgNLF4354htssEGILfJarRY23XTTcPHFF4fp06cnxm1LL710+pbMjzfccMOw995715/DuPx9991XP/dguAS8XwISkEA+CSjoQ6yX/fbbL5kvzrg5STD2jcAjoDiAYUoa4d3YmLu+8sor1x9NvuonHkhAAhKQQCkJKOiDrNZnnnkmbLfddkkXerx1tdVWS9yvYtFeq7VvTDymP9j98ssvHxifj/dhNR+P3eebgLmTgAQkMFQCCvogyOH0ZccddwyMicfbEE+8uDF3PIblYc8YfszHddddF55++ul46l4CEpCABEpIQEEfRKXiVhUvb/EW5pBj7LbRRhvFoNzs0x8Y//3vfxMnNLnJnBnpEgEfKwEJlJmAgt5i7TJfHP/qMXqtVgunnHJKwOtbDMvTngVc+OCIebrpppvioXsJSEACEighAQW9xUplFbN0t/UnPvGJsP3227d4d3eipeek97WgS3dy5VPLSsBySUAC3SWgoLfAn9b5tGnT6jERSrraa7XuG8DVM9XHAY5uYvDtt98eD91LQAISkEAJCSjoLVTqmWeeWZ9r/pKXvCTxvf6a17ymhTu7G4Vu95iDW265JR66l0ABCZhlCUhgIAIK+gCEMCg78cQT67HwxrbLLrvUz/N8wHS6mL/HHnssPPnkk/HUvQQkIAEJlIyAgj5AhZ599tnhH//4Rz0WK6Ctvvrq9fM8H+CSNp2/Rx55JH3qsQQk8AIBdxIoAwEFfYBanDVrVq8YRWrlrrjiir3yvnDhwl7nnkhAAhKQQHkIKOgD1OU999zTK8ab3/zmXud5PsH9LEMEMY8LFiyIh+4lIIGOEfBBEugMAQW9Cedbb701/O53v+sVo1bLt2V7OrMsDLPCCivUgxT0OgoPJCABCZSOgILepEqvvvrqJa6mLceXuJjDgDe96U31XD3wwAP1Yw8kIIFyELAUEogEFPRIoo89U9Qag9OW443X8nieHiJQ0PNYQ+ZJAhKQQHsIKOhNODJlrfHy3LlzG4NyfZ62dH/wwQdznVczJwEJ5I2A+SkSAQW9SW2lFziJ0Y499th4WIj96173uno+//3vf9ePPZCABCQggXIRUNCb1Cfj5W984xt7xXj22Wd7nef95LWvfW09i88//3z9uJWDJ554Ipx33nnJIjSsNOcCL61QM44EJNAqAeO1l4CCPgDPRkFvPB/g9q5ffuaZZ+p5WH755evH6QNc2x5xxBEBpzlbbLFFYP46U97Y77zzzmHixImBxWnwYU84C9PcfPPN6SQ8loAEJCCBLhNQ0AeogC233LJXjMbzXhdzeEIrO2ZrpZVWiocBhznHHHNMQKARcgQdYb/qqqtC+p76DamDiy++OKy77rrhla98ZcANrmPzKTgeSkACOSFQvWwo6APU+aqrrtorxjrrrNPrPO8nabe1OJn59re/HcaMGRNoZR9yyCHDyv6iRYvC9OnTw7vf/e5w7rnnDistb5aABCQggeERUNAH4Nco6EVYZS1dpD/96U/10xNOOCEcdNBBgZXX/vnPf9bD4wEfK8xbxzJ+jz32CIceemgi2FdccUVg++Y3vxm22mqrMHLkyHhLsietXXfdNeyzzz7hX//6VxLmHwlIQAJlJpDHsinoA9RK2qiMqI3nhOVx+9///hcmT54c/vCHPzTN3sorr5wIN4I9e/bsMH/+/HDbbbeFH/7wh0n4Rz/60bDxxhsn25e+9KXwq1/9KvzlL38J999/f5g0aVJI2xT86Ec/CmuttVaYMmVKGKwBXtNMelECEpCABAYkoKAPiKh4EVgqdZNNNgnHHXdcn8Jaq9XCK17xivCNb3wjIOK0xBHtwZT09a9/fWDcHct3DOfozuf+v//97+Goo44K9GzccMMNBLlJoFQE/vOf/wSMQvvyU1GqglqYLhIY2qMV9AG40WJNR3nooYfSp7k7fvzxxwOW6tddd90SeXv1q18dDj744DBv3rywcOHC8OUvfznQQl8i4iACll122TBt2rSkS3706NH1Oxm733TTTcNZZ51VD/NAAkUlwJoODFnRS/WGN7whMQr92te+VtTimO+SElDQB6hYupCXWmoxJvYjR44c4I7uXUbMe3p6Aq3mvnJx9913h8MOOyyMGjUqUJa+4gw1bIMNNghYyNNVHxnhyGbPPfcMCP5Q0/U+CXSCAMNIOI2i54qZH43buHHjwoEHHhhOOumkup3I97///WR4qhP58xkSaIXAYqUaOGZlY6yxxhqBqWojRoxI9pznEQZivv3224dLL720V/bS/uiZZtbrYptP6AHAmI7ega233jrUaotXpvvMZz6TfEi0+XEmJ4FhE+Ajd8KECeFd73pX0nuF7UmzREePHp3EY0gJHw+77bZbYN/sHq9JoFMEFPQWSP/yl78MdLWzbyF6x6M88sgjYbPNNltiqVccyUQjPsSW1kcnMoe72bPPPjuxiK/VFos60+UwqOvE832GBFohQG8StiM/+9nPkujYnZx22mnJ8BFGoult5syZAS+R119/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\", \"consultant_name\": \"Mar\", \"client_signature\": \"Ndu\", \"next_session_focus\": \"HR\"}', NULL, NULL, NULL, '2025-09-03 03:44:23', '2025-09-03 03:44:23'),
-(1995, 'session_feedback', 11, '{\"session_date\": \"2025-09-03\", \"key_takeaways\": \"Importance of financial planning\", \"other_comments\": \"\", \"session_rating\": 4, \"signature_data\": \"data:image/png;base64,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0hprrJFeeuml1M4V/yGHHNIcOP3ol770peZxOwp2a7MndNbBltskakfQy3VRrhYC11xzTdEh0Qpnm222ohx/RoaAoEwnnnhi8+KDDz64WY5CvRAIgj6i9xUXjQaBHBO6XT7pFgY333xzswuXXXZZs9yOwimnnJIYAl1//fWTNUe8jpCfddZZk9XHQfUQEJsg94rHRS5HPjwCRx11VGKbkq/afPPN01e+8pV8GHnNEAiCXrMXVofuElvb0OTnP/95evTRR1vu8j777NNsY+utt07ve9/7msetFETG2mqrrdKmm26abMOa2+K2s/DCCycEHkHP9ZFXFwGhh/WOuuQjH/mIYqSp4z8bhgAACxJJREFUIHDEEUekbbfdtqnKYmDK1W8qt8XpCiMQBL0CL6fXusAvnE+6cSGY8rEmhk449Hw/6+VcbiWnc5177rnTscceO1kz73nPe5JzRLgRYWwyaCp98Oqrrxb98+0VhfgzJAJ/+ctf0sYbb5zKLqBCN9uLIfzPh4StFieCoNfiNdWvk/RwJlfE8ZhjjhnTAOhDDzjggOa9uGWi8WbFGAqnnnpqQqiXXXbZhEPPTeBO+C3b1OPrX/964fqUz0VefQSyAaYtU6vf2/Hr4csvv5wmTpyYyuowEi/bH6+11lrj17F4clsQCILeFhir3Mj49E2krjPPPDPheIn17r///lF35Pzzz2+K7LM+e9SNvH0DHSvROmteBnBvVxfZF7/4xSQCnf56TlEZf2qFAOt2HSZyl0eaEoG77747MSi94IILmic/+clPJrvSfec732nWRaG+CARBr++7q3zPJ0yYkARi4U7EnU0+0k7jznH5+XrceS6PJn/++eeTndm+9a1vJcZv2s33zzHHHIke8a677io2l8n1kdcPgUajUb9Od6nHQiWvvfbaacEFF0xPPfVU86nc0xB5+xM0K6NQawSCoNf69Y1/54frQaPRSIcffnjBpT/22GMpb5ox3D35nEhzCK1jiwK7ZimPNBGnc8exQQejOqLGfO8ss8xSEPI777wzbbbZZilzd/l85PVDgCRIr+NdQiEVMSBOfUu9tPzyyycRHM8555xJJ976S8TOV/+MM85IsavaW4D00P8g6D30Mqs4lBlnnLGYUOioucg8+eSTU+0mIzjW7C40UdN3Nxoj48DoUg866KDET91i4vXXX9dMkeySZhIT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\", \"consultant_name\": \"M\", \"client_signature\": \"Ndumiso Mthembu\", \"next_session_focus\": \"Optimize marketing \"}', NULL, NULL, NULL, '2025-09-03 12:29:10', '2025-09-03 12:29:10');
+(1995, 'session_feedback', 11, '{\"session_date\": \"2025-09-03\", \"key_takeaways\": \"Importance of financial planning\", \"other_comments\": \"\", \"session_rating\": 4, \"signature_data\": \"data:image/png;base64,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0hprrJFeeuml1M4V/yGHHNIcOP3ol770peZxOwp2a7MndNbBltskakfQy3VRrhYC11xzTdEh0Qpnm222ohx/RoaAoEwnnnhi8+KDDz64WY5CvRAIgj6i9xUXjQaBHBO6XT7pFgY333xzswuXXXZZs9yOwimnnJIYAl1//fWTNUe8jpCfddZZk9XHQfUQEJsg94rHRS5HPjwCRx11VGKbkq/afPPN01e+8pV8GHnNEAiCXrMXVofuElvb0OTnP/95evTRR1vu8j777NNsY+utt07ve9/7msetFETG2mqrrdKmm26abMOa2+K2s/DCCycEHkHP9ZFXFwGhh/WOuuQjH/mIYqSp4z8bhgAACxJJREFUIHDEEUekbbfdtqnKYmDK1W8qt8XpCiMQBL0CL6fXusAvnE+6cSGY8rEmhk449Hw/6+VcbiWnc5177rnTscceO1kz73nPe5JzRLgRYWwyaCp98Oqrrxb98+0VhfgzJAJ/+ctf0sYbb5zKLqBCN9uLIfzPh4StFieCoNfiNdWvk/RwJlfE8ZhjjhnTAOhDDzjggOa9uGWi8WbFGAqnnnpqQqiXXXbZhEPPTeBO+C3b1OPrX/964fqUz0VefQSyAaYtU6vf2/Hr4csvv5wmTpyYyuowEi/bH6+11lrj17F4clsQCILeFhir3Mj49E2krjPPPDPheIn17r///lF35Pzzz2+K7LM+e9SNvH0DHSvROmteBnBvVxfZF7/4xSQCnf56TlEZf2qFAOt2HSZyl0eaEoG77747MSi94IILmic/+clPJrvSfec732nWRaG+CARBr++7q3zPJ0yYkARi4U7EnU0+0k7jznH5+XrceS6PJn/++eeTndm+9a1vJcZv2s33zzHHHIke8a677io2l8n1kdcPgUajUb9Od6nHQiWvvfbaacEFF0xPPfVU86nc0xB5+xM0K6NQawSCoNf69Y1/54frQaPRSIcffnjBpT/22GMpb5ox3D35nEhzCK1jiwK7ZimPNBGnc8exQQejOqLGfO8ss8xSEPI777wzbbbZZilzd/l85PVDgCRIr+NdQiEVMSBOfUu9tPzyyycRHM8555xJJ976S8TOV/+MM85IsavaW4D00P8g6D30Mqs4lBlnnLGYUOioucg8+eSTU+0mIzjW7C40UdN3Nxoj48DoUg866KDET91i4vXXX9dMkeySZhIT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\", \"consultant_name\": \"M\", \"client_signature\": \"Ndumiso Mthembu\", \"next_session_focus\": \"Optimize marketing \"}', NULL, NULL, NULL, '2025-09-03 12:29:10', '2025-09-03 12:29:10'),
+(1996, 'swot_analysis', 26, '{\"external\": {\"threats\": [], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"in_progress\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:45:42.454Z\", \"assigned_to\": \"Bradley\", \"description\": \"Qualified Graphic Designer\", \"target_date\": \"2025-10-31\", \"action_required\": \"Need to include this fact in own marketing\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:46:41.619Z\", \"assigned_to\": \"Bradley\", \"description\": \"Experience in the industry\", \"target_date\": \"2025-10-31\", \"action_required\": \"Use experience gained in the past to attract more customers, knowing their pain.\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:47:43.931Z\", \"assigned_to\": \"Bradley\", \"description\": \"Received Digital Printer and Vinal cutter\", \"target_date\": \"2025-10-31\", \"action_required\": \"Develop Sales FAB with this in mind and redesign a brochure for this equipemnt\"}], \"weaknesses\": []}, \"company_id\": \"26\", \"is_complete\": false, \"last_updated\": \"2025-10-03T09:49:13.852Z\", \"analysis_date\": \"2025-10-03T09:45:19.745Z\"}', NULL, NULL, NULL, '2025-10-03 11:45:44', '2025-10-03 11:49:13'),
+(1997, 'consolidated_assessment', 26, '{\"metadata\": {\"last_updated\": \"2025-10-03T10:17:12.902Z\", \"current_section\": \"sars_compliance\", \"answered_questions\": 17, \"progress_percentage\": 68}, \"responses\": {\"sc_how_win\": \"by offering quality and innovative offerings to customers, new/unique ideas as a media owner.\", \"sa_strengths\": \"Experience as a graphic designer\", \"sc_where_play\": \"We want to play nationally supplying to business of printing material.\", \"sc_capabilities\": \"Must have sufficient  cash flow. Enough staff to deal with the demand including sales staff.\", \"ps_primary_focus\": \"both\", \"ps_target_market\": \"Businesses that require signage\", \"sa_sales_ability\": 5, \"ps_offerings_list\": \"Any form of signage\", \"intro_business_stage\": \"startup\", \"sa_leadership_skills\": 5, \"sa_marketing_ability\": 5, \"sc_management_systems\": \"H\", \"sc_winning_aspiration\": \"Want to be in a position to import signage material and supply to national customers. We want to be a supplier to other printing businesses/signage companies. This include other and more modern signs, billboards window signs and so on.\", \"intro_operating_duration\": \"3_to_5_years\", \"intro_business_motivation\": \"I Started this business because I lost my job during COVID. I was a graphic designer. Started trading December 2020.\", \"intro_business_description\": \"A Fully fledged signage company, doing any form of signage, branding including vehicle branding.\", \"sa_accounting_understanding\": 5}, \"updated_at\": \"2025-10-03T10:17:12.902Z\"}', NULL, NULL, NULL, '2025-10-03 11:56:43', '2025-10-03 12:17:12'),
+(1998, 'gps_targets', 26, '{\"finance\": {\"name\": \"Finance Targets\", \"targets\": [], \"completion_percentage\": 0}, \"company_id\": \"26\", \"is_complete\": false, \"target_date\": \"2025-10-04T11:27:20.853Z\", \"last_updated\": \"2025-10-04T11:27:38.930Z\", \"sales_marketing\": {\"name\": \"Sales & Marketing Targets\", \"targets\": [], \"completion_percentage\": 0}, \"strategy_general\": {\"name\": \"Strategy/General Targets\", \"targets\": [{\"status\": \"in_progress\", \"due_date\": \"2025-10-31\", \"evidence\": \"test 1\", \"priority\": \"medium\", \"date_added\": \"2025-10-04T11:27:26.863Z\", \"description\": \"test 1\", \"progress_percentage\": 0}], \"completion_percentage\": 0}, \"personal_development\": {\"name\": \"Personal Development Targets\", \"targets\": [], \"completion_percentage\": 0}}', NULL, NULL, NULL, '2025-10-04 11:27:28', '2025-10-04 11:27:38');
 
 -- --------------------------------------------------------
 
@@ -1873,12 +2381,41 @@ ALTER TABLE `companies`
   ADD KEY `idx_industry_id` (`industry_id`);
 
 --
+-- Indexes for table `company_accounts`
+--
+ALTER TABLE `company_accounts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_company_id` (`company_id`);
+
+--
 -- Indexes for table `company_financials`
 --
 ALTER TABLE `company_financials`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_fin_company_period` (`company_id`,`period_date`),
   ADD UNIQUE KEY `uq_fin_company_year_month` (`company_id`,`year`,`month`);
+
+--
+-- Indexes for table `company_financial_items`
+--
+ALTER TABLE `company_financial_items`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `company_financial_yearly_stats`
+--
+ALTER TABLE `company_financial_yearly_stats`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_company_account_year_type` (`company_id`,`account_id`,`financial_year_id`),
+  ADD UNIQUE KEY `uq_company_account_year` (`company_id`,`account_id`,`financial_year_id`),
+  ADD KEY `idx_fin_year` (`financial_year_id`),
+  ADD KEY `fk_stats_account` (`account_id`);
+
+--
+-- Indexes for table `company_profit_summary`
+--
+ALTER TABLE `company_profit_summary`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `company_purchases`
@@ -1888,6 +2425,30 @@ ALTER TABLE `company_purchases`
   ADD KEY `idx_cp_company` (`company_id`),
   ADD KEY `idx_cp_service_provider` (`service_provider`),
   ADD KEY `idx_cp_purchase_type` (`purchase_type`);
+
+--
+-- Indexes for table `company_revenue_summary`
+--
+ALTER TABLE `company_revenue_summary`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `financial_categories`
+--
+ALTER TABLE `financial_categories`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `financial_ratios`
+--
+ALTER TABLE `financial_ratios`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `financial_years`
+--
+ALTER TABLE `financial_years`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `forms`
@@ -1974,13 +2535,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `categories_item`
 --
 ALTER TABLE `categories_item`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
 -- AUTO_INCREMENT for table `companies`
@@ -1989,16 +2550,64 @@ ALTER TABLE `companies`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
+-- AUTO_INCREMENT for table `company_accounts`
+--
+ALTER TABLE `company_accounts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+
+--
 -- AUTO_INCREMENT for table `company_financials`
 --
 ALTER TABLE `company_financials`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=450;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=466;
+
+--
+-- AUTO_INCREMENT for table `company_financial_items`
+--
+ALTER TABLE `company_financial_items`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+
+--
+-- AUTO_INCREMENT for table `company_financial_yearly_stats`
+--
+ALTER TABLE `company_financial_yearly_stats`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT for table `company_profit_summary`
+--
+ALTER TABLE `company_profit_summary`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `company_purchases`
 --
 ALTER TABLE `company_purchases`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+
+--
+-- AUTO_INCREMENT for table `company_revenue_summary`
+--
+ALTER TABLE `company_revenue_summary`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `financial_categories`
+--
+ALTER TABLE `financial_categories`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `financial_ratios`
+--
+ALTER TABLE `financial_ratios`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `financial_years`
+--
+ALTER TABLE `financial_years`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `forms`
@@ -2022,7 +2631,7 @@ ALTER TABLE `form_sessions`
 -- AUTO_INCREMENT for table `industries`
 --
 ALTER TABLE `industries`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `metric_groups`
@@ -2052,7 +2661,7 @@ ALTER TABLE `metric_type_categories`
 -- AUTO_INCREMENT for table `nodes`
 --
 ALTER TABLE `nodes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1996;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1999;
 
 --
 -- AUTO_INCREMENT for table `session_field_responses`
@@ -2077,10 +2686,24 @@ ALTER TABLE `companies`
   ADD CONSTRAINT `fk_companies_industry` FOREIGN KEY (`industry_id`) REFERENCES `industries` (`id`) ON DELETE SET NULL;
 
 --
+-- Constraints for table `company_accounts`
+--
+ALTER TABLE `company_accounts`
+  ADD CONSTRAINT `fk_company_account_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `company_financials`
 --
 ALTER TABLE `company_financials`
   ADD CONSTRAINT `fk_fin_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `company_financial_yearly_stats`
+--
+ALTER TABLE `company_financial_yearly_stats`
+  ADD CONSTRAINT `fk_stats_account` FOREIGN KEY (`account_id`) REFERENCES `company_accounts` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_stats_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_stats_finyear` FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `company_purchases`
@@ -2113,3 +2736,7 @@ ALTER TABLE `metric_type_categories`
 ALTER TABLE `users`
   ADD CONSTRAINT `fk_users_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`);
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
