@@ -4,6 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
 import { FinancialManagementModalComponent } from './financial-management-modal.component';
 import { FinancialYearComparisonComponent } from './financial-year-comparison.component';
+import { RevenueCaptureHeaderComponent } from './revenue-capture-header.component';
+import { RevenueCaptureEmptyStateComponent } from './revenue-capture-empty-state.component';
+import { RevenueCaptureLoadingComponent } from './revenue-capture-loading.component';
+import { RevenueCaptureFooterComponent } from './revenue-capture-footer.component';
+import { RevenueCaptureManagementModalComponent } from './revenue-capture-management-modal.component';
 import {
   YearGroup,
   AccountRecord,
@@ -35,92 +40,21 @@ import { map } from 'rxjs/operators';
     FormsModule,
     YearGroupComponent,
     FinancialYearComparisonComponent,
+    RevenueCaptureHeaderComponent,
+    RevenueCaptureEmptyStateComponent,
+    RevenueCaptureLoadingComponent,
+    RevenueCaptureFooterComponent,
+    RevenueCaptureManagementModalComponent,
   ],
   template: `
     <div class="p-6 space-y-8 bg-gray-50 min-h-screen w-full">
       <!-- Header Section -->
-      <header class="flex justify-between items-center">
-        <div class="space-y-1">
-          <h1 class="text-2xl font-semibold text-gray-800">
-            Yearly Revenue Capture Pro
-          </h1>
-          <p class="text-gray-600">
-            Manage monthly revenue data across financial years
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
-          <!-- Add New Financial Year Section -->
-          <div class="flex items-center gap-2">
-            <label for="addYearSelect" class="text-sm font-medium text-gray-700"
-              >Add Year:</label
-            >
-            <select
-              id="addYearSelect"
-              [(ngModel)]="selectedFinancialYearId"
-              class="px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
-            >
-              <option value="">Select year to add...</option>
-              <option
-                *ngFor="let fy of availableYearsToAdd()"
-                [value]="fy.id"
-                [class.font-bold]="fy.is_active"
-              >
-                {{ fy.name }} {{ fy.is_active ? '(Active)' : '' }}
-              </option>
-            </select>
-            <button
-              type="button"
-              (click)="addNewFinancialYear()"
-              [disabled]="
-                !selectedFinancialYearId || availableYearsToAdd().length === 0
-              "
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                ></path>
-              </svg>
-              Add Year
-            </button>
-          </div>
-          <button
-            type="button"
-            (click)="openManagementModal()"
-            class="px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors border border-blue-200"
-            title="Manage Financial Years & Accounts"
-          >
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              ></path>
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              ></path>
-            </svg>
-          </button>
-        </div>
-      </header>
+      <app-revenue-capture-header
+        [availableYears]="availableYearsToAdd()"
+        [(selectedYearId)]="selectedFinancialYearId"
+        (addYear)="addNewFinancialYear()"
+        (openManagement)="openManagementModal()"
+      ></app-revenue-capture-header>
 
       <!-- Financial Years Comparison Chart -->
       <section
@@ -137,63 +71,15 @@ import { map } from 'rxjs/operators';
       <!-- Year Groups Section -->
       <section class="space-y-8" role="main" aria-label="Financial Year Groups">
         <!-- Loading State -->
-        <div
+        <app-revenue-capture-loading
           *ngIf="loading()"
-          class="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm"
-        >
-          <div class="flex justify-center items-center space-x-2">
-            <div
-              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-            ></div>
-            <span class="text-gray-600">Loading financial data...</span>
-          </div>
-        </div>
+          message="Loading financial data..."
+        ></app-revenue-capture-loading>
 
         <!-- Empty State -->
-        <div
+        <app-revenue-capture-empty-state
           *ngIf="!loading() && years().length === 0"
-          class="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm"
-        >
-          <svg
-            class="w-12 h-12 text-gray-400 mx-auto mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            ></path>
-          </svg>
-          <h3 class="text-lg font-medium text-gray-900 mb-2">
-            No financial data captured yet
-          </h3>
-          <p class="text-gray-500 mb-4">
-            Start by adding a financial year from the dropdown above, then begin
-            capturing your monthly revenue data.
-          </p>
-          <div class="text-sm text-gray-400">
-            <span class="inline-flex items-center gap-1">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              Only financial years with captured data are displayed
-            </span>
-          </div>
-        </div>
+        ></app-revenue-capture-empty-state>
 
         <!-- Year Group List -->
         <app-year-group
@@ -210,41 +96,13 @@ import { map } from 'rxjs/operators';
       </section>
 
       <!-- Footer -->
-      <footer
-        class="text-center text-gray-500 text-sm py-6 border-t border-gray-200"
-      >
-        <p class="flex items-center justify-center gap-2">
-          <span class="text-base">💡</span>
-          <span
-            >Click on year headers to expand/collapse. Use tab to navigate
-            between inputs.</span
-          >
-        </p>
-      </footer>
+      <app-revenue-capture-footer></app-revenue-capture-footer>
 
       <!-- Management Modal -->
-      <!-- TODO: Add FinancialManagementModalComponent when ready -->
-      <div
-        *ngIf="showManagementModal()"
-        class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
-      >
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">
-            Management Modal
-          </h3>
-          <p class="text-gray-600 mb-4">
-            This will be replaced with the full
-            FinancialManagementModalComponent.
-          </p>
-          <button
-            type="button"
-            (click)="closeManagementModal()"
-            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      <app-revenue-capture-management-modal
+        [isOpen]="showManagementModal()"
+        (close)="closeManagementModal()"
+      ></app-revenue-capture-management-modal>
     </div>
   `,
 })
