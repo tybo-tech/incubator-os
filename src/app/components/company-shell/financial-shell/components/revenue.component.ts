@@ -280,7 +280,7 @@ export class RevenueComponent implements OnInit {
     try {
       // Get quarterly revenue for all years - this is now live calculated from monthly data
       const quarterlyData = await this.financialService.getQuarterlyRevenueAllYears(this.companyId).toPromise();
-      
+
       // Map the API response to display rows
       this.revenueRows = (quarterlyData || []).map(data => ({
         financial_year_id: data.financial_year_id,
@@ -304,7 +304,7 @@ export class RevenueComponent implements OnInit {
       }));
 
       console.log('Revenue Component - Live quarterly data loaded:', this.revenueRows);
-      
+
     } catch (error) {
       console.error('Error loading quarterly revenue data:', error);
       this.revenueRows = [];

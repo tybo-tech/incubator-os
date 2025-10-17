@@ -340,9 +340,9 @@ final class CompanyFinancialYearlyStats
     public function getQuarterlyRevenue(int $companyId, int $financialYearId): array
     {
         // Get the financial year details and all stats for this company/year
-        $sql = "SELECT 
-                    fs.*, 
-                    acc.account_type, 
+        $sql = "SELECT
+                    fs.*,
+                    acc.account_type,
                     acc.account_name,
                     fy.start_month,
                     fy.end_month,
@@ -366,7 +366,7 @@ final class CompanyFinancialYearlyStats
             $fyStmt = $this->conn->prepare("SELECT * FROM financial_years WHERE id = :fy_id");
             $fyStmt->execute([':fy_id' => $financialYearId]);
             $fyInfo = $fyStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             return [
                 'financial_year_id' => $financialYearId,
                 'financial_year_name' => $fyInfo['name'] ?? "FY $financialYearId",
@@ -403,23 +403,23 @@ final class CompanyFinancialYearlyStats
             $accountType = $record['account_type'] ?? 'domestic_revenue';
             $accountName = $record['account_name'] ?? 'Unknown Account';
             $accountId = $record['account_id'];
-            
+
             // Track account-level breakdown
             $accountTotal = 0;
             $accountMonthly = [];
-            
+
             for ($month = 1; $month <= 12; $month++) {
                 $monthlyValue = (float)($record["m$month"] ?? 0);
                 $accountMonthly["m$month"] = $monthlyValue;
                 $accountTotal += $monthlyValue;
-                
+
                 if ($accountType === 'export_revenue') {
                     $export[$month] += $monthlyValue;
                 } elseif ($accountType === 'domestic_revenue') {
                     $domestic[$month] += $monthlyValue;
                 }
             }
-            
+
             // Store account breakdown for detailed analysis
             $accountBreakdown[] = [
                 'account_id' => $accountId,
@@ -495,9 +495,9 @@ final class CompanyFinancialYearlyStats
     public function getQuarterlyRevenueAllYears(int $companyId): array
     {
         // Get all financial years that have data for this company
-        $sql = "SELECT DISTINCT financial_year_id 
-                FROM company_financial_yearly_stats 
-                WHERE company_id = :company_id 
+        $sql = "SELECT DISTINCT financial_year_id
+                FROM company_financial_yearly_stats
+                WHERE company_id = :company_id
                 ORDER BY financial_year_id DESC";
 
         $stmt = $this->conn->prepare($sql);
