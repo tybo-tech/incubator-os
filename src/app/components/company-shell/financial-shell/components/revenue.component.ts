@@ -55,170 +55,219 @@ interface RevenueDisplayRow {
       </div>
 
       <!-- Revenue Tables -->
-      <div *ngIf="!loading" class="space-y-8">
+      <div *ngIf="!loading" class="space-y-12">
 
-        <!-- Revenue Section -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 table-fixed">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Revenue
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q1
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q2
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q3
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q4
-                </th>
-                <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-gray-50">
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
-                    <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
-                      ({{ getFinancialYearPeriod(row) }})
-                    </span>
-                  </div>
-                </td>
+        <!-- Domestic Revenue Section -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <!-- Section Header -->
+          <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 rounded-t-lg">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+              <h3 class="text-lg font-semibold text-blue-800">Domestic Revenue</h3>
+              <div class="ml-4 text-sm text-blue-600">
+                <i class="fas fa-home mr-1"></i>
+                Local market revenue by quarters
+              </div>
+            </div>
+          </div>
 
-                <!-- Q1 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.revenue_q1) }}
-                  </span>
-                </td>
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
+              <thead class="bg-blue-500">
+                <tr>
+                  <th class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                    Financial Year
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q1
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q2
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q3
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q4
+                  </th>
+                  <th class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Total Revenue
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-blue-50 transition-colors duration-200">
+                  <td class="w-32 px-6 py-5 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
+                      <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
+                        ({{ getFinancialYearPeriod(row) }})
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Q2 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.revenue_q2) }}
-                  </span>
-                </td>
+                  <!-- Q1 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.revenue_q1) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Q3 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.revenue_q3) }}
-                  </span>
-                </td>
+                  <!-- Q2 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.revenue_q2) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Q4 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.revenue_q4) }}
-                  </span>
-                </td>
+                  <!-- Q3 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.revenue_q3) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Total -->
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-gray-900">
-                      {{ formatCurrency(row.revenue_total) }}
-                    </span>
-                    <span class="text-xs text-gray-500 block">ZAR</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <!-- Q4 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.revenue_q4) }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Total -->
+                  <td class="w-32 px-6 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-lg font-semibold text-blue-600">
+                        {{ formatCurrency(row.revenue_total) }}
+                      </span>
+                      <span class="text-xs text-gray-500 block mt-1">ZAR</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Export Revenue Section -->
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 table-fixed">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Export revenue
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q1
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q2
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q3
-                </th>
-                <th class="w-28 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Q4
-                </th>
-                <th class="w-32 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th class="w-20 px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ratio
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-gray-50">
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
-                  </div>
-                </td>
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <!-- Section Header -->
+          <div class="bg-green-50 border-b border-green-100 px-6 py-4 rounded-t-lg">
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+              <h3 class="text-lg font-semibold text-green-800">Export Revenue</h3>
+              <div class="ml-4 text-sm text-green-600">
+                <i class="fas fa-globe mr-1"></i>
+                International market revenue and ratios
+              </div>
+            </div>
+          </div>
 
-                <!-- Export Q1 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.export_q1) }}
-                  </span>
-                </td>
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
+              <thead class="bg-green-500">
+                <tr>
+                  <th class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                    Financial Year
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q1
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q2
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q3
+                  </th>
+                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Q4
+                  </th>
+                  <th class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Total Export
+                  </th>
+                  <th class="w-20 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                    Export Ratio
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-green-50 transition-colors duration-200">
+                  <td class="w-32 px-6 py-5 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
+                      <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
+                        ({{ getFinancialYearPeriod(row) }})
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Export Q2 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.export_q2) }}
-                  </span>
-                </td>
+                  <!-- Export Q1 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.export_q1) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Export Q3 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.export_q3) }}
-                  </span>
-                </td>
+                  <!-- Export Q2 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.export_q2) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Export Q4 -->
-                <td class="w-28 px-4 py-4 whitespace-nowrap">
-                  <span class="block text-sm text-center text-gray-900">
-                    {{ formatCurrency(row.export_q4) }}
-                  </span>
-                </td>
+                  <!-- Export Q3 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.export_q3) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Export Total -->
-                <td class="w-32 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-gray-900">
-                      {{ formatCurrency(row.export_total) }}
-                    </span>
-                    <span class="text-xs text-gray-500 block">ZAR</span>
-                  </div>
-                </td>
+                  <!-- Export Q4 -->
+                  <td class="w-28 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-sm font-medium text-gray-900">
+                        {{ formatCurrency(row.export_q4) }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Ratio -->
-                <td class="w-20 px-4 py-4 whitespace-nowrap">
-                  <div class="text-center">
-                    <span class="text-sm font-semibold text-blue-600">
-                      {{ formatPercentage(row.export_ratio) }}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+                  <!-- Export Total -->
+                  <td class="w-32 px-6 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <span class="text-lg font-semibold text-green-600">
+                        {{ formatCurrency(row.export_total) }}
+                      </span>
+                      <span class="text-xs text-gray-500 block mt-1">ZAR</span>
+                    </div>
+                  </td>
+
+                  <!-- Export Ratio -->
+                  <td class="w-20 px-4 py-5 whitespace-nowrap">
+                    <div class="text-center">
+                      <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                        <i class="fas fa-percentage mr-1 text-xs"></i>
+                        {{ (row.export_ratio * 100).toFixed(1) }}%
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
           </table>
         </div>
 
@@ -315,10 +364,10 @@ export class RevenueComponent implements OnInit {
 
   formatCurrency(value: number | null): string {
     if (value === null || value === undefined) return 'R0';
-    
+
     // For large numbers, show without decimals unless there are cents
     const hasDecimals = value % 1 !== 0;
-    
+
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
       currency: 'ZAR',
