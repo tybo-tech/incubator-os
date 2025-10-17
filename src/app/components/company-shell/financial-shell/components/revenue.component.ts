@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { CompanyFinancialYearlyStatsService, QuarterlyRevenue } from '../../../../../services/company-financial-yearly-stats.service';
+import { CompanyFinancialYearlyStatsService } from '../../../../../services/company-financial-yearly-stats.service';
 
 // Chart Components
 import { LineChartComponent } from '../../../../charts/line-chart/line-chart.component';
@@ -10,7 +10,7 @@ import { BarChartComponent } from '../../../../charts/bar-chart/bar-chart.compon
 import { DoughnutComponent } from '../../../../charts/doughnut/doughnut.component';
 
 // Chart Data Interfaces
-import { ILineChart, IBarChart, IDoughnutChart } from '../../../../../models/Charts';
+import { ILineChart, IBarChart } from '../../../../../models/Charts';
 import { IKeyValue } from '../../../../../models/IKeyValue';
 
 // Display row interface for UI binding
@@ -43,13 +43,7 @@ interface RevenueDisplayRow {
 @Component({
   selector: 'app-revenue',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LineChartComponent,
-    BarChartComponent,
-    DoughnutComponent
-  ],
+  imports: [CommonModule, FormsModule, LineChartComponent, BarChartComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
@@ -66,28 +60,35 @@ interface RevenueDisplayRow {
 
       <!-- Loading State -->
       <div *ngIf="loading" class="flex justify-center items-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"
+        ></div>
       </div>
 
       <!-- Charts and Analytics Section -->
       <div *ngIf="!loading && revenueRows.length > 0" class="space-y-8 mb-12">
-
         <!-- Key Metrics Cards -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center mb-6">
             <i class="fas fa-tachometer-alt text-purple-600 text-xl mr-3"></i>
-            <h3 class="text-lg font-semibold text-gray-900">Key Revenue Metrics</h3>
+            <h3 class="text-lg font-semibold text-gray-900">
+              Key Revenue Metrics
+            </h3>
           </div>
 
           <!-- Horizontal Grid for 3 Revenue Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div *ngFor="let metric of keyMetrics"
-                 class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200">
-
+            <div
+              *ngFor="let metric of keyMetrics"
+              class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200"
+            >
               <!-- Icon and Value -->
               <div class="flex items-center justify-between mb-4">
                 <div class="flex-1">
-                  <div class="text-2xl font-bold mb-1" [ngClass]="metric.color || 'text-gray-800'">
+                  <div
+                    class="text-2xl font-bold mb-1"
+                    [ngClass]="metric.color || 'text-gray-800'"
+                  >
                     {{ metric.value }}
                   </div>
                   <div class="text-sm font-medium text-gray-600 capitalize">
@@ -100,17 +101,28 @@ interface RevenueDisplayRow {
 
                 <!-- Icon -->
                 <div class="ml-4">
-                  <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200">
-                    <i [class]="metric.icon || 'fas fa-chart-line'" [ngClass]="metric.color || 'text-gray-600'"></i>
+                  <div
+                    class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200"
+                  >
+                    <i
+                      [class]="metric.icon || 'fas fa-chart-line'"
+                      [ngClass]="metric.color || 'text-gray-600'"
+                    ></i>
                   </div>
                 </div>
               </div>
 
               <!-- Progress Bar -->
               <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="h-full transition-all duration-500 rounded-full"
-                     [ngClass]="metric.color === 'text-green-600' ? 'bg-green-500' : 'bg-blue-500'"
-                     [style.width]="'85%'"></div>
+                <div
+                  class="h-full transition-all duration-500 rounded-full"
+                  [ngClass]="
+                    metric.color === 'text-green-600'
+                      ? 'bg-green-500'
+                      : 'bg-blue-500'
+                  "
+                  [style.width]="'85%'"
+                ></div>
               </div>
             </div>
           </div>
@@ -118,12 +130,12 @@ interface RevenueDisplayRow {
 
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
           <!-- Quarterly Trends Line Chart -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <app-line-chart
               [componentTitle]="'Quarterly Revenue Trends'"
-              [data]="quarterlyTrendsChart">
+              [data]="quarterlyTrendsChart"
+            >
             </app-line-chart>
           </div>
 
@@ -131,34 +143,26 @@ interface RevenueDisplayRow {
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <app-bar-chart
               [componentTitle]="'Revenue Comparison by Year'"
-              [data]="yearlyComparisonChart">
+              [data]="yearlyComparisonChart"
+            >
             </app-bar-chart>
           </div>
-
         </div>
-
-        <!-- Revenue Distribution -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div class="max-w-md mx-auto">
-            <app-doughnut
-              [componentTitle]="'Revenue Distribution (Latest Year)'"
-              [data]="revenueDistributionChart">
-            </app-doughnut>
-          </div>
-        </div>
-
       </div>
 
       <!-- Revenue Tables -->
       <div *ngIf="!loading" class="space-y-12">
-
         <!-- Domestic Revenue Section -->
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
           <!-- Section Header -->
-          <div class="bg-blue-50 border-b border-blue-100 px-6 py-4 rounded-t-lg">
+          <div
+            class="bg-blue-50 border-b border-blue-100 px-6 py-4 rounded-t-lg"
+          >
             <div class="flex items-center">
               <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-              <h3 class="text-lg font-semibold text-blue-800">Domestic Revenue</h3>
+              <h3 class="text-lg font-semibold text-blue-800">
+                Domestic Revenue
+              </h3>
               <div class="ml-4 text-sm text-blue-600">
                 <i class="fas fa-home mr-1"></i>
                 Local market revenue by quarters
@@ -171,32 +175,52 @@ interface RevenueDisplayRow {
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-blue-500">
                 <tr>
-                  <th class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Financial Year
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q1
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q2
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q3
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q4
                   </th>
-                  <th class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Total Revenue
                   </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-blue-50 transition-colors duration-200">
+                <tr
+                  *ngFor="let row of revenueRows; let i = index"
+                  class="hover:bg-blue-50 transition-colors duration-200"
+                >
                   <td class="w-32 px-6 py-5 whitespace-nowrap">
                     <div class="flex items-center">
-                      <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
-                      <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
+                      <span class="text-sm font-medium text-gray-900">{{
+                        row.financial_year_name
+                      }}</span>
+                      <span
+                        class="text-xs text-gray-500 ml-2"
+                        *ngIf="row.quarter_details"
+                      >
                         ({{ getFinancialYearPeriod(row) }})
                       </span>
                     </div>
@@ -256,10 +280,14 @@ interface RevenueDisplayRow {
         <!-- Export Revenue Section -->
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
           <!-- Section Header -->
-          <div class="bg-green-50 border-b border-green-100 px-6 py-4 rounded-t-lg">
+          <div
+            class="bg-green-50 border-b border-green-100 px-6 py-4 rounded-t-lg"
+          >
             <div class="flex items-center">
               <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-              <h3 class="text-lg font-semibold text-green-800">Export Revenue</h3>
+              <h3 class="text-lg font-semibold text-green-800">
+                Export Revenue
+              </h3>
               <div class="ml-4 text-sm text-green-600">
                 <i class="fas fa-globe mr-1"></i>
                 International market revenue and ratios
@@ -272,35 +300,57 @@ interface RevenueDisplayRow {
             <table class="min-w-full divide-y divide-gray-200 table-fixed">
               <thead class="bg-green-500">
                 <tr>
-                  <th class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-32 px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Financial Year
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q1
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q2
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q3
                   </th>
-                  <th class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-28 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Q4
                   </th>
-                  <th class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-32 px-6 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Total Export
                   </th>
-                  <th class="w-20 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="w-20 px-4 py-4 text-center text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Export Ratio
                   </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let row of revenueRows; let i = index" class="hover:bg-green-50 transition-colors duration-200">
+                <tr
+                  *ngFor="let row of revenueRows; let i = index"
+                  class="hover:bg-green-50 transition-colors duration-200"
+                >
                   <td class="w-32 px-6 py-5 whitespace-nowrap">
                     <div class="flex items-center">
-                      <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
-                      <span class="text-xs text-gray-500 ml-2" *ngIf="row.quarter_details">
+                      <span class="text-sm font-medium text-gray-900">{{
+                        row.financial_year_name
+                      }}</span>
+                      <span
+                        class="text-xs text-gray-500 ml-2"
+                        *ngIf="row.quarter_details"
+                      >
                         ({{ getFinancialYearPeriod(row) }})
                       </span>
                     </div>
@@ -355,7 +405,9 @@ interface RevenueDisplayRow {
                   <!-- Export Ratio -->
                   <td class="w-20 px-4 py-5 whitespace-nowrap">
                     <div class="text-center">
-                      <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                      <div
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200"
+                      >
                         <i class="fas fa-percentage mr-1 text-xs"></i>
                         {{ row.export_ratio.toFixed(1) }}%
                       </div>
@@ -363,23 +415,27 @@ interface RevenueDisplayRow {
                   </td>
                 </tr>
               </tbody>
-          </table>
+            </table>
+          </div>
         </div>
 
+        <!-- Empty State -->
+        <div
+          *ngIf="!loading && revenueRows.length === 0"
+          class="text-center py-12"
+        >
+          <i class="fas fa-chart-line text-gray-400 text-4xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">
+            No Revenue Data
+          </h3>
+          <p class="text-gray-600 mb-4">
+            Revenue calculations are based on monthly financial data.<br />
+            Add monthly financial entries to see quarterly revenue summaries.
+          </p>
+        </div>
       </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!loading && revenueRows.length === 0" class="text-center py-12">
-        <i class="fas fa-chart-line text-gray-400 text-4xl mb-4"></i>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No Revenue Data</h3>
-        <p class="text-gray-600 mb-4">
-          Revenue calculations are based on monthly financial data.<br>
-          Add monthly financial entries to see quarterly revenue summaries.
-        </p>
-      </div>
-
     </div>
-  `
+  `,
 })
 export class RevenueComponent implements OnInit {
   companyId!: number;
@@ -392,7 +448,6 @@ export class RevenueComponent implements OnInit {
   // Chart Data Properties
   quarterlyTrendsChart: ILineChart = { labels: [], datasets: [] };
   yearlyComparisonChart: IBarChart = { labels: [], datasets: [] };
-  revenueDistributionChart: IDoughnutChart = { labels: [], datasets: [] };
   keyMetrics: IKeyValue[] = [];
 
   constructor(
@@ -410,15 +465,21 @@ export class RevenueComponent implements OnInit {
       this.companyId = parseInt(companyId, 10);
 
       // Extract required query parameters
-      this.clientId = queryParams?.['clientId'] ? parseInt(queryParams['clientId'], 10) : 0;
-      this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
-      this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
+      this.clientId = queryParams?.['clientId']
+        ? parseInt(queryParams['clientId'], 10)
+        : 0;
+      this.programId = queryParams?.['programId']
+        ? parseInt(queryParams['programId'], 10)
+        : 0;
+      this.cohortId = queryParams?.['cohortId']
+        ? parseInt(queryParams['cohortId'], 10)
+        : 0;
 
       console.log('Revenue Component - IDs:', {
         companyId: this.companyId,
         clientId: this.clientId,
         programId: this.programId,
-        cohortId: this.cohortId
+        cohortId: this.cohortId,
       });
 
       this.loadRevenueData();
@@ -429,10 +490,12 @@ export class RevenueComponent implements OnInit {
     this.loading = true;
     try {
       // Get quarterly revenue for all years - this is now live calculated from monthly data
-      const quarterlyData = await this.financialService.getQuarterlyRevenueAllYears(this.companyId).toPromise();
+      const quarterlyData = await this.financialService
+        .getQuarterlyRevenueAllYears(this.companyId)
+        .toPromise();
 
       // Map the API response to display rows
-      this.revenueRows = (quarterlyData || []).map(data => ({
+      this.revenueRows = (quarterlyData || []).map((data) => ({
         financial_year_id: data.financial_year_id,
         financial_year_name: data.financial_year_name,
         fy_start_year: data.fy_start_year,
@@ -450,14 +513,16 @@ export class RevenueComponent implements OnInit {
         export_total: data.export_total,
         export_ratio: data.export_ratio,
         quarter_details: data.quarter_details,
-        account_breakdown: data.account_breakdown
+        account_breakdown: data.account_breakdown,
       }));
 
-      console.log('Revenue Component - Live quarterly data loaded:', this.revenueRows);
+      console.log(
+        'Revenue Component - Live quarterly data loaded:',
+        this.revenueRows
+      );
 
       // Prepare chart data
       this.prepareChartData();
-
     } catch (error) {
       console.error('Error loading quarterly revenue data:', error);
       this.revenueRows = [];
@@ -476,7 +541,7 @@ export class RevenueComponent implements OnInit {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: hasDecimals ? 2 : 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(value);
   }
 
@@ -485,7 +550,7 @@ export class RevenueComponent implements OnInit {
     return new Intl.NumberFormat('en-US', {
       style: 'percent',
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 1,
     }).format(value / 100);
   }
 
@@ -511,55 +576,44 @@ export class RevenueComponent implements OnInit {
         backgroundColor: this.getYearColor(index, 'background'),
         borderWidth: 3,
         fill: false,
-        tension: 0.4
-      }))
+        tension: 0.4,
+      })),
     };
 
     // 2. Yearly Comparison Bar Chart (Total Revenue by Year)
     this.yearlyComparisonChart = {
-      labels: this.revenueRows.map(row => row.financial_year_name),
+      labels: this.revenueRows.map((row) => row.financial_year_name),
       datasets: [
         {
           label: 'Domestic Revenue',
-          data: this.revenueRows.map(row => row.revenue_total),
+          data: this.revenueRows.map((row) => row.revenue_total),
           backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue
           borderColor: 'rgba(59, 130, 246, 1)',
-          borderWidth: 2
+          borderWidth: 2,
         },
         {
           label: 'Export Revenue',
-          data: this.revenueRows.map(row => row.export_total),
+          data: this.revenueRows.map((row) => row.export_total),
           backgroundColor: 'rgba(34, 197, 94, 0.8)', // Green
           borderColor: 'rgba(34, 197, 94, 1)',
-          borderWidth: 2
-        }
-      ]
+          borderWidth: 2,
+        },
+      ],
     };
 
-    // 3. Revenue Distribution Doughnut Chart (Latest Year)
-    const latestYear = this.revenueRows[0]; // Assuming sorted by latest first
-    if (latestYear) {
-      this.revenueDistributionChart = {
-        labels: ['Domestic Revenue', 'Export Revenue'],
-        datasets: [{
-          data: [latestYear.revenue_total, latestYear.export_total],
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.8)', // Blue for Domestic
-            'rgba(34, 197, 94, 0.8)'   // Green for Export
-          ],
-          borderColor: [
-            'rgba(59, 130, 246, 1)',
-            'rgba(34, 197, 94, 1)'
-          ],
-          borderWidth: 2
-        }]
-      };
-    }
-
     // 4. Key Metrics Cards - Calculate totals and create three main revenue metrics
-    const totalRevenue = this.revenueRows.reduce((sum, row) => sum + row.revenue_total + row.export_total, 0);
-    const totalDomestic = this.revenueRows.reduce((sum, row) => sum + row.revenue_total, 0);
-    const totalExport = this.revenueRows.reduce((sum, row) => sum + row.export_total, 0);
+    const totalRevenue = this.revenueRows.reduce(
+      (sum, row) => sum + row.revenue_total + row.export_total,
+      0
+    );
+    const totalDomestic = this.revenueRows.reduce(
+      (sum, row) => sum + row.revenue_total,
+      0
+    );
+    const totalExport = this.revenueRows.reduce(
+      (sum, row) => sum + row.export_total,
+      0
+    );
 
     this.keyMetrics = [
       {
@@ -567,32 +621,41 @@ export class RevenueComponent implements OnInit {
         value: this.formatCurrency(totalRevenue),
         subtitle: 'All financial years',
         icon: 'fas fa-chart-line',
-        color: 'text-blue-600'
+        color: 'text-blue-600',
       },
       {
         key: 'Domestic Revenue',
         value: this.formatCurrency(totalDomestic),
         subtitle: 'Local market total',
         icon: 'fas fa-home',
-        color: 'text-blue-600'
+        color: 'text-blue-600',
       },
       {
         key: 'Export Revenue',
         value: this.formatCurrency(totalExport),
         subtitle: 'International market total',
         icon: 'fas fa-globe',
-        color: 'text-green-600'
-      }
+        color: 'text-green-600',
+      },
     ];
   }
 
   private getYearColor(index: number, type: 'border' | 'background'): string {
     const colors = [
-      { border: 'rgba(59, 130, 246, 1)', background: 'rgba(59, 130, 246, 0.2)' }, // Blue
-      { border: 'rgba(34, 197, 94, 1)', background: 'rgba(34, 197, 94, 0.2)' },   // Green
-      { border: 'rgba(168, 85, 247, 1)', background: 'rgba(168, 85, 247, 0.2)' }, // Purple
-      { border: 'rgba(245, 158, 11, 1)', background: 'rgba(245, 158, 11, 0.2)' }, // Amber
-      { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }    // Red
+      {
+        border: 'rgba(59, 130, 246, 1)',
+        background: 'rgba(59, 130, 246, 0.2)',
+      }, // Blue
+      { border: 'rgba(34, 197, 94, 1)', background: 'rgba(34, 197, 94, 0.2)' }, // Green
+      {
+        border: 'rgba(168, 85, 247, 1)',
+        background: 'rgba(168, 85, 247, 0.2)',
+      }, // Purple
+      {
+        border: 'rgba(245, 158, 11, 1)',
+        background: 'rgba(245, 158, 11, 0.2)',
+      }, // Amber
+      { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }, // Red
     ];
 
     const colorIndex = index % colors.length;
