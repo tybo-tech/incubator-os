@@ -9,6 +9,8 @@ import {
   CompanyAccountResponse,
   CompanyAccountsSummaryResponse,
   CompanyAccountsListFilters,
+  AccountTypesResponse,
+  AccountType,
   ApiResponse
 } from './company-account.interface';
 import { Constants } from '../../services/service';
@@ -39,6 +41,9 @@ export class CompanyAccountService {
     if (filters) {
       if (filters.company_id) {
         params = params.set('company_id', filters.company_id.toString());
+      }
+      if (filters.account_type) {
+        params = params.set('account_type', filters.account_type);
       }
       // if (filters.is_active !== undefined) {
       //   params = params.set('is_active', filters.is_active.toString());
@@ -264,9 +269,56 @@ export class CompanyAccountService {
             data: {
               total_accounts: 0,
               active_accounts: 0,
-              inactive_accounts: 0
+              inactive_accounts: 0,
+              domestic_revenue_accounts: 0,
+              export_revenue_accounts: 0,
+              expense_accounts: 0,
+              other_accounts: 0
             },
             message: error.message || 'Failed to fetch accounts summary'
+          });
+        })
+      );
+  }
+
+  /**
+   * Get available account types
+   */
+  getAccountTypes(): Observable<AccountTypesResponse> {
+    return this.http.get<AccountTypesResponse>(`${this.apiUrl}/get-account-types.php`)
+      .pipe(
+        catchError(error => {
+          this.error.set(error.message || 'Failed to fetch account types');
+          return of({
+            success: false,
+            data: {},
+            message: error.message || 'Failed to fetch account types'
+          });
+        })
+      );
+  }
+
+  /**
+   * Get accounts by type
+   */
+  getAccountsByType(accountType: string, companyId?: number, activeOnly: boolean = true): Observable<CompanyAccountsListResponse> {
+    let params = new HttpParams().set('account_type', accountType);
+    if (companyId) {
+      params = params.set('company_id', companyId.toString());
+    }
+    if (activeOnly !== undefined) {
+      params = params.set('active_only', activeOnly.toString());
+    }
+
+    return this.http.get<CompanyAccountsListResponse>(`${this.apiUrl}/get-accounts-by-type.php`, { params })
+      .pipe(
+        catchError(error => {
+          this.error.set(error.message || 'Failed to fetch accounts by type');
+          return of({
+            success: false,
+            data: [],
+            count: 0,
+            message: error.message || 'Failed to fetch accounts by type'
           });
         })
       );
@@ -285,6 +337,45 @@ export class CompanyAccountService {
       }),
       catchError(() => of([]))
     );
+  }
+
+  /**
+   * Get default account types (fallback if API fails)
+   */
+  getDefaultAccountTypes(): AccountType[] {
+    return [
+      { key: 'domestic_revenue', label: 'Domestic Revenue' },
+      { key: 'export_revenue', label: 'Export Revenue' },
+      { key: 'expense', label: 'Expense' },
+      { key: 'other', label: 'Other' }
+    ];
+  }
+
+  /**
+   * Get account type label
+   */
+  getAccountTypeLabel(accountType: string): string {
+    const types = this.getDefaultAccountTypes();
+    const type = types.find(t => t.key === accountType);
+    return type ? type.label : accountType;
+  }
+
+  /**
+   * Get account type display badge class
+   */
+  getAccountTypeBadgeClass(accountType: string): string {
+    switch (accountType) {
+      case 'domestic_revenue':
+        return 'bg-green-100 text-green-800';
+      case 'export_revenue':
+        return 'bg-blue-100 text-blue-800';
+      case 'expense':
+        return 'bg-red-100 text-red-800';
+      case 'other':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 
   /**

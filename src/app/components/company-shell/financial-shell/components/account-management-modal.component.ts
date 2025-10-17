@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanyAccountService } from '../../../../services/company-account.service';
-import { CompanyAccount } from '../../../../services/company-account.interface';
+import { CompanyAccount, AccountType } from '../../../../services/company-account.interface';
 
 /**
  * Simple modal for managing company accounts
@@ -31,12 +31,19 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
         <div class="flex-1 overflow-y-auto p-4">
           <!-- Add New Account -->
           <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-4 gap-3">
               <input
                 type="text"
                 [(ngModel)]="newAccount.account_name"
                 placeholder="Account Name*"
                 class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+              <select
+                [(ngModel)]="newAccount.account_type"
+                class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                <option *ngFor="let type of accountTypes()" [value]="type.key">
+                  {{ type.label }}
+                </option>
+              </select>
               <input
                 type="text"
                 [(ngModel)]="newAccount.account_number"
@@ -65,6 +72,7 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
               <thead class="bg-blue-50">
                 <tr>
                   <th class="px-4 py-3 text-left font-semibold text-blue-800">Account Name</th>
+                  <th class="px-4 py-3 text-left font-semibold text-blue-800">Type</th>
                   <th class="px-4 py-3 text-left font-semibold text-blue-800">Account Number</th>
                   <th class="px-4 py-3 text-left font-semibold text-blue-800">Description</th>
                   <th class="px-4 py-3 text-center font-semibold text-blue-800">Status</th>
@@ -85,6 +93,23 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
                       class="w-full px-2 py-1 border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-sm">
                     <ng-template #displayAccountName>
                       <span class="font-medium text-gray-900">{{ account.account_name }}</span>
+                    </ng-template>
+                  </td>
+
+                  <!-- Account Type -->
+                  <td class="px-4 py-3">
+                    <select
+                      *ngIf="editingId() === account.id; else displayAccountType"
+                      [(ngModel)]="account.account_type"
+                      class="w-full px-2 py-1 border border-blue-200 rounded focus:ring-1 focus:ring-blue-500 text-sm">
+                      <option *ngFor="let type of accountTypes()" [value]="type.key">
+                        {{ type.label }}
+                      </option>
+                    </select>
+                    <ng-template #displayAccountType>
+                      <span [class]="'inline-flex px-2 py-1 text-xs font-medium rounded-full ' + getAccountTypeBadgeClass(account.account_type)">
+                        {{ getAccountTypeLabel(account.account_type) }}
+                      </span>
                     </ng-template>
                   </td>
 
@@ -179,7 +204,7 @@ import { CompanyAccount } from '../../../../services/company-account.interface';
 
                 <!-- Empty State -->
                 <tr *ngIf="accounts().length === 0">
-                  <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                  <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                     No accounts found. Add one above to get started.
                   </td>
                 </tr>
@@ -211,10 +236,12 @@ export class AccountManagementModalComponent implements OnInit {
   readonly loading = signal(false);
   readonly accounts = signal<CompanyAccount[]>([]);
   readonly editingId = signal<number | null>(null);
+  readonly accountTypes = signal<AccountType[]>([]);
 
   // Form data
   newAccount = {
     account_name: '',
+    account_type: 'domestic_revenue' as const,
     account_number: '',
     description: ''
   };
@@ -224,7 +251,33 @@ export class AccountManagementModalComponent implements OnInit {
   constructor(private companyAccountService: CompanyAccountService) {}
 
   ngOnInit() {
+    this.loadAccountTypes();
     this.loadAccounts();
+  }
+
+  /**
+   * Load account types from API
+   */
+  private loadAccountTypes() {
+    this.companyAccountService.getAccountTypes().subscribe({
+      next: (response) => {
+        if (response.success) {
+          // Convert the response data to AccountType array
+          const types: AccountType[] = Object.entries(response.data).map(([key, label]) => ({
+            key: key as any,
+            label: label
+          }));
+          this.accountTypes.set(types);
+        } else {
+          // Use default account types as fallback
+          this.accountTypes.set(this.companyAccountService.getDefaultAccountTypes());
+        }
+      },
+      error: () => {
+        // Use default account types as fallback
+        this.accountTypes.set(this.companyAccountService.getDefaultAccountTypes());
+      }
+    });
   }
 
   /**
@@ -387,11 +440,26 @@ export class AccountManagementModalComponent implements OnInit {
   }
 
   /**
+   * Get account type label for display
+   */
+  getAccountTypeLabel(accountType: string): string {
+    return this.companyAccountService.getAccountTypeLabel(accountType);
+  }
+
+  /**
+   * Get account type badge CSS class
+   */
+  getAccountTypeBadgeClass(accountType: string): string {
+    return this.companyAccountService.getAccountTypeBadgeClass(accountType);
+  }
+
+  /**
    * Reset new account form
    */
   private resetNewAccount() {
     this.newAccount = {
       account_name: '',
+      account_type: 'domestic_revenue' as const,
       account_number: '',
       description: ''
     };

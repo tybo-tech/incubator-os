@@ -3,6 +3,7 @@ export interface CompanyAccount {
   company_id: number;
   company_name?: string; // Available when joined with companies table
   account_name: string;
+  account_type: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
   description?: string;
   account_number?: string;
   attachments?: any[]; // JSON array of attachments
@@ -14,6 +15,7 @@ export interface CompanyAccount {
 export interface CompanyAccountCreateRequest {
   company_id: number;
   account_name: string;
+  account_type?: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
   description?: string;
   account_number?: string;
   attachments?: any[];
@@ -23,6 +25,7 @@ export interface CompanyAccountCreateRequest {
 export interface CompanyAccountUpdateRequest {
   company_id?: number;
   account_name?: string;
+  account_type?: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
   description?: string;
   account_number?: string;
   attachments?: any[];
@@ -46,6 +49,10 @@ export interface CompanyAccountsSummary {
   total_accounts: number;
   active_accounts: number;
   inactive_accounts: number;
+  domestic_revenue_accounts: number;
+  export_revenue_accounts: number;
+  expense_accounts: number;
+  other_accounts: number;
 }
 
 export interface CompanyAccountsSummaryResponse {
@@ -56,9 +63,21 @@ export interface CompanyAccountsSummaryResponse {
 
 export interface CompanyAccountsListFilters {
   company_id?: number;
+  account_type?: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
   is_active?: boolean;
   limit?: number;
   offset?: number;
+}
+
+export interface AccountTypesResponse {
+  success: boolean;
+  data: { [key: string]: string };
+  message: string;
+}
+
+export interface AccountType {
+  key: 'domestic_revenue' | 'export_revenue' | 'expense' | 'other';
+  label: string;
 }
 
 export interface ApiResponse {
