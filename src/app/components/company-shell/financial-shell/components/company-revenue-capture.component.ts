@@ -257,39 +257,56 @@ export class CompanyRevenueCaptureComponent implements OnInit {
    * Only shows financial years that have actual data captured
    */
   private transformDataToYearGroups(): void {
+    console.log('🔧 transformDataToYearGroups called');
     const financialYears = this.availableFinancialYears();
     const accounts = this.availableAccounts();
     const yearlyStats = this.allYearlyStats();
+
+    console.log('Transform debug - Financial Years:', financialYears);
+    console.log('Transform debug - Accounts:', accounts);
+    console.log('Transform debug - Yearly Stats:', yearlyStats);
 
     // Get unique financial year IDs that have data
     const yearIdsWithData = [
       ...new Set(yearlyStats.map((stat) => stat.financial_year_id)),
     ];
 
+    console.log('Transform debug - Year IDs with data:', yearIdsWithData);
+
     // Only create year groups for financial years that have actual data
     const yearGroups: YearGroup[] = financialYears
       .filter((year) => yearIdsWithData.includes(year.id))
       .map((year) => {
+        console.log('Transform debug - Processing year:', year);
+
         // Get stats for this specific year
         const yearStats = yearlyStats.filter(
           (stat) => stat.financial_year_id === year.id
         );
 
+        console.log('Transform debug - Year stats for', year.name, ':', yearStats);
+
         // Convert each stats record to an AccountRecord
         const accountRecords: AccountRecord[] = yearStats
           .map((stat) => {
+            console.log('🔍 Processing stat:', stat);
+            console.log('🔍 Looking for account ID:', stat.account_id);
+            console.log('🔍 Available accounts:', accounts);
+
             const account =
               accounts.find((acc) => acc.id === stat.account_id) ||
               (stat.account_id === null
                 ? { id: 0, account_name: 'Company Total' }
                 : null);
 
+            console.log('🔍 Found account:', account);
+
             if (!account) {
-              console.warn('Account not found for stats:', stat);
+              console.warn('❌ Account not found for stats:', stat);
               return null;
             }
 
-            return {
+            const accountRecord = {
               id: stat.id,
               accountId: stat.account_id,
               accountName: account.account_name,
@@ -309,10 +326,13 @@ export class CompanyRevenueCaptureComponent implements OnInit {
               },
               total: stat.total_amount,
             };
+
+            console.log('✅ Created account record:', accountRecord);
+            return accountRecord;
           })
           .filter((record) => record !== null) as AccountRecord[];
 
-        return {
+        const yearGroup = {
           id: year.id,
           name: year.name,
           startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
@@ -321,6 +341,8 @@ export class CompanyRevenueCaptureComponent implements OnInit {
           isActive: year.is_active,
           accounts: accountRecords,
         };
+
+        return yearGroup;
       });
 
     this.years.set(yearGroups);
