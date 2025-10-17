@@ -426,7 +426,7 @@ final class CompanyFinancialYearlyStats
                 'account_name' => $accountName,
                 'account_type' => $accountType,
                 'monthly_data' => $accountMonthly,
-                'total' => $accountTotal
+                'total' => round($accountTotal, 2)
             ];
         }
 
@@ -468,17 +468,17 @@ final class CompanyFinancialYearlyStats
             'fy_start_year' => (int)$firstRecord['fy_start_year'],
             'fy_end_year' => (int)$firstRecord['fy_end_year'],
             'start_month' => $startMonth,
-            'revenue_q1' => $revenueQ1,
-            'revenue_q2' => $revenueQ2,
-            'revenue_q3' => $revenueQ3,
-            'revenue_q4' => $revenueQ4,
-            'revenue_total' => $revenueTotal,
-            'export_q1' => $exportQ1,
-            'export_q2' => $exportQ2,
-            'export_q3' => $exportQ3,
-            'export_q4' => $exportQ4,
-            'export_total' => $exportTotal,
-            'export_ratio' => $exportRatio,
+            'revenue_q1' => round($revenueQ1, 2),
+            'revenue_q2' => round($revenueQ2, 2),
+            'revenue_q3' => round($revenueQ3, 2),
+            'revenue_q4' => round($revenueQ4, 2),
+            'revenue_total' => round($revenueTotal, 2),
+            'export_q1' => round($exportQ1, 2),
+            'export_q2' => round($exportQ2, 2),
+            'export_q3' => round($exportQ3, 2),
+            'export_q4' => round($exportQ4, 2),
+            'export_total' => round($exportTotal, 2),
+            'export_ratio' => round($exportRatio, 2),
             'account_breakdown' => $accountBreakdown,
             'quarter_details' => [
                 'q1_months' => $this->getQuarterMonthNames($startMonth, 0),

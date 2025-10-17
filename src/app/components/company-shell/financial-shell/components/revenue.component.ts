@@ -127,7 +127,7 @@ interface RevenueDisplayRow {
                     <span class="text-sm font-semibold text-gray-900">
                       {{ formatCurrency(row.revenue_total) }}
                     </span>
-                    <span class="text-xs text-gray-500 block">USD</span>
+                    <span class="text-xs text-gray-500 block">ZAR</span>
                   </div>
                 </td>
               </tr>
@@ -205,7 +205,7 @@ interface RevenueDisplayRow {
                     <span class="text-sm font-semibold text-gray-900">
                       {{ formatCurrency(row.export_total) }}
                     </span>
-                    <span class="text-xs text-gray-500 block">USD</span>
+                    <span class="text-xs text-gray-500 block">ZAR</span>
                   </div>
                 </td>
 
@@ -314,12 +314,16 @@ export class RevenueComponent implements OnInit {
   }
 
   formatCurrency(value: number | null): string {
-    if (value === null || value === undefined) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
+    if (value === null || value === undefined) return 'R0';
+    
+    // For large numbers, show without decimals unless there are cents
+    const hasDecimals = value % 1 !== 0;
+    
+    return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      currency: 'ZAR',
+      minimumFractionDigits: hasDecimals ? 2 : 0,
+      maximumFractionDigits: 2
     }).format(value);
   }
 
