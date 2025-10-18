@@ -5,7 +5,11 @@ import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 // Live Profit Calculation System
-import { ProfitCalculationService, ProfitSummary, QuarterlyProfit } from '../../../../../services/profit-calculation.service';
+import {
+  ProfitCalculationService,
+  ProfitSummary,
+  QuarterlyProfit,
+} from '../../../../../services/profit-calculation.service';
 import { ToastService } from '../../../../services/toast.service';
 
 // Chart Components
@@ -14,7 +18,11 @@ import { BarChartComponent } from '../../../../charts/bar-chart/bar-chart.compon
 import { DoughnutComponent } from '../../../../charts/doughnut/doughnut.component';
 
 // Chart Data Interfaces
-import { ILineChart, IBarChart, IDoughnutChart } from '../../../../../models/Charts';
+import {
+  ILineChart,
+  IBarChart,
+  IDoughnutChart,
+} from '../../../../../models/Charts';
 import { IKeyValue } from '../../../../../models/IKeyValue';
 
 // Display row interface for UI binding
@@ -50,13 +58,7 @@ interface ProfitDisplayRow {
 @Component({
   selector: 'app-profits',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LineChartComponent,
-    BarChartComponent,
-    DoughnutComponent
-  ],
+  imports: [CommonModule, FormsModule, LineChartComponent, BarChartComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
@@ -73,28 +75,35 @@ interface ProfitDisplayRow {
 
       <!-- Loading State -->
       <div *ngIf="loading" class="flex justify-center items-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"
+        ></div>
       </div>
 
       <!-- Charts and Analytics Section -->
       <div *ngIf="!loading && profitRows.length > 0" class="space-y-8 mb-12">
-
         <!-- Key Metrics Cards -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div class="flex items-center mb-6">
             <i class="fas fa-tachometer-alt text-purple-600 text-xl mr-3"></i>
-            <h3 class="text-lg font-semibold text-gray-900">Key Profit Metrics</h3>
+            <h3 class="text-lg font-semibold text-gray-900">
+              Key Profit Metrics
+            </h3>
           </div>
 
           <!-- Horizontal Grid for 3 Revenue Cards -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div *ngFor="let metric of keyMetrics"
-                 class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200">
-
+            <div
+              *ngFor="let metric of keyMetrics"
+              class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-100 hover:border-blue-300 hover:shadow-md transition-all duration-200"
+            >
               <!-- Icon and Value -->
               <div class="flex items-center justify-between mb-4">
                 <div class="flex-1">
-                  <div class="text-2xl font-bold mb-1" [ngClass]="metric.color || 'text-gray-800'">
+                  <div
+                    class="text-2xl font-bold mb-1"
+                    [ngClass]="metric.color || 'text-gray-800'"
+                  >
                     {{ metric.value }}
                   </div>
                   <div class="text-sm font-medium text-gray-600 capitalize">
@@ -107,17 +116,28 @@ interface ProfitDisplayRow {
 
                 <!-- Icon -->
                 <div class="ml-4">
-                  <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200">
-                    <i [class]="metric.icon || 'fas fa-chart-line'" [ngClass]="metric.color || 'text-gray-600'"></i>
+                  <div
+                    class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-200"
+                  >
+                    <i
+                      [class]="metric.icon || 'fas fa-chart-line'"
+                      [ngClass]="metric.color || 'text-gray-600'"
+                    ></i>
                   </div>
                 </div>
               </div>
 
               <!-- Progress Bar -->
               <div class="bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="h-full transition-all duration-500 rounded-full"
-                     [ngClass]="metric.color === 'text-green-600' ? 'bg-green-500' : 'bg-blue-500'"
-                     [style.width]="'85%'"></div>
+                <div
+                  class="h-full transition-all duration-500 rounded-full"
+                  [ngClass]="
+                    metric.color === 'text-green-600'
+                      ? 'bg-green-500'
+                      : 'bg-blue-500'
+                  "
+                  [style.width]="'85%'"
+                ></div>
               </div>
             </div>
           </div>
@@ -125,12 +145,12 @@ interface ProfitDisplayRow {
 
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
           <!-- Profit Trends Line Chart -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <app-line-chart
               [componentTitle]="'Profit Trends Over Time'"
-              [data]="profitTrendsChart">
+              [data]="profitTrendsChart"
+            >
             </app-line-chart>
           </div>
 
@@ -138,10 +158,10 @@ interface ProfitDisplayRow {
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <app-bar-chart
               [componentTitle]="'Revenue vs Costs vs Profits'"
-              [data]="profitComparisonChart">
+              [data]="profitComparisonChart"
+            >
             </app-bar-chart>
           </div>
-
         </div>
 
         <!-- Margin Distribution -->
@@ -153,19 +173,21 @@ interface ProfitDisplayRow {
             </app-doughnut>
           </div>
         </div> -->
-
       </div>
 
       <!-- Profit Data Table -->
       <div *ngIf="!loading && profitRows.length > 0" class="space-y-6">
-
         <!-- Profit Analysis Table -->
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
           <!-- Section Header -->
-          <div class="bg-yellow-50 border-b border-yellow-100 px-6 py-4 rounded-t-lg">
+          <div
+            class="bg-yellow-50 border-b border-yellow-100 px-6 py-4 rounded-t-lg"
+          >
             <div class="flex items-center">
               <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
-              <h3 class="text-lg font-semibold text-yellow-800">Profit Analysis Summary</h3>
+              <h3 class="text-lg font-semibold text-yellow-800">
+                Profit Analysis Summary
+              </h3>
               <div class="ml-4 text-sm text-yellow-600">
                 <i class="fas fa-coins mr-1"></i>
                 Live profit calculations by financial year
@@ -178,38 +200,62 @@ interface ProfitDisplayRow {
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-yellow-500">
                 <tr>
-                  <th class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Financial Year
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Revenue
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Direct Costs
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Gross Profit
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Operational Costs
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Operating Profit
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Gross Margin
                   </th>
-                  <th class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider">
+                  <th
+                    class="px-4 py-4 text-right text-sm font-semibold text-white uppercase tracking-wider"
+                  >
                     Operating Margin
                   </th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let row of profitRows; let i = index" class="hover:bg-yellow-50 transition-colors duration-200">
+                <tr
+                  *ngFor="let row of profitRows; let i = index"
+                  class="hover:bg-yellow-50 transition-colors duration-200"
+                >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex flex-col">
-                      <span class="text-sm font-medium text-gray-900">{{ row.financial_year_name }}</span>
-                      <span class="text-xs text-gray-500" *ngIf="row.quarter_details">
+                      <span class="text-sm font-medium text-gray-900">{{
+                        row.financial_year_name
+                      }}</span>
+                      <span
+                        class="text-xs text-gray-500"
+                        *ngIf="row.quarter_details"
+                      >
                         {{ getFinancialYearPeriod(row) }}
                       </span>
                     </div>
@@ -225,8 +271,14 @@ interface ProfitDisplayRow {
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right">
-                    <span class="text-sm font-medium"
-                          [ngClass]="row.gross_profit >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <span
+                      class="text-sm font-medium"
+                      [ngClass]="
+                        row.gross_profit >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      "
+                    >
                       {{ formatCurrency(row.gross_profit) }}
                     </span>
                   </td>
@@ -236,20 +288,38 @@ interface ProfitDisplayRow {
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right">
-                    <span class="text-sm font-medium"
-                          [ngClass]="row.operating_profit >= 0 ? 'text-green-600' : 'text-red-600'">
+                    <span
+                      class="text-sm font-medium"
+                      [ngClass]="
+                        row.operating_profit >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      "
+                    >
                       {{ formatCurrency(row.operating_profit) }}
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right">
-                    <span class="text-sm font-medium"
-                          [ngClass]="row.gross_margin >= 0 ? 'text-yellow-600' : 'text-red-600'">
+                    <span
+                      class="text-sm font-medium"
+                      [ngClass]="
+                        row.gross_margin >= 0
+                          ? 'text-yellow-600'
+                          : 'text-red-600'
+                      "
+                    >
                       {{ row.gross_margin.toFixed(1) }}%
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right">
-                    <span class="text-sm font-medium"
-                          [ngClass]="row.operating_margin >= 0 ? 'text-yellow-600' : 'text-red-600'">
+                    <span
+                      class="text-sm font-medium"
+                      [ngClass]="
+                        row.operating_margin >= 0
+                          ? 'text-yellow-600'
+                          : 'text-red-600'
+                      "
+                    >
                       {{ row.operating_margin.toFixed(1) }}%
                     </span>
                   </td>
@@ -258,21 +328,25 @@ interface ProfitDisplayRow {
             </table>
           </div>
         </div>
-
       </div>
 
       <!-- Empty State -->
-      <div *ngIf="!loading && profitRows.length === 0" class="text-center py-12">
+      <div
+        *ngIf="!loading && profitRows.length === 0"
+        class="text-center py-12"
+      >
         <i class="fas fa-coins text-yellow-400 text-4xl mb-4"></i>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No Profit Data Available</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">
+          No Profit Data Available
+        </h3>
         <p class="text-gray-600 mb-4">
-          Profit calculations require both revenue and cost data.<br>
-          Add financial years with revenue and expense entries to see profit analysis.
+          Profit calculations require both revenue and cost data.<br />
+          Add financial years with revenue and expense entries to see profit
+          analysis.
         </p>
       </div>
-
     </div>
-  `
+  `,
 })
 export class ProfitsComponent implements OnInit {
   companyId!: number;
@@ -304,15 +378,21 @@ export class ProfitsComponent implements OnInit {
       this.companyId = parseInt(companyId, 10);
 
       // Extract required query parameters
-      this.clientId = queryParams?.['clientId'] ? parseInt(queryParams['clientId'], 10) : 0;
-      this.programId = queryParams?.['programId'] ? parseInt(queryParams['programId'], 10) : 0;
-      this.cohortId = queryParams?.['cohortId'] ? parseInt(queryParams['cohortId'], 10) : 0;
+      this.clientId = queryParams?.['clientId']
+        ? parseInt(queryParams['clientId'], 10)
+        : 0;
+      this.programId = queryParams?.['programId']
+        ? parseInt(queryParams['programId'], 10)
+        : 0;
+      this.cohortId = queryParams?.['cohortId']
+        ? parseInt(queryParams['cohortId'], 10)
+        : 0;
 
       console.log('Profits Component - IDs:', {
         companyId: this.companyId,
         clientId: this.clientId,
         programId: this.programId,
-        cohortId: this.cohortId
+        cohortId: this.cohortId,
       });
 
       this.loadProfitData();
@@ -331,7 +411,11 @@ export class ProfitsComponent implements OnInit {
 
       console.log('Profit API Response:', profitSummaryData);
 
-      if (profitSummaryData && Array.isArray(profitSummaryData) && profitSummaryData.length > 0) {
+      if (
+        profitSummaryData &&
+        Array.isArray(profitSummaryData) &&
+        profitSummaryData.length > 0
+      ) {
         // Transform the profit summary data to display rows
         this.profitRows = profitSummaryData.map((profit: ProfitSummary) => ({
           financial_year_id: profit.financial_year_id,
@@ -346,13 +430,18 @@ export class ProfitsComponent implements OnInit {
           operating_profit: profit.operating_profit,
           gross_margin: profit.gross_margin,
           operating_margin: profit.operating_margin,
-          quarter_details: profit.quarter_details
+          quarter_details: profit.quarter_details,
         }));
 
-        console.log('Profits Component - Live profit data loaded:', this.profitRows);
+        console.log(
+          'Profits Component - Live profit data loaded:',
+          this.profitRows
+        );
 
         // Show success message
-        this.toastService.success(`Loaded profit data for ${this.profitRows.length} financial year(s)`);
+        this.toastService.success(
+          `Loaded profit data for ${this.profitRows.length} financial year(s)`
+        );
       } else {
         console.warn('No profit data received:', profitSummaryData);
         this.profitRows = [];
@@ -361,11 +450,12 @@ export class ProfitsComponent implements OnInit {
 
       // Prepare chart data
       this.prepareChartData();
-
     } catch (error) {
       console.error('Error loading profit data:', error);
       this.profitRows = [];
-      this.toastService.error('Failed to load profit data. Please check the backend connection.');
+      this.toastService.error(
+        'Failed to load profit data. Please check the backend connection.'
+      );
     } finally {
       this.loading = false;
     }
@@ -381,7 +471,7 @@ export class ProfitsComponent implements OnInit {
       style: 'currency',
       currency: 'ZAR',
       minimumFractionDigits: hasDecimals ? 2 : 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(value);
   }
 
@@ -390,7 +480,7 @@ export class ProfitsComponent implements OnInit {
     return new Intl.NumberFormat('en-US', {
       style: 'percent',
       minimumFractionDigits: 1,
-      maximumFractionDigits: 1
+      maximumFractionDigits: 1,
     }).format(value / 100);
   }
 
@@ -408,94 +498,109 @@ export class ProfitsComponent implements OnInit {
 
     // 1. Profit Trends Line Chart (Gross vs Operating Profit across years)
     this.profitTrendsChart = {
-      labels: this.profitRows.map(row => `FY${row.fy_start_year}-${row.fy_end_year}`),
+      labels: this.profitRows.map(
+        (row) => `FY${row.fy_start_year}-${row.fy_end_year}`
+      ),
       datasets: [
         {
           label: 'Gross Profit',
-          data: this.profitRows.map(row => row.gross_profit),
+          data: this.profitRows.map((row) => row.gross_profit),
           borderColor: 'rgba(251, 191, 36, 1)', // Yellow-400
           backgroundColor: 'rgba(251, 191, 36, 0.3)',
           borderWidth: 3,
           fill: false,
-          tension: 0.4
+          tension: 0.4,
         },
         {
           label: 'Operating Profit',
-          data: this.profitRows.map(row => row.operating_profit),
+          data: this.profitRows.map((row) => row.operating_profit),
           borderColor: 'rgba(217, 119, 6, 1)', // Yellow-600
           backgroundColor: 'rgba(217, 119, 6, 0.3)',
           borderWidth: 3,
           fill: false,
-          tension: 0.4
-        }
-      ]
+          tension: 0.4,
+        },
+      ],
     };
 
     // 2. Profit Comparison Bar Chart (Revenue vs Costs vs Profits)
     this.profitComparisonChart = {
-      labels: this.profitRows.map(row => row.financial_year_name),
+      labels: this.profitRows.map((row) => row.financial_year_name),
       datasets: [
         {
           label: 'Revenue',
-          data: this.profitRows.map(row => row.revenue_total),
+          data: this.profitRows.map((row) => row.revenue_total),
           backgroundColor: 'rgba(34, 197, 94, 0.8)', // Green
           borderColor: 'rgba(34, 197, 94, 1)',
-          borderWidth: 2
+          borderWidth: 2,
         },
         {
           label: 'Direct Costs',
-          data: this.profitRows.map(row => row.direct_costs),
+          data: this.profitRows.map((row) => row.direct_costs),
           backgroundColor: 'rgba(239, 68, 68, 0.8)', // Red
           borderColor: 'rgba(239, 68, 68, 1)',
-          borderWidth: 2
+          borderWidth: 2,
         },
         {
           label: 'Operational Costs',
-          data: this.profitRows.map(row => row.operational_costs),
+          data: this.profitRows.map((row) => row.operational_costs),
           backgroundColor: 'rgba(245, 158, 11, 0.8)', // Amber
           borderColor: 'rgba(245, 158, 11, 1)',
-          borderWidth: 2
+          borderWidth: 2,
         },
         {
           label: 'Operating Profit',
-          data: this.profitRows.map(row => row.operating_profit),
+          data: this.profitRows.map((row) => row.operating_profit),
           backgroundColor: 'rgba(217, 119, 6, 0.8)', // Yellow-600
           borderColor: 'rgba(217, 119, 6, 1)',
-          borderWidth: 2
-        }
-      ]
+          borderWidth: 2,
+        },
+      ],
     };
 
     // 3. Margin Distribution Doughnut Chart (Latest Year)
     const latestYear = this.profitRows[0]; // Assuming sorted by latest first
     if (latestYear) {
-      const directCostPct = (latestYear.direct_costs / latestYear.revenue_total) * 100;
-      const operationalCostPct = (latestYear.operational_costs / latestYear.revenue_total) * 100;
-      const grossProfitPct = (latestYear.gross_profit / latestYear.revenue_total) * 100;
+      const directCostPct =
+        (latestYear.direct_costs / latestYear.revenue_total) * 100;
+      const operationalCostPct =
+        (latestYear.operational_costs / latestYear.revenue_total) * 100;
+      const grossProfitPct =
+        (latestYear.gross_profit / latestYear.revenue_total) * 100;
 
       this.marginDistributionChart = {
         labels: ['Direct Costs', 'Operational Costs', 'Gross Profit'],
-        datasets: [{
-          data: [directCostPct, operationalCostPct, grossProfitPct],
-          backgroundColor: [
-            'rgba(239, 68, 68, 0.8)',   // Red for Direct Costs
-            'rgba(245, 158, 11, 0.8)',  // Amber for Operational Costs
-            'rgba(34, 197, 94, 0.8)'    // Green for Gross Profit
-          ],
-          borderColor: [
-            'rgba(239, 68, 68, 1)',
-            'rgba(245, 158, 11, 1)',
-            'rgba(34, 197, 94, 1)'
-          ],
-          borderWidth: 2
-        }]
+        datasets: [
+          {
+            data: [directCostPct, operationalCostPct, grossProfitPct],
+            backgroundColor: [
+              'rgba(239, 68, 68, 0.8)', // Red for Direct Costs
+              'rgba(245, 158, 11, 0.8)', // Amber for Operational Costs
+              'rgba(34, 197, 94, 0.8)', // Green for Gross Profit
+            ],
+            borderColor: [
+              'rgba(239, 68, 68, 1)',
+              'rgba(245, 158, 11, 1)',
+              'rgba(34, 197, 94, 1)',
+            ],
+            borderWidth: 2,
+          },
+        ],
       };
     }
 
     // 4. Key Metrics Cards - Calculate totals and create three main profit metrics
-    const totalOperatingProfit = this.profitRows.reduce((sum, row) => sum + row.operating_profit, 0);
-    const totalGrossProfit = this.profitRows.reduce((sum, row) => sum + row.gross_profit, 0);
-    const avgOperatingMargin = this.profitRows.reduce((sum, row) => sum + row.operating_margin, 0) / this.profitRows.length;
+    const totalOperatingProfit = this.profitRows.reduce(
+      (sum, row) => sum + row.operating_profit,
+      0
+    );
+    const totalGrossProfit = this.profitRows.reduce(
+      (sum, row) => sum + row.gross_profit,
+      0
+    );
+    const avgOperatingMargin =
+      this.profitRows.reduce((sum, row) => sum + row.operating_margin, 0) /
+      this.profitRows.length;
 
     this.keyMetrics = [
       {
@@ -503,32 +608,41 @@ export class ProfitsComponent implements OnInit {
         value: this.formatCurrency(totalOperatingProfit),
         subtitle: 'All financial years',
         icon: 'fas fa-coins',
-        color: totalOperatingProfit >= 0 ? 'text-yellow-600' : 'text-red-600'
+        color: totalOperatingProfit >= 0 ? 'text-yellow-600' : 'text-red-600',
       },
       {
         key: 'Total Gross Profit',
         value: this.formatCurrency(totalGrossProfit),
         subtitle: 'Revenue minus direct costs',
         icon: 'fas fa-chart-line',
-        color: totalGrossProfit >= 0 ? 'text-yellow-600' : 'text-red-600'
+        color: totalGrossProfit >= 0 ? 'text-yellow-600' : 'text-red-600',
       },
       {
         key: 'Average Operating Margin',
         value: `${avgOperatingMargin.toFixed(1)}%`,
         subtitle: 'Profitability efficiency',
         icon: 'fas fa-percentage',
-        color: avgOperatingMargin >= 0 ? 'text-yellow-600' : 'text-red-600'
-      }
+        color: avgOperatingMargin >= 0 ? 'text-yellow-600' : 'text-red-600',
+      },
     ];
   }
 
   private getYearColor(index: number, type: 'border' | 'background'): string {
     const colors = [
-      { border: 'rgba(59, 130, 246, 1)', background: 'rgba(59, 130, 246, 0.2)' }, // Blue
-      { border: 'rgba(34, 197, 94, 1)', background: 'rgba(34, 197, 94, 0.2)' },   // Green
-      { border: 'rgba(168, 85, 247, 1)', background: 'rgba(168, 85, 247, 0.2)' }, // Purple
-      { border: 'rgba(245, 158, 11, 1)', background: 'rgba(245, 158, 11, 0.2)' }, // Amber
-      { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }    // Red
+      {
+        border: 'rgba(59, 130, 246, 1)',
+        background: 'rgba(59, 130, 246, 0.2)',
+      }, // Blue
+      { border: 'rgba(34, 197, 94, 1)', background: 'rgba(34, 197, 94, 0.2)' }, // Green
+      {
+        border: 'rgba(168, 85, 247, 1)',
+        background: 'rgba(168, 85, 247, 0.2)',
+      }, // Purple
+      {
+        border: 'rgba(245, 158, 11, 1)',
+        background: 'rgba(245, 158, 11, 0.2)',
+      }, // Amber
+      { border: 'rgba(239, 68, 68, 1)', background: 'rgba(239, 68, 68, 0.2)' }, // Red
     ];
 
     const colorIndex = index % colors.length;

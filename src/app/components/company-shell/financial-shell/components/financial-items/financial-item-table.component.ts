@@ -38,12 +38,21 @@ export interface FinancialTableItem {
           <h3 class="text-base font-semibold text-gray-800">{{ title }}</h3>
           <!-- <p class="text-xs text-gray-500">{{ currency }} | Editable table</p> -->
         </div>
-        <button
-          (click)="addRow()"
-          class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded transition"
-        >
-          <i class="fas fa-plus"></i> Add
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="addRow()"
+            class="flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded transition"
+          >
+            <i class="fas fa-plus"></i> Add
+          </button>
+          <button
+            (click)="openCategoryManagement()"
+            class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded transition"
+            title="Manage Categories"
+          >
+            <i class="fas fa-tags"></i> Manage
+          </button>
+        </div>
       </div>
 
       <!-- Table -->
@@ -156,6 +165,7 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
     index: number;
     item: FinancialTableItem;
   }>();
+  @Output() manageCategoriesRequested = new EventEmitter<string>();
 
   list = signal<FinancialTableItem[]>([]);
   total = signal(0);
@@ -237,5 +247,10 @@ export class FinancialItemTableComponent implements OnInit, OnChanges {
     console.log('New category created:', newCategory);
     // The dropdown component will handle adding it to the list
     // This is just for logging or additional processing if needed
+  }
+
+  openCategoryManagement() {
+    // Emit the item type to parent component for category management
+    this.manageCategoriesRequested.emit(this.itemType);
   }
 }

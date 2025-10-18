@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinancialCategoryService, IFinancialCategoryColorUpdate } from '../../../../../services/financial-category.service';
@@ -263,6 +263,10 @@ import {
   `]
 })
 export class FinancialCategoryManagementComponent implements OnInit {
+  @Input() initialFilterType: FinancialItemType | null = null;
+  @Output() categoryUpdated = new EventEmitter<FinancialCategory>();
+  @Output() modalCloseRequested = new EventEmitter<void>();
+
   // Signals for reactive state management
   categories = signal<FinancialCategory[]>([]);
   loading = signal(false);
@@ -290,6 +294,10 @@ export class FinancialCategoryManagementComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Apply initial filter if provided
+    if (this.initialFilterType) {
+      this.selectedItemType.set(this.initialFilterType);
+    }
     this.loadCategories();
   }
 
@@ -339,6 +347,7 @@ export class FinancialCategoryManagementComponent implements OnInit {
       this.categoryService.deleteFinancialCategory(category.id!).subscribe({
         next: () => {
           this.loadCategories();
+          this.categoryUpdated.emit(category);
         },
         error: (error: any) => {
           console.error('Error deleting category:', error);
@@ -350,8 +359,9 @@ export class FinancialCategoryManagementComponent implements OnInit {
   toggleCategoryStatus(category: FinancialCategory) {
     const newStatus = !category.is_active;
     this.categoryService.toggleCategoryStatus(category.id!, newStatus).subscribe({
-      next: () => {
+      next: (updatedCategory) => {
         this.loadCategories();
+        this.categoryUpdated.emit(updatedCategory);
       },
       error: (error: any) => {
         console.error('Error updating category status:', error);
@@ -380,9 +390,10 @@ export class FinancialCategoryManagementComponent implements OnInit {
     const categoryId = this.colorPickerOpen();
     if (categoryId) {
       this.categoryService.updateCategoryColors(categoryId, this.selectedBgColor, this.selectedTextColor).subscribe({
-        next: () => {
+        next: (updatedCategory) => {
           this.loadCategories();
           this.closeColorPicker();
+          this.categoryUpdated.emit(updatedCategory);
         },
         error: (error: any) => {
           console.error('Error updating colors:', error);

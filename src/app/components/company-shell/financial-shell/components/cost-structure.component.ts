@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal, computed } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ContextService } from '../../../../../services/context.service';
@@ -23,6 +23,7 @@ import {
   FinancialItemHandlerService,
   ExtendedFinancialTableItem,
 } from '../services/financial-item-handler.service';
+import { FinancialCategoryModalComponent } from './financial-category-modal.component';
 
 @Component({
   selector: 'app-cost-structure',
@@ -34,6 +35,7 @@ import {
     FinancialItemHeaderComponent,
     PieComponent,
     FinancialSectionHeaderComponent,
+    FinancialCategoryModalComponent,
   ],
   template: `
     <div class="bg-white rounded-xl shadow-sm p-6 w-full">
@@ -122,6 +124,7 @@ import {
             (itemUpdated)="onDirectCostItemUpdated($event)"
             (itemAdded)="onDirectCostItemAdded($event)"
             (itemDeleted)="onDirectCostItemDeleted($event)"
+            (manageCategoriesRequested)="openCategoryManagement($event)"
           >
           </app-financial-item-table>
         </div>
@@ -158,6 +161,7 @@ import {
             (itemUpdated)="onOperationalCostItemUpdated($event)"
             (itemAdded)="onOperationalCostItemAdded($event)"
             (itemDeleted)="onOperationalCostItemDeleted($event)"
+            (manageCategoriesRequested)="openCategoryManagement($event)"
           >
           </app-financial-item-table>
         </div>
@@ -168,6 +172,13 @@ import {
         Last updated: {{ '2025-10-12' }}
       </div>
     </div>
+
+    <!-- Financial Category Management Modal -->
+    <app-financial-category-modal
+      #categoryModal
+      (modalClosed)="onModalClosed()"
+      (categoriesChanged)="onCategoriesChanged()">
+    </app-financial-category-modal>
   `,
 })
 export class CostStructureComponent
@@ -177,6 +188,9 @@ export class CostStructureComponent
   @Input() itemType!: FinancialItemType;
   @Input() title = '';
   @Input() subtitle = '';
+
+  // ViewChild for category modal
+  @ViewChild('categoryModal') categoryModal!: FinancialCategoryModalComponent;
 
   // Specialized financial data signals for cost structure domain
   directCostItems = signal<CompanyFinancialItem[]>([]);
@@ -393,6 +407,27 @@ export class CostStructureComponent
    */
   override onYearChange(newYear: number): void {
     super.onYearChange(newYear);
+  }
+
+  /**
+   * Handle manage categories button click
+   * Opens category management modal filtered by item type
+   */
+  openCategoryManagement(itemType: string): void {
+    console.log('Opening category management for item type:', itemType);
+    if (this.categoryModal) {
+      this.categoryModal.openModal(itemType as FinancialItemType);
+    }
+  }
+
+  onModalClosed(): void {
+    console.log('Category management modal closed');
+  }
+
+  onCategoriesChanged(): void {
+    console.log('Categories changed, refreshing data...');
+    // Optionally refresh categories in dropdowns
+    this.loadFinancialData();
   }
 
   exportCostStructure(): void {
