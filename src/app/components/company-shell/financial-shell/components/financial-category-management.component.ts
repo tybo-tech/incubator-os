@@ -5,9 +5,7 @@ import { FinancialCategoryService, IFinancialCategoryColorUpdate } from '../../.
 import {
   FinancialCategory,
   FinancialItemType,
-  CategoryManagementState,
-  ColorTheme,
-  DEFAULT_COLOR_THEMES
+  CategoryManagementState
 } from '../../../../../models/financial.models';
 
 @Component({
@@ -53,26 +51,7 @@ import {
         </div>
       </div>
 
-      <!-- Color Theme Quick Actions -->
-      <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <i class="fas fa-palette"></i>
-          Quick Color Themes
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div *ngFor="let theme of colorThemes | keyvalue" class="text-center">
-            <button
-              (click)="applyColorTheme(theme.key, theme.value)"
-              [disabled]="loading()"
-              class="w-full p-3 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              [style.background-color]="theme.value.bg_color"
-              [style.color]="theme.value.text_color">
-              <div class="text-xs font-medium">{{ theme.value.name }}</div>
-              <div class="text-xs mt-1 opacity-75">{{ theme.value.bg_color }}</div>
-            </button>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Loading State -->
       <div *ngIf="loading()" class="flex justify-center items-center py-8">
@@ -230,6 +209,22 @@ import {
                 placeholder="#ecf0f1">
             </div>
           </div>
+          <!-- Quick Color Suggestions -->
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Quick Colors</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button
+                *ngFor="let colorSuggestion of colorSuggestions"
+                (click)="applyQuickColor(colorSuggestion)"
+                class="h-10 rounded border-2 border-gray-200 hover:border-gray-400 transition-all flex items-center justify-center text-xs font-medium"
+                [style.background-color]="colorSuggestion.bg_color"
+                [style.color]="colorSuggestion.text_color"
+                [title]="colorSuggestion.name">
+                {{ colorSuggestion.name }}
+              </button>
+            </div>
+          </div>
+
           <!-- Preview -->
           <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
@@ -279,7 +274,22 @@ export class FinancialCategoryManagementComponent implements OnInit {
 
   // Static data
   itemTypes: FinancialItemType[] = ['direct_cost', 'operational_cost', 'asset', 'liability', 'equity'];
-  colorThemes = DEFAULT_COLOR_THEMES;
+
+  // Color suggestions as a static property to avoid repeated function calls
+  colorSuggestions = [
+    { name: 'Blue', bg_color: '#3498db', text_color: '#ffffff' },
+    { name: 'Green', bg_color: '#27ae60', text_color: '#ffffff' },
+    { name: 'Orange', bg_color: '#f39c12', text_color: '#ffffff' },
+    { name: 'Red', bg_color: '#e74c3c', text_color: '#ffffff' },
+    { name: 'Purple', bg_color: '#8e44ad', text_color: '#ffffff' },
+    { name: 'Teal', bg_color: '#16a085', text_color: '#ffffff' },
+    { name: 'Navy', bg_color: '#2c3e50', text_color: '#ffffff' },
+    { name: 'Gray', bg_color: '#95a5a6', text_color: '#ffffff' },
+    { name: 'Cyan', bg_color: '#1abc9c', text_color: '#ffffff' },
+    { name: 'Indigo', bg_color: '#6c5ce7', text_color: '#ffffff' },
+    { name: 'Pink', bg_color: '#e84393', text_color: '#ffffff' },
+    { name: 'Amber', bg_color: '#f1c40f', text_color: '#2c3e50' }
+  ];
 
   // Computed properties
   filteredCategories = computed(() => {
@@ -402,19 +412,9 @@ export class FinancialCategoryManagementComponent implements OnInit {
     }
   }
 
-  applyColorTheme(itemType: string, theme: ColorTheme) {
-    if (confirm(`Apply ${theme.name} theme to all ${this.formatItemType(itemType as FinancialItemType)} categories?`)) {
-      this.loading.set(true);
-      this.categoryService.applyColorThemeByType(itemType as FinancialItemType, theme).subscribe({
-        next: () => {
-          this.loadCategories();
-        },
-        error: (error: any) => {
-          console.error('Error applying theme:', error);
-          this.loading.set(false);
-        }
-      });
-    }
+  applyQuickColor(colorSuggestion: { name: string; bg_color: string; text_color: string }) {
+    this.selectedBgColor = colorSuggestion.bg_color;
+    this.selectedTextColor = colorSuggestion.text_color;
   }
 
   /* =========================================================================

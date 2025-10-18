@@ -23,6 +23,8 @@ import {
   FinancialItemHandlerService,
   ExtendedFinancialTableItem,
 } from '../services/financial-item-handler.service';
+import { FinancialCategoryService } from '../../../../../services/financial-category.service';
+import { FinancialCategory } from '../../../../../models/financial.models';
 import { FinancialCategoryModalComponent } from './financial-category-modal.component';
 
 @Component({
@@ -202,6 +204,9 @@ export class CostStructureComponent
   isLoadingOperationalCosts = signal(false);
   isLoadingRevenue = signal(false);
 
+  // Financial categories for chart colors
+  categories = signal<FinancialCategory[]>([]);
+
   // 🎯 Enhanced financial metrics using the clean interface
   financialMetrics = computed(() =>
     this.calculationService.calculateFinancialMetrics(
@@ -238,18 +243,28 @@ export class CostStructureComponent
     this.itemHandler.convertToTableItems(this.operationalCostItems())
   );
 
-  // Chart data using centralized chart service
-  directCostChartData = computed(
-    (): IPieChart =>
-      this.chartService.generateDirectCostChartData(this.directCostItems())
-  );
+  // Chart data using centralized chart service with database colors
+  directCostChartData = computed((): IPieChart => {
+    const categories = this.categories();
+    const items = this.directCostItems();
 
-  operationalCostChartData = computed(
-    (): IPieChart =>
-      this.chartService.generateOperationalCostChartData(
-        this.operationalCostItems()
-      )
-  );
+    if (categories.length > 0) {
+      return this.chartService.generateDirectCostChartDataWithColors(items, categories);
+    } else {
+      return this.chartService.generateDirectCostChartData(items);
+    }
+  });
+
+  operationalCostChartData = computed((): IPieChart => {
+    const categories = this.categories();
+    const items = this.operationalCostItems();
+
+    if (categories.length > 0) {
+      return this.chartService.generateOperationalCostChartDataWithColors(items, categories);
+    } else {
+      return this.chartService.generateOperationalCostChartData(items);
+    }
+  });
 
   constructor(
     service: CompanyFinancialItemService,
@@ -257,7 +272,8 @@ export class CostStructureComponent
     route: ActivatedRoute,
     contextService: ContextService,
     chartService: FinancialChartService,
-    itemHandler: FinancialItemHandlerService
+    itemHandler: FinancialItemHandlerService,
+    private categoryService: FinancialCategoryService
   ) {
     super(
       service,
@@ -267,6 +283,9 @@ export class CostStructureComponent
       chartService,
       itemHandler
     );
+
+    // Load financial categories for chart colors
+    this.loadCategories();
   }
 
   ngOnInit() {
@@ -426,8 +445,25 @@ export class CostStructureComponent
 
   onCategoriesChanged(): void {
     console.log('Categories changed, refreshing data...');
-    // Optionally refresh categories in dropdowns
+    // Reload both financial data and categories for updated chart colors
     this.loadFinancialData();
+    this.loadCategories();
+  }
+
+  /**
+   * Load financial categories from database for chart colors
+   */
+  loadCategories(): void {
+    this.categoryService.listAllFinancialCategories().subscribe({
+      next: (categories: FinancialCategory[]) => {
+        console.log('💎 Loaded categories for Cost Structure charts:', categories);
+        this.categories.set(categories);
+      },
+      error: (error: any) => {
+        console.error('❌ Failed to load categories:', error);
+        // Charts will fallback to default colors
+      }
+    });
   }
 
   exportCostStructure(): void {

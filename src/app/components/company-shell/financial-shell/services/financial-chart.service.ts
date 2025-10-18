@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { IPieChart } from '../../../../../models/Charts';
-import { CompanyFinancialItem } from '../../../../../models/financial.models';
+import { CompanyFinancialItem, FinancialCategory } from '../../../../../models/financial.models';
 
 export interface ChartDataConfig {
   items: CompanyFinancialItem[];
   baseColor: 'green' | 'red' | 'blue';
   emptyStateLabel?: string;
   itemNameFallback?: string;
+  categories?: FinancialCategory[]; // Optional: use database category colors
 }
 
 /**
@@ -32,9 +33,9 @@ export class FinancialChartService {
    * @returns IPieChart formatted data
    */
   generatePieChartData(config: ChartDataConfig): IPieChart {
-    const { items, baseColor, emptyStateLabel = 'No data available', itemNameFallback = 'Unnamed Item' } = config;
+    const { items, baseColor, emptyStateLabel = 'No data available', itemNameFallback = 'Unnamed Item', categories } = config;
 
-    console.log(`🔍 FinancialChartService - Generating ${baseColor} chart with ${items.length} items`);
+    console.log(`🔍 FinancialChartService - Generating ${baseColor} chart with ${items.length} items, using ${categories ? 'database' : 'default'} colors`);
 
     // Handle empty state
     if (items.length === 0) {
@@ -50,6 +51,10 @@ export class FinancialChartService {
       };
     }
 
+    // Generate colors using either database categories or fallback palettes
+    const backgroundColors = this.generateItemColors(items, baseColor, categories);
+    const borderColors = this.generateItemColors(items, baseColor, categories, true);
+
     // Generate chart data from actual items
     const chartData = {
       labels: items.map(item => {
@@ -63,8 +68,8 @@ export class FinancialChartService {
       }),
       datasets: [{
         data: items.map(item => item.amount || 0),
-        backgroundColor: this.generateColors(items.length, baseColor),
-        borderColor: this.generateColors(items.length, baseColor, true),
+        backgroundColor: backgroundColors,
+        borderColor: borderColors,
         borderWidth: 2
       }]
     };
@@ -129,7 +134,131 @@ export class FinancialChartService {
   }
 
   /**
-   * 🎯 Quick helper for asset charts (green theme)
+   * � Generate colors for chart items using database category colors when available
+   * @param items Financial items to generate colors for
+   * @param baseColor Fallback color scheme
+   * @param categories Optional database categories with custom colors
+   * @param isBorder Whether generating border colors (full opacity)
+   * @returns Array of color strings matching the items
+   */
+  generateItemColors(
+    items: CompanyFinancialItem[],
+    baseColor: 'green' | 'red' | 'blue',
+    categories?: FinancialCategory[],
+    isBorder = false
+  ): string[] {
+    if (!categories || categories.length === 0) {
+      // Fallback to existing color generation
+      return this.generateColors(items.length, baseColor, isBorder);
+    }
+
+    // Create a map of category names to their colors
+    const categoryColorMap = new Map<string, { bg_color: string; text_color?: string }>();
+    categories.forEach(category => {
+      if (category.name && category.bg_color) {
+        categoryColorMap.set(category.name, {
+          bg_color: category.bg_color,
+          text_color: category.text_color || '#ffffff'
+        });
+      }
+    });
+
+    console.log('🎨 Category color map:', Object.fromEntries(categoryColorMap));
+
+    // Generate colors for each item based on its category
+    const itemColors = items.map((item, index) => {
+      const categoryName = item.category_name || item.name;
+      const categoryColor = categoryColorMap.get(categoryName || '');
+
+      if (categoryColor && categoryColor.bg_color) {
+        // Use database category color
+        const color = categoryColor.bg_color;
+
+        // Convert hex to rgba with appropriate opacity
+        const opacity = isBorder ? '1' : '0.8';
+
+        // Handle both hex (#ffffff) and rgba formats
+        if (color.startsWith('#')) {
+          // Convert hex to rgb
+          const r = parseInt(color.slice(1, 3), 16);
+          const g = parseInt(color.slice(3, 5), 16);
+          const b = parseInt(color.slice(5, 7), 16);
+          return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        } else if (color.startsWith('rgba')) {
+          // Use existing rgba but adjust opacity
+          return color.replace(/rgba\(([^)]+)\)/, (match, rgb) => {
+            const parts = rgb.split(',');
+            if (parts.length >= 3) {
+              return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${opacity})`;
+            }
+            return color;
+          });
+        } else {
+          // Assume it's a named color or rgb, wrap in rgba
+          return `rgba(${color}, ${opacity})`;
+        }
+      } else {
+        // Fallback to generated colors
+        const fallbackColors = this.generateColors(items.length, baseColor, isBorder);
+        console.log(`⚠️ No category color found for "${categoryName}", using fallback`);
+        return fallbackColors[index % fallbackColors.length];
+      }
+    });
+
+    console.log('🎨 Generated item colors:', itemColors);
+    return itemColors;
+  }
+
+  /**
+   * � Enhanced helper for asset charts with database colors
+   */
+  generateAssetChartDataWithColors(items: CompanyFinancialItem[], categories: FinancialCategory[]): IPieChart {
+    return this.generatePieChartData({
+      items,
+      baseColor: 'green',
+      emptyStateLabel: 'No assets yet',
+      categories
+    });
+  }
+
+  /**
+   * 🎯 Enhanced helper for liability charts with database colors
+   */
+  generateLiabilityChartDataWithColors(items: CompanyFinancialItem[], categories: FinancialCategory[]): IPieChart {
+    return this.generatePieChartData({
+      items,
+      baseColor: 'red',
+      emptyStateLabel: 'No liabilities yet',
+      categories
+    });
+  }
+
+  /**
+   * 🎯 Enhanced helper for direct cost charts with database colors
+   */
+  generateDirectCostChartDataWithColors(items: CompanyFinancialItem[], categories: FinancialCategory[]): IPieChart {
+    return this.generatePieChartData({
+      items,
+      baseColor: 'red',
+      emptyStateLabel: 'No direct costs yet',
+      categories
+    });
+  }
+
+  /**
+   * 🎯 Enhanced helper for operational cost charts with database colors
+   */
+  generateOperationalCostChartDataWithColors(items: CompanyFinancialItem[], categories: FinancialCategory[]): IPieChart {
+    return this.generatePieChartData({
+      items,
+      baseColor: 'blue',
+      emptyStateLabel: 'No operational costs yet',
+      categories
+    });
+  }
+
+  /**
+   * �🎯 Quick helper for asset charts (green theme)
    */
   generateAssetChartData(items: CompanyFinancialItem[]): IPieChart {
     return this.generatePieChartData({

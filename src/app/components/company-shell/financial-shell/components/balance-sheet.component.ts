@@ -24,6 +24,8 @@ import {
   ExtendedFinancialTableItem,
 } from '../services/financial-item-handler.service';
 import { FinancialCategoryModalComponent } from './financial-category-modal.component';
+import { FinancialCategoryService } from '../../../../../services/financial-category.service';
+import { FinancialCategory } from '../../../../../models/financial.models';
 
 /**
  * 🏦 Balance Sheet Component
@@ -248,6 +250,9 @@ export class BalanceSheetComponent
   isLoadingLiabilities = signal(false);
   isLoadingRevenue = signal(false);
 
+  // Financial categories for chart colors
+  categories = signal<FinancialCategory[]>([]);
+
   // 🎯 Enhanced financial metrics using the clean interface
   financialMetrics = computed(() =>
     this.calculationService.calculateFinancialMetrics(
@@ -341,15 +346,28 @@ export class BalanceSheetComponent
     this.itemHandler.convertToTableItems(this.liabilityItems())
   );
 
-  // Chart data using centralized chart service
-  assetChartData = computed(
-    (): IPieChart => this.chartService.generateAssetChartData(this.assetItems())
-  );
+  // Chart data using centralized chart service with database colors
+  assetChartData = computed((): IPieChart => {
+    const categories = this.categories();
+    const items = this.assetItems();
 
-  liabilityChartData = computed(
-    (): IPieChart =>
-      this.chartService.generateLiabilityChartData(this.liabilityItems())
-  );
+    if (categories.length > 0) {
+      return this.chartService.generateAssetChartDataWithColors(items, categories);
+    } else {
+      return this.chartService.generateAssetChartData(items);
+    }
+  });
+
+  liabilityChartData = computed((): IPieChart => {
+    const categories = this.categories();
+    const items = this.liabilityItems();
+
+    if (categories.length > 0) {
+      return this.chartService.generateLiabilityChartDataWithColors(items, categories);
+    } else {
+      return this.chartService.generateLiabilityChartData(items);
+    }
+  });
 
   constructor(
     service: CompanyFinancialItemService,
@@ -357,7 +375,8 @@ export class BalanceSheetComponent
     route: ActivatedRoute,
     contextService: ContextService,
     chartService: FinancialChartService,
-    itemHandler: FinancialItemHandlerService
+    itemHandler: FinancialItemHandlerService,
+    private categoryService: FinancialCategoryService
   ) {
     super(
       service,
@@ -367,6 +386,9 @@ export class BalanceSheetComponent
       chartService,
       itemHandler
     );
+
+    // Load financial categories for chart colors
+    this.loadCategories();
   }
 
   ngOnInit() {
@@ -520,8 +542,25 @@ export class BalanceSheetComponent
 
   onCategoriesChanged(): void {
     console.log('Categories changed, refreshing data...');
-    // Optionally refresh categories in dropdowns
+    // Reload both financial data and categories for updated chart colors
     this.loadFinancialData();
+    this.loadCategories();
+  }
+
+  /**
+   * Load financial categories from database for chart colors
+   */
+  loadCategories(): void {
+    this.categoryService.listAllFinancialCategories().subscribe({
+      next: (categories: FinancialCategory[]) => {
+        console.log('💎 Loaded categories for Balance Sheet charts:', categories);
+        this.categories.set(categories);
+      },
+      error: (error: any) => {
+        console.error('❌ Failed to load categories:', error);
+        // Charts will fallback to default colors
+      }
+    });
   }
 
   exportBalanceSheet(): void {
