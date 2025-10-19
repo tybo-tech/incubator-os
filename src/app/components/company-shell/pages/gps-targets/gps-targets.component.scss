@@ -1,0 +1,105 @@
+// GPS Targets page styles
+.gps-targets-container {
+  .target-card {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    &.growth {
+      border-left-color: #10b981;
+    }
+
+    &.profitability {
+      border-left-color: #3b82f6;
+    }
+
+    &.sustainability {
+      border-left-color: #8b5cf6;
+    }
+  }
+
+  .progress-bar {
+    transition: width 0.3s ease;
+
+    &.growth {
+      background-color: #10b981;
+    }
+
+    &.profitability {
+      background-color: #3b82f6;
+    }
+
+    &.sustainability {
+      background-color: #8b5cf6;
+    }
+  }
+
+  .status-badge {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .category-section {
+    .category-header {
+      background: linear-gradient(135deg, var(--category-color-light), var(--category-color-lighter));
+    }
+
+    &.growth {
+      --category-color: #10b981;
+      --category-color-light: #d1fae5;
+      --category-color-lighter: #ecfdf5;
+    }
+
+    &.profitability {
+      --category-color: #3b82f6;
+      --category-color-light: #dbeafe;
+      --category-color-lighter: #eff6ff;
+    }
+
+    &.sustainability {
+      --category-color: #8b5cf6;
+      --category-color-light: #e9d5ff;
+      --category-color-lighter: #f5f3ff;
+    }
+  }
+
+  .empty-state {
+    .empty-icon {
+      transition: transform 0.3s ease;
+    }
+
+    &:hover .empty-icon {
+      transform: scale(1.1);
+    }
+  }
+
+  .action-button {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .gps-targets-container {
+    .target-card {
+      margin-bottom: 1rem;
+    }
+
+    .category-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

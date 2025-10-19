@@ -1,0 +1,50 @@
+// Assessment page styles
+.assessment-container {
+  .progress-bar {
+    transition: width 0.3s ease;
+  }
+
+  .section-nav-item {
+    transition: all 0.2s ease;
+
+    &.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    &.completed {
+      background-color: #10b981;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .question-input {
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  .rating-button {
+    transition: all 0.2s ease;
+
+    &.selected {
+      background-color: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+
+    &:hover:not(.selected) {
+      background-color: #f3f4f6;
+      border-color: #9ca3af;
+    }
+  }
+}

@@ -1,0 +1,77 @@
+// SWOT Analysis page styles
+.swot-container {
+  .swot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .swot-section {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .swot-item {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateX(4px);
+    }
+
+    textarea {
+      transition: border-color 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: transparent;
+      }
+    }
+  }
+
+  .add-item-button {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  .delete-button {
+    transition: all 0.2s ease;
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Category-specific colors
+.strength-section {
+  .swot-item {
+    border-left: 4px solid #10b981;
+  }
+}
+
+.weakness-section {
+  .swot-item {
+    border-left: 4px solid #ef4444;
+  }
+}
+
+.opportunity-section {
+  .swot-item {
+    border-left: 4px solid #3b82f6;
+  }
+}
+
+.threat-section {
+  .swot-item {
+    border-left: 4px solid #f59e0b;
+  }
+}
