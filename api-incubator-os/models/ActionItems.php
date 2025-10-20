@@ -320,7 +320,7 @@ final class ActionItems
         }
 
         $updateData = ['progress' => $progress];
-        
+
         // Auto-complete if progress reaches 100%
         if ($progress === 100) {
             $updateData['status'] = 'completed';
@@ -389,12 +389,12 @@ final class ActionItems
      */
     public function getCategoryBreakdown(array $filters = []): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     category,
                     COUNT(*) as total_count,
                     COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
                     AVG(progress) as average_progress
-                FROM action_items 
+                FROM action_items
                 WHERE 1=1";
 
         $params = [];

@@ -10,15 +10,15 @@ try {
 
     // Build filters from query parameters
     $filters = [];
-    
+
     if (isset($_GET['company_id'])) {
         $filters['company_id'] = (int) $_GET['company_id'];
     }
-    
+
     if (isset($_GET['context_type'])) {
         $filters['context_type'] = $_GET['context_type'];
     }
-    
+
     if (isset($_GET['is_archived'])) {
         $filters['is_archived'] = (int) $_GET['is_archived'];
     }

@@ -101,7 +101,7 @@ export class ActionItemService {
    */
   getAllActionItems(filters?: ActionItemFilters): Observable<ActionItem[]> {
     console.log('📋 Getting all action items with filters:', filters);
-    
+
     let url = `${this.apiUrl}/list-action-items.php`;
     if (filters) {
       const params = new URLSearchParams();
@@ -218,7 +218,7 @@ export class ActionItemService {
    */
   getActionItemStatistics(filters?: Partial<ActionItemFilters>): Observable<ActionItemStatistics> {
     console.log('📋 Getting action item statistics');
-    
+
     let url = `${this.apiUrl}/get-statistics.php`;
     if (filters) {
       const params = new URLSearchParams();
@@ -239,7 +239,7 @@ export class ActionItemService {
    */
   getCategoryBreakdown(filters?: Partial<ActionItemFilters>): Observable<CategoryBreakdown[]> {
     console.log('📋 Getting category breakdown');
-    
+
     let url = `${this.apiUrl}/get-category-breakdown.php`;
     if (filters) {
       const params = new URLSearchParams();
@@ -407,7 +407,7 @@ export class ActionItemService {
   private handleError(operation = 'operation') {
     return (error: any): Observable<never> => {
       console.error(`📋 ActionItemService: ${operation} failed:`, error);
-      
+
       let errorMessage = 'An error occurred';
       if (error.error?.error) {
         errorMessage = error.error.error;

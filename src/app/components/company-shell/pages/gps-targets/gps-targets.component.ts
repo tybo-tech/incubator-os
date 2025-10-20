@@ -6,6 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyService } from '../../../../../services/company.service';
 import { ToastService } from '../../../../services/toast.service';
+import { ActionItemService, ActionItem } from '../../../../../services/action-item.service';
 
 // GPS Targets interfaces (you may need to import/define these in your models)
 interface GpsTarget {
@@ -304,7 +305,8 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private companyService: CompanyService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private actionItemService: ActionItemService
   ) {}
 
   ngOnInit(): void {
@@ -349,9 +351,19 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
   private loadTargetsData(): void {
     if (!this.company) return;
 
-    // TODO: Load GPS targets data from API
-    // For now, initialize empty array
-    this.targets = [];
+    // Load GPS action items from API
+    this.actionItemService.getGpsActionItems(this.company.id).subscribe({
+      next: (actionItems) => {
+        // Convert ActionItems to GpsTargets
+        this.targets = this.convertToGpsTargets(actionItems);
+      },
+      error: (err) => {
+        console.error('Error loading GPS targets data:', err);
+        this.toastService.show('Failed to load GPS targets data', 'error');
+        // Initialize empty array on error
+        this.targets = [];
+      }
+    });
   }
 
   // Helper methods
@@ -411,25 +423,62 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
 
   // Action methods
   addTarget(): void {
-    // TODO: Open modal to add new target
-    this.toastService.show('Add target functionality will be implemented', 'info');
+    this.addTargetByCategory('growth'); // Default to growth
   }
 
   addTargetByCategory(category: 'growth' | 'profitability' | 'sustainability'): void {
-    // TODO: Open modal to add new target with pre-selected category
-    this.toastService.show(`Add ${category} target functionality will be implemented`, 'info');
+    if (!this.companyId) return;
+
+    // Create a new GPS target via ActionItems service
+    this.actionItemService.createGpsActionItem(this.companyId, category, `New ${category} target`).subscribe({
+      next: (actionItem) => {
+        // Convert to GpsTarget and add to local array
+        const newTarget = this.convertToGpsTargets([actionItem])[0];
+        this.targets.push(newTarget);
+        this.toastService.show(`New ${category} target added`, 'success');
+      },
+      error: (err) => {
+        console.error('Error adding GPS target:', err);
+        this.toastService.show(`Failed to add ${category} target`, 'error');
+      }
+    });
   }
 
   editTarget(target: GpsTarget): void {
-    // TODO: Open modal to edit target
-    this.toastService.show('Edit target functionality will be implemented', 'info');
+    if (!target.id) return;
+
+    // Update target via ActionItems service
+    const actionItemData = this.convertToActionItem(target);
+    
+    this.actionItemService.updateActionItem(target.id, actionItemData).subscribe({
+      next: (updatedItem) => {
+        console.log('GPS target updated:', updatedItem);
+        this.toastService.show('Target updated successfully', 'success');
+        // Reload to get fresh data
+        this.loadTargetsData();
+      },
+      error: (err) => {
+        console.error('Error updating GPS target:', err);
+        this.toastService.show('Failed to update target', 'error');
+      }
+    });
   }
 
   deleteTarget(target: GpsTarget): void {
-    // TODO: Confirm and delete target
+    if (!target.id) return;
+
     if (confirm('Are you sure you want to delete this target?')) {
-      this.targets = this.targets.filter(t => t !== target);
-      this.toastService.show('Target deleted', 'success');
+      this.actionItemService.deleteActionItem(target.id).subscribe({
+        next: () => {
+          // Remove from local array after successful API call
+          this.targets = this.targets.filter(t => t !== target);
+          this.toastService.show('Target deleted successfully', 'success');
+        },
+        error: (err) => {
+          console.error('Error deleting GPS target:', err);
+          this.toastService.show('Failed to delete target', 'error');
+        }
+      });
     }
   }
 
@@ -442,5 +491,78 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
       this.isExporting = false;
       this.toastService.show('GPS Targets PDF export functionality will be implemented', 'info');
     }, 1000);
+  }
+
+  /**
+   * Convert ActionItems to GpsTargets for template compatibility
+   */
+  private convertToGpsTargets(actionItems: ActionItem[]): GpsTarget[] {
+    return actionItems.map(item => {
+      const progress = item.progress || 0;
+      const targetValue = parseFloat(item.notes || '100'); // Default target value
+      const currentValue = (progress * targetValue) / 100;
+
+      return {
+        id: item.id,
+        title: item.description,
+        description: item.notes || '',
+        target_value: targetValue,
+        current_value: currentValue,
+        unit: 'units', // Could be extracted from notes or made configurable
+        category: item.category as 'growth' | 'profitability' | 'sustainability',
+        target_date: item.target_completion_date || new Date().toISOString().split('T')[0],
+        status: this.mapActionItemStatusToGpsStatus(item.status),
+        company_id: item.company_id
+      };
+    });
+  }
+
+  /**
+   * Convert GPS target back to ActionItem for API calls
+   */
+  private convertToActionItem(gpsTarget: GpsTarget): Partial<ActionItem> {
+    const progress = gpsTarget.target_value > 0 
+      ? Math.round((gpsTarget.current_value / gpsTarget.target_value) * 100) 
+      : 0;
+
+    return {
+      id: gpsTarget.id,
+      company_id: gpsTarget.company_id,
+      context_type: 'gps',
+      category: gpsTarget.category,
+      description: gpsTarget.title,
+      notes: `${gpsTarget.description}|target:${gpsTarget.target_value}|unit:${gpsTarget.unit}`,
+      progress: Math.min(Math.max(progress, 0), 100),
+      target_completion_date: gpsTarget.target_date,
+      status: this.mapGpsStatusToActionItemStatus(gpsTarget.status),
+      priority: 'high' // GPS targets are typically high priority
+    };
+  }
+
+  /**
+   * Map ActionItem status to GPS status
+   */
+  private mapActionItemStatusToGpsStatus(status: string): 'not_started' | 'in_progress' | 'completed' | 'overdue' {
+    switch (status) {
+      case 'pending': return 'not_started';
+      case 'in_progress': return 'in_progress';
+      case 'completed': return 'completed';
+      case 'on_hold': 
+      case 'cancelled': return 'overdue';
+      default: return 'not_started';
+    }
+  }
+
+  /**
+   * Map GPS status back to ActionItem status
+   */
+  private mapGpsStatusToActionItemStatus(status: string): 'pending' | 'in_progress' | 'completed' | 'on_hold' | 'cancelled' {
+    switch (status) {
+      case 'not_started': return 'pending';
+      case 'in_progress': return 'in_progress';
+      case 'completed': return 'completed';
+      case 'overdue': return 'on_hold';
+      default: return 'pending';
+    }
   }
 }

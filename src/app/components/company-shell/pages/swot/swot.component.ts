@@ -6,8 +6,9 @@ import { Subject, takeUntil } from 'rxjs';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyService } from '../../../../../services/company.service';
 import { ToastService } from '../../../../services/toast.service';
+import { ActionItemService, ActionItem } from '../../../../../services/action-item.service';
 
-// SWOT interfaces (you may need to import these from your models)
+// SWOT interfaces - now using ActionItem from the service
 interface SwotItem {
   id?: number;
   content: string;
@@ -265,7 +266,8 @@ export class SwotComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private companyService: CompanyService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private actionItemService: ActionItemService
   ) {}
 
   ngOnInit(): void {
@@ -310,60 +312,113 @@ export class SwotComponent implements OnInit, OnDestroy {
   private loadSwotData(): void {
     if (!this.company) return;
 
-    // TODO: Load SWOT data from API
-    // For now, initialize empty arrays
-    this.strengths = [];
-    this.weaknesses = [];
-    this.opportunities = [];
-    this.threats = [];
+    // Load SWOT action items from API
+    this.actionItemService.getSwotActionItems(this.company.id).subscribe({
+      next: (actionItems) => {
+        // Convert ActionItems to SwotItems and categorize them
+        this.strengths = this.convertToSwotItems(actionItems.filter(item => item.category === 'strength'));
+        this.weaknesses = this.convertToSwotItems(actionItems.filter(item => item.category === 'weakness'));
+        this.opportunities = this.convertToSwotItems(actionItems.filter(item => item.category === 'opportunity'));
+        this.threats = this.convertToSwotItems(actionItems.filter(item => item.category === 'threat'));
+      },
+      error: (err) => {
+        console.error('Error loading SWOT data:', err);
+        this.toastService.show('Failed to load SWOT analysis data', 'error');
+        // Initialize empty arrays on error
+        this.strengths = [];
+        this.weaknesses = [];
+        this.opportunities = [];
+        this.threats = [];
+      }
+    });
   }
 
   addSwotItem(category: 'strength' | 'weakness' | 'opportunity' | 'threat'): void {
     if (!this.companyId) return;
 
-    const newItem: SwotItem = {
-      content: '',
-      category,
-      company_id: this.companyId
-    };
+    // Create ActionItem via service
+    this.actionItemService.createSwotActionItem(this.companyId, category, '').subscribe({
+      next: (actionItem) => {
+        const newItem: SwotItem = {
+          id: actionItem.id,
+          content: actionItem.description,
+          category,
+          company_id: this.companyId!
+        };
 
-    switch (category) {
-      case 'strength':
-        this.strengths.push(newItem);
-        break;
-      case 'weakness':
-        this.weaknesses.push(newItem);
-        break;
-      case 'opportunity':
-        this.opportunities.push(newItem);
-        break;
-      case 'threat':
-        this.threats.push(newItem);
-        break;
-    }
+        // Add to appropriate array
+        switch (category) {
+          case 'strength':
+            this.strengths.push(newItem);
+            break;
+          case 'weakness':
+            this.weaknesses.push(newItem);
+            break;
+          case 'opportunity':
+            this.opportunities.push(newItem);
+            break;
+          case 'threat':
+            this.threats.push(newItem);
+            break;
+        }
+
+        this.toastService.show(`New ${category} added`, 'success');
+      },
+      error: (err) => {
+        console.error('Error adding SWOT item:', err);
+        this.toastService.show(`Failed to add ${category}`, 'error');
+      }
+    });
   }
 
   saveSwotItem(item: SwotItem): void {
     if (!item.content.trim()) return;
+    if (!item.id) return; // Can't save without an ID
 
-    // TODO: Save to API
-    console.log('Saving SWOT item:', item);
-    this.toastService.show('SWOT item saved', 'success');
+    // Convert to ActionItem and update via API
+    const actionItemData = this.convertToActionItem(item);
+    
+    this.actionItemService.updateActionItem(item.id, actionItemData).subscribe({
+      next: (updatedItem) => {
+        console.log('SWOT item saved:', updatedItem);
+        this.toastService.show('SWOT item saved', 'success');
+      },
+      error: (err) => {
+        console.error('Error saving SWOT item:', err);
+        this.toastService.show('Failed to save SWOT item', 'error');
+      }
+    });
   }
 
   deleteSwotItem(item: SwotItem): void {
-    // Remove from local arrays
+    if (!item.id) {
+      // Remove from local arrays if no ID (shouldn't happen with real items)
+      this.removeFromLocalArrays(item);
+      return;
+    }
+
+    // Delete via API
+    this.actionItemService.deleteActionItem(item.id).subscribe({
+      next: () => {
+        // Remove from local arrays after successful API call
+        this.removeFromLocalArrays(item);
+        this.toastService.show('SWOT item deleted', 'success');
+      },
+      error: (err) => {
+        console.error('Error deleting SWOT item:', err);
+        this.toastService.show('Failed to delete SWOT item', 'error');
+      }
+    });
+  }
+
+  /**
+   * Helper method to remove item from local arrays
+   */
+  private removeFromLocalArrays(item: SwotItem): void {
     this.strengths = this.strengths.filter(s => s !== item);
     this.weaknesses = this.weaknesses.filter(w => w !== item);
     this.opportunities = this.opportunities.filter(o => o !== item);
     this.threats = this.threats.filter(t => t !== item);
-
-    // TODO: Delete from API if it has an ID
-    if (item.id) {
-      console.log('Deleting SWOT item:', item.id);
-    }
-
-    this.toastService.show('SWOT item deleted', 'success');
   }
 
   exportSwotPdf(): void {
@@ -379,5 +434,32 @@ export class SwotComponent implements OnInit, OnDestroy {
 
   trackByFn(index: number, item: SwotItem): any {
     return item.id || index;
+  }
+
+  /**
+   * Convert ActionItems to SwotItems for template compatibility
+   */
+  private convertToSwotItems(actionItems: ActionItem[]): SwotItem[] {
+    return actionItems.map(item => ({
+      id: item.id,
+      content: item.description,
+      category: item.category as 'strength' | 'weakness' | 'opportunity' | 'threat',
+      company_id: item.company_id
+    }));
+  }
+
+  /**
+   * Convert SwotItem back to ActionItem for API calls
+   */
+  private convertToActionItem(swotItem: SwotItem): Partial<ActionItem> {
+    return {
+      id: swotItem.id,
+      company_id: swotItem.company_id,
+      context_type: 'swot',
+      category: swotItem.category,
+      description: swotItem.content,
+      status: 'pending',
+      priority: 'medium'
+    };
   }
 }
