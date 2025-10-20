@@ -35,6 +35,7 @@ import { IndustriesListComponent } from './admin/industries/industries-list.comp
 import { UsersListComponent } from './admin/users/users-list.component';
 import { ReportsOverviewComponent } from './admin/reports/reports-overview.component';
 import { BalanceSheetComponent } from './components/company-shell/financial-shell/components/balance-sheet.component';
+import { ImportComponent } from './components/import/import.component';
 
 export const routes: Routes = [
   {
@@ -211,6 +212,10 @@ export const routes: Routes = [
       {
         path: 'companies',
         component: CompaniesListComponent,
+      },
+      {
+        path: 'import',
+        component: ImportComponent,
       },
     ],
   },

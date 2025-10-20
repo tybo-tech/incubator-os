@@ -1,0 +1,371 @@
+<div class="import-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>🔄 Data Import Management</h2>
+      <p class="text-muted">Import and manage GPS targets, SWOT analysis, and other business data</p>
+    </div>
+    <div>
+      <button class="btn btn-outline-primary me-2" (click)="refreshStats()" [disabled]="loading">
+        <i class="fas fa-refresh" [class.fa-spin]="loading"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link"
+         [class.active]="activeTab === 'overview'"
+         (click)="switchTab('overview')"
+         style="cursor: pointer;">
+        📊 Overview
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link"
+         [class.active]="activeTab === 'gps'"
+         (click)="switchTab('gps')"
+         style="cursor: pointer;">
+        🎯 GPS Targets
+        <span *ngIf="overallStats?.gps_action_items_count"
+              class="badge bg-primary ms-1">{{ formatNumber(overallStats?.gps_action_items_count) }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link"
+         [class.active]="activeTab === 'swot'"
+         (click)="switchTab('swot')"
+         style="cursor: pointer;">
+        🔍 SWOT Analysis
+        <span class="badge bg-secondary ms-1">Coming Soon</span>
+      </a>
+    </li>
+  </ul>
+
+  <!-- Messages -->
+  <div *ngIf="messages.length > 0" class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6>Recent Activity</h6>
+      <button class="btn btn-sm btn-outline-secondary" (click)="clearMessages()">Clear All</button>
+    </div>
+    <div *ngFor="let message of messages"
+         class="alert alert-sm mb-2"
+         [ngClass]="getMessageClass(message.type)">
+      <div class="d-flex justify-content-between align-items-start">
+        <span>{{ message.text }}</span>
+        <small class="text-muted ms-2">{{ getRelativeTime(message.timestamp.toISOString()) }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Processing import operation...</p>
+  </div>
+
+  <!-- Overview Tab -->
+  <div *ngIf="activeTab === 'overview' && !loading">
+    <div class="row">
+      <!-- Summary Cards -->
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <h3 class="text-primary">{{ formatNumber(overallStats?.gps_nodes_count) }}</h3>
+            <p class="mb-0">GPS Nodes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <h3 class="text-success">{{ formatNumber(overallStats?.gps_action_items_count) }}</h3>
+            <p class="mb-0">GPS Action Items</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <h3 class="text-info">{{ formatNumber(overallStats?.swot_nodes_count) }}</h3>
+            <p class="mb-0">SWOT Nodes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <h3 class="text-warning">{{ formatNumber(overallStats?.swot_action_items_count) }}</h3>
+            <p class="mb-0">SWOT Action Items</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Companies with Data -->
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5>🏢 Companies with GPS Data</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="overallStats?.companies_with_gps?.length === 0" class="text-muted text-center py-3">
+              No companies with GPS data found
+            </div>
+            <div *ngFor="let company of overallStats?.companies_with_gps" class="d-flex justify-content-between py-2 border-bottom">
+              <span>Company {{ company.company_id }}</span>
+              <span class="badge bg-primary">{{ formatNumber(company.target_count) }} targets</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5>📊 Category Breakdown</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="overallStats?.category_breakdown?.length === 0" class="text-muted text-center py-3">
+              No category data available
+            </div>
+            <div *ngFor="let category of overallStats?.category_breakdown" class="mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span>{{ category.category }}</span>
+                <span class="badge bg-secondary">{{ formatNumber(category.count) }}</span>
+              </div>
+              <div class="progress" style="height: 6px;">
+                <div class="progress-bar"
+                     [style.width.%]="calculateCompletionRate(category.completed, category.count)">
+                </div>
+              </div>
+              <small class="text-muted">{{ calculateCompletionRate(category.completed, category.count) }}% completed</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GPS Import Tab -->
+  <div *ngIf="activeTab === 'gps' && !loading">
+    <!-- GPS Statistics -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body text-center">
+            <h4 class="text-primary">{{ formatNumber(gpsStats?.gps_nodes_count) }}</h4>
+            <p class="mb-0">GPS Nodes Available</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body text-center">
+            <h4 class="text-success">{{ formatNumber(gpsStats?.gps_action_items_count) }}</h4>
+            <p class="mb-0">Action Items Imported</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h6>Import Status</h6>
+            <span class="badge" [ngClass]="'bg-' + getStatusBadge(gpsStats).class.replace('badge-', '')">
+              {{ getStatusBadge(gpsStats).text }}
+            </span>
+            <p class="mb-0 mt-2 text-muted">
+              Last updated: {{ gpsStats?.timestamp ? getRelativeTime(gpsStats?.timestamp) : 'Never' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GPS Import Actions -->
+    <div class="card">
+      <div class="card-header">
+        <h5>🎯 GPS Import Operations</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <button class="btn btn-outline-info w-100"
+                    (click)="previewGpsImport()"
+                    [disabled]="loading">
+              <i class="fas fa-eye"></i>
+              Preview Import
+            </button>
+            <small class="text-muted d-block mt-1">See what data will be imported</small>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-success w-100"
+                    (click)="importGpsData()"
+                    [disabled]="loading">
+              <i class="fas fa-download"></i>
+              Import GPS Data
+            </button>
+            <small class="text-muted d-block mt-1">Import GPS targets to action items</small>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-outline-primary w-100"
+                    (click)="verifyGpsImport()"
+                    [disabled]="loading">
+              <i class="fas fa-check-circle"></i>
+              Verify Import
+            </button>
+            <small class="text-muted d-block mt-1">Check imported data integrity</small>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <button class="btn btn-outline-warning w-100"
+                    (click)="clearGpsData()"
+                    [disabled]="loading">
+              <i class="fas fa-trash"></i>
+              Clear GPS Action Items
+            </button>
+            <small class="text-muted d-block mt-1">Remove all GPS action items (use before re-import)</small>
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-outline-secondary w-100"
+                    (click)="loadGpsStats()"
+                    [disabled]="loading">
+              <i class="fas fa-refresh"></i>
+              Refresh GPS Stats
+            </button>
+            <small class="text-muted d-block mt-1">Reload current statistics</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GPS Companies List -->
+    <div *ngIf="gpsStats?.companies_with_gps?.length" class="card mt-4">
+      <div class="card-header">
+        <h5>🏢 Companies with GPS Data</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Company ID</th>
+                <th>Target Count</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let company of gpsStats?.companies_with_gps">
+                <td>{{ company.company_id }}</td>
+                <td>
+                  <span class="badge bg-primary">{{ formatNumber(company.target_count) }}</span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-info"
+                          (click)="verifyGpsImport()"
+                          [disabled]="loading">
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SWOT Import Tab -->
+  <div *ngIf="activeTab === 'swot' && !loading">
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+        <h4>SWOT Analysis Import</h4>
+        <p class="text-muted">SWOT analysis import functionality is coming soon!</p>
+        <button class="btn btn-outline-primary" disabled>
+          <i class="fas fa-clock"></i> Coming Soon
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Last Import Result -->
+  <div *ngIf="lastImportResult && activeTab === 'gps'" class="card mt-4">
+    <div class="card-header">
+      <h5>📋 Last Import Result</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h6>Import Summary</h6>
+          <ul class="list-unstyled">
+            <li><strong>Nodes Processed:</strong> {{ formatNumber(lastImportResult.import_summary.total_nodes) }}</li>
+            <li><strong>Targets Imported:</strong> {{ formatNumber(lastImportResult.import_summary.total_targets_imported) }}</li>
+            <li><strong>Companies Affected:</strong> {{ lastImportResult.import_summary.companies_processed.length }}</li>
+            <li><strong>Errors:</strong> {{ lastImportResult.import_summary.errors.length }}</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6>Categories</h6>
+          <div *ngFor="let category of lastImportResult.import_summary.categories_summary | keyvalue">
+            <span class="badge bg-secondary me-2">{{ category.key }}</span>
+            <span>{{ formatNumber(category.value) }}</span>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="lastImportResult.import_summary.errors.length > 0" class="mt-3">
+        <h6 class="text-danger">Errors</h6>
+        <div *ngFor="let error of lastImportResult.import_summary.errors" class="alert alert-danger alert-sm">
+          <strong>Node {{ error.node_id }} (Company {{ error.company_id }}):</strong> {{ error.error }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div *ngIf="showPreview" class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">📋 GPS Import Preview</h5>
+        <button type="button" class="btn-close" (click)="closePreview()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="previewData">
+          <div class="alert alert-info">
+            <strong>Total Nodes Found:</strong> {{ formatNumber(previewData.total_nodes) }}
+          </div>
+
+          <div *ngFor="let node of previewData.preview_nodes" class="card mb-3">
+            <div class="card-header">
+              <strong>Node {{ node.node_id }}</strong> - Company {{ node.company_id }}
+              <span class="badge bg-primary ms-2">{{ formatNumber(node.targets_count) }} targets</span>
+            </div>
+            <div class="card-body">
+              <div *ngFor="let target of node.sample_targets" class="border-bottom pb-2 mb-2">
+                <strong>{{ target.category }}:</strong> {{ target.description }}
+                <br>
+                <small class="text-muted">
+                  Status: {{ target.status }} | Priority: {{ target.priority }}
+                  <span *ngIf="target.target_date"> | Due: {{ target.target_date }}</span>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closePreview()">Close</button>
+        <button type="button" class="btn btn-success" (click)="closePreview(); importGpsData()">Proceed with Import</button>
+      </div>
+    </div>
+  </div>
+</div>

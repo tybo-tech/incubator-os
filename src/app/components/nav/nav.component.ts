@@ -48,6 +48,11 @@ export class NavComponent {
       icon: 'users',
       label: 'Users',
       route: '/users'
+    },
+    {
+      icon: 'developer',
+      label: 'Developer',
+      route: '/import'
     }
   ];
 
