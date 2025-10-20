@@ -305,16 +305,16 @@ export class ImportComponent implements OnInit {
   }
 
   /**
-   * Get CSS class for message type
+   * Get Tailwind CSS class for message type
    */
-  getMessageClass(type: string): string {
+  getTailwindMessageClass(type: string): string {
     const classes = {
-      success: 'alert-success',
-      error: 'alert-danger',
-      warning: 'alert-warning',
-      info: 'alert-info'
+      success: 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200',
+      error: 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',
+      warning: 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200',
+      info: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200'
     };
-    return classes[type as keyof typeof classes] || 'alert-secondary';
+    return classes[type as keyof typeof classes] || 'bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 text-gray-800 dark:text-gray-200';
   }
 
   /**
@@ -325,6 +325,26 @@ export class ImportComponent implements OnInit {
       return { text: 'No Data', class: 'badge-secondary' };
     }
     return this.importService.getImportStatusBadge(stats);
+  }
+
+  /**
+   * Get Tailwind status class
+   */
+  getTailwindStatusClass(stats: ImportStats | null): string {
+    if (!stats) {
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+    }
+
+    const gpsNodes = stats.gps_nodes_count || 0;
+    const gpsItems = stats.gps_action_items_count || 0;
+
+    if (gpsNodes > 0 && gpsItems > 0) {
+      return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200';
+    } else if (gpsNodes > 0) {
+      return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200';
+    } else {
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
+    }
   }
 
   /**
