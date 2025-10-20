@@ -114,7 +114,7 @@ interface SwotItem {
             <!-- Strengths Content - Collapsible -->
             <div
               *ngIf="accordionState.strengths"
-              class="mt-6 pt-4 space-y-4 border-t border-green-200"
+              class="mt-6 pt-6 pb-2 px-4 space-y-4 border-t border-green-200 bg-green-25 rounded-b-lg"
             >
               <!-- Strength Items -->
               <ng-container *ngFor="let item of strengths; trackBy: trackByFn">
@@ -193,7 +193,7 @@ interface SwotItem {
             <!-- Weaknesses Content - Collapsible -->
             <div
               *ngIf="accordionState.weaknesses"
-              class="mt-6 pt-4 space-y-4 border-t border-red-200"
+              class="mt-6 pt-6 pb-2 px-4 space-y-4 border-t border-red-200 bg-red-25 rounded-b-lg"
             >
               <!-- Weakness Items -->
               <ng-container *ngFor="let item of weaknesses; trackBy: trackByFn">
@@ -277,7 +277,7 @@ interface SwotItem {
             <!-- Opportunities Content - Collapsible -->
             <div
               *ngIf="accordionState.opportunities"
-              class="mt-6 pt-4 space-y-4 border-t border-blue-200"
+              class="mt-6 pt-6 pb-2 px-4 space-y-4 border-t border-blue-200 bg-blue-25 rounded-b-lg"
             >
               <!-- Opportunity Items -->
               <ng-container *ngFor="let item of opportunities; trackBy: trackByFn">
@@ -314,8 +314,6 @@ interface SwotItem {
                   <i class="fas fa-plus mr-2"></i>Add Your First Opportunity
                 </button>
               </div>
-            </div>
-          </div>
             </div>
           </div>
 
@@ -358,7 +356,7 @@ interface SwotItem {
             <!-- Threats Content - Collapsible -->
             <div
               *ngIf="accordionState.threats"
-              class="mt-6 pt-4 space-y-4 border-t border-yellow-200"
+              class="mt-6 pt-6 pb-2 px-4 space-y-4 border-t border-yellow-200 bg-yellow-25 rounded-b-lg"
             >
               <!-- Threat Items -->
               <ng-container *ngFor="let item of threats; trackBy: trackByFn">
