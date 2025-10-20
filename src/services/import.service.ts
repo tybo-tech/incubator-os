@@ -245,12 +245,22 @@ export class ImportService {
   }
 
   /**
-   * Import SWOT data
+   * Import SWOT data (traditional action_items approach)
    */
   importSwotData(): Observable<ImportResult> {
     console.log('⬇️ Importing SWOT data');
     return this.http.get<ImportResult>(`${this.swotApiUrl}/test-swot-import.php?action=import`)
       .pipe(catchError(this.handleError('Import SWOT data')));
+  }
+
+  /**
+   * Import SWOT data to UI node (UI-aligned approach)
+   * This matches the component behavior by updating the first existing SWOT node
+   */
+  importSwotToUINode(companyId: number): Observable<any> {
+    console.log('🎯 Importing SWOT data to UI node for company:', companyId);
+    return this.http.get<any>(`${this.swotApiUrl}/import-to-ui-node.php?company_id=${companyId}`)
+      .pipe(catchError(this.handleError('Import SWOT to UI node')));
   }
 
   /**
