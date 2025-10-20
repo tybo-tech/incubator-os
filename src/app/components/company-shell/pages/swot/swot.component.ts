@@ -114,7 +114,7 @@ interface SwotItem {
             <!-- Strengths Content - Collapsible -->
             <div
               *ngIf="accordionState.strengths"
-              class="mt-6 space-y-4"
+              class="mt-6 pt-4 space-y-4 border-t border-green-200"
             >
               <!-- Strength Items -->
               <ng-container *ngFor="let item of strengths; trackBy: trackByFn">
@@ -155,113 +155,79 @@ interface SwotItem {
           </div>
 
           <!-- WEAKNESSES ACCORDION -->
-          <div class="bg-red-50 border border-red-200 rounded-lg">
+          <div class="bg-red-50 border border-red-200 rounded-xl shadow-sm p-6">
             <!-- Weaknesses Header - Collapsible -->
             <div
               (click)="toggleAccordion('weaknesses')"
-              class="p-4 cursor-pointer hover:bg-red-100 transition-colors"
+              class="cursor-pointer hover:bg-red-100 transition-colors rounded-lg p-2 -m-2"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <i class="fas fa-minus-circle mr-2 text-red-600"></i>
-                  <h4 class="text-md font-medium text-red-800">Weaknesses ({{ weaknesses.length }})</h4>
+                  <i class="fas fa-exclamation-triangle mr-3 text-red-600 text-lg"></i>
+                  <div>
+                    <h4 class="text-lg font-semibold text-red-800">
+                      Weaknesses
+                      <span class="ml-2 text-sm font-normal text-red-600">
+                        ({{ weaknesses.length }} items)
+                      </span>
+                    </h4>
+                    <p class="text-sm text-red-700 mt-1">Internal limitations that need improvement</p>
+                  </div>
                 </div>
                 <div class="flex items-center space-x-3">
                   <button
                     (click)="addSwotItem('weakness'); $event.stopPropagation()"
-                    class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                    class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                   >
-                    Add
+                    <i class="fas fa-plus mr-2"></i>Add Weakness
                   </button>
                   <i
-                    class="fas transform transition-transform duration-200"
+                    class="fas transform transition-transform duration-200 text-red-600"
                     [class.fa-chevron-down]="accordionState.weaknesses"
                     [class.fa-chevron-right]="!accordionState.weaknesses"
                   ></i>
                 </div>
               </div>
-              <p class="text-sm text-red-600 mt-1 ml-6">Internal negative factors that need improvement</p>
             </div>
 
             <!-- Weaknesses Content - Collapsible -->
             <div
               *ngIf="accordionState.weaknesses"
-              class="p-4 pt-0 space-y-3 border-t border-red-200"
+              class="mt-6 pt-4 space-y-4 border-t border-red-200"
             >
-              <div
-                *ngFor="let item of weaknesses; trackBy: trackByFn"
-                class="bg-white border border-red-300 rounded-lg"
-              >
-                <!-- Compact View -->
-                <div
+              <!-- Weakness Items -->
+              <ng-container *ngFor="let item of weaknesses; trackBy: trackByFn">
+                <!-- Display Mode -->
+                <app-action-item-display
                   *ngIf="!isEditing(item)"
-                  (click)="startEditing(item)"
-                  class="p-3 cursor-pointer hover:bg-red-50 transition-colors"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <p class="text-sm font-medium text-gray-900">{{ item.content || 'Click to edit...' }}</p>
-                    </div>
-                    <div class="flex items-center space-x-2 ml-3">
-                      <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Weakness</span>
-                      <button
-                        (click)="deleteSwotItem(item); $event.stopPropagation()"
-                        class="text-red-500 hover:text-red-700"
-                      >
-                        <i class="fas fa-trash-alt text-xs"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  [item]="convertToActionItemData(item)"
+                  categoryColor="red"
+                  (edit)="startEditing(item)"
+                  (quickDelete)="deleteSwotItem(item)"
+                ></app-action-item-display>
 
-                <!-- Expanded Edit Form -->
-                <div *ngIf="isEditing(item)" class="p-4 bg-gray-50">
-                  <div class="space-y-3">
-                    <div>
-                      <label class="block text-xs font-medium text-gray-700 mb-1">Weakness Description</label>
-                      <textarea
-                        [(ngModel)]="item.content"
-                        rows="2"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-red-500 focus:border-red-500"
-                        placeholder="Describe this weakness in detail..."
-                      ></textarea>
-                    </div>
+                <!-- Edit Mode -->
+                <app-action-item-form
+                  *ngIf="isEditing(item)"
+                  [item]="convertToActionItemData(item)"
+                  [config]="getWeaknessFormConfig()"
+                  (save)="saveSwotItem(item, $event)"
+                  (cancel)="cancelEdit(item)"
+                  (delete)="deleteSwotItem(item)"
+                ></app-action-item-form>
+              </ng-container>
 
-                    <div class="flex items-center justify-between pt-2">
-                      <div class="flex items-center space-x-2">
-                        <button
-                          (click)="saveAndCloseEdit(item)"
-                          class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                        >
-                          Save
-                        </button>
-                        <button
-                          (click)="cancelEdit(item)"
-                          class="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                      <button
-                        (click)="deleteSwotItem(item)"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        <i class="fas fa-trash-alt mr-1"></i> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Empty State -->
-              <div *ngIf="weaknesses.length === 0" class="text-center py-6 text-gray-500">
-                <i class="fas fa-minus-circle text-2xl text-red-300 mb-2"></i>
-                <p class="text-sm">No weaknesses identified yet</p>
+              <!-- Enhanced Empty State -->
+              <div *ngIf="weaknesses.length === 0"
+                   class="text-center py-12 bg-white rounded-lg border-2 border-dashed border-red-300">
+                <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No weaknesses identified yet</h3>
+                <p class="text-gray-600 mb-4">Identify internal limitations and areas that need improvement.</p>
                 <button
                   (click)="addSwotItem('weakness')"
-                  class="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+                  class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
-                  Add your first weakness
+                  <i class="fas fa-plus mr-2"></i>Add Your First Weakness
                 </button>
               </div>
             </div>
@@ -273,226 +239,160 @@ interface SwotItem {
           <h3 class="text-lg font-medium text-gray-900 text-center bg-gray-50 py-3 rounded-lg border">EXTERNAL FACTORS</h3>
 
           <!-- OPPORTUNITIES ACCORDION -->
-          <div class="bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl shadow-sm p-6">
             <!-- Opportunities Header - Collapsible -->
             <div
               (click)="toggleAccordion('opportunities')"
-              class="p-4 cursor-pointer hover:bg-blue-100 transition-colors"
+              class="cursor-pointer hover:bg-blue-100 transition-colors rounded-lg p-2 -m-2"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <i class="fas fa-lightbulb mr-2 text-blue-600"></i>
-                  <h4 class="text-md font-medium text-blue-800">Opportunities ({{ opportunities.length }})</h4>
+                  <i class="fas fa-lightbulb mr-3 text-blue-600 text-lg"></i>
+                  <div>
+                    <h4 class="text-lg font-semibold text-blue-800">
+                      Opportunities
+                      <span class="ml-2 text-sm font-normal text-blue-600">
+                        ({{ opportunities.length }} items)
+                      </span>
+                    </h4>
+                    <p class="text-sm text-blue-700 mt-1">External positive factors you can leverage</p>
+                  </div>
                 </div>
                 <div class="flex items-center space-x-3">
                   <button
                     (click)="addSwotItem('opportunity'); $event.stopPropagation()"
-                    class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
-                    Add
+                    <i class="fas fa-plus mr-2"></i>Add Opportunity
                   </button>
                   <i
-                    class="fas transform transition-transform duration-200"
+                    class="fas transform transition-transform duration-200 text-blue-600"
                     [class.fa-chevron-down]="accordionState.opportunities"
                     [class.fa-chevron-right]="!accordionState.opportunities"
                   ></i>
                 </div>
               </div>
-              <p class="text-sm text-blue-600 mt-1 ml-6">External positive factors to leverage</p>
             </div>
 
             <!-- Opportunities Content - Collapsible -->
             <div
               *ngIf="accordionState.opportunities"
-              class="p-4 pt-0 space-y-3 border-t border-blue-200"
+              class="mt-6 pt-4 space-y-4 border-t border-blue-200"
             >
-              <div
-                *ngFor="let item of opportunities; trackBy: trackByFn"
-                class="bg-white border border-blue-300 rounded-lg"
-              >
-                <!-- Compact View -->
-                <div
+              <!-- Opportunity Items -->
+              <ng-container *ngFor="let item of opportunities; trackBy: trackByFn">
+                <!-- Display Mode -->
+                <app-action-item-display
                   *ngIf="!isEditing(item)"
-                  (click)="startEditing(item)"
-                  class="p-3 cursor-pointer hover:bg-blue-50 transition-colors"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <p class="text-sm font-medium text-gray-900">{{ item.content || 'Click to edit...' }}</p>
-                    </div>
-                    <div class="flex items-center space-x-2 ml-3">
-                      <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Opportunity</span>
-                      <button
-                        (click)="deleteSwotItem(item); $event.stopPropagation()"
-                        class="text-red-500 hover:text-red-700"
-                      >
-                        <i class="fas fa-trash-alt text-xs"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  [item]="convertToActionItemData(item)"
+                  categoryColor="blue"
+                  (edit)="startEditing(item)"
+                  (quickDelete)="deleteSwotItem(item)"
+                ></app-action-item-display>
 
-                <!-- Expanded Edit Form -->
-                <div *ngIf="isEditing(item)" class="p-4 bg-gray-50">
-                  <div class="space-y-3">
-                    <div>
-                      <label class="block text-xs font-medium text-gray-700 mb-1">Opportunity Description</label>
-                      <textarea
-                        [(ngModel)]="item.content"
-                        rows="2"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Describe this opportunity in detail..."
-                      ></textarea>
-                    </div>
+                <!-- Edit Mode -->
+                <app-action-item-form
+                  *ngIf="isEditing(item)"
+                  [item]="convertToActionItemData(item)"
+                  [config]="getOpportunityFormConfig()"
+                  (save)="saveSwotItem(item, $event)"
+                  (cancel)="cancelEdit(item)"
+                  (delete)="deleteSwotItem(item)"
+                ></app-action-item-form>
+              </ng-container>
 
-                    <div class="flex items-center justify-between pt-2">
-                      <div class="flex items-center space-x-2">
-                        <button
-                          (click)="saveAndCloseEdit(item)"
-                          class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                        >
-                          Save
-                        </button>
-                        <button
-                          (click)="cancelEdit(item)"
-                          class="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                      <button
-                        (click)="deleteSwotItem(item)"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        <i class="fas fa-trash-alt mr-1"></i> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Empty State -->
-              <div *ngIf="opportunities.length === 0" class="text-center py-6 text-gray-500">
-                <i class="fas fa-lightbulb text-2xl text-blue-300 mb-2"></i>
-                <p class="text-sm">No opportunities identified yet</p>
+              <!-- Enhanced Empty State -->
+              <div *ngIf="opportunities.length === 0"
+                   class="text-center py-12 bg-white rounded-lg border-2 border-dashed border-blue-300">
+                <i class="fas fa-lightbulb text-4xl text-blue-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No opportunities identified yet</h3>
+                <p class="text-gray-600 mb-4">Identify external positive factors and market opportunities you can leverage.</p>
                 <button
                   (click)="addSwotItem('opportunity')"
-                  class="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Add your first opportunity
+                  <i class="fas fa-plus mr-2"></i>Add Your First Opportunity
                 </button>
               </div>
             </div>
           </div>
+            </div>
+          </div>
 
           <!-- THREATS ACCORDION -->
-          <div class="bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl shadow-sm p-6">
             <!-- Threats Header - Collapsible -->
             <div
               (click)="toggleAccordion('threats')"
-              class="p-4 cursor-pointer hover:bg-yellow-100 transition-colors"
+              class="cursor-pointer hover:bg-yellow-100 transition-colors rounded-lg p-2 -m-2"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <i class="fas fa-exclamation-triangle mr-2 text-yellow-600"></i>
-                  <h4 class="text-md font-medium text-yellow-800">Threats ({{ threats.length }})</h4>
+                  <i class="fas fa-exclamation-circle mr-3 text-yellow-600 text-lg"></i>
+                  <div>
+                    <h4 class="text-lg font-semibold text-yellow-800">
+                      Threats
+                      <span class="ml-2 text-sm font-normal text-yellow-600">
+                        ({{ threats.length }} items)
+                      </span>
+                    </h4>
+                    <p class="text-sm text-yellow-700 mt-1">External risks that could impact success</p>
+                  </div>
                 </div>
                 <div class="flex items-center space-x-3">
                   <button
                     (click)="addSwotItem('threat'); $event.stopPropagation()"
-                    class="px-3 py-1 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700"
+                    class="px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
                   >
-                    Add
+                    <i class="fas fa-plus mr-2"></i>Add Threat
                   </button>
                   <i
-                    class="fas transform transition-transform duration-200"
+                    class="fas transform transition-transform duration-200 text-yellow-600"
                     [class.fa-chevron-down]="accordionState.threats"
                     [class.fa-chevron-right]="!accordionState.threats"
                   ></i>
                 </div>
               </div>
-              <p class="text-sm text-yellow-600 mt-1 ml-6">External negative factors to mitigate</p>
             </div>
 
             <!-- Threats Content - Collapsible -->
             <div
               *ngIf="accordionState.threats"
-              class="p-4 pt-0 space-y-3 border-t border-yellow-200"
+              class="mt-6 pt-4 space-y-4 border-t border-yellow-200"
             >
-              <div
-                *ngFor="let item of threats; trackBy: trackByFn"
-                class="bg-white border border-yellow-300 rounded-lg"
-              >
-                <!-- Compact View -->
-                <div
+              <!-- Threat Items -->
+              <ng-container *ngFor="let item of threats; trackBy: trackByFn">
+                <!-- Display Mode -->
+                <app-action-item-display
                   *ngIf="!isEditing(item)"
-                  (click)="startEditing(item)"
-                  class="p-3 cursor-pointer hover:bg-yellow-50 transition-colors"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <p class="text-sm font-medium text-gray-900">{{ item.content || 'Click to edit...' }}</p>
-                    </div>
-                    <div class="flex items-center space-x-2 ml-3">
-                      <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Threat</span>
-                      <button
-                        (click)="deleteSwotItem(item); $event.stopPropagation()"
-                        class="text-red-500 hover:text-red-700"
-                      >
-                        <i class="fas fa-trash-alt text-xs"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  [item]="convertToActionItemData(item)"
+                  categoryColor="yellow"
+                  (edit)="startEditing(item)"
+                  (quickDelete)="deleteSwotItem(item)"
+                ></app-action-item-display>
 
-                <!-- Expanded Edit Form -->
-                <div *ngIf="isEditing(item)" class="p-4 bg-gray-50">
-                  <div class="space-y-3">
-                    <div>
-                      <label class="block text-xs font-medium text-gray-700 mb-1">Threat Description</label>
-                      <textarea
-                        [(ngModel)]="item.content"
-                        rows="2"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-yellow-500 focus:border-yellow-500"
-                        placeholder="Describe this threat in detail..."
-                      ></textarea>
-                    </div>
+                <!-- Edit Mode -->
+                <app-action-item-form
+                  *ngIf="isEditing(item)"
+                  [item]="convertToActionItemData(item)"
+                  [config]="getThreatFormConfig()"
+                  (save)="saveSwotItem(item, $event)"
+                  (cancel)="cancelEdit(item)"
+                  (delete)="deleteSwotItem(item)"
+                ></app-action-item-form>
+              </ng-container>
 
-                    <div class="flex items-center justify-between pt-2">
-                      <div class="flex items-center space-x-2">
-                        <button
-                          (click)="saveAndCloseEdit(item)"
-                          class="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700"
-                        >
-                          Save
-                        </button>
-                        <button
-                          (click)="cancelEdit(item)"
-                          class="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                      <button
-                        (click)="deleteSwotItem(item)"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        <i class="fas fa-trash-alt mr-1"></i> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Empty State -->
-              <div *ngIf="threats.length === 0" class="text-center py-6 text-gray-500">
-                <i class="fas fa-exclamation-triangle text-2xl text-yellow-300 mb-2"></i>
-                <p class="text-sm">No threats identified yet</p>
+              <!-- Enhanced Empty State -->
+              <div *ngIf="threats.length === 0"
+                   class="text-center py-12 bg-white rounded-lg border-2 border-dashed border-yellow-300">
+                <i class="fas fa-exclamation-circle text-4xl text-yellow-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No threats identified yet</h3>
+                <p class="text-gray-600 mb-4">Identify external risks and threats that could impact your success.</p>
                 <button
                   (click)="addSwotItem('threat')"
-                  class="mt-2 text-yellow-600 hover:text-yellow-800 text-sm font-medium"
+                  class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
                 >
-                  Add your first threat
+                  <i class="fas fa-plus mr-2"></i>Add Your First Threat
                 </button>
               </div>
             </div>
@@ -560,8 +460,6 @@ interface SwotItem {
           </button>
         </div>
       </div>
-      </div>
-    </div>
   `,
   styleUrls: ['./swot.component.scss']
 })
