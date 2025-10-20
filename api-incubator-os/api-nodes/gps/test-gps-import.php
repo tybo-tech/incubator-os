@@ -39,11 +39,11 @@ try {
             // Preview what would be imported (first 5 nodes)
             $gpsNodes = $gpsImport->getAllGpsNodes();
             $preview = [];
-            
+
             $count = 0;
             foreach ($gpsNodes as $node) {
                 if ($count >= 5) break;
-                
+
                 $actionItems = $gpsImport->extractGpsTargets($node);
                 $preview[] = [
                     'node_id' => $node['id'],
@@ -53,7 +53,7 @@ try {
                 ];
                 $count++;
             }
-            
+
             $result = [
                 'total_gps_nodes' => count($gpsNodes),
                 'preview_nodes' => $preview,
@@ -87,11 +87,11 @@ try {
             $stmt = $db->prepare("SELECT * FROM nodes WHERE type = 'gps_targets' LIMIT 1");
             $stmt->execute();
             $sampleNode = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if ($sampleNode) {
                 $sampleNode['data'] = json_decode($sampleNode['data'], true);
                 $extractedTargets = $gpsImport->extractGpsTargets($sampleNode);
-                
+
                 $result = [
                     'sample_node' => $sampleNode,
                     'extracted_targets' => $extractedTargets,

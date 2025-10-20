@@ -12,10 +12,10 @@ function Test-GpsApi {
         [string]$Action,
         [string]$Description
     )
-    
+
     Write-Host "`n📊 $Description" -ForegroundColor Cyan
     Write-Host "Action: $Action" -ForegroundColor Yellow
-    
+
     try {
         $response = Invoke-RestMethod -Uri "$baseUrl?action=$Action" -Method GET
         $response | ConvertTo-Json -Depth 10 | Write-Host
@@ -55,20 +55,20 @@ $importChoice = Read-Host "`n❓ Do you want to proceed with GPS import? (y/N)"
 if ($importChoice -eq 'y' -or $importChoice -eq 'Y') {
     Write-Host "`n6️⃣ Performing GPS import..." -ForegroundColor Magenta
     $importResult = Test-GpsApi -Action "import" -Description "Import GPS Data to Action Items"
-    
+
     if ($importResult) {
         Write-Host "`n✅ Import Summary:" -ForegroundColor Green
         Write-Host "Total Nodes Processed: $($importResult.import_summary.total_nodes)" -ForegroundColor White
         Write-Host "Total Targets Imported: $($importResult.import_summary.total_targets_imported)" -ForegroundColor White
         Write-Host "Companies Processed: $($importResult.import_summary.companies_processed -join ', ')" -ForegroundColor White
-        
+
         if ($importResult.import_summary.categories_summary) {
             Write-Host "`n📋 Categories Summary:" -ForegroundColor Yellow
             foreach ($category in $importResult.import_summary.categories_summary.PSObject.Properties) {
                 Write-Host "  $($category.Name): $($category.Value)" -ForegroundColor White
             }
         }
-        
+
         if ($importResult.import_summary.errors -and $importResult.import_summary.errors.Count -gt 0) {
             Write-Host "`n⚠️ Errors encountered:" -ForegroundColor Red
             $importResult.import_summary.errors | ForEach-Object {
@@ -89,14 +89,14 @@ if ($countResult -and $finalStats) {
     Write-Host "`n📈 Before/After Summary:" -ForegroundColor Yellow
     Write-Host "GPS Nodes: $($countResult.gps_nodes) (unchanged)" -ForegroundColor White
     Write-Host "GPS Action Items: $($countResult.gps_action_items) -> $($finalStats.gps_action_items_count)" -ForegroundColor White
-    
+
     if ($finalStats.companies_with_gps) {
         Write-Host "`n🏢 Companies with GPS Data:" -ForegroundColor Yellow
         $finalStats.companies_with_gps | ForEach-Object {
             Write-Host "  Company $($_.company_id): $($_.target_count) targets" -ForegroundColor White
         }
     }
-    
+
     if ($finalStats.category_breakdown) {
         Write-Host "`n📊 Category Breakdown:" -ForegroundColor Yellow
         $finalStats.category_breakdown | ForEach-Object {

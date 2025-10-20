@@ -19,11 +19,11 @@ try {
         $stmt = $db->prepare("SELECT * FROM nodes WHERE type = 'gps_targets' AND company_id = ? ORDER BY created_at DESC LIMIT 1");
         $stmt->execute([$companyId]);
         $gpsNode = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($gpsNode) {
             $gpsNode['data'] = json_decode($gpsNode['data'], true);
             $extractedTargets = $gpsImport->extractGpsTargets($gpsNode);
-            
+
             $result = [
                 'company_id' => $companyId,
                 'gps_node' => $gpsNode,
@@ -31,7 +31,7 @@ try {
                 'targets_count' => count($extractedTargets),
                 'targets_by_category' => []
             ];
-            
+
             // Group targets by category
             foreach ($extractedTargets as $target) {
                 $category = $target['category'];
@@ -40,7 +40,7 @@ try {
                 }
                 $result['targets_by_category'][$category][] = $target;
             }
-            
+
         } else {
             $result = [
                 'company_id' => $companyId,
@@ -55,7 +55,7 @@ try {
         $stmt = $db->prepare("SELECT DISTINCT company_id, COUNT(*) as nodes_count FROM nodes WHERE type = 'gps_targets' GROUP BY company_id ORDER BY company_id");
         $stmt->execute();
         $companies = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $result = [
             'message' => 'Available companies with GPS data',
             'companies' => $companies,

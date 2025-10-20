@@ -40,13 +40,13 @@ final class GpsImport
     {
         $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE type = 'gps_targets' ORDER BY company_id, created_at");
         $stmt->execute();
-        
+
         $results = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $row['data'] = json_decode($row['data'], true);
             $results[] = $row;
         }
-        
+
         return $results;
     }
 
@@ -59,21 +59,21 @@ final class GpsImport
         $data = $nodeData['data'];
         $companyId = $nodeData['company_id'];
         $nodeId = $nodeData['id'];
-        
+
         // Categories to process
         $categories = ['finance', 'sales_marketing', 'strategy_general', 'personal_development'];
-        
+
         foreach ($categories as $category) {
             if (!isset($data[$category]['targets']) || !is_array($data[$category]['targets'])) {
                 continue;
             }
-            
+
             foreach ($data[$category]['targets'] as $target) {
                 // Skip empty targets
                 if (empty($target['description']) || trim($target['description']) === '') {
                     continue;
                 }
-                
+
                 $actionItems[] = [
                     'tenant_id' => 1,
                     'client_id' => $companyId, // Using company_id as client_id for now
@@ -94,7 +94,7 @@ final class GpsImport
                 ];
             }
         }
-        
+
         return $actionItems;
     }
 
@@ -104,7 +104,7 @@ final class GpsImport
     public function importGpsToActionItems(): array
     {
         $this->conn->beginTransaction();
-        
+
         try {
             $gpsNodes = $this->getAllGpsNodes();
             $totalImported = 0;
@@ -119,11 +119,11 @@ final class GpsImport
             foreach ($gpsNodes as $node) {
                 try {
                     $actionItems = $this->extractGpsTargets($node);
-                    
+
                     foreach ($actionItems as $item) {
                         $this->insertActionItem($item);
                         $totalImported++;
-                        
+
                         // Track category counts
                         $category = $item['category'];
                         if (!isset($importSummary['categories_summary'][$category])) {
@@ -131,13 +131,13 @@ final class GpsImport
                         }
                         $importSummary['categories_summary'][$category]++;
                     }
-                    
+
                     // Track companies processed
                     $companyId = $node['company_id'];
                     if (!in_array($companyId, $importSummary['companies_processed'])) {
                         $importSummary['companies_processed'][] = $companyId;
                     }
-                    
+
                 } catch (Exception $e) {
                     $importSummary['errors'][] = [
                         'node_id' => $node['id'],
@@ -148,10 +148,10 @@ final class GpsImport
             }
 
             $importSummary['total_targets_imported'] = $totalImported;
-            
+
             $this->conn->commit();
             return $importSummary;
-            
+
         } catch (Exception $e) {
             $this->conn->rollBack();
             throw new Exception("Import failed: " . $e->getMessage());
@@ -164,11 +164,11 @@ final class GpsImport
     private function insertActionItem(array $item): void
     {
         $sql = "INSERT INTO action_items (
-            tenant_id, client_id, company_id, context_type, category, 
-            description, action_required, evidence, assigned_to, target_date, 
+            tenant_id, client_id, company_id, context_type, category,
+            description, action_required, evidence, assigned_to, target_date,
             status, priority, progress, analysis_date, is_complete, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
-        
+
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([
             $item['tenant_id'],
@@ -210,7 +210,7 @@ final class GpsImport
             'strategy_general' => 'Strategy/General',
             'personal_development' => 'Personal Development'
         ];
-        
+
         return $categoryMap[$category] ?? ucfirst(str_replace('_', ' ', $category));
     }
 
@@ -226,7 +226,7 @@ final class GpsImport
             'overdue' => 'Overdue',
             'cancelled' => 'Cancelled'
         ];
-        
+
         return $statusMap[$status] ?? 'Not Started';
     }
 
@@ -238,7 +238,7 @@ final class GpsImport
         if (empty($date) || $date === '') {
             return null;
         }
-        
+
         try {
             $dateObj = new DateTime($date);
             return $dateObj->format('Y-m-d');
@@ -255,7 +255,7 @@ final class GpsImport
         if (empty($datetime)) {
             return null;
         }
-        
+
         try {
             $dateObj = new DateTime($datetime);
             return $dateObj->format('Y-m-d H:i:s');
@@ -283,14 +283,14 @@ final class GpsImport
     private function getCompaniesWithGps(): array
     {
         $stmt = $this->conn->prepare("
-            SELECT DISTINCT company_id, COUNT(*) as target_count 
-            FROM action_items 
-            WHERE context_type = 'gps' 
-            GROUP BY company_id 
+            SELECT DISTINCT company_id, COUNT(*) as target_count
+            FROM action_items
+            WHERE context_type = 'gps'
+            GROUP BY company_id
             ORDER BY company_id
         ");
         $stmt->execute();
-        
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -300,15 +300,15 @@ final class GpsImport
     private function getCategoryBreakdown(): array
     {
         $stmt = $this->conn->prepare("
-            SELECT category, COUNT(*) as count, 
+            SELECT category, COUNT(*) as count,
                    SUM(CASE WHEN is_complete = 1 THEN 1 ELSE 0 END) as completed,
                    AVG(progress) as avg_progress
-            FROM action_items 
-            WHERE context_type = 'gps' 
+            FROM action_items
+            WHERE context_type = 'gps'
             GROUP BY category
         ");
         $stmt->execute();
-        
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
