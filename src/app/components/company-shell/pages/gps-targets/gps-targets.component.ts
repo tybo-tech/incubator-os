@@ -449,7 +449,7 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
 
     // Update target via ActionItems service
     const actionItemData = this.convertToActionItem(target);
-    
+
     this.actionItemService.updateActionItem(target.id, actionItemData).subscribe({
       next: (updatedItem) => {
         console.log('GPS target updated:', updatedItem);
@@ -521,8 +521,8 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
    * Convert GPS target back to ActionItem for API calls
    */
   private convertToActionItem(gpsTarget: GpsTarget): Partial<ActionItem> {
-    const progress = gpsTarget.target_value > 0 
-      ? Math.round((gpsTarget.current_value / gpsTarget.target_value) * 100) 
+    const progress = gpsTarget.target_value > 0
+      ? Math.round((gpsTarget.current_value / gpsTarget.target_value) * 100)
       : 0;
 
     return {
@@ -547,7 +547,7 @@ export class GpsTargetsComponent implements OnInit, OnDestroy {
       case 'pending': return 'not_started';
       case 'in_progress': return 'in_progress';
       case 'completed': return 'completed';
-      case 'on_hold': 
+      case 'on_hold':
       case 'cancelled': return 'overdue';
       default: return 'not_started';
     }
