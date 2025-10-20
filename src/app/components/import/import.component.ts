@@ -230,7 +230,7 @@ export class ImportComponent implements OnInit {
       next: (stats) => {
         this.swotStats = stats;
         this.loading = false;
-        this.addMessage('info', 'SWOT import not yet implemented');
+        this.addMessage('success', 'SWOT statistics loaded successfully');
       },
       error: (error) => {
         this.loading = false;
@@ -240,10 +240,105 @@ export class ImportComponent implements OnInit {
   }
 
   /**
-   * Import SWOT data (placeholder)
+   * Preview SWOT import data
+   */
+  previewSwotImport(): void {
+    this.loading = true;
+    this.addMessage('info', 'Generating SWOT import preview...');
+
+    this.importService.previewSwotImport().subscribe({
+      next: (preview) => {
+        this.previewData = preview;
+        this.showPreview = true;
+        this.loading = false;
+        this.addMessage('success', `Found ${preview.total_nodes} SWOT nodes to import`);
+      },
+      error: (error) => {
+        this.loading = false;
+        this.addMessage('error', `Failed to preview SWOT import: ${error.message}`);
+      }
+    });
+  }
+
+  /**
+   * Import SWOT data
    */
   importSwotData(): void {
-    this.addMessage('warning', 'SWOT import feature coming soon!');
+    this.loading = true;
+    this.addMessage('info', 'Starting SWOT import process...');
+
+    this.importService.importSwotData().subscribe({
+      next: (result) => {
+        this.lastImportResult = result;
+        this.loading = false;
+        const summary = result.import_summary;
+        this.addMessage('success',
+          `Successfully imported ${summary.total_items_imported} SWOT items from ${summary.total_nodes} nodes`
+        );
+
+        // Refresh statistics
+        this.loadSwotStats();
+        this.loadOverallStats();
+      },
+      error: (error) => {
+        this.loading = false;
+        this.addMessage('error', `SWOT import failed: ${error.message}`);
+      }
+    });
+  }
+
+  /**
+   * Clear SWOT action items
+   */
+  clearSwotData(): void {
+    if (!confirm('Are you sure you want to clear all SWOT action items? This cannot be undone.')) {
+      return;
+    }
+
+    this.loading = true;
+    this.addMessage('info', 'Clearing SWOT action items...');
+
+    this.importService.clearSwotData().subscribe({
+      next: (result) => {
+        this.loading = false;
+        const deletedCount = result.data?.deleted_count || 0;
+        this.addMessage('success', `Cleared ${deletedCount} SWOT action items`);
+
+        // Refresh statistics
+        this.loadSwotStats();
+        this.loadOverallStats();
+      },
+      error: (error) => {
+        this.loading = false;
+        this.addMessage('error', `Failed to clear SWOT data: ${error.message}`);
+      }
+    });
+  }
+
+  /**
+   * Verify SWOT import
+   */
+  verifySwotImport(): void {
+    this.loading = true;
+    this.addMessage('info', 'Verifying SWOT import data...');
+
+    this.importService.verifySwotImport().subscribe({
+      next: (result) => {
+        this.loading = false;
+        const totals = result.data?.summary?.totals;
+        if (totals) {
+          this.addMessage('success',
+            `Verification complete: ${totals.total_items} SWOT items across ${totals.companies_count} companies`
+          );
+        } else {
+          this.addMessage('info', 'SWOT verification completed');
+        }
+      },
+      error: (error) => {
+        this.loading = false;
+        this.addMessage('error', `SWOT verification failed: ${error.message}`);
+      }
+    });
   }
 
   /* =========================================================================

@@ -34,17 +34,30 @@ final class GpsImport
     }
 
     /**
-     * Get all GPS nodes from database
+     * Get all GPS nodes from database (with duplicate prevention)
      */
     public function getAllGpsNodes(): array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE type = 'gps_targets' ORDER BY company_id, created_at");
+        // Get all nodes and handle duplicates in PHP to avoid SQL GROUP BY issues
+        $stmt = $this->conn->prepare("
+            SELECT * FROM nodes
+            WHERE type = 'gps_targets'
+            ORDER BY company_id, created_at
+        ");
         $stmt->execute();
 
         $results = [];
+        $seenHashes = [];
+
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $row['data'] = json_decode($row['data'], true);
-            $results[] = $row;
+            // Create hash to detect duplicates
+            $dataHash = md5($row['company_id'] . '|' . $row['data']);
+
+            if (!isset($seenHashes[$dataHash])) {
+                $seenHashes[$dataHash] = true;
+                $row['data'] = json_decode($row['data'], true);
+                $results[] = $row;
+            }
         }
 
         return $results;
@@ -89,8 +102,7 @@ final class GpsImport
                     'priority' => $target['priority'] ?? null,
                     'progress' => $target['progress_percentage'] ?? 0,
                     'analysis_date' => $this->formatDateTime($target['date_added'] ?? null),
-                    'is_complete' => ($target['status'] ?? 'not_started') === 'completed' ? 1 : 0,
-                    'source_node_id' => $nodeId // For reference back to original node
+                    'is_complete' => ($target['status'] ?? 'not_started') === 'completed' ? 1 : 0
                 ];
             }
         }
@@ -111,6 +123,7 @@ final class GpsImport
             $importSummary = [
                 'total_nodes' => count($gpsNodes),
                 'total_targets_imported' => 0,
+                'total_targets_skipped' => 0,
                 'companies_processed' => [],
                 'categories_summary' => [],
                 'errors' => []
@@ -121,6 +134,12 @@ final class GpsImport
                     $actionItems = $this->extractGpsTargets($node);
 
                     foreach ($actionItems as $item) {
+                        // Check for duplicates before inserting
+                        if ($this->actionItemExists($item)) {
+                            $importSummary['total_targets_skipped']++;
+                            continue; // Skip duplicates
+                        }
+
                         $this->insertActionItem($item);
                         $totalImported++;
 
@@ -159,10 +178,36 @@ final class GpsImport
     }
 
     /**
-     * Insert action item into database
+     * Check if action item already exists (duplicate prevention)
+     */
+    private function actionItemExists(array $item): bool
+    {
+        $sql = "SELECT COUNT(*) as count FROM action_items
+                WHERE company_id = ? AND context_type = ? AND category = ?
+                AND description = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            $item['company_id'],
+            $item['context_type'],
+            $item['category'],
+            $item['description']
+        ]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)$result['count'] > 0;
+    }
+
+    /**
+     * Insert action item into database with duplicate prevention
      */
     private function insertActionItem(array $item): void
     {
+        // Check for duplicates first
+        if ($this->actionItemExists($item)) {
+            return; // Skip if already exists
+        }
+
         $sql = "INSERT INTO action_items (
             tenant_id, client_id, company_id, context_type, category,
             description, action_required, evidence, assigned_to, target_date,

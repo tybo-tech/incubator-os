@@ -204,15 +204,8 @@ export class ImportService {
    */
   countSwotData(): Observable<CountResult> {
     console.log('🔄 Counting SWOT data');
-    // For now, return empty data - will implement when SWOT endpoints are ready
-    return new Observable(observer => {
-      observer.next({
-        swot_nodes: 0,
-        swot_action_items: 0,
-        timestamp: new Date().toISOString()
-      });
-      observer.complete();
-    });
+    return this.http.get<CountResult>(`${this.swotApiUrl}/test-swot-import.php?action=count`)
+      .pipe(catchError(this.handleError('Count SWOT data')));
   }
 
   /**
@@ -220,24 +213,63 @@ export class ImportService {
    */
   getSwotStats(): Observable<ImportStats> {
     console.log('📊 Getting SWOT statistics');
-    // Placeholder for future implementation
-    return new Observable(observer => {
-      observer.next({
-        swot_nodes_count: 0,
-        swot_action_items_count: 0,
-        companies_with_swot: [],
-        category_breakdown: [],
-        timestamp: new Date().toISOString()
-      });
-      observer.complete();
-    });
+    return this.http.get<ImportStats>(`${this.swotApiUrl}/test-swot-import.php?action=stats`)
+      .pipe(catchError(this.handleError('Get SWOT statistics')));
   }
 
   /**
-   * Import SWOT data (placeholder)
+   * Preview SWOT import data
+   */
+  previewSwotImport(): Observable<ImportPreview> {
+    console.log('👀 Previewing SWOT import data');
+    return this.http.get<ImportPreview>(`${this.swotApiUrl}/test-swot-import.php?action=preview`)
+      .pipe(catchError(this.handleError('Preview SWOT import')));
+  }
+
+  /**
+   * Get SWOT sample data
+   */
+  getSwotSampleData(): Observable<any> {
+    console.log('📄 Getting SWOT sample data');
+    return this.http.get(`${this.swotApiUrl}/test-swot-import.php?action=sample-data`)
+      .pipe(catchError(this.handleError('Get SWOT sample data')));
+  }
+
+  /**
+   * Clear SWOT action items
+   */
+  clearSwotData(): Observable<any> {
+    console.log('🧹 Clearing SWOT action items');
+    return this.http.get(`${this.swotApiUrl}/test-swot-import.php?action=clear`)
+      .pipe(catchError(this.handleError('Clear SWOT data')));
+  }
+
+  /**
+   * Import SWOT data
    */
   importSwotData(): Observable<ImportResult> {
-    console.log('⬇️ Importing SWOT data (placeholder)');
+    console.log('⬇️ Importing SWOT data');
+    return this.http.get<ImportResult>(`${this.swotApiUrl}/test-swot-import.php?action=import`)
+      .pipe(catchError(this.handleError('Import SWOT data')));
+  }
+
+  /**
+   * Verify SWOT import
+   */
+  verifySwotImport(companyId?: number): Observable<any> {
+    console.log(`✅ Verifying SWOT import${companyId ? ` for company ${companyId}` : ''}`);
+    const url = companyId
+      ? `${this.swotApiUrl}/verify-swot-action-items.php?company_id=${companyId}`
+      : `${this.swotApiUrl}/verify-swot-action-items.php`;
+    return this.http.get(url)
+      .pipe(catchError(this.handleError('Verify SWOT import')));
+  }
+
+  /**
+   * Import SWOT data (backwards compatibility - placeholder)
+   */
+  importSwotDataLegacy(): Observable<ImportResult> {
+    console.log('⬇️ Importing SWOT data (legacy placeholder)');
     return new Observable(observer => {
       observer.next({
         message: 'SWOT import not yet implemented',
