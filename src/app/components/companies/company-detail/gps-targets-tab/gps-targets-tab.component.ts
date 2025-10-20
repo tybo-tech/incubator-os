@@ -4,10 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import {
   GpsTargets,
-  GpsTarget,
-  GpsTargetCategory,
   initGpsTargets,
-  initGpsTarget
+  initGpsTarget,
 } from '../../../../../models/gps-targets.models';
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
@@ -26,13 +24,18 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
           <div>
             <h2 class="text-xl font-semibold text-gray-900">🎯 GPS Targets</h2>
             <p class="text-sm text-gray-600 mt-1">
-              Goal Setting and Performance System - Track your business targets across different categories
+              Goal Setting and Performance System - Track your business targets
+              across different categories
             </p>
           </div>
           <div class="flex items-center space-x-4">
             <div class="text-right">
-              <div class="text-lg font-semibold text-gray-900">{{ getTotalTargetsCount() }} Targets</div>
-              <div class="text-sm text-gray-500">{{ getCompletionPercentage() }}% Complete</div>
+              <div class="text-lg font-semibold text-gray-900">
+                {{ getTotalTargetsCount() }} Targets
+              </div>
+              <div class="text-sm text-gray-500">
+                {{ getCompletionPercentage() }}% Complete
+              </div>
             </div>
             <div class="flex items-center space-x-2">
               <button
@@ -56,11 +59,12 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 
       <!-- GPS Targets Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
         <!-- STRATEGY/GENERAL TARGETS -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-purple-800">Strategy/General Targets</h3>
+            <h3 class="text-lg font-medium text-purple-800">
+              Strategy/General Targets
+            </h3>
             <button
               (click)="addTarget('strategy_general')"
               class="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
@@ -71,13 +75,18 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 
           <div class="space-y-4">
             <div
-              *ngFor="let target of gpsData?.strategy_general?.targets || []; let i = index"
+              *ngFor="
+                let target of gpsData?.strategy_general?.targets || [];
+                let i = index
+              "
               class="border border-gray-200 rounded-lg p-4"
             >
               <div class="space-y-3">
                 <!-- Target Description -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Target Description</label>
+                  <label class="block text-xs font-medium text-gray-700 mb-1"
+                    >Target Description</label
+                  >
                   <textarea
                     [(ngModel)]="target.description"
                     (change)="onDataChange()"
@@ -90,7 +99,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Evidence and Due Date Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Evidence</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Evidence</label
+                    >
                     <textarea
                       [(ngModel)]="target.evidence"
                       (change)="onDataChange()"
@@ -100,7 +111,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     ></textarea>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Due Date</label
+                    >
                     <input
                       [(ngModel)]="target.due_date"
                       (change)="onDataChange()"
@@ -113,7 +126,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Status, Priority, Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Status</label
+                    >
                     <select
                       [(ngModel)]="target.status"
                       (change)="onDataChange()"
@@ -127,7 +142,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Priority</label
+                    >
                     <select
                       [(ngModel)]="target.priority"
                       (change)="onDataChange()"
@@ -140,7 +157,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Assigned To</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Assigned To</label
+                    >
                     <input
                       [(ngModel)]="target.assigned_to"
                       (change)="onDataChange()"
@@ -154,7 +173,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Progress and Actions -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
-                    <label class="text-xs font-medium text-gray-700">Progress:</label>
+                    <label class="text-xs font-medium text-gray-700"
+                      >Progress:</label
+                    >
                     <input
                       [(ngModel)]="target.progress_percentage"
                       (change)="onDataChange()"
@@ -163,7 +184,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                       max="100"
                       class="w-20"
                     />
-                    <span class="text-xs text-gray-600">{{ target.progress_percentage }}%</span>
+                    <span class="text-xs text-gray-600"
+                      >{{ target.progress_percentage }}%</span
+                    >
                   </div>
 
                   <button
@@ -176,7 +199,10 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
               </div>
             </div>
 
-            <div *ngIf="!gpsData?.strategy_general?.targets?.length" class="text-center py-4 text-gray-500 text-sm">
+            <div
+              *ngIf="!gpsData?.strategy_general?.targets?.length"
+              class="text-center py-4 text-gray-500 text-sm"
+            >
               No strategy targets added yet. Click "Add Target" to get started.
             </div>
           </div>
@@ -196,13 +222,18 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 
           <div class="space-y-4">
             <div
-              *ngFor="let target of gpsData?.finance?.targets || []; let i = index"
+              *ngFor="
+                let target of gpsData?.finance?.targets || [];
+                let i = index
+              "
               class="border border-gray-200 rounded-lg p-4"
             >
               <div class="space-y-3">
                 <!-- Target Description -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Target Description</label>
+                  <label class="block text-xs font-medium text-gray-700 mb-1"
+                    >Target Description</label
+                  >
                   <textarea
                     [(ngModel)]="target.description"
                     (change)="onDataChange()"
@@ -215,7 +246,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Evidence and Due Date Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Evidence</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Evidence</label
+                    >
                     <textarea
                       [(ngModel)]="target.evidence"
                       (change)="onDataChange()"
@@ -225,7 +258,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     ></textarea>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Due Date</label
+                    >
                     <input
                       [(ngModel)]="target.due_date"
                       (change)="onDataChange()"
@@ -238,7 +273,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Status, Priority, Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Status</label
+                    >
                     <select
                       [(ngModel)]="target.status"
                       (change)="onDataChange()"
@@ -252,7 +289,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Priority</label
+                    >
                     <select
                       [(ngModel)]="target.priority"
                       (change)="onDataChange()"
@@ -265,7 +304,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Assigned To</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Assigned To</label
+                    >
                     <input
                       [(ngModel)]="target.assigned_to"
                       (change)="onDataChange()"
@@ -279,7 +320,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Progress and Actions -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
-                    <label class="text-xs font-medium text-gray-700">Progress:</label>
+                    <label class="text-xs font-medium text-gray-700"
+                      >Progress:</label
+                    >
                     <input
                       [(ngModel)]="target.progress_percentage"
                       (change)="onDataChange()"
@@ -288,7 +331,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                       max="100"
                       class="w-20"
                     />
-                    <span class="text-xs text-gray-600">{{ target.progress_percentage }}%</span>
+                    <span class="text-xs text-gray-600"
+                      >{{ target.progress_percentage }}%</span
+                    >
                   </div>
 
                   <button
@@ -301,7 +346,10 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
               </div>
             </div>
 
-            <div *ngIf="!gpsData?.finance?.targets?.length" class="text-center py-4 text-gray-500 text-sm">
+            <div
+              *ngIf="!gpsData?.finance?.targets?.length"
+              class="text-center py-4 text-gray-500 text-sm"
+            >
               No finance targets added yet. Click "Add Target" to get started.
             </div>
           </div>
@@ -310,7 +358,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
         <!-- SALES & MARKETING TARGETS -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-blue-800">Sales & Marketing Targets</h3>
+            <h3 class="text-lg font-medium text-blue-800">
+              Sales & Marketing Targets
+            </h3>
             <button
               (click)="addTarget('sales_marketing')"
               class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
@@ -321,13 +371,18 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 
           <div class="space-y-4">
             <div
-              *ngFor="let target of gpsData?.sales_marketing?.targets || []; let i = index"
+              *ngFor="
+                let target of gpsData?.sales_marketing?.targets || [];
+                let i = index
+              "
               class="border border-gray-200 rounded-lg p-4"
             >
               <div class="space-y-3">
                 <!-- Target Description -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Target Description</label>
+                  <label class="block text-xs font-medium text-gray-700 mb-1"
+                    >Target Description</label
+                  >
                   <textarea
                     [(ngModel)]="target.description"
                     (change)="onDataChange()"
@@ -340,7 +395,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Evidence and Due Date Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Evidence</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Evidence</label
+                    >
                     <textarea
                       [(ngModel)]="target.evidence"
                       (change)="onDataChange()"
@@ -350,7 +407,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     ></textarea>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Due Date</label
+                    >
                     <input
                       [(ngModel)]="target.due_date"
                       (change)="onDataChange()"
@@ -363,7 +422,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Status, Priority, Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Status</label
+                    >
                     <select
                       [(ngModel)]="target.status"
                       (change)="onDataChange()"
@@ -377,7 +438,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Priority</label
+                    >
                     <select
                       [(ngModel)]="target.priority"
                       (change)="onDataChange()"
@@ -390,7 +453,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Assigned To</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Assigned To</label
+                    >
                     <input
                       [(ngModel)]="target.assigned_to"
                       (change)="onDataChange()"
@@ -404,7 +469,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Progress and Actions -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
-                    <label class="text-xs font-medium text-gray-700">Progress:</label>
+                    <label class="text-xs font-medium text-gray-700"
+                      >Progress:</label
+                    >
                     <input
                       [(ngModel)]="target.progress_percentage"
                       (change)="onDataChange()"
@@ -413,7 +480,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                       max="100"
                       class="w-20"
                     />
-                    <span class="text-xs text-gray-600">{{ target.progress_percentage }}%</span>
+                    <span class="text-xs text-gray-600"
+                      >{{ target.progress_percentage }}%</span
+                    >
                   </div>
 
                   <button
@@ -426,8 +495,12 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
               </div>
             </div>
 
-            <div *ngIf="!gpsData?.sales_marketing?.targets?.length" class="text-center py-4 text-gray-500 text-sm">
-              No sales & marketing targets added yet. Click "Add Target" to get started.
+            <div
+              *ngIf="!gpsData?.sales_marketing?.targets?.length"
+              class="text-center py-4 text-gray-500 text-sm"
+            >
+              No sales & marketing targets added yet. Click "Add Target" to get
+              started.
             </div>
           </div>
         </div>
@@ -435,7 +508,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
         <!-- PERSONAL DEVELOPMENT TARGETS -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-orange-800">Personal Development Targets</h3>
+            <h3 class="text-lg font-medium text-orange-800">
+              Personal Development Targets
+            </h3>
             <button
               (click)="addTarget('personal_development')"
               class="px-3 py-1 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700"
@@ -446,13 +521,18 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 
           <div class="space-y-4">
             <div
-              *ngFor="let target of gpsData?.personal_development?.targets || []; let i = index"
+              *ngFor="
+                let target of gpsData?.personal_development?.targets || [];
+                let i = index
+              "
               class="border border-gray-200 rounded-lg p-4"
             >
               <div class="space-y-3">
                 <!-- Target Description -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Target Description</label>
+                  <label class="block text-xs font-medium text-gray-700 mb-1"
+                    >Target Description</label
+                  >
                   <textarea
                     [(ngModel)]="target.description"
                     (change)="onDataChange()"
@@ -465,7 +545,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Evidence and Due Date Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Evidence</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Evidence</label
+                    >
                     <textarea
                       [(ngModel)]="target.evidence"
                       (change)="onDataChange()"
@@ -475,7 +557,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     ></textarea>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Due Date</label
+                    >
                     <input
                       [(ngModel)]="target.due_date"
                       (change)="onDataChange()"
@@ -488,7 +572,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Status, Priority, Assigned To -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Status</label
+                    >
                     <select
                       [(ngModel)]="target.status"
                       (change)="onDataChange()"
@@ -502,7 +588,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Priority</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Priority</label
+                    >
                     <select
                       [(ngModel)]="target.priority"
                       (change)="onDataChange()"
@@ -515,7 +603,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                     </select>
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Assigned To</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"
+                      >Assigned To</label
+                    >
                     <input
                       [(ngModel)]="target.assigned_to"
                       (change)="onDataChange()"
@@ -529,7 +619,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                 <!-- Progress and Actions -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
-                    <label class="text-xs font-medium text-gray-700">Progress:</label>
+                    <label class="text-xs font-medium text-gray-700"
+                      >Progress:</label
+                    >
                     <input
                       [(ngModel)]="target.progress_percentage"
                       (change)="onDataChange()"
@@ -538,7 +630,9 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
                       max="100"
                       class="w-20"
                     />
-                    <span class="text-xs text-gray-600">{{ target.progress_percentage }}%</span>
+                    <span class="text-xs text-gray-600"
+                      >{{ target.progress_percentage }}%</span
+                    >
                   </div>
 
                   <button
@@ -551,39 +645,52 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
               </div>
             </div>
 
-            <div *ngIf="!gpsData?.personal_development?.targets?.length" class="text-center py-4 text-gray-500 text-sm">
-              No personal development targets added yet. Click "Add Target" to get started.
+            <div
+              *ngIf="!gpsData?.personal_development?.targets?.length"
+              class="text-center py-4 text-gray-500 text-sm"
+            >
+              No personal development targets added yet. Click "Add Target" to
+              get started.
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Overall Summary -->
       <div class="bg-white rounded-lg shadow-sm border p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Overall GPS Targets Summary</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          Overall GPS Targets Summary
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div class="bg-purple-50 p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-purple-600">{{ gpsData.strategy_general.targets.length || 0 }}</div>
+            <div class="text-2xl font-bold text-purple-600">
+              {{ gpsData.strategy_general.targets.length || 0 }}
+            </div>
             <div class="text-sm text-purple-700">Strategy/General</div>
           </div>
           <div class="bg-green-50 p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-green-600">{{ gpsData.finance.targets.length || 0 }}</div>
+            <div class="text-2xl font-bold text-green-600">
+              {{ gpsData.finance.targets.length || 0 }}
+            </div>
             <div class="text-sm text-green-700">Finance</div>
           </div>
           <div class="bg-blue-50 p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-blue-600">{{ gpsData.sales_marketing.targets.length || 0 }}</div>
+            <div class="text-2xl font-bold text-blue-600">
+              {{ gpsData.sales_marketing.targets.length || 0 }}
+            </div>
             <div class="text-sm text-blue-700">Sales & Marketing</div>
           </div>
           <div class="bg-orange-50 p-4 rounded-lg text-center">
-            <div class="text-2xl font-bold text-orange-600">{{ gpsData.personal_development.targets.length || 0 }}</div>
+            <div class="text-2xl font-bold text-orange-600">
+              {{ gpsData.personal_development.targets.length || 0 }}
+            </div>
             <div class="text-sm text-orange-700">Personal Development</div>
           </div>
         </div>
       </div>
     </div>
   `,
-  styleUrls: ['./gps-targets-tab.component.scss']
+  styleUrls: ['./gps-targets-tab.component.scss'],
 })
 export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
@@ -598,7 +705,10 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
 
-  constructor(private nodeService: NodeService<any>, private gpsExport: GpsTargetsExportService) {}
+  constructor(
+    private nodeService: NodeService<any>,
+    private gpsExport: GpsTargetsExportService
+  ) {}
 
   ngOnInit(): void {
     this.loadGpsData();
@@ -616,7 +726,8 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
     if (!this.company?.id) return;
 
     this.loading = true;
-    this.nodeService.getNodesByCompany(this.company.id, 'gps_targets')
+    this.nodeService
+      .getNodesByCompany(this.company.id, 'gps_targets')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (nodes) => {
@@ -631,10 +742,9 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading GPS data:', error);
           this.loading = false;
-        }
+        },
       });
   }
-
 
   onDataChange(): void {
     this.isDirty = true;
@@ -651,7 +761,15 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
     }, 2000);
   }
 
-  addTarget(category: keyof Pick<GpsTargets, 'strategy_general' | 'finance' | 'sales_marketing' | 'personal_development'>): void {
+  addTarget(
+    category: keyof Pick<
+      GpsTargets,
+      | 'strategy_general'
+      | 'finance'
+      | 'sales_marketing'
+      | 'personal_development'
+    >
+  ): void {
     if (!this.gpsData[category].targets) {
       this.gpsData[category].targets = [];
     }
@@ -659,7 +777,16 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
     this.onDataChange();
   }
 
-  removeTarget(category: keyof Pick<GpsTargets, 'strategy_general' | 'finance' | 'sales_marketing' | 'personal_development'>, index: number): void {
+  removeTarget(
+    category: keyof Pick<
+      GpsTargets,
+      | 'strategy_general'
+      | 'finance'
+      | 'sales_marketing'
+      | 'personal_development'
+    >,
+    index: number
+  ): void {
     this.gpsData[category].targets.splice(index, 1);
     this.onDataChange();
   }
@@ -678,12 +805,15 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
       ...this.gpsData.strategy_general.targets,
       ...this.gpsData.finance.targets,
       ...this.gpsData.sales_marketing.targets,
-      ...this.gpsData.personal_development.targets
+      ...this.gpsData.personal_development.targets,
     ];
 
     if (allTargets.length === 0) return 0;
 
-    const totalProgress = allTargets.reduce((sum, target) => sum + target.progress_percentage, 0);
+    const totalProgress = allTargets.reduce(
+      (sum, target) => sum + target.progress_percentage,
+      0
+    );
     return Math.round(totalProgress / allTargets.length);
   }
 
@@ -699,24 +829,23 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
       : this.nodeService.addNode({
           company_id: this.company.id,
           type: 'gps_targets',
-          data: this.gpsData
+          data: this.gpsData,
         } as INode<GpsTargets>);
 
-    operation.pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (savedNode) => {
-          this.gpsNode = savedNode;
-          this.saving = false;
-          this.isDirty = false;
-          // Show success message
-          this.showSuccessMessage('GPS Targets saved successfully!');
-        },
-        error: (error) => {
-          console.error('Error saving GPS targets:', error);
-          this.saving = false;
-          this.showErrorMessage('Failed to save GPS targets. Please try again.');
-        }
-      });
+    operation.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (savedNode) => {
+        this.gpsNode = savedNode;
+        this.saving = false;
+        this.isDirty = false;
+        // Show success message
+        this.showSuccessMessage('GPS Targets saved successfully!');
+      },
+      error: (error) => {
+        console.error('Error saving GPS targets:', error);
+        this.saving = false;
+        this.showErrorMessage('Failed to save GPS targets. Please try again.');
+      },
+    });
   }
 
   exportPdf(): void {
@@ -724,13 +853,20 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
     this.exporting = true;
 
     const proceed = () => {
-      const exportData = this.gpsExport.convertNodeToExport(this.gpsData, this.company!.name || 'Company', this.company!.id!.toString());
+      const exportData = this.gpsExport.convertNodeToExport(
+        this.gpsData,
+        this.company!.name || 'Company',
+        this.company!.id!.toString()
+      );
       this.gpsExport.generateGpsTargetsPDF(exportData).subscribe({
         next: (blob) => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${(this.company?.name || 'company').replace(/[^a-z0-9_-]+/ig,'_')}_GPS_Targets.pdf`;
+          a.download = `${(this.company?.name || 'company').replace(
+            /[^a-z0-9_-]+/gi,
+            '_'
+          )}_GPS_Targets.pdf`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -741,7 +877,7 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
           console.error('Export failed', err);
           this.exporting = false;
           this.showErrorMessage('Failed to export GPS Targets PDF.');
-        }
+        },
       });
     };
 

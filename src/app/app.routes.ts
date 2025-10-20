@@ -8,6 +8,10 @@ import { CompanyOverviewComponent } from './components/company-shell/company-ove
 import { TasksListComponent } from './components/tasks/tasks-list.component';
 import { FinancialTabComponent } from './components/companies/company-detail/financial-tab/financial-tab.component';
 import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
+// New Page Components
+import { AssessmentComponent } from './components/company-shell/pages/assessment/assessment.component';
+import { SwotComponent } from './components/company-shell/pages/swot/swot.component';
+import { GpsTargetsComponent } from './components/company-shell/pages/gps-targets/gps-targets.component';
 import {
   MonthlyRevenueComponent,
   BankStatementsComponent,
@@ -67,23 +71,19 @@ export const routes: Routes = [
             component: CompanyOverviewComponent,
           },
           {
-            path: 'strategy',
-            component: CompanyOverviewComponent, // Placeholder - will create later
+            path: 'assessment',
+            component: AssessmentComponent,
           },
           {
-            path: 'assessment',
-            component: CompanyOverviewComponent, // Placeholder - will create later
+            path: 'swot',
+            component: SwotComponent,
+          },
+          {
+            path: 'gps-targets',
+            component: GpsTargetsComponent,
           },
           {
             path: 'compliance',
-            component: CompanyOverviewComponent, // Placeholder - will create later
-          },
-          {
-            path: 'documents',
-            component: CompanyOverviewComponent, // Placeholder - will create later
-          },
-          {
-            path: 'tasks',
             component: CompanyOverviewComponent, // Placeholder - will create later
           },
           {

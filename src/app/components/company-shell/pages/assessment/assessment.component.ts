@@ -148,14 +148,14 @@ export class AssessmentComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Get company ID from route parameters
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
+    // Get company ID from parent route parameters (/company/:id)
+    this.route.parent?.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const id = params['id'];
       if (id) {
         this.companyId = parseInt(id, 10);
         this.loadCompany();
       } else {
-        this.error = 'No company ID provided';
+        this.error = 'No company ID provided in parent route';
         this.loading = false;
       }
     });
