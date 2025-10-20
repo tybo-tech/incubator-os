@@ -28,9 +28,9 @@ export interface ActionItemData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="bg-white p-4 rounded-md border" 
+    <div class="bg-white p-4 rounded-md border"
          [ngClass]="'border-' + config.categoryColor + '-300'">
-      
+
       <!-- Primary Description and Action Required Row -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -46,7 +46,7 @@ export interface ActionItemData {
             [placeholder]="config.primaryPlaceholder"
           ></textarea>
         </div>
-        
+
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-2">
             {{ config.actionLabel || 'Action Required' }}
@@ -75,7 +75,7 @@ export interface ActionItemData {
             placeholder="Who will handle this..."
           />
         </div>
-        
+
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-2">Due Date</label>
           <input
@@ -86,7 +86,7 @@ export interface ActionItemData {
             [ngClass]="'focus:ring-' + config.categoryColor + '-500 focus:border-' + config.categoryColor + '-500'"
           />
         </div>
-        
+
         <div>
           <label class="block text-xs font-medium text-gray-700 mb-2">Status</label>
           <select
@@ -146,14 +146,14 @@ export interface ActionItemData {
           >
             💾 Save
           </button>
-          
+
           <button
             (click)="onCancel()"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             ❌ Cancel
           </button>
-          
+
           <button
             (click)="onDelete()"
             class="px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
@@ -170,11 +170,11 @@ export interface ActionItemData {
           <span>Progress:</span>
           <div class="flex items-center space-x-2">
             <div class="w-32 bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 class="h-2 rounded-full transition-all"
                 [ngClass]="{
                   'bg-blue-600 w-1/4': item.status === 'planning',
-                  'bg-yellow-600 w-2/3': item.status === 'in_progress', 
+                  'bg-yellow-600 w-2/3': item.status === 'in_progress',
                   'bg-green-600 w-full': item.status === 'completed',
                   'bg-red-600 w-1/3': item.status === 'on_hold'
                 }"
@@ -192,24 +192,24 @@ export interface ActionItemData {
     :host {
       display: block;
     }
-    
+
     .focus\:ring-2:focus {
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
     }
-    
+
     .transition-colors {
       transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
-    
+
     textarea {
       resize: vertical;
       min-height: 60px;
     }
-    
+
     select, input, textarea {
       transition: all 0.15s ease-in-out;
     }
-    
+
     select:hover, input:hover, textarea:hover {
       border-color: #d1d5db;
     }
@@ -218,7 +218,7 @@ export interface ActionItemData {
 export class ActionItemFormComponent {
   @Input() item!: ActionItemData;
   @Input() config!: ActionItemFormConfig;
-  
+
   @Output() itemChange = new EventEmitter<ActionItemData>();
   @Output() save = new EventEmitter<ActionItemData>();
   @Output() cancel = new EventEmitter<void>();
@@ -244,7 +244,7 @@ export class ActionItemFormComponent {
     const statusMap: { [key: string]: string } = {
       'identified': 'Identified',
       'planning': 'Planning',
-      'in_progress': 'In Progress', 
+      'in_progress': 'In Progress',
       'completed': 'Completed',
       'on_hold': 'On Hold'
     };

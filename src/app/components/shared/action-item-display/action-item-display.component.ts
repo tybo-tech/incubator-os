@@ -7,7 +7,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div 
+    <div
       (click)="onEdit()"
       class="bg-white p-4 rounded-md border cursor-pointer hover:shadow-md transition-all duration-200"
       [ngClass]="'border-' + categoryColor + '-200 hover:border-' + categoryColor + '-300'"
@@ -27,11 +27,11 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
           <!-- Status Row -->
           <div class="flex flex-wrap items-center gap-2 mt-3">
             <!-- Status Badge -->
-            <span 
+            <span
               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
               [ngClass]="{
                 'bg-gray-100 text-gray-700': item.status === 'identified',
-                'bg-blue-100 text-blue-700': item.status === 'planning', 
+                'bg-blue-100 text-blue-700': item.status === 'planning',
                 'bg-yellow-100 text-yellow-700': item.status === 'in_progress',
                 'bg-green-100 text-green-700': item.status === 'completed',
                 'bg-red-100 text-red-700': item.status === 'on_hold'
@@ -41,12 +41,12 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
             </span>
 
             <!-- Priority Badge -->
-            <span 
+            <span
               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
               [ngClass]="{
                 'bg-slate-100 text-slate-700': item.priority === 'low',
                 'bg-amber-100 text-amber-700': item.priority === 'medium',
-                'bg-orange-100 text-orange-700': item.priority === 'high', 
+                'bg-orange-100 text-orange-700': item.priority === 'high',
                 'bg-red-100 text-red-700': item.priority === 'critical'
               }"
             >
@@ -54,7 +54,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
             </span>
 
             <!-- Impact Badge (if applicable) -->
-            <span 
+            <span
               *ngIf="item.impact"
               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
               [ngClass]="{
@@ -73,7 +73,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
               <i class="fas fa-user mr-1"></i>
               {{ item.assigned_to }}
             </div>
-            
+
             <div *ngIf="item.target_date" class="flex items-center"
                  [ngClass]="{
                    'text-red-600 font-medium': isOverdue(item.target_date),
@@ -96,7 +96,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
           >
             <i class="fas fa-edit text-sm"></i>
           </button>
-          
+
           <button
             (click)="onQuickDelete(); $event.stopPropagation()"
             class="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
@@ -110,12 +110,12 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
       <!-- Progress Bar (for non-identified items) -->
       <div *ngIf="item.status && item.status !== 'identified'" class="mt-3 pt-2 border-t border-gray-100">
         <div class="w-full bg-gray-200 rounded-full h-1.5">
-          <div 
+          <div
             class="h-1.5 rounded-full transition-all duration-300"
             [ngClass]="{
               'bg-blue-500 w-1/4': item.status === 'planning',
               'bg-yellow-500 w-2/3': item.status === 'in_progress',
-              'bg-green-500 w-full': item.status === 'completed', 
+              'bg-green-500 w-full': item.status === 'completed',
               'bg-red-500 w-1/3': item.status === 'on_hold'
             }"
           ></div>
@@ -132,7 +132,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
     :host {
       display: block;
     }
-    
+
     .cursor-pointer:hover {
       transform: translateY(-1px);
     }
@@ -141,7 +141,7 @@ import { ActionItemData } from '../action-item-form/action-item-form.component';
 export class ActionItemDisplayComponent {
   @Input() item!: ActionItemData;
   @Input() categoryColor: string = 'gray';
-  
+
   @Output() edit = new EventEmitter<ActionItemData>();
   @Output() quickDelete = new EventEmitter<ActionItemData>();
 
@@ -158,7 +158,7 @@ export class ActionItemDisplayComponent {
   getStatusDisplay(status: string): string {
     const statusMap: { [key: string]: string } = {
       'identified': 'Identified',
-      'planning': 'Planning', 
+      'planning': 'Planning',
       'in_progress': 'In Progress',
       'completed': 'Completed',
       'on_hold': 'On Hold'
@@ -170,7 +170,7 @@ export class ActionItemDisplayComponent {
     const iconMap: { [key: string]: string } = {
       'identified': '📝',
       'planning': '📋',
-      'in_progress': '⚙️', 
+      'in_progress': '⚙️',
       'completed': '✅',
       'on_hold': '⏸️'
     };

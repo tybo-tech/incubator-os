@@ -22,7 +22,7 @@ interface SwotItem {
   selector: 'app-swot-page',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     ActionItemFormComponent,
     ActionItemDisplayComponent
@@ -87,7 +87,7 @@ interface SwotItem {
                   <i class="fas fa-muscle mr-3 text-green-600 text-lg"></i>
                   <div>
                     <h4 class="text-lg font-semibold text-green-800">
-                      Strengths 
+                      Strengths
                       <span class="ml-2 text-sm font-normal text-green-600">
                         ({{ strengths.length }} items)
                       </span>
@@ -139,7 +139,7 @@ interface SwotItem {
               </ng-container>
 
               <!-- Enhanced Empty State -->
-              <div *ngIf="strengths.length === 0" 
+              <div *ngIf="strengths.length === 0"
                    class="text-center py-12 bg-white rounded-lg border-2 border-dashed border-green-300">
                 <i class="fas fa-muscle text-4xl text-green-300 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No strengths identified yet</h3>
@@ -727,7 +727,7 @@ export class SwotComponent implements OnInit, OnDestroy {
   saveSwotItem(swotItem: SwotItem, actionData: ActionItemData): void {
     // Update the SwotItem with the new content
     swotItem.content = actionData.description;
-    
+
     // Save the item using the existing save method
     this.saveAndCloseEdit(swotItem);
   }
@@ -870,7 +870,7 @@ export class SwotComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Internal method to save SWOT item 
+   * Internal method to save SWOT item
    */
   private saveSwotItemInternal(item: SwotItem): void {
     if (!item.content.trim()) return;
