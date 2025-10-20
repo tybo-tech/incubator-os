@@ -261,111 +261,25 @@ export class ImportComponent implements OnInit {
   }
 
   /**
-   * Import SWOT data using UI-aligned approach for all companies
+   * Import SWOT data - simple call to backend
    */
   importSwotData(): void {
-    // Validate first
-    this.importService.validateImportOperation('swot').subscribe({
-      next: (validation) => {
-        if (!validation.canImport) {
-          this.addMessage('warning', validation.message);
-          return;
-        }
-
-        if (!confirm(`${validation.message}. Proceed with UI-aligned import?`)) {
-          return;
-        }
-
-        this.performSwotImportProcess();
-      },
-      error: (error) => {
-        this.addMessage('error', `Validation failed: ${error.message}`);
-      }
-    });
-  }
-
-  /**
-   * Perform the SWOT import process after validation
-   */
-  private performSwotImportProcess(): void {
     this.loading = true;
-    this.addMessage('info', 'Starting UI-aligned SWOT import process...');
+    this.addMessage('info', 'Starting SWOT import...');
 
-    // Get list of companies with SWOT data to process them individually
-    if (this.swotStats?.companies_with_swot && this.swotStats.companies_with_swot.length > 0) {
-      this.performBulkUIAlignedImport(this.swotStats.companies_with_swot);
-    } else {
-      // Fallback to traditional import if no stats available
-      this.performTraditionalSwotImport();
-    }
-  }
-
-  /**
-   * Perform UI-aligned import for multiple companies
-   */
-  private performBulkUIAlignedImport(companies: any[]): void {
-    let processedCount = 0;
-    let totalImported = 0;
-    const totalCompanies = companies.length;
-
-    this.addMessage('info', `Processing ${totalCompanies} companies with SWOT data using UI-aligned approach...`);
-
-    const processNextCompany = () => {
-      if (processedCount >= totalCompanies) {
-        this.loading = false;
-        this.addMessage('success',
-          `UI-aligned SWOT import completed: ${totalImported} total items imported from ${totalCompanies} companies`
-        );
-        this.loadSwotStats();
-        this.loadOverallStats();
-        return;
-      }
-
-      const company = companies[processedCount];
-      const companyId = company.company_id;
-
-      this.addMessage('info', `Processing Company ${companyId}...`);
-
-      this.importService.importSwotToUINode(companyId).subscribe({
-        next: (result) => {
-          const itemCount = result.action_items_created || 0;
-          totalImported += itemCount;
-          processedCount++;
-
-          this.addMessage('info',
-            `Company ${companyId}: ${itemCount} items imported to UI node`
-          );
-
-          // Process next company
-          setTimeout(processNextCompany, 100); // Small delay to prevent overwhelming the server
-        },
-        error: (error) => {
-          processedCount++;
-          this.addMessage('warning',
-            `Company ${companyId}: Import failed - ${error.message}`
-          );
-
-          // Continue with next company even if this one failed
-          setTimeout(processNextCompany, 100);
-        }
-      });
-    };
-
-    processNextCompany();
-  }
-
-  /**
-   * Fallback to traditional SWOT import
-   */
-  private performTraditionalSwotImport(): void {
     this.importService.importSwotData().subscribe({
       next: (result) => {
         this.lastImportResult = result;
         this.loading = false;
+
         const summary = result.import_summary;
-        this.addMessage('success',
-          `Successfully imported ${summary.total_items_imported} SWOT items from ${summary.total_nodes} nodes (traditional method)`
-        );
+        if (summary) {
+          this.addMessage('success',
+            `SWOT import completed: ${summary.total_items_imported} items imported from ${summary.total_nodes} nodes`
+          );
+        } else {
+          this.addMessage('success', 'SWOT import completed successfully');
+        }
 
         // Refresh statistics
         this.loadSwotStats();

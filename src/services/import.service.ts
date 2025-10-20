@@ -431,12 +431,32 @@ export class ImportService {
           }
         });
       } else {
-        // SWOT validation placeholder
-        observer.next({
-          canImport: false,
-          message: 'SWOT import not yet implemented'
+        // SWOT validation
+        this.getSwotStats().subscribe({
+          next: (stats) => {
+            const hasSwotNodes = (stats.swot_nodes_count || 0) > 0;
+
+            if (!hasSwotNodes) {
+              observer.next({
+                canImport: false,
+                message: 'No SWOT nodes found in the database. Please ensure SWOT data exists before importing.'
+              });
+            } else {
+              observer.next({
+                canImport: true,
+                message: `Found ${stats.swot_nodes_count} SWOT nodes in the database. This will use UI-aligned import to merge data into existing UI nodes and prevent duplicates.`
+              });
+            }
+            observer.complete();
+          },
+          error: (error) => {
+            observer.next({
+              canImport: false,
+              message: `Failed to validate SWOT data: ${error.message}`
+            });
+            observer.complete();
+          }
         });
-        observer.complete();
       }
     });
   }
