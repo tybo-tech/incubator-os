@@ -79,7 +79,7 @@ Write-Host "`n5. LIST (GET) - Testing list endpoint..." -ForegroundColor Yellow
 try {
     $listResponse = Invoke-RestMethod -Uri "$baseUrl/list-action-items.php?company_id=$companyId&context_type=$testContextType&limit=5" -Method GET
     Write-Host "✅ LIST Success - Found $($listResponse.Count) items" -ForegroundColor Green
-    
+
     # Show summary of items
     foreach ($item in $listResponse) {
         Write-Host "  - ID: $($item.id) | Category: $($item.category) | Status: $($item.status)" -ForegroundColor Gray
@@ -112,7 +112,7 @@ Write-Host "`n=== TESTING EXISTING ITEM UPDATE (ID 445) ===" -ForegroundColor Cy
 
 $updateExistingData = @{
     company_id = 11
-    context_type = "swot"  
+    context_type = "swot"
     category = "Strengths"
     description = "qualified and talented fashion designer - UPDATED via CRUD test"
     status = "In Progress"
@@ -127,13 +127,13 @@ try {
     $updateExistingResponse = Invoke-RestMethod -Uri "$baseUrl/update-action-item.php?id=445" -Method PUT -Body $updateExistingBody -ContentType "application/json"
     Write-Host "✅ Item 445 Update Success" -ForegroundColor Green
     $updateExistingResponse | ConvertTo-Json -Depth 3
-    
+
     # Verify the update
     $verifyExistingResponse = Invoke-RestMethod -Uri "$baseUrl/get-action-item.php?id=445" -Method GET
     Write-Host "Updated Description: $($verifyExistingResponse.description)" -ForegroundColor White
     Write-Host "Updated Status: $($verifyExistingResponse.status)" -ForegroundColor White
     Write-Host "Updated Priority: $($verifyExistingResponse.priority)" -ForegroundColor White
-    
+
 } catch {
     Write-Host "❌ Item 445 Update Failed: $($_.Exception.Message)" -ForegroundColor Red
     if ($_.ErrorDetails.Message) {
