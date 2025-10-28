@@ -286,15 +286,9 @@ export class EnhancedAccountSelectComponent implements OnInit {
       return 'Select account...';
     }
 
-    // Check if the selected account actually exists in our available accounts
-    const accountExists = this.filteredAccounts().some(
-      account => account.account_name === this.selectedAccount
-    );
-
-    if (!accountExists && this.selectedAccount) {
-      return 'No account selected';
-    }
-
+    // Always show the selected account name, even if it's not yet in the available accounts list
+    // This handles the case where a new account was just created and auto-selected
+    // but the accounts list hasn't been refreshed yet
     return this.selectedAccount;
   }
 

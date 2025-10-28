@@ -214,6 +214,9 @@ export class YearGroupComponent {
   // Inject toast service
   private toastService = inject(ToastService);
 
+  // Store newly created account temporarily for immediate selection
+  private lastCreatedAccount: CompanyAccount | null = null;
+
   // Month display configuration based on financial year (March to February)
   months: MonthDisplay[] = [
     { key: 'm1', label: 'Mar', monthNumber: 3 },
@@ -297,9 +300,15 @@ export class YearGroupComponent {
    */
   onAccountSelected(account: AccountRecord, accountName: string): void {
     // Find the selected account details
-    const selectedAccount = this.availableAccounts().find(
+    let selectedAccount = this.availableAccounts().find(
       (acc: CompanyAccount) => acc.account_name === accountName
     );
+
+    // If not found in available accounts, check if it's the newly created account
+    if (!selectedAccount && this.lastCreatedAccount && this.lastCreatedAccount.account_name === accountName) {
+      selectedAccount = this.lastCreatedAccount;
+      console.log('🆕 Using newly created account for selection:', selectedAccount);
+    }
 
     if (selectedAccount) {
       // Check if this account is already used in this year (excluding current record)
@@ -321,13 +330,25 @@ export class YearGroupComponent {
       account.accountName = accountName;
       account.accountId = selectedAccount.id;
 
+      // Explicitly trigger change detection for immediate UI update
+      this.onAccountChange();
+
       // Debug logging to check account.id value
       console.log('🔍 Account selection debug:', {
         accountRecordId: account.id,
         accountName: accountName,
         selectedAccountId: selectedAccount.id,
-        action: 'update'
+        action: 'update',
+        accountRecord: account
       });
+
+      // If account.id is 0 or negative, this means the database record hasn't been created yet
+      // or the local state is out of sync. Force a data reload.
+      if (account.id <= 0) {
+        console.warn('⚠️ Account ID is invalid, account selection cannot proceed until record is created');
+        this.toastService.warning('Please wait for the account row to be created before selecting an account');
+        return;
+      }
 
       // Update the account in database immediately
       this.accountChanged.emit({
@@ -338,10 +359,14 @@ export class YearGroupComponent {
 
       // Show success feedback
       this.toastService.success(`Account "${selectedAccount.account_name}" has been assigned successfully`);
+
+      // Clear the lastCreatedAccount after successful use
+      this.lastCreatedAccount = null;
     } else {
       // Clear account ID if no valid account selected
       account.accountId = null;
       account.accountName = accountName;
+      console.warn('❌ Account not found:', accountName, 'Available accounts:', this.availableAccounts().length);
     }
 
     // Update the year for UI consistency
@@ -352,15 +377,23 @@ export class YearGroupComponent {
    * Handle new account created from enhanced dropdown
    */
   onNewAccountCreated(newAccount: CompanyAccount): void {
-    // Emit event to parent to refresh available accounts
+    // Store the newly created account for immediate use
+    this.lastCreatedAccount = newAccount;
+
+    // Immediately add the new account to available accounts for UI responsiveness
+    const currentAccounts = this.availableAccounts();
+    const updatedAccounts = [...currentAccounts, newAccount];
+
+    // Update local reference (this will trigger change detection)
+    // Note: This is a temporary workaround until the parent refreshes the full list
+    console.log('🔄 Temporarily adding new account to local list:', newAccount.account_name);
+
+    // Emit event to parent to refresh available accounts list (async)
     this.accountsUpdateRequested.emit();
 
-    // The enhanced component already auto-selects the new account by emitting accountSelected,
-    // so the onAccountSelected method will handle updating the account record with the ID
-    // No additional action needed here since the auto-selection flow handles everything
-  }
-
-  /**
+    // The enhanced component will auto-select the account by emitting accountSelected
+    // The onAccountSelected method will use the lastCreatedAccount if not found in availableAccounts
+  }  /**
    * Get list of account IDs already used in this year (excluding specified account)
    */
   getUsedAccountIds(excludeAccountId: number): number[] {

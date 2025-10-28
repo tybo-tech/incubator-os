@@ -176,10 +176,20 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
 
     // Create empty record in database using helper service
     this.helperService.createEmptyRecord(companyId, yearId).subscribe({
-      next: (result) => {
+      next: (result: any) => {
+        // Handle wrapped response structure - API returns {success, message, data}
+        // but service is typed to return CompanyFinancialYearlyStats directly
+        const actualId = result.data?.id || result.id;
+
+        if (!actualId) {
+          console.error('❌ No ID returned from create operation:', result);
+          this.toastService.error('Failed to create account record - no ID returned');
+          return;
+        }
+
         // Create UI record with the database ID
         const newAccount = {
-          id: result.id, // Use actual database ID
+          id: actualId, // Use actual database ID from result.data.id
           accountId: null,
           accountName: '',
           months: {
@@ -203,7 +213,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           })
         );
 
-        console.log('✅ Empty account record created with DB ID:', result.id);
+        console.log('✅ Empty account record created with DB ID:', actualId);
         this.toastService.success('New account row ready for data entry');
       },
       error: (error) => {
@@ -381,7 +391,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Save account changes to database using helper service
+   * Save account changes to database using direct yearly stats service for updates
    */
   private saveAccountToDatabase(
     yearId: number,
@@ -390,20 +400,66 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   ): void {
     const companyId = this.companyId();
 
-    this.helperService.saveAccountData(account, yearId, companyId, action).subscribe({
-      next: (result) => {
-        // Update local account ID if this was an insert
-        if (action === 'insert' && result.id) {
-          this.updateAccountIdInLocalState(yearId, account.id, result.id);
-          this.toastService.success(`Account "${account.accountName || 'New Account'}" has been created successfully`);
-        } else {
+    if (action === 'update') {
+      // Debug logging to check account ID
+      console.log('🔍 Update request debug:', {
+        accountId: account.id,
+        accountName: account.accountName,
+        accountRecord: account
+      });
+
+      // Validate that we have a valid account ID
+      if (!account.id || account.id <= 0) {
+        console.error('❌ Cannot update - invalid account ID:', account.id);
+        this.toastService.error('Cannot update record - invalid ID. Please refresh the page.');
+        return;
+      }
+
+      // For updates, call yearly stats service directly
+      const updateData = {
+        company_id: companyId,
+        financial_year_id: yearId,
+        account_id: account.accountId,
+        m1: account.months.m1 || 0,
+        m2: account.months.m2 || 0,
+        m3: account.months.m3 || 0,
+        m4: account.months.m4 || 0,
+        m5: account.months.m5 || 0,
+        m6: account.months.m6 || 0,
+        m7: account.months.m7 || 0,
+        m8: account.months.m8 || 0,
+        m9: account.months.m9 || 0,
+        m10: account.months.m10 || 0,
+        m11: account.months.m11 || 0,
+        m12: account.months.m12 || 0,
+        total_amount: account.total || 0
+      };
+
+      console.log('🔄 Direct yearly stats update:', { id: account.id, data: updateData });
+
+      this.yearlyStatsService.updateYearlyStats(account.id, updateData).subscribe({
+        next: (result) => {
           this.toastService.success(`Account "${account.accountName || 'Account'}" has been updated successfully`);
+        },
+        error: (error) => {
+          console.error('Failed to update yearly stats:', error);
+          this.toastService.error('Failed to update account. Please try again.');
         }
-      },
-      error: (error) => {
-        console.error(`Failed to ${action} account:`, error);
-      },
-    });
+      });
+    } else {
+      // For inserts, use helper service
+      this.helperService.saveAccountData(account, yearId, companyId, action).subscribe({
+        next: (result) => {
+          if (result.id) {
+            this.updateAccountIdInLocalState(yearId, account.id, result.id);
+            this.toastService.success(`Account "${account.accountName || 'New Account'}" has been created successfully`);
+          }
+        },
+        error: (error) => {
+          console.error(`Failed to ${action} account:`, error);
+        },
+      });
+    }
   }
 
   /**
