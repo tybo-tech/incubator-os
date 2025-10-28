@@ -66,9 +66,9 @@ export class RevenueCaptureHelperService {
     accounts: CompanyAccount[]
   ): AccountRecord[] {
     const records: AccountRecord[] = [];
-    
+
     for (const stat of yearStats) {
-      const account = accounts.find(acc => acc.id === stat.account_id) 
+      const account = accounts.find(acc => acc.id === stat.account_id)
         || (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
 
       if (!account) {
@@ -97,7 +97,7 @@ export class RevenueCaptureHelperService {
         total: stat.total_amount,
       });
     }
-    
+
     return records;
   }
 
