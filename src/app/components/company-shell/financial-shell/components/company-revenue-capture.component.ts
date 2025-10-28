@@ -8,7 +8,7 @@ import { RevenueCaptureEmptyStateComponent } from './revenue-capture-empty-state
 import { RevenueCaptureLoadingComponent } from './revenue-capture-loading.component';
 import { RevenueCaptureFooterComponent } from './revenue-capture-footer.component';
 import { RevenueCaptureManagementModalComponent } from './revenue-capture-management-modal.component';
-import { YearGroup, AccountChangeEvent } from '../models/revenue-capture.interface';
+import { YearGroup, AccountChangeEvent, AccountRecord } from '../models/revenue-capture.interface';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
@@ -137,8 +137,8 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
     this.accountSaveSubject
       .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(({ yearId, account, action = 'update' }) => {
-        // Skip saving for create_empty action (already handled immediately)
-        if (action === 'create_empty' || !account) {
+        // Skip saving for create_empty and delete actions (handled immediately)
+        if (action === 'create_empty' || action === 'delete' || !account) {
           return;
         }
         this.saveAccountToDatabase(yearId, account, action);
@@ -210,12 +210,52 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Delete account record from database and remove from UI
+   */
+  private deleteAccountRecord(yearId: number, account: AccountRecord): void {
+    // Delete from database using helper service
+    this.helperService.deleteAccountData(account).subscribe({
+      next: (result) => {
+        if (result.success) {
+          // Remove from UI state after successful database deletion
+          this.years.update((years) =>
+            years.map((year) => {
+              if (year.id === yearId) {
+                return {
+                  ...year,
+                  accounts: year.accounts.filter((acc) => acc.id !== account.id)
+                };
+              }
+              return year;
+            })
+          );
+
+          console.log('✅ Account record deleted successfully:', result.message);
+        } else {
+          console.error('❌ Failed to delete account record:', result);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Failed to delete account record:', error);
+        // You might want to show a user-friendly error message here
+        alert('Failed to delete account. Please try again.');
+      }
+    });
+  }
+
+  /**
    * Handle account changes from child components
    */
   onAccountChanged(event: AccountChangeEvent): void {
     // Handle creating empty database record first
     if (event.action === 'create_empty') {
       this.createEmptyAccountRecord(event.yearId);
+      return;
+    }
+
+    // Handle deleting account record
+    if (event.action === 'delete') {
+      this.deleteAccountRecord(event.yearId, event.account!);
       return;
     }
 

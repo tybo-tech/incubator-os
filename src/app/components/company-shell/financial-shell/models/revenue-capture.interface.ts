@@ -19,7 +19,7 @@ export interface AccountRecord {
 export interface AccountChangeEvent {
   yearId: number;
   account: AccountRecord | null; // Allow null for creating empty records
-  action: 'insert' | 'update' | 'create_empty';
+  action: 'insert' | 'update' | 'create_empty' | 'delete';
 }
 
 export interface MonthDisplay {

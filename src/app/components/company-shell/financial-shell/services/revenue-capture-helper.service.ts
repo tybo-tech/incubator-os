@@ -189,4 +189,12 @@ export class RevenueCaptureHelperService {
     // Use addYearlyStats to ensure a new record is created
     return this.yearlyStatsService.addYearlyStats(emptyData);
   }
+
+  /**
+   * Delete account record from database
+   */
+  deleteAccountData(account: AccountRecord): Observable<{ success: boolean; message: string }> {
+    // Use the account.id which is the yearly_stats.id from the database
+    return this.yearlyStatsService.deleteYearlyStats(account.id);
+  }
 }

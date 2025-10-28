@@ -253,12 +253,17 @@ export class YearGroupComponent {
 
   deleteAccount(accountId: number): void {
     if (confirm('Are you sure you want to delete this account?')) {
-      const updatedYear = {
-        ...this.year(),
-        accounts: this.year().accounts.filter((a: AccountRecord) => a.id !== accountId)
-      };
+      // Find the account to delete
+      const accountToDelete = this.year().accounts.find((a: AccountRecord) => a.id === accountId);
 
-      this.yearChanged.emit(updatedYear);
+      if (accountToDelete) {
+        // Emit delete event to parent (includes database deletion)
+        this.accountChanged.emit({
+          yearId: this.year().id,
+          account: accountToDelete,
+          action: 'delete'
+        });
+      }
     }
   }
 
@@ -298,8 +303,8 @@ export class YearGroupComponent {
     if (selectedAccount) {
       // Check if this account is already used in this year (excluding current record)
       const isAccountAlreadyUsed = this.year().accounts.some(
-        (existingAccount: AccountRecord) => 
-          existingAccount.accountId === selectedAccount.id && 
+        (existingAccount: AccountRecord) =>
+          existingAccount.accountId === selectedAccount.id &&
           existingAccount.id !== account.id
       );
 
