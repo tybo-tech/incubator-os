@@ -133,7 +133,7 @@ export class RevenueCaptureHelperService {
    * Convert AccountRecord to MonthlyInputData format for saving
    */
   accountRecordToMonthlyInput(account: AccountRecord): MonthlyInputData {
-    return {
+    const monthlyData = {
       accountId: account.accountId,
       months: [
         account.months['m1'] || 0,
@@ -152,6 +152,16 @@ export class RevenueCaptureHelperService {
       total: account.total,
       statsId: account.id > 0 ? account.id : undefined,
     };
+
+    // Debug logging
+    console.log('📊 AccountRecord to MonthlyInput conversion:', {
+      accountRecordId: account.id,
+      accountName: account.accountName,
+      statsId: monthlyData.statsId,
+      willUseUpsert: !monthlyData.statsId
+    });
+
+    return monthlyData;
   }
 
   /**

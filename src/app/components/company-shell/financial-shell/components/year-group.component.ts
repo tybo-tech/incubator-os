@@ -321,6 +321,14 @@ export class YearGroupComponent {
       account.accountName = accountName;
       account.accountId = selectedAccount.id;
 
+      // Debug logging to check account.id value
+      console.log('🔍 Account selection debug:', {
+        accountRecordId: account.id,
+        accountName: accountName,
+        selectedAccountId: selectedAccount.id,
+        action: 'update'
+      });
+
       // Update the account in database immediately
       this.accountChanged.emit({
         yearId: this.year().id,

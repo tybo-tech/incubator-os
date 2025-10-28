@@ -458,7 +458,7 @@ export class MonthlyRevenueComponent implements OnInit {
 
       // Use upsert to handle both create and update
       await firstValueFrom(
-        this.yearlyStatsService.upsertYearlyStats(yearlyStatsData as CompanyFinancialYearlyStats)
+        this.yearlyStatsService.addYearlyStats(yearlyStatsData as CompanyFinancialYearlyStats)
       );
 
       // Reload data and reset form

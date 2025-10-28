@@ -180,7 +180,7 @@ export class FinancialDataTransformerService {
       return this.yearlyStatsService.updateYearlyStats(input.statsId, statsData);
     } else {
       // Create new record using upsert to handle duplicates
-      return this.yearlyStatsService.upsertYearlyStats(statsData);
+      return this.yearlyStatsService.addYearlyStats(statsData);
     }
   }
 

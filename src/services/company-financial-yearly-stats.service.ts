@@ -326,11 +326,11 @@ export class CompanyFinancialYearlyStatsService {
   /**
    * Upsert (insert or update) yearly stats record
    */
-  upsertYearlyStats(data: Partial<CompanyFinancialYearlyStats>): Observable<CompanyFinancialYearlyStats> {
-    console.log('📊 Upserting yearly stats:', data);
-    return this.http.post<CompanyFinancialYearlyStats>(`${this.apiUrl}/upsert-yearly-stats.php`, data, this.httpOptions)
-      .pipe(catchError(this.handleError('Upsert yearly stats')));
-  }
+  // upsertYearlyStats(data: Partial<CompanyFinancialYearlyStats>): Observable<CompanyFinancialYearlyStats> {
+  //   console.log('📊 Upserting yearly stats:', data);
+  //   return this.http.post<CompanyFinancialYearlyStats>(`${this.apiUrl}/upsert-yearly-stats.php`, data, this.httpOptions)
+  //     .pipe(catchError(this.handleError('Upsert yearly stats')));
+  // }
 
   /**
    * Get all stats for a company across all years
