@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
 import { CreateModalComponent, CreateModalConfig } from '../../shared/components';
 import { catchError, EMPTY, forkJoin, switchMap } from 'rxjs';
+import { ToastService } from '../../../services';
 
 interface Client {
   id: number;
@@ -206,7 +207,8 @@ export class ClientsListComponent implements OnInit {
 
   constructor(
     private categoryService: CategoryService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -274,8 +276,7 @@ export class ClientsListComponent implements OnInit {
     // This could open an edit modal or navigate to an edit form
     console.log('Edit client:', client);
 
-    // For now, let's show an alert - you can implement this later
-    alert(`Edit functionality for "${client.name}" will be implemented soon!`);
+    this.toastService.info(`Edit functionality for "${client.name}" will be implemented soon!`);
   }
 
   deleteClient(client: Client): void {
@@ -286,7 +287,7 @@ export class ClientsListComponent implements OnInit {
       this.categoryService.deleteCategory(client.id).pipe(
         catchError(error => {
           console.error('Failed to delete client:', error);
-          alert('Failed to delete client. Please try again.');
+          this.toastService.info('Failed to delete client. Please try again.');
           this.isLoading.set(false);
           return EMPTY;
         })

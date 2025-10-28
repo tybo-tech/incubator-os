@@ -204,6 +204,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
         );
 
         console.log('✅ Empty account record created with DB ID:', result.id);
+        this.toastService.success('New account row ready for data entry');
       },
       error: (error) => {
         console.error('❌ Failed to create empty account record:', error);
@@ -233,6 +234,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           );
 
           console.log('✅ Account record deleted successfully:', result.message);
+          this.toastService.success(`Account "${account.accountName || 'Unnamed'}" has been deleted successfully`);
         } else {
           console.error('❌ Failed to delete account record:', result);
         }
@@ -393,6 +395,9 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
         // Update local account ID if this was an insert
         if (action === 'insert' && result.id) {
           this.updateAccountIdInLocalState(yearId, account.id, result.id);
+          this.toastService.success(`Account "${account.accountName || 'New Account'}" has been created successfully`);
+        } else {
+          this.toastService.success(`Account "${account.accountName || 'Account'}" has been updated successfully`);
         }
       },
       error: (error) => {

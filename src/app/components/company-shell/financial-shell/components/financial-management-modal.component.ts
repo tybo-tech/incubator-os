@@ -537,6 +537,7 @@ export class FinancialManagementModalComponent implements OnInit {
         this.loadFinancialYears();
         this.resetNewFinancialYear();
         this.dataUpdated.emit();
+        this.toastService.success(`Financial year "${year.name}" has been created successfully`);
       },
       error: (error) => {
         console.error('Failed to add financial year:', error);
@@ -566,6 +567,7 @@ export class FinancialManagementModalComponent implements OnInit {
         this.originalFinancialYear = null;
         this.loadFinancialYears();
         this.dataUpdated.emit();
+        this.toastService.success(`Financial year "${year.name}" has been updated successfully`);
       },
       error: (error) => {
         console.error('Failed to update financial year:', error);
@@ -598,6 +600,7 @@ export class FinancialManagementModalComponent implements OnInit {
       next: () => {
         this.loadFinancialYears();
         this.dataUpdated.emit();
+        this.toastService.success('Active financial year has been updated successfully');
       },
       error: (error) => {
         console.error('Failed to set active financial year:', error);
@@ -616,6 +619,7 @@ export class FinancialManagementModalComponent implements OnInit {
         next: () => {
           this.loadFinancialYears();
           this.dataUpdated.emit();
+          this.toastService.success(`Financial year "${year.name}" has been deleted successfully`);
         },
         error: (error) => {
           console.error('Failed to delete financial year:', error);
@@ -663,6 +667,7 @@ export class FinancialManagementModalComponent implements OnInit {
           this.loadCompanyAccounts();
           this.resetNewCompanyAccount();
           this.dataUpdated.emit();
+          this.toastService.success(`Account "${accountData.account_name}" has been created successfully`);
         }
       },
       error: (error) => {
@@ -694,6 +699,7 @@ export class FinancialManagementModalComponent implements OnInit {
           this.originalCompanyAccount = null;
           this.loadCompanyAccounts();
           this.dataUpdated.emit();
+          this.toastService.success(`Account "${account.account_name}" has been updated successfully`);
         }
       },
       error: (error) => {
@@ -727,6 +733,8 @@ export class FinancialManagementModalComponent implements OnInit {
       next: () => {
         this.loadCompanyAccounts();
         this.dataUpdated.emit();
+        const status = !account.is_active ? 'activated' : 'deactivated';
+        this.toastService.success(`Account "${account.account_name}" has been ${status} successfully`);
       },
       error: (error) => {
         console.error('Failed to toggle account status:', error);
@@ -745,6 +753,7 @@ export class FinancialManagementModalComponent implements OnInit {
         next: () => {
           this.loadCompanyAccounts();
           this.dataUpdated.emit();
+          this.toastService.success(`Account "${account.account_name}" has been deleted successfully`);
         },
         error: (error) => {
           console.error('Failed to delete company account:', error);

@@ -7,6 +7,7 @@ import { SwotAnalysis, SwotItem } from '../../../models/swot.models';
 import { INode } from '../../../models/schema';
 import { PdfService } from '../../../services/pdf';
 import { DocumentGeneratorService} from '../../../services/pdf/document-generator.service';
+import { ToastService } from '../../services/toast.service';
 
 interface ActionPlanItem {
   priority: 'critical' | 'high' | 'medium' | 'low';
@@ -324,7 +325,8 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
     private location: Location,
     private nodeService: NodeService<any>,
     private pdfService: PdfService,
-    private documentGenerator: DocumentGeneratorService
+    private documentGenerator: DocumentGeneratorService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -566,7 +568,7 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Error generating PDF preview:', error);
-      alert('There was an error generating the PDF preview. Please try again.');
+      this.toastService.info('There was an error generating the PDF preview. Please try again.');
     } finally {
       this.isGenerating = false;
     }
@@ -611,7 +613,7 @@ export class ActionPlanExportComponent implements OnInit, OnDestroy {
 
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('There was an error generating the PDF. Please try again.');
+      this.toastService.info('There was an error generating the PDF. Please try again.');
     } finally {
       this.isGenerating = false;
     }

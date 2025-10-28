@@ -275,6 +275,7 @@ export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
           this.cancelNewCategory();
 
           console.log('New category created successfully:', newCategory);
+          this.toastService.success(`Financial category "${newCategory.name}" has been created successfully`);
         },
         error: (error) => {
           console.error('Failed to create financial category:', error);

@@ -333,6 +333,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
       next: (category) => {
         this.loading.set(false);
         console.log('✅ Created new category:', category);
+        this.toastService.success(`Category "${category.name}" has been created successfully`);
 
         // Add to local state
         const currentCategories = this.categories();
