@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { YearGroup, AccountRecord, MonthDisplay, AccountChangeEvent } from '../models/revenue-capture.interface';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { AccountManagementModalComponent } from './account-management-modal.component';
+import { EnhancedAccountSelectComponent } from './enhanced-account-select.component';
 import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-year-group',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, AccountManagementModalComponent],
+  imports: [CommonModule, FormsModule, AccountManagementModalComponent, EnhancedAccountSelectComponent],
   template: `
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
       <!-- Header -->
@@ -93,17 +94,14 @@ import { ToastService } from '../../../../services/toast.service';
                     <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
                         [class.bg-gray-50]="i % 2 === 1"
                         [class.bg-white]="i % 2 === 0">
-                      <select
-                        [(ngModel)]="account.accountName"
-                        (change)="onAccountNameChange(account)"
-                        class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
-                        <option value="">Select account...</option>
-                        @for (availableAccount of availableAccounts(); track availableAccount.id) {
-                          <option [value]="availableAccount.account_name">
-                            {{ getAccountDisplayName(availableAccount) }}
-                          </option>
-                        }
-                      </select>
+                      <app-enhanced-account-select
+                        [companyId]="companyId()"
+                        [selectedAccount]="account.accountName"
+                        [accounts]="availableAccounts()"
+                        [excludeAccountIds]="getUsedAccountIds(account.id)"
+                        (accountSelected)="onAccountSelected(account, $event)"
+                        (accountCreated)="onNewAccountCreated($event)">
+                      </app-enhanced-account-select>
                     </td>
 
                     <!-- Month Inputs -->
@@ -295,13 +293,12 @@ export class YearGroupComponent {
   }
 
   /**
-   * Handle account name/selection changes
-   * Validates that account doesn't already exist for this year before setting
+   * Handle account selection from enhanced dropdown
    */
-  onAccountNameChange(account: AccountRecord): void {
+  onAccountSelected(account: AccountRecord, accountName: string): void {
     // Find the selected account details
     const selectedAccount = this.availableAccounts().find(
-      (acc: CompanyAccount) => acc.account_name === account.accountName
+      (acc: CompanyAccount) => acc.account_name === accountName
     );
 
     if (selectedAccount) {
@@ -320,21 +317,54 @@ export class YearGroupComponent {
         return;
       }
 
-      // Update the account ID to match the selected account
+      // Update the account
+      account.accountName = accountName;
       account.accountId = selectedAccount.id;
 
-      // Update the account in database immediately (using existing DB record ID)
+      // Update the account in database immediately
       this.accountChanged.emit({
         yearId: this.year().id,
         account: { ...account },
-        action: 'update' // Always update since record already exists from addAccount()
+        action: 'update'
       });
+
+      // Show success feedback
+      this.toastService.success(`Account "${selectedAccount.account_name}" has been assigned successfully`);
     } else {
       // Clear account ID if no valid account selected
       account.accountId = null;
+      account.accountName = accountName;
     }
 
-    // Also update the year for UI consistency
+    // Update the year for UI consistency
+    this.onAccountChange();
+  }
+
+  /**
+   * Handle new account created from enhanced dropdown
+   */
+  onNewAccountCreated(newAccount: CompanyAccount): void {
+    // Emit event to parent to refresh available accounts
+    this.accountsUpdateRequested.emit();
+  }
+
+  /**
+   * Get list of account IDs already used in this year (excluding specified account)
+   */
+  getUsedAccountIds(excludeAccountId: number): number[] {
+    return this.year().accounts
+      .filter((acc: AccountRecord) => acc.id !== excludeAccountId && acc.accountId)
+      .map((acc: AccountRecord) => acc.accountId!)
+      .filter((id: number) => id !== null);
+  }
+
+  /**
+   * Handle account name/selection changes (legacy method, kept for compatibility)
+   * This method is now mainly used for manual updates when not using the enhanced dropdown
+   */
+  onAccountNameChange(account: AccountRecord): void {
+    // This method can be simplified or removed since we're using the enhanced dropdown
+    // Keeping it for any edge cases or backward compatibility
     this.onAccountChange();
   }
 
@@ -356,16 +386,6 @@ export class YearGroupComponent {
     if (confirm(message)) {
       this.deleteYear.emit(this.year().id);
     }
-  }
-
-  /**
-   * Get display name for account dropdown
-   */
-  getAccountDisplayName(account: CompanyAccount): string {
-    if (account.account_number) {
-      return `${account.account_name} (${account.account_number})`;
-    }
-    return account.account_name;
   }
 
   /**
