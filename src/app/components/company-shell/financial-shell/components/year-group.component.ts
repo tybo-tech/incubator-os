@@ -208,6 +208,7 @@ export class YearGroupComponent {
   deleteYear = output<number>();
   accountsUpdateRequested = output<void>();
   accountChanged = output<AccountChangeEvent>();
+  newAccountCreated = output<CompanyAccount>(); // New output for immediate account updates
 
   @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
@@ -380,13 +381,8 @@ export class YearGroupComponent {
     // Store the newly created account for immediate use
     this.lastCreatedAccount = newAccount;
 
-    // Immediately add the new account to available accounts for UI responsiveness
-    const currentAccounts = this.availableAccounts();
-    const updatedAccounts = [...currentAccounts, newAccount];
-
-    // Update local reference (this will trigger change detection)
-    // Note: This is a temporary workaround until the parent refreshes the full list
-    console.log('🔄 Temporarily adding new account to local list:', newAccount.account_name);
+    // Emit the new account to parent for immediate addition to available accounts
+    this.newAccountCreated.emit(newAccount);
 
     // Emit event to parent to refresh available accounts list (async)
     this.accountsUpdateRequested.emit();

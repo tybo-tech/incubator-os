@@ -82,6 +82,7 @@ import { ToastService } from '../../../../services/toast.service';
           (accountChanged)="onAccountChanged($event)"
           (deleteYear)="deleteYear($event)"
           (accountsUpdateRequested)="onDataUpdated()"
+          (newAccountCreated)="addAccountToAvailableList($event)"
         >
         </app-year-group>
       </section>
@@ -381,6 +382,19 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
    */
   onDataUpdated(): void {
     this.loadAllData();
+  }
+
+  /**
+   * Add new account to available accounts immediately for UI responsiveness
+   */
+  addAccountToAvailableList(newAccount: CompanyAccount): void {
+    const currentAccounts = this.availableAccounts();
+    const accountExists = currentAccounts.some(acc => acc.id === newAccount.id);
+
+    if (!accountExists) {
+      console.log('📝 Adding new account to available list for immediate UI update:', newAccount.account_name);
+      this.availableAccounts.set([...currentAccounts, newAccount]);
+    }
   }
 
   /**
