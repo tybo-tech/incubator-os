@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed, ViewChild } from '@angular/core';
+import { Component, input, output, signal, computed, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroup, AccountRecord, MonthDisplay, AccountChangeEvent } from '../models/revenue-capture.interface';
@@ -7,7 +7,7 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
 
 @Component({
   selector: 'app-year-group',
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, AccountManagementModalComponent],
   template: `
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
@@ -16,12 +16,14 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
         class="flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 cursor-pointer select-none hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
         (click)="toggleGroup()">
         <div class="flex items-center gap-3">
-          <h2 class="text-lg font-medium">{{ year.name }}</h2>
-          <span *ngIf="year.isActive" class="px-2 py-0.5 text-xs bg-green-500 rounded-full font-medium">
-            Active
-          </span>
+          <h2 class="text-lg font-medium">{{ year().name }}</h2>
+          @if (year().isActive) {
+            <span class="px-2 py-0.5 text-xs bg-green-500 rounded-full font-medium">
+              Active
+            </span>
+          }
           <span class="px-2 py-0.5 text-xs bg-white/20 rounded-full font-medium">
-            {{ year.accounts.length }} account{{ year.accounts.length !== 1 ? 's' : '' }}
+            {{ year().accounts.length }} account{{ year().accounts.length !== 1 ? 's' : '' }}
           </span>
         </div>
         <div class="flex items-center gap-4">
@@ -42,15 +44,16 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
             <i class="fas fa-trash"></i>
           </button>
           <i
-            [class.fa-chevron-up]="year.expanded"
-            [class.fa-chevron-down]="!year.expanded"
+            [class.fa-chevron-up]="year().expanded"
+            [class.fa-chevron-down]="!year().expanded"
             class="fas transition-transform duration-200"></i>
         </div>
       </div>
 
       <!-- Collapsible Body -->
-      <div *ngIf="year.expanded" class="transition-all duration-300 ease-in-out">
-        <div class="p-4">
+      @if (year().expanded) {
+        <div class="transition-all duration-300 ease-in-out">
+          <div class="p-4">(
           <!-- Table Container -->
           <div class="bg-white overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table class="min-w-full text-sm">
@@ -81,37 +84,40 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let account of year.accounts; trackBy: trackAccount; let i = index"
-                    [class.bg-gray-50]="i % 2 === 1"
-                    [class.bg-white]="i % 2 === 0"
-                    class="hover:bg-blue-50/30 transition-colors">
-                  <!-- Account Name -->
-                  <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
-                      [class.bg-gray-50]="i % 2 === 1"
-                      [class.bg-white]="i % 2 === 0">
-                    <select
-                      [(ngModel)]="account.accountName"
-                      (change)="onAccountNameChange(account)"
-                      class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
-                      <option value="">Select account...</option>
-                      <option *ngFor="let availableAccount of availableAccounts" [value]="availableAccount.account_name">
-                        {{ getAccountDisplayName(availableAccount) }}
-                      </option>
-                    </select>
-                  </td>
+                @for (account of year().accounts; track trackAccount($index, account); let i = $index) {
+                  <tr [class.bg-gray-50]="i % 2 === 1"
+                      [class.bg-white]="i % 2 === 0"
+                      class="hover:bg-blue-50/30 transition-colors">
+                    <!-- Account Name -->
+                    <td class="px-4 py-3 font-medium text-gray-700 sticky left-0 border-r border-gray-200 z-10"
+                        [class.bg-gray-50]="i % 2 === 1"
+                        [class.bg-white]="i % 2 === 0">
+                      <select
+                        [(ngModel)]="account.accountName"
+                        (change)="onAccountNameChange(account)"
+                        class="w-full border border-gray-200 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all bg-white text-sm">
+                        <option value="">Select account...</option>
+                        @for (availableAccount of availableAccounts(); track availableAccount.id) {
+                          <option [value]="availableAccount.account_name">
+                            {{ getAccountDisplayName(availableAccount) }}
+                          </option>
+                        }
+                      </select>
+                    </td>
 
-                  <!-- Month Inputs -->
-                  <td *ngFor="let month of months; trackBy: trackMonth"
-                      class="text-center border-r border-gray-100 bg-inherit">
-                    <input
-                      type="number"
-                      [(ngModel)]="account.months[month.key]"
-                      (change)="onMonthlyValueChange(account)"
-                      placeholder="0"
-                      min="0"
-                      step="0.01"
-                      class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all hover:border-gray-300 bg-white" />
-                  </td>
+                    <!-- Month Inputs -->
+                    @for (month of months; track trackMonth($index, month)) {
+                      <td class="text-center border-r border-gray-100 bg-inherit">
+                        <input
+                          type="number"
+                          [(ngModel)]="account.months[month.key]"
+                          (change)="onMonthlyValueChange(account)"
+                          placeholder="0"
+                          min="0"
+                          step="0.01"
+                          class="w-20 border border-gray-200 rounded-md text-right px-2 py-2 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all hover:border-gray-300 bg-white" />
+                      </td>
+                    }
 
                   <!-- Total -->
                   <td class="px-4 py-3 text-right font-semibold text-blue-800 bg-blue-100 border-r border-blue-200">
@@ -127,43 +133,47 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
                       <i class="fas fa-trash"></i>
                     </button>
                   </td>
-                </tr>
+                }
 
                 <!-- Empty State -->
-                <tr *ngIf="year.accounts.length === 0">
-                  <td colspan="15" class="px-4 py-8 text-center text-gray-500">
-                    <div class="flex flex-col items-center gap-2">
-                      <i class="fas fa-plus text-2xl text-gray-400"></i>
-                      <span>No accounts yet</span>
-                      <button
-                        (click)="addAccount()"
-                        class="text-blue-600 hover:text-blue-800 font-medium">
-                        Add your first account
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                @if (year().accounts.length === 0) {
+                  <tr>
+                    <td colspan="15" class="px-4 py-8 text-center text-gray-500">
+                      <div class="flex flex-col items-center gap-2">
+                        <i class="fas fa-plus text-2xl text-gray-400"></i>
+                        <span>No accounts yet</span>
+                        <button
+                          (click)="addAccount()"
+                          class="text-blue-600 hover:text-blue-800 font-medium">
+                          Add your first account
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
               </tbody>
 
               <!-- Footer with Year Total -->
-              <tfoot *ngIf="year.accounts.length > 0">
-                <tr class="bg-blue-50 font-semibold text-blue-800 border-t-2 border-blue-200">
-                  <td class="px-4 py-3 text-right sticky left-0 bg-blue-50 border-r border-blue-200" colspan="13">
-                    <span class="text-lg">Year Total:</span>
-                  </td>
-                  <td class="px-4 py-3 text-right text-blue-800 bg-blue-100">
-                    <span class="text-lg font-bold">R {{ getYearTotal() | number:'1.0-2' }}</span>
-                  </td>
-                  <td class="px-3 py-3"></td>
-                </tr>
-              </tfoot>
+              @if (year().accounts.length > 0) {
+                <tfoot>
+                  <tr class="bg-blue-50 font-semibold text-blue-800 border-t-2 border-blue-200">
+                    <td class="px-4 py-3 text-right sticky left-0 bg-blue-50 border-r border-blue-200" colspan="13">
+                      <span class="text-lg">Year Total:</span>
+                    </td>
+                    <td class="px-4 py-3 text-right text-blue-800 bg-blue-100">
+                      <span class="text-lg font-bold">R {{ getYearTotal() | number:'1.0-2' }}</span>
+                    </td>
+                    <td class="px-3 py-3"></td>
+                  </tr>
+                </tfoot>
+              }
             </table>
           </div>
 
           <!-- Quick Actions -->
           <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
             <div class="flex items-center gap-4">
-              <span>{{ year.accounts.length }} account(s)</span>
+              <span>{{ year().accounts.length }} account(s)</span>
               <span>•</span>
               <span>Total: R {{ getYearTotal() | number:'1.0-2' }}</span>
             </div>
@@ -175,13 +185,14 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
               </button>
             </div>
           </div>
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Account Management Modal -->
       <app-account-management-modal
         #accountModal
-        [companyId]="companyId"
+        [companyId]="companyId()"
         (closed)="onAccountModalClosed()"
         (accountsUpdated)="onAccountsUpdated()">
       </app-account-management-modal>
@@ -189,13 +200,15 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
   `
 })
 export class YearGroupComponent {
-  @Input() year!: YearGroup;
-  @Input() availableAccounts: CompanyAccount[] = [];
-  @Input() companyId: number = 1; // Default company ID
-  @Output() yearChanged = new EventEmitter<YearGroup>();
-  @Output() deleteYear = new EventEmitter<number>();
-  @Output() accountsUpdateRequested = new EventEmitter<void>();
-  @Output() accountChanged = new EventEmitter<AccountChangeEvent>();
+  // Modern Angular input/output functions
+  year = input.required<YearGroup>();
+  availableAccounts = input<CompanyAccount[]>([]);
+  companyId = input<number>(1); // Default company ID
+
+  yearChanged = output<YearGroup>();
+  deleteYear = output<number>();
+  accountsUpdateRequested = output<void>();
+  accountChanged = output<AccountChangeEvent>();
 
   @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
@@ -224,12 +237,12 @@ export class YearGroupComponent {
   }
 
   toggleGroup(): void {
-    const updatedYear = { ...this.year, expanded: !this.year.expanded };
+    const updatedYear = { ...this.year(), expanded: !this.year().expanded };
     this.yearChanged.emit(updatedYear);
   }
 
   addAccount(): void {
-    const newAccountId = Math.max(...this.year.accounts.map(a => a.id), 0) + 1;
+    const newAccountId = Math.max(...this.year().accounts.map((a: AccountRecord) => a.id), 0) + 1;
     const newAccount: AccountRecord = {
       id: newAccountId,
       accountId: null, // Will be set when the user selects an account
@@ -243,8 +256,8 @@ export class YearGroupComponent {
     };
 
     const updatedYear = {
-      ...this.year,
-      accounts: [...this.year.accounts, newAccount]
+      ...this.year(),
+      accounts: [...this.year().accounts, newAccount]
     };
 
     this.yearChanged.emit(updatedYear);
@@ -253,8 +266,8 @@ export class YearGroupComponent {
   deleteAccount(accountId: number): void {
     if (confirm('Are you sure you want to delete this account?')) {
       const updatedYear = {
-        ...this.year,
-        accounts: this.year.accounts.filter(a => a.id !== accountId)
+        ...this.year(),
+        accounts: this.year().accounts.filter((a: AccountRecord) => a.id !== accountId)
       };
 
       this.yearChanged.emit(updatedYear);
@@ -274,7 +287,7 @@ export class YearGroupComponent {
 
     // Emit specific account change for targeted saving (update existing record)
     this.accountChanged.emit({
-      yearId: this.year.id,
+      yearId: this.year().id,
       account: { ...account },
       action: 'update' // Signal that this should update existing record
     });
@@ -289,8 +302,8 @@ export class YearGroupComponent {
    */
   onAccountNameChange(account: AccountRecord): void {
     // Find the selected account details
-    const selectedAccount = this.availableAccounts.find(
-      acc => acc.account_name === account.accountName
+    const selectedAccount = this.availableAccounts().find(
+      (acc: CompanyAccount) => acc.account_name === account.accountName
     );
 
     if (selectedAccount) {
@@ -299,7 +312,7 @@ export class YearGroupComponent {
 
       // Emit event to create database record immediately
       this.accountChanged.emit({
-        yearId: this.year.id,
+        yearId: this.year().id,
         account: { ...account },
         action: 'insert' // Signal that this should insert a new record
       });
@@ -310,22 +323,22 @@ export class YearGroupComponent {
   }
 
   getYearTotal(): number {
-    return this.year.accounts.reduce((total, account) => total + (account.total || 0), 0);
+    return this.year().accounts.reduce((total: number, account: AccountRecord) => total + (account.total || 0), 0);
   }
 
   onAccountChange(): void {
     // Emit the updated year to parent (for UI updates)
-    this.yearChanged.emit({ ...this.year });
+    this.yearChanged.emit({ ...this.year() });
   }
 
   confirmDeleteYear(): void {
-    const accountCount = this.year.accounts.length;
+    const accountCount = this.year().accounts.length;
     const message = accountCount > 0
-      ? `Are you sure you want to delete "${this.year.name}" and all ${accountCount} account(s)?`
-      : `Are you sure you want to delete "${this.year.name}"?`;
+      ? `Are you sure you want to delete "${this.year().name}" and all ${accountCount} account(s)?`
+      : `Are you sure you want to delete "${this.year().name}"?`;
 
     if (confirm(message)) {
-      this.deleteYear.emit(this.year.id);
+      this.deleteYear.emit(this.year().id);
     }
   }
 
