@@ -137,6 +137,10 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
     this.accountSaveSubject
       .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(({ yearId, account, action = 'update' }) => {
+        // Skip saving for create_empty action (already handled immediately)
+        if (action === 'create_empty' || !account) {
+          return;
+        }
         this.saveAccountToDatabase(yearId, account, action);
       });
 
@@ -161,9 +165,66 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
    */
   trackYear = (index: number, year: YearGroup): number => year.id;
   /**
+   * Create empty account record in database and add to UI
+   * This prevents data loss by ensuring each UI line has its own DB record
+   */
+  private createEmptyAccountRecord(yearId: number): void {
+    const companyId = this.companyId();
+    if (!companyId) return;
+
+    // Create empty record in database using helper service
+    this.helperService.createEmptyRecord(companyId, yearId).subscribe({
+      next: (result) => {
+        // Create UI record with the database ID
+        const newAccount = {
+          id: result.id, // Use actual database ID
+          accountId: null,
+          accountName: '',
+          months: {
+            m1: null, m2: null, m3: null, m4: null,
+            m5: null, m6: null, m7: null, m8: null,
+            m9: null, m10: null, m11: null, m12: null
+          },
+          total: 0
+        };
+
+        // Add to UI state
+        this.years.update((years) =>
+          years.map((year) => {
+            if (year.id === yearId) {
+              return {
+                ...year,
+                accounts: [...year.accounts, newAccount]
+              };
+            }
+            return year;
+          })
+        );
+
+        console.log('✅ Empty account record created with DB ID:', result.id);
+      },
+      error: (error) => {
+        console.error('❌ Failed to create empty account record:', error);
+      }
+    });
+  }
+
+  /**
    * Handle account changes from child components
    */
   onAccountChanged(event: AccountChangeEvent): void {
+    // Handle creating empty database record first
+    if (event.action === 'create_empty') {
+      this.createEmptyAccountRecord(event.yearId);
+      return;
+    }
+
+    // For other actions, account must be provided
+    if (!event.account) {
+      console.error('Account is required for action:', event.action);
+      return;
+    }
+
     // Update local state immediately for UI responsiveness
     this.years.update((years) =>
       years.map((year) => {
@@ -171,7 +232,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           return {
             ...year,
             accounts: year.accounts.map((acc) =>
-              acc.id === event.account.id ? { ...event.account } : acc
+              acc.id === event.account!.id ? { ...event.account! } : acc
             ),
           };
         }

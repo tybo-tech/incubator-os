@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { YearGroup, AccountRecord } from '../models/revenue-capture.interface';
 import { FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
-import { CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
+import { CompanyFinancialYearlyStats, CompanyFinancialYearlyStatsService } from '../../../../../services/company-financial-yearly-stats.service';
 import { FinancialDataTransformerService, MonthlyInputData } from '../../../../services/financial-data-transformer.service';
 
 /**
@@ -17,7 +17,10 @@ export class RevenueCaptureHelperService {
   private static readonly DEFAULT_START_MONTH = 3; // March
   private static readonly DEFAULT_END_MONTH = 2; // February
 
-  constructor(private transformerService: FinancialDataTransformerService) {}
+  constructor(
+    private transformerService: FinancialDataTransformerService,
+    private yearlyStatsService: CompanyFinancialYearlyStatsService
+  ) {}
 
   /**
    * Transform database yearly stats into YearGroup format for UI
@@ -167,5 +170,23 @@ export class RevenueCaptureHelperService {
     } else {
       return this.transformerService.saveMonthlyData(monthlyData, companyId, yearId);
     }
+  }
+
+  /**
+   * Create an empty account record in the database
+   * This is used when adding new accounts to prevent data loss
+   */
+  createEmptyRecord(companyId: number, financialYearId: number): Observable<CompanyFinancialYearlyStats> {
+    const emptyData = {
+      company_id: companyId,
+      financial_year_id: financialYearId,
+      account_id: null,
+      m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0,
+      m7: 0, m8: 0, m9: 0, m10: 0, m11: 0, m12: 0,
+      total_amount: 0
+    };
+
+    // Use addYearlyStats to ensure a new record is created
+    return this.yearlyStatsService.addYearlyStats(emptyData);
   }
 }

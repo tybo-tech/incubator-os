@@ -53,7 +53,7 @@ import { AccountManagementModalComponent } from './account-management-modal.comp
       <!-- Collapsible Body -->
       @if (year().expanded) {
         <div class="transition-all duration-300 ease-in-out">
-          <div class="p-4">(
+          <div class="p-4">
           <!-- Table Container -->
           <div class="bg-white overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
             <table class="min-w-full text-sm">
@@ -242,25 +242,13 @@ export class YearGroupComponent {
   }
 
   addAccount(): void {
-    const newAccountId = Math.max(...this.year().accounts.map((a: AccountRecord) => a.id), 0) + 1;
-    const newAccount: AccountRecord = {
-      id: newAccountId,
-      accountId: null, // Will be set when the user selects an account
-      accountName: '',
-      months: {
-        m1: null, m2: null, m3: null, m4: null,
-        m5: null, m6: null, m7: null, m8: null,
-        m9: null, m10: null, m11: null, m12: null
-      },
-      total: 0
-    };
-
-    const updatedYear = {
-      ...this.year(),
-      accounts: [...this.year().accounts, newAccount]
-    };
-
-    this.yearChanged.emit(updatedYear);
+    // Emit request to create database record immediately
+    // This prevents data loss by ensuring each UI line has its own DB record
+    this.accountChanged.emit({
+      yearId: this.year().id,
+      account: null, // Signal to create empty record
+      action: 'create_empty' // New action for creating empty database record
+    });
   }
 
   deleteAccount(accountId: number): void {
@@ -276,6 +264,7 @@ export class YearGroupComponent {
 
   /**
    * Handle monthly value changes (triggered on blur/enter)
+   * Updates existing database record (safe since record was created in addAccount)
    */
   onMonthlyValueChange(account: AccountRecord): void {
     // Calculate total from all month values
@@ -298,7 +287,7 @@ export class YearGroupComponent {
 
   /**
    * Handle account name/selection changes
-   * Immediately creates a database record with zeros when account is selected
+   * Validates that account doesn't already exist for this year before setting
    */
   onAccountNameChange(account: AccountRecord): void {
     // Find the selected account details
@@ -307,15 +296,33 @@ export class YearGroupComponent {
     );
 
     if (selectedAccount) {
+      // Check if this account is already used in this year (excluding current record)
+      const isAccountAlreadyUsed = this.year().accounts.some(
+        (existingAccount: AccountRecord) => 
+          existingAccount.accountId === selectedAccount.id && 
+          existingAccount.id !== account.id
+      );
+
+      if (isAccountAlreadyUsed) {
+        // Reset the selection and show warning
+        account.accountName = '';
+        account.accountId = null;
+        alert(`Account "${selectedAccount.account_name}" is already used in this financial year. Please select a different account.`);
+        return;
+      }
+
       // Update the account ID to match the selected account
       account.accountId = selectedAccount.id;
 
-      // Emit event to create database record immediately
+      // Update the account in database immediately (using existing DB record ID)
       this.accountChanged.emit({
         yearId: this.year().id,
         account: { ...account },
-        action: 'insert' // Signal that this should insert a new record
+        action: 'update' // Always update since record already exists from addAccount()
       });
+    } else {
+      // Clear account ID if no valid account selected
+      account.accountId = null;
     }
 
     // Also update the year for UI consistency
