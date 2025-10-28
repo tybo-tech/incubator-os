@@ -346,7 +346,7 @@ export class YearGroupComponent {
   onNewAccountCreated(newAccount: CompanyAccount): void {
     // Emit event to parent to refresh available accounts
     this.accountsUpdateRequested.emit();
-    
+
     // The enhanced component already auto-selects the new account by emitting accountSelected,
     // so the onAccountSelected method will handle updating the account record with the ID
     // No additional action needed here since the auto-selection flow handles everything
