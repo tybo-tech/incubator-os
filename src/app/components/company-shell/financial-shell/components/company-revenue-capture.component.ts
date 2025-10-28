@@ -188,13 +188,13 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           total: 0
         };
 
-        // Add to UI state
+        // Add to UI state at the end to maintain natural data entry order (oldest first)
         this.years.update((years) =>
           years.map((year) => {
             if (year.id === yearId) {
               return {
                 ...year,
-                accounts: [...year.accounts, newAccount]
+                accounts: [...year.accounts, newAccount] // Add at end (natural Excel-like flow)
               };
             }
             return year;

@@ -139,7 +139,7 @@ final class CompanyFinancialYearlyStats
             ':financial_year_id' => $financialYearId
         ];
 
-        $sql .= " ORDER BY account_id ASC";
+        $sql .= " ORDER BY created_at ASC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -154,7 +154,7 @@ final class CompanyFinancialYearlyStats
         $sql = "SELECT * FROM company_financial_yearly_stats WHERE company_id = :company_id";
         $params = [':company_id' => $companyId];
 
-        $sql .= " ORDER BY financial_year_id DESC, account_id ASC";
+        $sql .= " ORDER BY created_at ASC, financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -206,8 +206,8 @@ final class CompanyFinancialYearlyStats
             $params[':cohort_id'] = (int)$filters['cohort_id'];
         }
 
-        // Default ordering
-        $sql .= " ORDER BY company_id ASC, financial_year_id DESC, account_id ASC";
+        // Default ordering - oldest records first for natural data entry flow
+        $sql .= " ORDER BY created_at ASC, financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);

@@ -63,6 +63,8 @@ export class RevenueCaptureHelperService {
 
   /**
    * Create AccountRecord array from yearly stats
+   * Note: Backend returns records sorted by created_at ASC (oldest first)
+   * This ensures natural data entry flow like Excel (top to bottom)
    */
   private createAccountRecords(
     yearStats: CompanyFinancialYearlyStats[],
@@ -70,6 +72,7 @@ export class RevenueCaptureHelperService {
   ): AccountRecord[] {
     const records: AccountRecord[] = [];
 
+    // Process stats in the order received from backend (oldest first)
     for (const stat of yearStats) {
       const account = accounts.find(acc => acc.id === stat.account_id)
         || (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
