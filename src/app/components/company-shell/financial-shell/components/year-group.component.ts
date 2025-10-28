@@ -12,7 +12,7 @@ import { ToastService } from '../../../../services/toast.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, AccountManagementModalComponent, EnhancedAccountSelectComponent],
   template: `
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mb-4">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-4">
       <!-- Header -->
       <div
         class="flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 cursor-pointer select-none hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
@@ -57,7 +57,7 @@ import { ToastService } from '../../../../services/toast.service';
         <div class="transition-all duration-300 ease-in-out">
           <div class="p-4">
           <!-- Table Container -->
-          <div class="bg-white overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+          <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="bg-blue-50 text-blue-800">

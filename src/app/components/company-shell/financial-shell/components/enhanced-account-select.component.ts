@@ -20,8 +20,8 @@ import { ToastService } from '../../../../services/toast.service';
         type="button"
         (click)="toggleDropdown()"
         class="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-md bg-white text-left focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all hover:border-gray-300 text-sm">
-        <span [class.text-gray-500]="!selectedAccount" [class.text-gray-900]="selectedAccount">
-          {{ selectedAccount || 'Select account...' }}
+        <span [class.text-gray-500]="!selectedAccount || selectedAccount === ''" [class.text-gray-900]="selectedAccount && selectedAccount !== ''">
+          {{ getDisplayText() }}
         </span>
         <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform duration-200"
            [class.rotate-180]="isOpen()"></i>
@@ -29,9 +29,7 @@ import { ToastService } from '../../../../services/toast.service';
 
       <!-- Dropdown Menu -->
       <div *ngIf="isOpen()"
-           class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto">
-
-        <!-- Available Accounts -->
+           class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg">        <!-- Available Accounts -->
         <div class="py-1">
           <div *ngIf="filteredAccounts().length === 0 && !isAddingNew()"
                class="px-3 py-2 text-gray-500 text-sm">
@@ -278,6 +276,26 @@ export class EnhancedAccountSelectComponent implements OnInit {
    */
   getAccountTypeBadgeClass(accountType: string): string {
     return this.companyAccountService.getAccountTypeBadgeClass(accountType);
+  }
+
+  /**
+   * Get display text for the button
+   */
+  getDisplayText(): string {
+    if (!this.selectedAccount || this.selectedAccount.trim() === '') {
+      return 'Select account...';
+    }
+
+    // Check if the selected account actually exists in our available accounts
+    const accountExists = this.filteredAccounts().some(
+      account => account.account_name === this.selectedAccount
+    );
+
+    if (!accountExists && this.selectedAccount) {
+      return 'No account selected';
+    }
+
+    return this.selectedAccount;
   }
 
   /**

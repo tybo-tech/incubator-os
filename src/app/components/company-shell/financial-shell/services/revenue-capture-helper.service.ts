@@ -74,10 +74,10 @@ export class RevenueCaptureHelperService {
 
     // Process stats in the order received from backend (oldest first)
     for (const stat of yearStats) {
-      const account = accounts.find(acc => acc.id === stat.account_id)
-        || (stat.account_id === null ? { id: 0, account_name: 'Company Total' } : null);
+      const account = accounts.find(acc => acc.id === stat.account_id);
 
-      if (!account) {
+      // If no account found and account_id is not null, log warning and skip
+      if (!account && stat.account_id !== null) {
         console.warn('Account not found for stats:', stat);
         continue;
       }
@@ -85,7 +85,7 @@ export class RevenueCaptureHelperService {
       records.push({
         id: stat.id,
         accountId: stat.account_id ?? null,
-        accountName: account.account_name,
+        accountName: account ? account.account_name : '', // Empty string if no account
         months: {
           m1: stat.m1 || 0,
           m2: stat.m2 || 0,
