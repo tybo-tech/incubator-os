@@ -17,6 +17,7 @@ import { forkJoin, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { RevenueCaptureHelperService } from '../services/revenue-capture-helper.service';
+import { ToastService } from '../../../../services/toast.service';
 
 /**
  * Component for capturing and managing yearly revenue data across financial years
@@ -97,12 +98,13 @@ import { RevenueCaptureHelperService } from '../services/revenue-capture-helper.
   `,
 })
 export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
-  // Inject services
+  // Injected services
   private route = inject(ActivatedRoute);
   private financialYearService = inject(FinancialYearService);
   private companyAccountService = inject(CompanyAccountService);
   private yearlyStatsService = inject(CompanyFinancialYearlyStatsService);
   private helperService = inject(RevenueCaptureHelperService);
+  private toastService = inject(ToastService);
 
   // State signals
   readonly companyId = signal<number>(0);
@@ -237,8 +239,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Failed to delete account record:', error);
-        // You might want to show a user-friendly error message here
-        alert('Failed to delete account. Please try again.');
+        this.toastService.deleteError('Account');
       }
     });
   }

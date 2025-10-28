@@ -8,6 +8,7 @@ import { CompanyReportSectionComponent } from './company-report-section.componen
 import { AssessmentReportSectionComponent } from './assessment-report-section.component';
 import { ICompany } from '../../../../../models/simple.schema';
 import { CompanyService } from '../../../../../services/company.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-executive-report',
@@ -77,6 +78,7 @@ export class ExecutiveReportComponent implements OnInit {
     private route: ActivatedRoute,
     private nodeService: NodeService<any>,
     private companyService: CompanyService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -135,10 +137,10 @@ export class ExecutiveReportComponent implements OnInit {
 
       // TODO: Replace with alternative PDF generation (pdfmake or browser print)
       console.warn('PDF export temporarily disabled - html2pdf.js removed');
-      alert('PDF export feature is currently being updated. Please use browser print (Ctrl+P) as an alternative.');
+      this.toastService.info('PDF export feature is currently being updated. Please use browser print (Ctrl+P) as an alternative.');
     } catch (e) {
       console.error('PDF error:', e);
-      alert('There was an error generating the PDF.');
+      this.toastService.error('There was an error generating the PDF.');
     } finally {
       this.isGenerating = false;
     }

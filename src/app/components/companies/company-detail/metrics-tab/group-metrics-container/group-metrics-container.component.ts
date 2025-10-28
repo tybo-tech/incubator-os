@@ -7,6 +7,7 @@ import { MetricsService } from '../../../../../../services/metrics.service';
 import { QuarterlyMetricsTableComponent } from '../quarterly-metrics-table/quarterly-metrics-table.component';
 import { YearlyMetricsTableComponent } from '../yearly-metrics-table/yearly-metrics-table.component';
 import { MetricsUtils } from '../../../../../../utils/metrics.utils';
+import { ToastService } from '../../../../../services/toast.service';
 
 @Component({
   selector: 'app-group-metrics-container',
@@ -502,7 +503,10 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
 
   private cachedHierarchy: MetricsHierarchy | null = null;
 
-  constructor(private metricsService: MetricsService) {}
+  constructor(
+    private metricsService: MetricsService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadMetrics();
@@ -700,7 +704,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       },
       error: (err) => {
         console.error('❌ Error creating record:', err);
-        alert('Failed to add new year. Please try again.');
+        this.toastService.error('Failed to add new year. Please try again.');
       }
     });
   }
@@ -775,7 +779,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       .find(type => type.id === metricTypeId);
 
     if (!metricType || !metricType.categories || metricType.categories.length === 0) {
-      alert('This metric type has no categories configured. Please configure categories first.');
+      this.toastService.validationError('This metric type has no categories configured. Please configure categories first.');
       return;
     }
 
@@ -811,7 +815,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
     const category = this.availableCategoriesForModal.find(c => c.id === categoryId);
     if (!category) {
       console.error('Category not found. Available:', this.availableCategoriesForModal, 'Selected:', this.selectedCategoryForModal);
-      alert('Invalid category selected.');
+      this.toastService.validationError('Invalid category selected.');
       return;
     }
 
@@ -862,7 +866,7 @@ export class GroupMetricsContainerComponent implements OnInit, OnChanges {
       },
       error: (err) => {
         console.error('❌ Error creating category record:', err);
-        alert('Failed to add category record. Please try again.');
+        this.toastService.error('Failed to add category record. Please try again.');
       }
     });
   }

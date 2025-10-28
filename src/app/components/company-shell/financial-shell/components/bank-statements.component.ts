@@ -8,6 +8,7 @@ import {
 } from '../../../../../services/company-financials.service';
 import { CompanyService } from '../../../../../services/company.service';
 import { ICompany } from '../../../../../models/simple.schema';
+import { ToastService } from '../../../../services/toast.service';
 import {
   EditableTableComponent,
   EditableTableConfig,
@@ -101,6 +102,7 @@ export class BankStatementsComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly route = inject(ActivatedRoute);
   private readonly helper = inject(BankStatementHelperService);
+  private readonly toastService = inject(ToastService);
 
   company: ICompany | null = null;
   financials: ICompanyFinancials[] = [];
@@ -182,12 +184,12 @@ export class BankStatementsComponent implements OnInit {
         if (error && typeof error === 'object' && 'error' in error) {
           const errorMessage = (error as any).error;
           if (errorMessage && errorMessage.includes('Duplicate entry')) {
-            alert('This change would create a duplicate record. Please use a different date.');
+            this.toastService.warning('This change would create a duplicate record. Please use a different date.');
           } else {
-            alert(`Failed to save changes: ${errorMessage}`);
+            this.toastService.error(`Failed to save changes: ${errorMessage}`);
           }
         } else {
-          alert('Failed to save changes. Please try again.');
+          this.toastService.saveError('Changes');
         }
 
         // Reload data to revert any local changes only on error
@@ -233,12 +235,12 @@ export class BankStatementsComponent implements OnInit {
       if (error && typeof error === 'object' && 'error' in error) {
         const errorMessage = (error as any).error;
         if (errorMessage && errorMessage.includes('Duplicate entry')) {
-          alert('A record for this period already exists. Please select a different month/year.');
+          this.toastService.warning('A record for this period already exists. Please select a different month/year.');
         } else {
-          alert(`Failed to create new record: ${errorMessage}`);
+          this.toastService.error(`Failed to create new record: ${errorMessage}`);
         }
       } else {
-        alert('Failed to create new record. Please try again.');
+        this.toastService.error('Failed to create new record. Please try again.');
       }
     }
   }
@@ -251,12 +253,12 @@ export class BankStatementsComponent implements OnInit {
         this.loadFinancials();
       } catch (error) {
         console.error('Error deleting record:', error);
-        alert('Failed to delete record. Please try again.');
+        this.toastService.deleteError('Record');
       }
     }
   }
 
   exportData() {
-    alert('Export functionality coming soon!');
+    this.toastService.info('Export functionality coming soon!');
   }
 }

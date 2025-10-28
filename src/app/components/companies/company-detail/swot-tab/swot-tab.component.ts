@@ -14,6 +14,7 @@ import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
 import { SwotActionPlanExportService } from '../../../../../services/pdf/swot-action-plan-export.service';
 import { CompanyService } from '../../../../../services';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-swot-tab',
@@ -664,6 +665,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   private autoSaveTimeout: any;
   private route = inject(ActivatedRoute);
   private companyService = inject(CompanyService);
+  private toastService = inject(ToastService);
 
   constructor(
     private nodeService: NodeService<any>,
@@ -867,7 +869,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     );
 
     if (actionPlanData.actionItems.length === 0) {
-      alert('No action items found. Please add actions to your SWOT analysis items.');
+      this.toastService.info('No action items found. Please add actions to your SWOT analysis items.');
       return;
     }
 
@@ -888,7 +890,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error generating PDF:', error);
-          alert('Error generating PDF. Please try again.');
+          this.toastService.error('Error generating PDF. Please try again.');
         }
       });
   }
@@ -931,7 +933,7 @@ export class SwotTabComponent implements OnInit, OnDestroy {
   }
 
   private showErrorMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification
-    alert(message);
+    // Using toast notification for better user experience
+    this.toastService.error(message);
   }
 }

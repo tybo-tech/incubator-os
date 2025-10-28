@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount, AccountType } from '../../../../services/company-account.interface';
+import { ToastService } from '../../../../services/toast.service';
 
 /**
  * Simple modal for managing company accounts
@@ -248,6 +249,8 @@ export class AccountManagementModalComponent implements OnInit {
 
   private originalAccount: CompanyAccount | null = null;
 
+  private toastService = inject(ToastService);
+
   constructor(private companyAccountService: CompanyAccountService) {}
 
   ngOnInit() {
@@ -315,7 +318,7 @@ export class AccountManagementModalComponent implements OnInit {
       error: (error) => {
         this.loading.set(false);
         console.error('Failed to load accounts:', error);
-        alert('Failed to load accounts. Please try again.');
+        this.toastService.error('Failed to load accounts. Please try again.');
       }
     });
   }
@@ -325,7 +328,7 @@ export class AccountManagementModalComponent implements OnInit {
    */
   addAccount() {
     if (!this.newAccount.account_name.trim()) {
-      alert('Account name is required');
+      this.toastService.validationError('Account name is required');
       return;
     }
 
@@ -344,13 +347,13 @@ export class AccountManagementModalComponent implements OnInit {
           this.resetNewAccount();
           this.accountsUpdated.emit();
         } else {
-          alert('Failed to add account. Please try again.');
+          this.toastService.error('Failed to add account. Please try again.');
         }
       },
       error: (error) => {
         this.loading.set(false);
         console.error('Failed to add account:', error);
-        alert('Failed to add account. Please try again.');
+        this.toastService.error('Failed to add account. Please try again.');
       }
     });
   }
@@ -368,7 +371,7 @@ export class AccountManagementModalComponent implements OnInit {
    */
   saveEdit(account: CompanyAccount) {
     if (!account.account_name.trim()) {
-      alert('Account name is required');
+      this.toastService.validationError('Account name is required');
       return;
     }
 
@@ -382,13 +385,13 @@ export class AccountManagementModalComponent implements OnInit {
           this.loadAccounts();
           this.accountsUpdated.emit();
         } else {
-          alert('Failed to update account. Please try again.');
+          this.toastService.error('Failed to update account. Please try again.');
         }
       },
       error: (error) => {
         this.loading.set(false);
         console.error('Failed to update account:', error);
-        alert('Failed to update account. Please try again.');
+        this.toastService.error('Failed to update account. Please try again.');
       }
     });
   }
@@ -428,13 +431,13 @@ export class AccountManagementModalComponent implements OnInit {
           this.loadAccounts();
           this.accountsUpdated.emit();
         } else {
-          alert(`Failed to ${action} account. Please try again.`);
+          this.toastService.error(`Failed to ${action} account. Please try again.`);
         }
       },
       error: (error) => {
         this.loading.set(false);
         console.error(`Failed to ${action} account:`, error);
-        alert(`Failed to ${action} account. Please try again.`);
+        this.toastService.error(`Failed to ${action} account. Please try again.`);
       }
     });
   }

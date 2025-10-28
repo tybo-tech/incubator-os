@@ -13,6 +13,7 @@ import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
 import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets-export.service';
 import { CompanyService } from '../../../../../services';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-gps-targets-tab',
@@ -709,6 +710,7 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   private autoSaveTimeout: any;
   private route = inject(ActivatedRoute);
   private companyService = inject(CompanyService);
+  private toastService = inject(ToastService);
 
   constructor(
     private nodeService: NodeService<any>,
@@ -920,7 +922,7 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   }
 
   private showErrorMessage(message: string): void {
-    // Simple alert for now - could be replaced with a toast notification
-    alert(message);
+    // Using toast notification for better user experience
+    this.toastService.error(message);
   }
 }

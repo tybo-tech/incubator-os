@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FinancialYear, FinancialYearService } from '../../../../../services/financial-year.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { CompanyAccountService } from '../../../../services/company-account.service';
+import { ToastService } from '../../../../services/toast.service';
 
 /**
  * Modal component for managing financial years and company accounts
@@ -421,7 +422,8 @@ export class FinancialManagementModalComponent implements OnInit {
 
   constructor(
     public financialYearService: FinancialYearService,
-    public companyAccountService: CompanyAccountService
+    public companyAccountService: CompanyAccountService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
@@ -526,7 +528,7 @@ export class FinancialManagementModalComponent implements OnInit {
    */
   addFinancialYear() {
     if (!this.newFinancialYear.name || !this.newFinancialYear.fy_start_year || !this.newFinancialYear.fy_end_year) {
-      alert('Please fill in all required fields');
+      this.toastService.validationError('Please fill in all required fields');
       return;
     }
 
@@ -538,7 +540,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to add financial year:', error);
-        alert('Failed to add financial year. Please try again.');
+        this.toastService.error('Failed to add financial year. Please try again.');
       }
     });
   }
@@ -567,7 +569,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to update financial year:', error);
-        alert('Failed to update financial year. Please try again.');
+        this.toastService.error('Failed to update financial year. Please try again.');
       }
     });
   }
@@ -599,7 +601,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to set active financial year:', error);
-        alert('Failed to set active financial year. Please try again.');
+        this.toastService.error('Failed to set active financial year. Please try again.');
       }
     });
   }
@@ -617,7 +619,7 @@ export class FinancialManagementModalComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to delete financial year:', error);
-          alert('Failed to delete financial year. Please try again.');
+          this.toastService.error('Failed to delete financial year. Please try again.');
         }
       });
     }
@@ -645,7 +647,7 @@ export class FinancialManagementModalComponent implements OnInit {
    */
   addCompanyAccount() {
     if (!this.newCompanyAccount.account_name || !this.companyId) {
-      alert('Please provide an account name');
+      this.toastService.validationError('Please provide an account name');
       return;
     }
 
@@ -665,7 +667,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to add company account:', error);
-        alert('Failed to add company account. Please try again.');
+        this.toastService.error('Failed to add company account. Please try again.');
       }
     });
   }
@@ -696,7 +698,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to update company account:', error);
-        alert('Failed to update company account. Please try again.');
+        this.toastService.error('Failed to update company account. Please try again.');
       }
     });
   }
@@ -728,7 +730,7 @@ export class FinancialManagementModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to toggle account status:', error);
-        alert('Failed to update account status. Please try again.');
+        this.toastService.error('Failed to update account status. Please try again.');
       }
     });
   }
@@ -746,7 +748,7 @@ export class FinancialManagementModalComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to delete company account:', error);
-          alert('Failed to delete company account. Please try again.');
+          this.toastService.error('Failed to delete company account. Please try again.');
         }
       });
     }

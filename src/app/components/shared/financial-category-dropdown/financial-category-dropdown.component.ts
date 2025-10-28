@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialCategory } from '../../../../models/financial.models';
 import { FinancialCategoryService } from '../../../../services/financial-category.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-financial-category-dropdown',
@@ -131,7 +132,10 @@ export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
   newCategoryName = '';
   newCategoryDescription = '';
 
-  constructor(private financialCategoryService: FinancialCategoryService) {}
+  constructor(
+    private financialCategoryService: FinancialCategoryService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
     this.loadCategories();
@@ -275,7 +279,7 @@ export class FinancialCategoryDropdownComponent implements OnInit, OnChanges {
         error: (error) => {
           console.error('Failed to create financial category:', error);
           // User-friendly error message
-          alert(
+          this.toastService.error(
             'Error creating category. Please check your input and try again.'
           );
           this.isSubmitting.set(false);

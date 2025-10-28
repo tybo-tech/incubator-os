@@ -1,9 +1,10 @@
-import { Component, input, output, signal, computed, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, computed, ViewChild, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroup, AccountRecord, MonthDisplay, AccountChangeEvent } from '../models/revenue-capture.interface';
 import { CompanyAccount } from '../../../../services/company-account.interface';
 import { AccountManagementModalComponent } from './account-management-modal.component';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-year-group',
@@ -212,6 +213,9 @@ export class YearGroupComponent {
 
   @ViewChild('accountModal') accountModal!: AccountManagementModalComponent;
 
+  // Inject toast service
+  private toastService = inject(ToastService);
+
   // Month display configuration based on financial year (March to February)
   months: MonthDisplay[] = [
     { key: 'm1', label: 'Mar', monthNumber: 3 },
@@ -312,7 +316,7 @@ export class YearGroupComponent {
         // Reset the selection and show warning
         account.accountName = '';
         account.accountId = null;
-        alert(`Account "${selectedAccount.account_name}" is already used in this financial year. Please select a different account.`);
+        this.toastService.warning(`Account "${selectedAccount.account_name}" is already used in this financial year. Please select a different account.`);
         return;
       }
 

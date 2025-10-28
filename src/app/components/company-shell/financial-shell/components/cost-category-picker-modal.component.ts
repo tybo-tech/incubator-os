@@ -5,6 +5,7 @@ import { CostCategoriesService, CostCategory, ICostCategoriesFilters } from '../
 import { IndustryService, IndustryListOptions } from '../../../../../services/industry.service';
 import { INode } from '../../../../../models/schema';
 import { Industry } from '../../../../../models/simple.schema';
+import { ToastService } from '../../../../services/toast.service';
 
 type CostType = 'direct' | 'operational';
 
@@ -41,8 +42,8 @@ type CostType = 'direct' | 'operational';
             <!-- Industry/Sector Filter -->
             <div class="flex items-center gap-2">
               <label class="text-sm font-medium text-gray-700">Industry:</label>
-              <select 
-                [ngModel]="selectedIndustryId()" 
+              <select
+                [ngModel]="selectedIndustryId()"
                 (ngModelChange)="onIndustryChange($event)"
                 class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-w-48">
                 <option [ngValue]="null">All Industries</option>
@@ -55,8 +56,8 @@ type CostType = 'direct' | 'operational';
             <!-- Search -->
             <div class="flex items-center gap-2">
               <label class="text-sm font-medium text-gray-700">Search:</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 [ngModel]="searchTerm()"
                 (ngModelChange)="onSearchChange($event)"
                 placeholder="Search categories..."
@@ -123,7 +124,7 @@ type CostType = 'direct' | 'operational';
                 type="button"
                 (click)="selectCategory(category)"
                 class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-left transition-all group">
-                
+
                 <div class="flex items-start justify-between mb-2">
                   <h4 class="font-medium text-gray-900 group-hover:text-blue-800 text-sm line-clamp-2">
                     {{ category.name }}
@@ -192,15 +193,15 @@ export class CostCategoryPickerModalComponent implements OnInit {
   readonly isOpen = signal(false);
   readonly loading = signal(false);
   readonly costType = signal<CostType>('direct');
-  
+
   // Data
   readonly categories = signal<CostCategory[]>([]);
   readonly industries = signal<INode<Industry>[]>([]);
-  
+
   // Filters - using signals for reactivity
   readonly selectedIndustryId = signal<number | null>(null);
   readonly searchTerm = signal<string>('');
-  
+
   // New category form
   newCategoryName = '';
   newCategoryIndustryId: number | null = null;
@@ -222,7 +223,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
     const search = this.searchTerm();
     if (search.trim()) {
       const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter(cat => 
+      filtered = filtered.filter(cat =>
         cat.name.toLowerCase().includes(searchLower)
       );
     }
@@ -233,7 +234,8 @@ export class CostCategoryPickerModalComponent implements OnInit {
 
   constructor(
     private costCategoriesService: CostCategoriesService,
-    private industryService: IndustryService
+    private industryService: IndustryService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
@@ -319,7 +321,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
     if (!this.newCategoryName.trim()) return;
 
     this.loading.set(true);
-    
+
     const newCategory = {
       name: this.newCategoryName.trim(),
       industry_id: this.newCategoryIndustryId,
@@ -331,22 +333,22 @@ export class CostCategoryPickerModalComponent implements OnInit {
       next: (category) => {
         this.loading.set(false);
         console.log('✅ Created new category:', category);
-        
+
         // Add to local state
         const currentCategories = this.categories();
         this.categories.set([...currentCategories, category]);
-        
+
         // Clear form
         this.newCategoryName = '';
         this.newCategoryIndustryId = null;
-        
+
         // Auto-select the new category
         this.selectCategory(category);
       },
       error: (error) => {
         this.loading.set(false);
         console.error('Failed to create category:', error);
-        alert('Failed to create category. Please try again.');
+        this.toastService.error('Failed to create category. Please try again.');
       }
     });
   }
