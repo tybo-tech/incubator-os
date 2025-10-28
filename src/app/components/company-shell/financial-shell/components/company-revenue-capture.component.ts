@@ -1,37 +1,26 @@
-import { Component, signal, computed, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
-import { FinancialManagementModalComponent } from './financial-management-modal.component';
 import { FinancialYearComparisonComponent } from './financial-year-comparison.component';
 import { RevenueCaptureHeaderComponent } from './revenue-capture-header.component';
 import { RevenueCaptureEmptyStateComponent } from './revenue-capture-empty-state.component';
 import { RevenueCaptureLoadingComponent } from './revenue-capture-loading.component';
 import { RevenueCaptureFooterComponent } from './revenue-capture-footer.component';
 import { RevenueCaptureManagementModalComponent } from './revenue-capture-management-modal.component';
-import {
-  YearGroup,
-  AccountRecord,
-  AccountChangeEvent,
-} from '../models/revenue-capture.interface';
-import {
-  FinancialYearService,
-  FinancialYear,
-} from '../../../../../services/financial-year.service';
+import { YearGroup, AccountChangeEvent } from '../models/revenue-capture.interface';
+import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
-import { FinancialDataTransformerService } from '../../../../services/financial-data-transformer.service';
-import {
-  CompanyFinancialYearlyStatsService,
-  CompanyFinancialYearlyStats,
-} from '../../../../../services/company-financial-yearly-stats.service';
-import { forkJoin } from 'rxjs';
-import { debounceTime, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { CompanyFinancialYearlyStatsService, CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
+import { forkJoin, Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
+import { RevenueCaptureHelperService } from '../services/revenue-capture-helper.service';
 
 /**
  * Component for capturing and managing yearly revenue data across financial years
+ * This is a smart container component that coordinates data loading and saving
  */
 @Component({
   selector: 'app-company-revenue-capture',
@@ -107,86 +96,74 @@ import { ActivatedRoute } from '@angular/router';
     </div>
   `,
 })
-export class CompanyRevenueCaptureComponent implements OnInit {
-  // Constants
-  private static readonly DEFAULT_START_MONTH = 3; // March
-  private static readonly DEFAULT_END_MONTH = 2; // February
-  private static readonly DEFAULT_ACCOUNT_ID = 1;
+export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
+  // Inject services
+  private route = inject(ActivatedRoute);
+  private financialYearService = inject(FinancialYearService);
+  private companyAccountService = inject(CompanyAccountService);
+  private yearlyStatsService = inject(CompanyFinancialYearlyStatsService);
+  private helperService = inject(RevenueCaptureHelperService);
 
-  // Input properties
-  companyId = signal<number>(0); // TODO: Get from route or parent component
-
-  // Reactive signals
+  // State signals
+  readonly companyId = signal<number>(0);
   readonly years = signal<YearGroup[]>([]);
   readonly availableFinancialYears = signal<FinancialYear[]>([]);
   readonly availableAccounts = signal<CompanyAccount[]>([]);
   readonly allYearlyStats = signal<CompanyFinancialYearlyStats[]>([]);
   readonly loading = signal<boolean>(false);
-
-  // Selected financial year
-  selectedFinancialYearId: string = '';
-
-  // UI state
   readonly showManagementModal = signal(false);
 
-  // Debounced save mechanism
-  private saveSubject = new Subject<YearGroup>();
+  // UI state
+  selectedFinancialYearId: string = '';
+
+  // Reactive subjects
   private accountSaveSubject = new Subject<AccountChangeEvent>();
-  private route = inject(ActivatedRoute);
+  private destroy$ = new Subject<void>();
 
   // Computed properties
   readonly totalRevenue = computed(() =>
-    this.years().reduce(
-      (total, year) => total + this.calculateYearTotal(year),
-      0
-    )
+    this.years().reduce((total, year) => total + this.helperService.calculateYearTotal(year), 0)
   );
 
-  readonly activeYears = computed(
-    () => this.years().filter((year) => year.isActive).length
-  );
+  readonly activeYears = computed(() => this.years().filter((year) => year.isActive).length);
 
-  // Available financial years that don't have data yet (for adding new ones)
   readonly availableYearsToAdd = computed(() => {
     const existingYearIds = this.years().map((year) => year.id);
-    return this.availableFinancialYears().filter(
-      (year) => !existingYearIds.includes(year.id)
-    );
+    return this.availableFinancialYears().filter((year) => !existingYearIds.includes(year.id));
   });
 
-  constructor(
-    private financialYearService: FinancialYearService,
-    private companyAccountService: CompanyAccountService,
-    private transformerService: FinancialDataTransformerService,
-    private yearlyStatsService: CompanyFinancialYearlyStatsService
-  ) { }
-
   ngOnInit() {
-    // Set up debounced save for full year changes (wait 500ms after user stops typing)
-    this.saveSubject.pipe(debounceTime(500)).subscribe((year) => {
-      this.saveYearChangesToDatabase(year);
-    });
-
-    // Set up debounced save for individual account changes (wait 300ms)
+    // Set up debounced save for account changes
     this.accountSaveSubject
-      .pipe(debounceTime(300))
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
       .subscribe(({ yearId, account, action = 'update' }) => {
         this.saveAccountToDatabase(yearId, account, action);
       });
+
+    // Get company ID from route
     const companyId = +this.route.parent?.parent?.snapshot.params['id'];
-    if (companyId) {
+    if (companyId && !isNaN(companyId)) {
       this.companyId.set(companyId);
       this.loadAllData();
+    } else {
+      console.error('Invalid company ID from route');
     }
   }
+
+  ngOnDestroy() {
+    this.accountSaveSubject.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Track function for ngFor to optimize rendering
+   */
+  trackYear = (index: number, year: YearGroup): number => year.id;
   /**
    * Handle account changes from child components
    */
   onAccountChanged(event: AccountChangeEvent): void {
-    console.log(
-      `🔄 Account changed: ${event.account.accountName} (${event.action})`
-    );
-
     // Update local state immediately for UI responsiveness
     this.years.update((years) =>
       years.map((year) => {
@@ -202,17 +179,21 @@ export class CompanyRevenueCaptureComponent implements OnInit {
       })
     );
 
-    // Debounce the database save for this specific account
+    // Debounce the database save
     this.accountSaveSubject.next(event);
   }
 
   /**
-   * Track function for ngFor to optimize rendering
+   * Handle year changes from child components
    */
-  trackYear = (index: number, year: YearGroup): number => year.id;
+  onYearChanged(updatedYear: YearGroup): void {
+    this.years.update((years) =>
+      years.map((year) => (year.id === updatedYear.id ? updatedYear : year))
+    );
+  }
 
   /**
-   * Load all required data in a single efficient call
+   * Load all required data efficiently using forkJoin
    */
   private loadAllData(): void {
     const companyId = this.companyId();
@@ -220,23 +201,14 @@ export class CompanyRevenueCaptureComponent implements OnInit {
 
     this.loading.set(true);
 
-    // Load all data in parallel using forkJoin
     forkJoin({
       financialYears: this.financialYearService.getAllFinancialYears(),
-      accounts: this.companyAccountService.getAccountsByCompany(
-        companyId,
-        false
-      ),
+      accounts: this.companyAccountService.getAccountsByCompany(companyId, false),
       yearlyStats: this.yearlyStatsService.getAllCompanyStats(companyId),
     }).subscribe({
       next: (data) => {
-        console.log('All data loaded:', data);
-
-        // Store all data in signals
         this.availableFinancialYears.set(data.financialYears);
-        this.availableAccounts.set(
-          data.accounts.success ? data.accounts.data : []
-        );
+        this.availableAccounts.set(data.accounts.success ? data.accounts.data : []);
         this.allYearlyStats.set(data.yearlyStats);
 
         // Auto-select active financial year
@@ -245,8 +217,13 @@ export class CompanyRevenueCaptureComponent implements OnInit {
           this.selectedFinancialYearId = activeYear.id.toString();
         }
 
-        // Transform data into year groups
-        this.transformDataToYearGroups();
+        // Transform data using helper service
+        const yearGroups = this.helperService.transformToYearGroups(
+          data.financialYears,
+          data.accounts.success ? data.accounts.data : [],
+          data.yearlyStats
+        );
+        this.years.set(yearGroups);
 
         this.loading.set(false);
       },
@@ -258,289 +235,72 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   }
 
   /**
-   * Transform loaded data into YearGroup format for the UI
-   * Only shows financial years that have actual data captured
-   */
-  private transformDataToYearGroups(): void {
-    console.log('🔧 transformDataToYearGroups called');
-    const financialYears = this.availableFinancialYears();
-    const accounts = this.availableAccounts();
-    const yearlyStats = this.allYearlyStats();
-
-    console.log('Transform debug - Financial Years:', financialYears);
-    console.log('Transform debug - Accounts:', accounts);
-    console.log('Transform debug - Yearly Stats:', yearlyStats);
-
-    // Get unique financial year IDs that have data
-    const yearIdsWithData = [
-      ...new Set(yearlyStats.map((stat) => stat.financial_year_id)),
-    ];
-
-    console.log('Transform debug - Year IDs with data:', yearIdsWithData);
-
-    // Only create year groups for financial years that have actual data
-    const yearGroups: YearGroup[] = financialYears
-      .filter((year) => yearIdsWithData.includes(year.id))
-      .map((year) => {
-        console.log('Transform debug - Processing year:', year);
-
-        // Get stats for this specific year
-        const yearStats = yearlyStats.filter(
-          (stat) => stat.financial_year_id === year.id
-        );
-
-        console.log('Transform debug - Year stats for', year.name, ':', yearStats);
-
-        // Convert each stats record to an AccountRecord
-        const accountRecords: AccountRecord[] = yearStats
-          .map((stat) => {
-            console.log('🔍 Processing stat:', stat);
-            console.log('🔍 Looking for account ID:', stat.account_id);
-            console.log('🔍 Available accounts:', accounts);
-
-            const account =
-              accounts.find((acc) => acc.id === stat.account_id) ||
-              (stat.account_id === null
-                ? { id: 0, account_name: 'Company Total' }
-                : null);
-
-            console.log('🔍 Found account:', account);
-
-            if (!account) {
-              console.warn('❌ Account not found for stats:', stat);
-              return null;
-            }
-
-            const accountRecord = {
-              id: stat.id,
-              accountId: stat.account_id,
-              accountName: account.account_name,
-              months: {
-                m1: stat.m1 || 0,
-                m2: stat.m2 || 0,
-                m3: stat.m3 || 0,
-                m4: stat.m4 || 0,
-                m5: stat.m5 || 0,
-                m6: stat.m6 || 0,
-                m7: stat.m7 || 0,
-                m8: stat.m8 || 0,
-                m9: stat.m9 || 0,
-                m10: stat.m10 || 0,
-                m11: stat.m11 || 0,
-                m12: stat.m12 || 0,
-              },
-              total: stat.total_amount,
-            };
-
-            console.log('✅ Created account record:', accountRecord);
-            return accountRecord;
-          })
-          .filter((record) => record !== null) as AccountRecord[];
-
-        const yearGroup = {
-          id: year.id,
-          name: year.name,
-          startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-          endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-          expanded: year.is_active, // Expand active years by default
-          isActive: year.is_active,
-          accounts: accountRecords,
-        };
-
-        return yearGroup;
-      });
-
-    this.years.set(yearGroups);
-    console.log('Year groups created (only with data):', yearGroups);
-  }
-
-  /**
-   * Handle financial year selection change
-   */
-  onFinancialYearChange(): void {
-    // When financial year selection changes, just re-transform the existing data
-    console.log('Financial year changed to:', this.selectedFinancialYearId);
-    // No need to reload data, just re-filter/transform what we have
-  }
-
-  /**
    * Add a new financial year to the display
-   * Creates an empty year group for the selected financial year
    */
   addNewFinancialYear(): void {
-    if (!this.selectedFinancialYearId) {
-      console.warn('No financial year selected');
-      return;
-    }
+    if (!this.selectedFinancialYearId) return;
 
     const yearId = parseInt(this.selectedFinancialYearId);
-    const selectedYear = this.availableFinancialYears().find(
-      (year) => year.id === yearId
-    );
+    const selectedYear = this.availableFinancialYears().find((year) => year.id === yearId);
 
-    if (!selectedYear) {
-      console.warn('Selected financial year not found');
-      return;
-    }
+    if (!selectedYear || this.years().find((year) => year.id === yearId)) return;
 
-    // Check if year already exists
-    const existingYear = this.years().find((year) => year.id === yearId);
-    if (existingYear) {
-      console.warn('Financial year already exists');
-      return;
-    }
-
-    // Create new empty year group
-    const newYearGroup: YearGroup = {
-      id: selectedYear.id,
-      name: selectedYear.name,
-      startMonth: CompanyRevenueCaptureComponent.DEFAULT_START_MONTH,
-      endMonth: CompanyRevenueCaptureComponent.DEFAULT_END_MONTH,
-      expanded: true, // Expand new years by default
-      isActive: selectedYear.is_active,
-      accounts: [], // Start with empty accounts
-    };
-
-    // Add to the years array
-    const currentYears = this.years();
-    this.years.set([...currentYears, newYearGroup]);
-
-    // Reset selection
+    // Create new empty year group using helper service
+    const newYearGroup = this.helperService.createEmptyYearGroup(selectedYear);
+    this.years.update((years) => [...years, newYearGroup]);
     this.selectedFinancialYearId = '';
-
-    console.log('Added new financial year:', newYearGroup);
   }
 
   /**
-   * Open the management modal
+   * Modal management
    */
   openManagementModal(): void {
     this.showManagementModal.set(true);
   }
 
-  /**
-   * Close the management modal
-   */
   closeManagementModal(): void {
     this.showManagementModal.set(false);
   }
 
   /**
-   * Handle data updates from management modal
+   * Reload data when updates happen in management modal
    */
   onDataUpdated(): void {
-    // Reload all data when updates happen
     this.loadAllData();
   }
 
   /**
-   * Delete a financial year by ID
+   * Delete a financial year
    */
   deleteYear(yearId: number): void {
     this.years.update((years) => years.filter((year) => year.id !== yearId));
   }
 
   /**
-   * Handle year changes from child components
-   * Updates the local state and debounces database saves
-   */
-  onYearChanged(updatedYear: YearGroup): void {
-    console.log('💾 Year data changed:', updatedYear.name);
-
-    // Update local state immediately for UI responsiveness
-    this.years.update((years) =>
-      years.map((year) => (year.id === updatedYear.id ? updatedYear : year))
-    );
-
-    // Note: Individual account changes are now handled by onAccountChanged()
-    // This method is mainly for structural changes (add/remove accounts, etc.)
-  }
-
-  /**
-   * Save a specific account's changes to the database
+   * Save account changes to database using helper service
    */
   private saveAccountToDatabase(
     yearId: number,
-    account: AccountRecord,
+    account: any,
     action: 'insert' | 'update' = 'update'
   ): void {
     const companyId = this.companyId();
-    console.log(
-      `🔄 ${action === 'insert' ? 'Creating' : 'Updating'} account: ${account.accountName
-      } (Company ID: ${companyId}, Year ID: ${yearId})`
-    );
 
-    // Convert AccountRecord to MonthlyInputData format
-    const monthlyData = this.accountRecordToMonthlyInput(account, yearId);
-
-    if (action === 'insert') {
-      // For insert operations, remove the statsId and force creation
-      const insertData = { ...monthlyData };
-      delete insertData.statsId; // Remove ID to force insert
-
-      console.log(`💡 Inserting new account record:`, {
-        accountId: insertData.accountId,
-        accountName: account.accountName,
-        companyId: companyId,
-        financialYearId: yearId,
-        total: insertData.total,
-      });
-
-      // Use upsert to handle potential duplicates safely
-      this.transformerService
-        .saveMonthlyData(insertData, companyId, yearId)
-        .subscribe({
-          next: (result) => {
-            console.log(
-              `✅ Successfully inserted: ${account.accountName}`,
-              result
-            );
-
-            // Update the local account with the new database ID
-            if (result.id) {
-              this.updateAccountIdInLocalState(yearId, account.id, result.id);
-            }
-          },
-          error: (error) => {
-            console.error(`❌ Failed to insert: ${account.accountName}`, error);
-          },
-        });
-    } else {
-      // For update operations, use existing logic
-      if (account.id && account.id > 0) {
-        console.log(`💡 Updating existing account record:`, {
-          statsId: monthlyData.statsId,
-          accountId: monthlyData.accountId,
-          accountName: account.accountName,
-          total: monthlyData.total,
-        });
-
-        this.transformerService
-          .saveMonthlyData(monthlyData, companyId, yearId)
-          .subscribe({
-            next: (result) => {
-              console.log(
-                `✅ Successfully updated: ${account.accountName}`,
-                result
-              );
-            },
-            error: (error) => {
-              console.error(
-                `❌ Failed to update: ${account.accountName}`,
-                error
-              );
-            },
-          });
-      } else {
-        console.log(
-          `⏭️ Skipping update for new/empty account: ${account.accountName} (ID: ${account.id})`
-        );
-      }
-    }
+    this.helperService.saveAccountData(account, yearId, companyId, action).subscribe({
+      next: (result) => {
+        // Update local account ID if this was an insert
+        if (action === 'insert' && result.id) {
+          this.updateAccountIdInLocalState(yearId, account.id, result.id);
+        }
+      },
+      error: (error) => {
+        console.error(`Failed to ${action} account:`, error);
+      },
+    });
   }
 
   /**
-   * Update the account ID in local state after successful database insert
+   * Update account ID in local state after successful insert
    */
   private updateAccountIdInLocalState(
     yearId: number,
@@ -559,96 +319,6 @@ export class CompanyRevenueCaptureComponent implements OnInit {
         }
         return year;
       })
-    );
-    console.log(
-      `🔄 Updated local account ID from ${oldAccountId} to ${newAccountId}`
-    );
-  }
-
-  /**
-   * Save year changes to the database (legacy method for bulk changes)
-   */
-  private saveYearChangesToDatabase(year: YearGroup): void {
-    const companyId = this.companyId();
-    console.log(
-      `🔄 Bulk saving changes for ${year.name} (Company ID: ${companyId}) - Legacy method`
-    );
-    console.log(
-      `ℹ️ Note: Individual account changes are now handled by saveAccountToDatabase()`
-    );
-
-    // This method is now mainly for structural changes or bulk operations
-    // Individual account changes should use the new saveAccountToDatabase method
-    year.accounts.forEach((account, index) => {
-      if (account.id && account.id > 0) {
-        const monthlyData = this.accountRecordToMonthlyInput(account, year.id);
-
-        console.log(
-          `💡 Bulk saving account ${index + 1}/${year.accounts.length}: ${account.accountName
-          }`,
-          {
-            statsId: monthlyData.statsId,
-            accountId: monthlyData.accountId,
-            total: monthlyData.total,
-          }
-        );
-
-        this.transformerService
-          .saveMonthlyData(monthlyData, companyId, year.id)
-          .subscribe({
-            next: (result) => {
-              console.log(`✅ Bulk saved: ${account.accountName}`, result);
-            },
-            error: (error) => {
-              console.error(
-                `❌ Failed to bulk save: ${account.accountName}`,
-                error
-              );
-            },
-          });
-      } else {
-        console.log(
-          `⏭️ Skipping new/empty account in bulk save: ${account.accountName}`
-        );
-      }
-    });
-  }
-  /**
-   * Convert AccountRecord to MonthlyInputData format for saving
-   */
-  private accountRecordToMonthlyInput(
-    account: AccountRecord,
-    financialYearId: number
-  ): any {
-    return {
-      accountId: account.accountId, // Use the actual account_id from the database
-      months: [
-        account.months['m1'] || 0,
-        account.months['m2'] || 0,
-        account.months['m3'] || 0,
-        account.months['m4'] || 0,
-        account.months['m5'] || 0,
-        account.months['m6'] || 0,
-        account.months['m7'] || 0,
-        account.months['m8'] || 0,
-        account.months['m9'] || 0,
-        account.months['m10'] || 0,
-        account.months['m11'] || 0,
-        account.months['m12'] || 0,
-      ],
-      total: account.total,
-      statsId: account.id > 0 ? account.id : undefined, // Only include if valid existing record
-      financialYearId: financialYearId,
-    };
-  }
-
-  /**
-   * Calculate the total revenue for a specific year
-   */
-  private calculateYearTotal(year: YearGroup): number {
-    return year.accounts.reduce(
-      (total, account) => total + (account.total || 0),
-      0
     );
   }
 }
