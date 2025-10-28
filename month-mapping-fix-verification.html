@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Month Mapping Verification</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .data-block { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 15px; margin: 10px 0; white-space: pre-wrap; }
+        .error { color: #dc3545; font-weight: bold; }
+        .success { color: #28a745; font-weight: bold; }
+        .highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .correction { background: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Month Mapping Correction Verification</h1>
+
+        <div class="section">
+            <h2>🚨 Original Problem</h2>
+            <div class="data-block">
+Your data: <span class="highlight">m6: 100000</span> (made in August)
+Chart showed: <span class="error">Peak in June</span>
+Shift: <span class="error">3 months early</span> (Aug → Jun = -2 months, but you said it was shifted back)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Your Sample Data Analysis</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Database Column</th>
+                        <th>Value</th>
+                        <th>WRONG Mapping (Before)</th>
+                        <th>CORRECT Mapping (After)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>m1</td><td>2000</td><td class="error">January</td><td class="success">March</td></tr>
+                    <tr><td>m2</td><td>2000</td><td class="error">February</td><td class="success">April</td></tr>
+                    <tr><td>m3</td><td>1000</td><td class="error">March</td><td class="success">May</td></tr>
+                    <tr><td>m4</td><td>2000</td><td class="error">April</td><td class="success">June</td></tr>
+                    <tr><td>m5</td><td>8000</td><td class="error">May</td><td class="success">July</td></tr>
+                    <tr><td>m6</td><td><strong>100000</strong></td><td class="error">June</td><td class="success">August ✅</td></tr>
+                    <tr><td>m7</td><td>100</td><td class="error">July</td><td class="success">September</td></tr>
+                    <tr><td>m8</td><td>0</td><td class="error">August</td><td class="success">October</td></tr>
+                    <tr><td>m9</td><td>0</td><td class="error">September</td><td class="success">November</td></tr>
+                    <tr><td>m10</td><td>0</td><td class="error">October</td><td class="success">December</td></tr>
+                    <tr><td>m11</td><td>0</td><td class="error">November</td><td class="success">January</td></tr>
+                    <tr><td>m12</td><td>0</td><td class="error">December</td><td class="success">February</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="correction">
+            <h2>✅ Correction Applied</h2>
+            <p><strong>Fixed Methods:</strong></p>
+            <ul>
+                <li><code>calculateMonthlyTotals()</code> - Changed month order from ['m3','m4'...] to ['m1','m2'...]</li>
+                <li><code>generateMonthlyComparisonBarChart()</code> - Updated monthKeys mapping</li>
+                <li><code>generateAccountComparisonChart()</code> - Fixed monthlyData array mapping</li>
+            </ul>
+
+            <p><strong>Result:</strong> Your R100,000 in m6 will now correctly show in <span class="success">August</span> instead of June!</p>
+        </div>
+
+        <div class="section">
+            <h2>📈 Expected Chart Output (After Fix)</h2>
+            <div class="data-block">
+Financial Year Chart Labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb']
+
+FY1 Data Array: [2000, 2000, 1000, 2000, 8000, <span class="success">100000</span>, 100, 0, 0, 0, 0, 0]
+                  Mar   Apr   May   Jun   Jul   <span class="success">Aug</span>    Sep  Oct Nov Dec Jan Feb
+
+FY5 Data Array: [50000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                  Mar   Apr May Jun Jul Aug Sep Oct Nov Dec Jan Feb
+
+<span class="highlight">Peak in August: R100,000 ✅</span>
+<span class="highlight">Strong March in FY5: R50,000 ✅</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Testing Instructions</h2>
+            <div class="data-block">
+1. Navigate to: Financial → Revenue Capture
+2. Open browser console (F12)
+3. Look for: "📊 Monthly Comparison Bar Chart Data"
+4. Verify the data arrays match the expected output above
+5. Check that the chart shows:
+   - August peak for FY1 (not June)
+   - March strong performance for FY5
+   - Correct month-to-month comparisons
+
+<span class="highlight">Key Verification:</span>
+The highest bar should be in August position (6th position) showing R100,000
+            </div>
+        </div>
+    </div>
+</body>
+</html>

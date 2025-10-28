@@ -21,6 +21,7 @@ export class FinancialComparisonService {
 
   /**
    * Generate line chart data for comparing financial years monthly trends
+   * Shows each year as a separate line to compare month-by-month performance
    * @param years Array of YearGroup objects to compare
    * @returns ILineChart formatted data for Chart.js
    */
@@ -70,6 +71,76 @@ export class FinancialComparisonService {
         };
       }
     }).filter(dataset => dataset !== null);
+
+    console.log('📊 Line Chart Data Generated:', {
+      years: years.length,
+      monthLabels,
+      datasets: datasets.map(d => ({
+        label: d.label,
+        dataPoints: d.data?.length || 0,
+        sampleData: d.data?.slice(0, 3) || []
+      }))
+    });
+
+    return {
+      labels: monthLabels,
+      datasets: datasets
+    };
+  }
+
+  /**
+   * Generate bar chart for month-by-month comparison across years
+   * Groups data by month to show same-month comparison across different years
+   * @param years Array of YearGroup objects to compare
+   * @returns IBarChart formatted data for monthly comparison
+   */
+  generateMonthlyComparisonBarChart(years: YearGroup[]): IBarChart {
+    if (!years || years.length === 0) {
+      return { labels: [], datasets: [] };
+    }
+
+    const monthLabels = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
+    // CORRECTED: Database columns m1=Mar, m2=Apr, m3=May, m4=Jun, m5=Jul, m6=Aug, m7=Sep, m8=Oct, m9=Nov, m10=Dec, m11=Jan, m12=Feb
+    const monthKeys = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'];
+
+    // Color palette for different years
+    const colors = [
+      'rgba(59, 130, 246, 0.8)',   // Blue
+      'rgba(34, 197, 94, 0.8)',    // Green
+      'rgba(239, 68, 68, 0.8)',    // Red
+      'rgba(245, 158, 11, 0.8)',   // Amber
+      'rgba(168, 85, 247, 0.8)',   // Purple
+      'rgba(20, 184, 166, 0.8)'    // Teal
+    ];
+
+    const datasets: IChartDataset[] = years.map((year, yearIndex) => {
+      // For each year, get the monthly totals in financial year order
+      const monthlyTotals = monthKeys.map(monthKey => {
+        return year.accounts.reduce((sum, account) => {
+          return sum + (account.months[monthKey] || 0);
+        }, 0);
+      });
+
+      const yearTotal = year.accounts.reduce((sum, acc) => sum + (acc.total || 0), 0);
+
+      return {
+        label: `${year.name} (R${this.formatNumber(yearTotal)})`,
+        data: monthlyTotals,
+        backgroundColor: colors[yearIndex % colors.length],
+        borderColor: colors[yearIndex % colors.length].replace('0.8', '1'),
+        borderWidth: 1
+      };
+    });
+
+    console.log('📊 Monthly Comparison Bar Chart Data:', {
+      years: years.length,
+      monthLabels,
+      datasets: datasets.map(d => ({
+        label: d.label,
+        dataPoints: d.data?.length || 0,
+        sampleData: d.data?.slice(0, 3) || []
+      }))
+    });
 
     return {
       labels: monthLabels,
@@ -130,18 +201,18 @@ export class FinancialComparisonService {
         if (!account) return null;
 
         const monthlyData = [
-          account.months['m3'] || 0, // Mar
-          account.months['m4'] || 0, // Apr
-          account.months['m5'] || 0, // May
-          account.months['m6'] || 0, // Jun
-          account.months['m7'] || 0, // Jul
-          account.months['m8'] || 0, // Aug
-          account.months['m9'] || 0, // Sep
-          account.months['m10'] || 0, // Oct
-          account.months['m11'] || 0, // Nov
-          account.months['m12'] || 0, // Dec
-          account.months['m1'] || 0, // Jan
-          account.months['m2'] || 0  // Feb
+          account.months['m1'] || 0, // Mar
+          account.months['m2'] || 0, // Apr
+          account.months['m3'] || 0, // May
+          account.months['m4'] || 0, // Jun
+          account.months['m5'] || 0, // Jul
+          account.months['m6'] || 0, // Aug
+          account.months['m7'] || 0, // Sep
+          account.months['m8'] || 0, // Oct
+          account.months['m9'] || 0, // Nov
+          account.months['m10'] || 0, // Dec
+          account.months['m11'] || 0, // Jan
+          account.months['m12'] || 0  // Feb
         ];
 
         const colorSet = colors[index % colors.length];
@@ -221,8 +292,9 @@ export class FinancialComparisonService {
    * Calculate monthly totals for a year (sum across all accounts)
    */
   private calculateMonthlyTotals(year: YearGroup): number[] {
-    // Financial year months: Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan, Feb
-    const months = ['m3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12', 'm1', 'm2'];
+    // Financial year months in order: Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan, Feb
+    // Database columns: m1=Mar, m2=Apr, m3=May, m4=Jun, m5=Jul, m6=Aug, m7=Sep, m8=Oct, m9=Nov, m10=Dec, m11=Jan, m12=Feb
+    const months = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'];
 
     return months.map(month => {
       return year.accounts.reduce((sum, account) => {

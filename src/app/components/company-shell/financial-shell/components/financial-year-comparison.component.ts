@@ -35,7 +35,7 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" *ngIf="currentChartType() === 'bar'">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
             </svg>
-            {{ currentChartType() === 'line' ? 'Show Totals' : 'Show Trends' }}
+            {{ currentChartType() === 'line' ? 'Show Month Comparison' : 'Show Year Trends' }}
           </button>
         </div>
       </div>
@@ -67,20 +67,20 @@ import { ILineChart, IBarChart } from '../../../../../models/Charts';
       <div class="bg-gray-50 rounded-lg p-6" *ngIf="hasData() && !isLoadingCharts()">
         <div class="relative" *ngIf="currentChartType() === 'line'" key="line-chart-container">
           <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm z-10">
-            Monthly Trends
+            Yearly Trends (Each line = 1 year)
           </div>
           <app-line-chart
-            [componentTitle]="'Monthly Revenue Trends Comparison'"
+            [componentTitle]="'Financial Year Revenue Trends'"
             [data]="monthlyTrendsChart()">
           </app-line-chart>
         </div>
         <div class="relative" *ngIf="currentChartType() === 'bar'" key="bar-chart-container">
           <div class="absolute top-0 right-0 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm z-10">
-            Annual Totals
+            Month Comparison (Each bar group = same month across years)
           </div>
           <app-bar-chart
-            [componentTitle]="'Annual Revenue Totals Comparison'"
-            [data]="annualTotalsChart()">
+            [componentTitle]="'Monthly Revenue Comparison Across Years'"
+            [data]="monthlyComparisonChart()">
           </app-bar-chart>
         </div>
       </div>
@@ -157,6 +157,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
   // Chart state
   readonly currentChartType = signal<'line' | 'bar'>('line');
   readonly monthlyTrendsChart = signal<ILineChart>({ labels: [], datasets: [] });
+  readonly monthlyComparisonChart = signal<IBarChart>({ labels: [], datasets: [] });
   readonly annualTotalsChart = signal<IBarChart>({ labels: [], datasets: [] });
   readonly comparisonSummary = signal<ReturnType<typeof this.comparisonService.getComparisonSummary> | null>(null);
   readonly isLoadingCharts = signal<boolean>(false);
@@ -182,7 +183,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
   }
 
   /**
-   * Toggle between line chart (trends) and bar chart (totals)
+   * Toggle between line chart (yearly trends) and bar chart (monthly comparison)
    */
   toggleChartType(): void {
     const newType = this.currentChartType() === 'line' ? 'bar' : 'line';
@@ -191,6 +192,11 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
     // Force a brief delay to ensure proper rendering
     setTimeout(() => {
       console.log(`📊 Switched to ${newType} chart view`);
+      if (newType === 'line') {
+        console.log('📈 Line Chart: Shows each year as a separate line to compare trends');
+      } else {
+        console.log('📊 Bar Chart: Groups by month to compare same months across years');
+      }
     }, 50);
   }
 
@@ -205,12 +211,31 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
 
     this.isLoadingCharts.set(true);
 
+    console.log('📊 Updating financial comparison charts with data:', {
+      yearsCount: this.years.length,
+      yearNames: this.years.map(y => y.name),
+      sampleData: this.years.map(y => ({
+        name: y.name,
+        accountCount: y.accounts.length,
+        sampleAccount: y.accounts[0] ? {
+          name: y.accounts[0].accountName,
+          months: Object.keys(y.accounts[0].months).slice(0, 3).map(k =>
+            `${k}: ${y.accounts[0].months[k]}`
+          ).join(', ')
+        } : null
+      }))
+    });
+
     // Use a longer timeout to ensure DOM is ready
     setTimeout(() => {
       try {
-        // Generate monthly trends comparison
+        // Generate yearly trends (line chart) - each year as separate line
         const monthlyChart = this.comparisonService.generateYearlyComparisonLineChart(this.years);
         this.monthlyTrendsChart.set(monthlyChart);
+
+        // Generate monthly comparison (bar chart) - group by month to compare across years
+        const monthlyComparisonChart = this.comparisonService.generateMonthlyComparisonBarChart(this.years);
+        this.monthlyComparisonChart.set(monthlyComparisonChart);
 
         // Generate annual totals comparison
         const annualChart = this.comparisonService.generateYearlyTotalsBarChart(this.years);
@@ -222,7 +247,8 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
 
         console.log('📊 Financial comparison charts updated:', {
           years: this.years.length,
-          monthlyDatasets: monthlyChart.datasets.length,
+          monthlyTrendsDatasets: monthlyChart.datasets.length,
+          monthlyComparisonDatasets: monthlyComparisonChart.datasets.length,
           annualDatasets: annualChart.datasets.length,
           summary
         });
@@ -244,6 +270,7 @@ export class FinancialYearComparisonComponent implements OnInit, OnChanges, OnDe
    */
   private resetCharts(): void {
     this.monthlyTrendsChart.set({ labels: [], datasets: [] });
+    this.monthlyComparisonChart.set({ labels: [], datasets: [] });
     this.annualTotalsChart.set({ labels: [], datasets: [] });
     this.comparisonSummary.set(null);
     this.isLoadingCharts.set(false);
