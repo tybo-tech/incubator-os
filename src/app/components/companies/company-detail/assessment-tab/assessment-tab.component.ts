@@ -1,9 +1,10 @@
 // assessment-tab.component.ts - Assessment questionnaire using consolidated data approach
 
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import {
   BusinessQuestionnaire,
   QuestionnaireSection,
@@ -17,6 +18,7 @@ import { QuestionnaireService } from '../../../../../services/questionnaire.serv
 import { AssessmentExportHelperService } from '../../../../../services/pdf/assessment-export-helper.service';
 import { ICompany } from '../../../../../models/simple.schema';
 import { ToastService } from '../../../../services/toast.service';
+import { CompanyService } from '../../../../../services';
 
 @Component({
   selector: 'app-assessment-tab',
@@ -24,7 +26,7 @@ import { ToastService } from '../../../../services/toast.service';
   imports: [CommonModule, FormsModule],
   template: `
     <!-- Same template as original, but now works with consolidated data -->
-    <div class="space-y-6">
+    <div class="space-y-6 p-8">
       <!-- Header with improved progress tracking -->
         <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="flex items-center justify-between">
@@ -378,6 +380,7 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
   @Input() showDebugInfo = false; // For development
 
+  companyId = signal<number>(0);
   questionnaire: BusinessQuestionnaire | null = null;
   currentSection: QuestionnaireSection | null = null;
   currentSectionIndex = 0;
@@ -397,6 +400,8 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
+  private route = inject(ActivatedRoute);
+  private companyService = inject(CompanyService);
 
   constructor(
     private questionnaireService: QuestionnaireService,
@@ -405,7 +410,20 @@ export class AssessmentTabComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadQuestionnaire();
+    const companyId = +this.route.parent?.snapshot.params['id'];
+    this.companyId.set(companyId);
+    if (!this.company) {
+      this.getCompany();
+    } else {
+      this.loadQuestionnaire();
+    }
+  }
+
+  getCompany() {
+    this.companyService.getCompanyById(this.companyId()).subscribe((company) => {
+      this.company = company;
+      this.loadQuestionnaire();
+    });
   }
 
   ngOnDestroy(): void {

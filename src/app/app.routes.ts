@@ -36,6 +36,12 @@ import { UsersListComponent } from './admin/users/users-list.component';
 import { ReportsOverviewComponent } from './admin/reports/reports-overview.component';
 import { BalanceSheetComponent } from './components/company-shell/financial-shell/components/balance-sheet.component';
 import { ImportComponent } from './components/import/import.component';
+import { CostStructureDemoComponent } from './components/company-shell/financial-shell/components/cost-structure-demo.component';
+import { QuarterlyCostSummaryComponent } from './components/company-shell/financial-shell/components/quarterly-cost-summary';
+import { SwotTabComponent } from './components/companies/company-detail/swot-tab/swot-tab.component';
+import { GpsTargetsTabComponent } from './components/companies/company-detail/gps-targets-tab/gps-targets-tab.component';
+import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
+import { ComplianceTabComponent } from './components/companies/company-detail';
 
 export const routes: Routes = [
   {
@@ -73,19 +79,21 @@ export const routes: Routes = [
           },
           {
             path: 'assessment',
-            component: AssessmentComponent,
+            component: AssessmentTabComponent,
           },
           {
             path: 'swot',
-            component: SwotComponent,
+            // component: SwotComponent,
+            component: SwotTabComponent,
           },
           {
             path: 'gps-targets',
-            component: GpsTargetsComponent,
+            // component: GpsTargetsComponent,
+            component: GpsTargetsTabComponent,
           },
           {
             path: 'compliance',
-            component: CompanyOverviewComponent, // Placeholder - will create later
+            component: ComplianceTabComponent, // Placeholder - will create later
           },
           {
             path: 'financials',
@@ -105,6 +113,10 @@ export const routes: Routes = [
                 component: MonthlyRevenueComponent,
               },
               {
+                path: 'cost-capture',
+                component: CostStructureDemoComponent,
+              },
+              {
                 path: 'bank-statements',
                 component: BankStatementsComponent,
               },
@@ -118,7 +130,8 @@ export const routes: Routes = [
               },
               {
                 path: 'cost-structure',
-                component: CostStructureComponent,
+                // component: CostStructureComponent,
+                component: QuarterlyCostSummaryComponent ,
               },
               {
                 path: 'balance-sheet',

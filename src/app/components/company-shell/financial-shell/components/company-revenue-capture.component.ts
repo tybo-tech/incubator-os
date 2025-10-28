@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, ViewChild } from '@angular/core';
+import { Component, signal, computed, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
@@ -28,6 +28,7 @@ import {
 import { forkJoin } from 'rxjs';
 import { debounceTime, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 
 /**
  * Component for capturing and managing yearly revenue data across financial years
@@ -113,7 +114,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   private static readonly DEFAULT_ACCOUNT_ID = 1;
 
   // Input properties
-  companyId = signal<number>(1); // TODO: Get from route or parent component
+  companyId = signal<number>(0); // TODO: Get from route or parent component
 
   // Reactive signals
   readonly years = signal<YearGroup[]>([]);
@@ -131,6 +132,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   // Debounced save mechanism
   private saveSubject = new Subject<YearGroup>();
   private accountSaveSubject = new Subject<AccountChangeEvent>();
+  private route = inject(ActivatedRoute);
 
   // Computed properties
   readonly totalRevenue = computed(() =>
@@ -157,7 +159,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
     private companyAccountService: CompanyAccountService,
     private transformerService: FinancialDataTransformerService,
     private yearlyStatsService: CompanyFinancialYearlyStatsService
-  ) {}
+  ) { }
 
   ngOnInit() {
     // Set up debounced save for full year changes (wait 500ms after user stops typing)
@@ -171,8 +173,11 @@ export class CompanyRevenueCaptureComponent implements OnInit {
       .subscribe(({ yearId, account, action = 'update' }) => {
         this.saveAccountToDatabase(yearId, account, action);
       });
-
-    this.loadAllData();
+    const companyId = +this.route.parent?.parent?.snapshot.params['id'];
+    if (companyId) {
+      this.companyId.set(companyId);
+      this.loadAllData();
+    }
   }
   /**
    * Handle account changes from child components
@@ -461,8 +466,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
   ): void {
     const companyId = this.companyId();
     console.log(
-      `🔄 ${action === 'insert' ? 'Creating' : 'Updating'} account: ${
-        account.accountName
+      `🔄 ${action === 'insert' ? 'Creating' : 'Updating'} account: ${account.accountName
       } (Company ID: ${companyId}, Year ID: ${yearId})`
     );
 
@@ -580,8 +584,7 @@ export class CompanyRevenueCaptureComponent implements OnInit {
         const monthlyData = this.accountRecordToMonthlyInput(account, year.id);
 
         console.log(
-          `💡 Bulk saving account ${index + 1}/${year.accounts.length}: ${
-            account.accountName
+          `💡 Bulk saving account ${index + 1}/${year.accounts.length}: ${account.accountName
           }`,
           {
             statsId: monthlyData.statsId,

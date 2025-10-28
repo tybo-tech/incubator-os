@@ -1,7 +1,8 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import {
   GpsTargets,
   initGpsTargets,
@@ -11,13 +12,14 @@ import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
 import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets-export.service';
+import { CompanyService } from '../../../../../services';
 
 @Component({
   selector: 'app-gps-targets-tab',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-6 p-8">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="flex items-center justify-between">
@@ -695,6 +697,7 @@ import { GpsTargetsExportService } from '../../../../../services/pdf/gps-targets
 export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
 
+  companyId = signal<number>(0);
   gpsData: GpsTargets = initGpsTargets('');
   gpsNode: INode<GpsTargets> | null = null;
   loading = false;
@@ -704,6 +707,8 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
+  private route = inject(ActivatedRoute);
+  private companyService = inject(CompanyService);
 
   constructor(
     private nodeService: NodeService<any>,
@@ -711,7 +716,20 @@ export class GpsTargetsTabComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadGpsData();
+    const companyId = +this.route.parent?.snapshot.params['id'];
+    this.companyId.set(companyId);
+    if (!this.company) {
+      this.getCompany();
+    } else {
+      this.loadGpsData();
+    }
+  }
+
+  getCompany() {
+    this.companyService.getCompanyById(this.companyId()).subscribe((company) => {
+      this.company = company;
+      this.loadGpsData();
+    });
   }
 
   ngOnDestroy(): void {

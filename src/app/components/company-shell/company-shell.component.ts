@@ -18,11 +18,11 @@ import { filter } from 'rxjs/operators';
           <!-- Company Header Section -->
           <div class="flex items-center justify-between py-4 border-b border-gray-100">
             <div class="flex items-center space-x-4">
-              <!-- Back to Main App -->
+              <!-- Back to Companies List -->
               <button
                 (click)="navigateBack()"
-                class="p-2 text-gray-400 hover:text-gray-600 transition-colors lg:hidden"
-                title="Back to Main">
+                class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Back to Companies List">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -207,10 +207,19 @@ export class CompanyShellComponent implements OnInit {
   }
 
   navigateBack(): void {
-    // Navigate back with preserved query parameters
+    // Navigate back to companies list with preserved query parameters
     if (this.clientId && this.programId && this.cohortId) {
-      this.router.navigate(['/clients', this.clientId, 'programs', this.programId, 'cohorts', this.cohortId]);
+      // Navigate to the cohorts page with the cohortId in query params
+      this.router.navigate(
+        ['/admin/clients', this.clientId, 'programs', this.programId, 'cohorts'],
+        {
+          queryParams: {
+            cohortId: this.cohortId
+          }
+        }
+      );
     } else {
+      // Fallback to companies list if context is missing
       this.router.navigate(['/companies']);
     }
   }

@@ -11,6 +11,7 @@ import {
   QuarterlyProfit,
 } from '../../../../../services/profit-calculation.service';
 import { ToastService } from '../../../../services/toast.service';
+import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 
 // Chart Components
 import { LineChartComponent } from '../../../../charts/line-chart/line-chart.component';
@@ -70,6 +71,17 @@ interface ProfitDisplayRow {
             <i class="fas fa-info-circle mr-1"></i>
             Live calculations from monthly financial data
           </div>
+        </div>
+        
+        <!-- Financial Year Selector -->
+        <div class="flex items-center gap-3">
+          <label class="text-sm text-gray-600">Financial Year:</label>
+          <select 
+            class="px-3 py-2 rounded-lg border border-gray-200 focus:outline-none text-sm"
+            [(ngModel)]="selectedYearId" 
+            (ngModelChange)="onYearChange()">
+            <option *ngFor="let y of financialYears" [ngValue]="y.id">{{ y.name }}</option>
+          </select>
         </div>
       </div>
 
@@ -308,7 +320,7 @@ interface ProfitDisplayRow {
                           : 'text-red-600'
                       "
                     >
-                      {{ row.gross_margin.toFixed(1) }}%
+                      {{ (row.gross_margin || 0).toFixed(1) }}%
                     </span>
                   </td>
                   <td class="px-4 py-4 whitespace-nowrap text-right">
@@ -320,7 +332,7 @@ interface ProfitDisplayRow {
                           : 'text-red-600'
                       "
                     >
-                      {{ row.operating_margin.toFixed(1) }}%
+                      {{ (row.operating_margin || 0).toFixed(1) }}%
                     </span>
                   </td>
                 </tr>
@@ -356,6 +368,10 @@ export class ProfitsComponent implements OnInit {
   profitRows: ProfitDisplayRow[] = [];
   loading = false;
 
+  // Financial Year Selection
+  financialYears: FinancialYear[] = [];
+  selectedYearId!: number;
+
   // Chart Data Properties
   profitTrendsChart: ILineChart = { labels: [], datasets: [] };
   profitComparisonChart: IBarChart = { labels: [], datasets: [] };
@@ -365,10 +381,11 @@ export class ProfitsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private profitCalculationService: ProfitCalculationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private financialYearService: FinancialYearService
   ) {}
 
-  ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
     // Get companyId from route params (two levels up: /company/:id/financial/revenue)
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
     // Get query parameters
@@ -376,15 +393,13 @@ export class ProfitsComponent implements OnInit {
 
     if (companyId) {
       this.companyId = parseInt(companyId, 10);
-
-      // Extract required query parameters
-      this.clientId = queryParams?.['clientId']
+      this.clientId = queryParams && queryParams['clientId']
         ? parseInt(queryParams['clientId'], 10)
         : 0;
-      this.programId = queryParams?.['programId']
+      this.programId = queryParams && queryParams['programId']
         ? parseInt(queryParams['programId'], 10)
         : 0;
-      this.cohortId = queryParams?.['cohortId']
+      this.cohortId = queryParams && queryParams['cohortId']
         ? parseInt(queryParams['cohortId'], 10)
         : 0;
 
@@ -395,8 +410,36 @@ export class ProfitsComponent implements OnInit {
         cohortId: this.cohortId,
       });
 
+      // Load financial years first
+      await this.loadFinancialYears();
+      
+      // Load profit data
       this.loadProfitData();
     }
+  }
+
+  async loadFinancialYears(): Promise<void> {
+    try {
+      this.financialYears = await firstValueFrom(
+        this.financialYearService.getAllFinancialYears()
+      );
+      
+      if (this.financialYears.length > 0) {
+        // Default to the most recent financial year (first in list)
+        this.selectedYearId = this.financialYears[0].id;
+      }
+      
+      console.log('Financial Years loaded:', this.financialYears);
+    } catch (error) {
+      console.error('Error loading financial years:', error);
+      this.toastService.show('Failed to load financial years', 'error');
+    }
+  }
+
+  onYearChange(): void {
+    console.log('Financial year changed to:', this.selectedYearId);
+    // TODO: Load detailed quarterly profit data for selected year
+    // This will be implemented in the next step
   }
 
   async loadProfitData(): Promise<void> {
@@ -417,19 +460,19 @@ export class ProfitsComponent implements OnInit {
         profitSummaryData.length > 0
       ) {
         // Transform the profit summary data to display rows
-        this.profitRows = profitSummaryData.map((profit: ProfitSummary) => ({
+        this.profitRows = profitSummaryData.map((profit: any) => ({
           financial_year_id: profit.financial_year_id,
           financial_year_name: profit.financial_year_name,
           fy_start_year: profit.fy_start_year,
           fy_end_year: profit.fy_end_year,
-          revenue_total: profit.revenue_total,
-          direct_costs: profit.direct_costs,
-          operational_costs: profit.operational_costs,
-          total_costs: profit.total_costs,
-          gross_profit: profit.gross_profit,
-          operating_profit: profit.operating_profit,
-          gross_margin: profit.gross_margin,
-          operating_margin: profit.operating_margin,
+          revenue_total: profit.revenue_total || 0,
+          direct_costs: profit.direct_costs || 0,
+          operational_costs: profit.operational_costs || 0,
+          total_costs: profit.total_costs || 0,
+          gross_profit: profit.gross_profit || profit.profit_total || 0,
+          operating_profit: profit.operating_profit || profit.profit_total || 0,
+          gross_margin: profit.gross_margin || profit.profit_margin_total || 0,
+          operating_margin: profit.operating_margin || profit.profit_margin_total || 0,
           quarter_details: profit.quarter_details,
         }));
 

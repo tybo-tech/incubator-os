@@ -1,8 +1,8 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   SwotAnalysis,
   SwotItem,
@@ -13,13 +13,14 @@ import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
 import { ICompany } from '../../../../../models/simple.schema';
 import { SwotActionPlanExportService } from '../../../../../services/pdf/swot-action-plan-export.service';
+import { CompanyService } from '../../../../../services';
 
 @Component({
   selector: 'app-swot-tab',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-6 p-8">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="flex items-center justify-between">
@@ -652,7 +653,7 @@ import { SwotActionPlanExportService } from '../../../../../services/pdf/swot-ac
 })
 export class SwotTabComponent implements OnInit, OnDestroy {
   @Input() company: ICompany | null = null;
-
+  companyId = signal<number>(0);
   swotData: SwotAnalysis = initSwotAnalysis('');
   swotNode: INode<SwotAnalysis> | null = null;
   loading = false;
@@ -661,15 +662,30 @@ export class SwotTabComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private autoSaveTimeout: any;
+  private route = inject(ActivatedRoute);
+  private companyService = inject(CompanyService);
 
   constructor(
     private nodeService: NodeService<any>,
     private router: Router,
     private swotExportService: SwotActionPlanExportService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.loadSwotData();
+    const companyId = +this.route.parent?.snapshot.params['id'];
+    this.companyId.set(companyId);
+    if (!this.company) {
+      this.getCompany();
+    } else {
+      this.loadSwotData();
+    }
+  }
+
+  getCompany() {
+    this.companyService.getCompanyById(this.companyId()).subscribe((company) => {
+      this.company = company;
+      this.loadSwotData();
+    });
   }
 
   ngOnDestroy(): void {
@@ -887,10 +903,10 @@ export class SwotTabComponent implements OnInit, OnDestroy {
     const operation = this.swotNode
       ? this.nodeService.updateNode({ ...this.swotNode, data: this.swotData })
       : this.nodeService.addNode({
-          company_id: this.company.id,
-          type: 'swot_analysis',
-          data: this.swotData
-        } as INode<SwotAnalysis>);
+        company_id: this.company.id,
+        type: 'swot_analysis',
+        data: this.swotData
+      } as INode<SwotAnalysis>);
 
     operation.pipe(takeUntil(this.destroy$))
       .subscribe({

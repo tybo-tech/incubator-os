@@ -129,6 +129,25 @@ export interface QuarterDetails {
 }
 
 /**
+ * Yearly revenue summary interface
+ */
+export interface YearlyRevenueSummary {
+  financial_year_id: number;
+  financial_year_name: string;
+  fy_start_year: number;
+  fy_end_year: number;
+  revenue_total: number;
+  export_total: number;
+  export_ratio: number;
+  account_breakdown: {
+    account_id: number;
+    account_name: string;
+    account_type: string;
+    total: number;
+  }[];
+}
+
+/**
  * 📊 Company Financial Yearly Stats Service
  * Handles all yearly financial statistics operations including monthly data,
  * revenue/expense tracking, and summary calculations.
@@ -289,6 +308,19 @@ export class CompanyFinancialYearlyStatsService {
 
     return this.http.get<QuarterlyRevenue[]>(`${this.apiUrl}/get-quarterly-revenue.php?${params.toString()}`)
       .pipe(catchError(this.handleError('Get quarterly revenue for all years')));
+  }
+
+  /**
+   * Get yearly revenue summary for a company and financial year
+   */
+  getYearlyRevenue(companyId: number, financialYearId: number): Observable<YearlyRevenueSummary> {
+    const params = new URLSearchParams({
+      company_id: companyId.toString(),
+      financial_year_id: financialYearId.toString()
+    });
+
+    return this.http.get<YearlyRevenueSummary>(`${this.apiUrl}/get-yearly-revenue.php?${params.toString()}`)
+      .pipe(catchError(this.handleError('Get yearly revenue')));
   }
 
   /**

@@ -72,12 +72,22 @@ export class FinancialShellComponent implements OnInit {
       route: 'revenue-capture',
       icon: 'fas fa-table',
     },
-    {
-      label: 'Revenue',
+     {
+      label: 'Revenue Report',
       route: 'revenue',
-      icon: 'fas fa-trending-up',
+      icon: 'fas fa-chart-line',
     },
-
+    {
+      label: 'Monthly Cost Capture',
+      route: 'cost-capture',
+      icon: 'fas fa-file-invoice-dollar',
+    },
+   
+ {
+      label: 'Cost Report',
+      route: 'cost-structure',
+      icon: 'fas fa-chart-pie',
+    },
     // {
     //   label: 'Monthly Revenue',
     //   route: 'monthly-revenue',
@@ -89,11 +99,7 @@ export class FinancialShellComponent implements OnInit {
     //   icon: 'fas fa-university',
     // },
 
-    {
-      label: 'Cost Structure',
-      route: 'cost-structure',
-      icon: 'fas fa-chart-pie',
-    },
+   
     {
       label: 'Profits',
       route: 'profits',
