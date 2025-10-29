@@ -139,7 +139,7 @@ final class CompanyFinancialYearlyStats
             ':financial_year_id' => $financialYearId
         ];
 
-        $sql .= " ORDER BY created_at ASC, account_id ASC";
+        $sql .= " ORDER BY account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -154,7 +154,7 @@ final class CompanyFinancialYearlyStats
         $sql = "SELECT * FROM company_financial_yearly_stats WHERE company_id = :company_id";
         $params = [':company_id' => $companyId];
 
-        $sql .= " ORDER BY created_at ASC, financial_year_id DESC, account_id ASC";
+        $sql .= " ORDER BY financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -206,8 +206,8 @@ final class CompanyFinancialYearlyStats
             $params[':cohort_id'] = (int)$filters['cohort_id'];
         }
 
-        // Default ordering - oldest records first for natural data entry flow
-        $sql .= " ORDER BY created_at ASC, financial_year_id DESC, account_id ASC";
+        // Default ordering
+        $sql .= " ORDER BY company_id ASC, financial_year_id DESC, account_id ASC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
@@ -408,27 +408,9 @@ final class CompanyFinancialYearlyStats
             $accountTotal = 0;
             $accountMonthly = [];
 
-            // CORRECTED: Database columns represent financial year months in order
-            // m1=March, m2=April, m3=May, m4=June, m5=July, m6=August, m7=Sep, m8=Oct, m9=Nov, m10=Dec, m11=Jan, m12=Feb
-            $monthMapping = [
-                1 => 'm1',   // March
-                2 => 'm2',   // April
-                3 => 'm3',   // May
-                4 => 'm4',   // June
-                5 => 'm5',   // July
-                6 => 'm6',   // August
-                7 => 'm7',   // September
-                8 => 'm8',   // October
-                9 => 'm9',   // November
-                10 => 'm10', // December
-                11 => 'm11', // January
-                12 => 'm12'  // February
-            ];
-
             for ($month = 1; $month <= 12; $month++) {
-                $dbColumn = $monthMapping[$month];
-                $monthlyValue = (float)($record[$dbColumn] ?? 0);
-                $accountMonthly[$dbColumn] = $monthlyValue;
+                $monthlyValue = (float)($record["m$month"] ?? 0);
+                $accountMonthly["m$month"] = $monthlyValue;
                 $accountTotal += $monthlyValue;
 
                 if ($accountType === 'export_revenue') {
@@ -448,30 +430,34 @@ final class CompanyFinancialYearlyStats
             ];
         }
 
-        // Data is already in financial year order (March=1, April=2, etc.) - no rotation needed
-        // Since we corrected the month mapping above, quarters can be calculated directly
-        // Note: Arrays are 1-indexed (array_fill(1, 12, 0.0))
+        // Rotate months based on financial year start month
+        $rotate = function(array $months, int $startMonth): array {
+            $values = array_values($months);
+            return array_merge(
+                array_slice($values, $startMonth - 1),
+                array_slice($values, 0, $startMonth - 1)
+            );
+        };
+
+        $domesticRotated = $rotate($domestic, $startMonth);
+        $exportRotated = $rotate($export, $startMonth);
 
         // Calculate quarterly totals
         $sumQuarter = function(array $months, int $startIndex): float {
-            $sum = 0;
-            for ($i = 0; $i < 3; $i++) {
-                $sum += $months[$startIndex + $i] ?? 0;
-            }
-            return $sum;
+            return array_sum(array_slice($months, $startIndex, 3));
         };
 
-        $revenueQ1 = $sumQuarter($domestic, 1);  // Indices 1-3: March, April, May
-        $revenueQ2 = $sumQuarter($domestic, 4);  // Indices 4-6: June, July, August
-        $revenueQ3 = $sumQuarter($domestic, 7);  // Indices 7-9: September, October, November
-        $revenueQ4 = $sumQuarter($domestic, 10); // Indices 10-12: December, January, February
-        $revenueTotal = array_sum($domestic);
+        $revenueQ1 = $sumQuarter($domesticRotated, 0);
+        $revenueQ2 = $sumQuarter($domesticRotated, 3);
+        $revenueQ3 = $sumQuarter($domesticRotated, 6);
+        $revenueQ4 = $sumQuarter($domesticRotated, 9);
+        $revenueTotal = array_sum($domesticRotated);
 
-        $exportQ1 = $sumQuarter($export, 1);   // Indices 1-3: March, April, May
-        $exportQ2 = $sumQuarter($export, 4);   // Indices 4-6: June, July, August
-        $exportQ3 = $sumQuarter($export, 7);   // Indices 7-9: September, October, November
-        $exportQ4 = $sumQuarter($export, 10);  // Indices 10-12: December, January, February
-        $exportTotal = array_sum($export);
+        $exportQ1 = $sumQuarter($exportRotated, 0);
+        $exportQ2 = $sumQuarter($exportRotated, 3);
+        $exportQ3 = $sumQuarter($exportRotated, 6);
+        $exportQ4 = $sumQuarter($exportRotated, 9);
+        $exportTotal = array_sum($exportRotated);
 
         // Calculate export ratio
         $exportRatio = $revenueTotal > 0 ? ($exportTotal / $revenueTotal) * 100 : 0;
@@ -525,6 +511,96 @@ final class CompanyFinancialYearlyStats
 
         return $result;
     }
+
+    /**
+ * Get yearly revenue summary for a company and financial year.
+ * Aggregates all monthly data for each revenue account and provides total and export breakdowns.
+ */
+public function getYearlyRevenue(int $companyId, int $financialYearId): array
+{
+    $sql = "SELECT
+                fs.*,
+                acc.account_type,
+                acc.account_name,
+                fy.name AS financial_year_name,
+                fy.fy_start_year,
+                fy.fy_end_year
+            FROM company_financial_yearly_stats fs
+            LEFT JOIN company_accounts acc ON fs.account_id = acc.id
+            LEFT JOIN financial_years fy ON fs.financial_year_id = fy.id
+            WHERE fs.company_id = :company_id
+              AND fs.financial_year_id = :financial_year_id";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute([
+        ':company_id' => $companyId,
+        ':financial_year_id' => $financialYearId
+    ]);
+
+    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!$records) {
+        return [
+            'financial_year_id' => $financialYearId,
+            'financial_year_name' => "FY $financialYearId",
+            'fy_start_year' => null,
+            'fy_end_year' => null,
+            'revenue_total' => 0,
+            'export_total' => 0,
+            'export_ratio' => 0,
+            'account_breakdown' => []
+        ];
+    }
+
+    // Initialize accumulators
+    $domesticTotal = 0.0;
+    $exportTotal = 0.0;
+    $accountBreakdown = [];
+
+    foreach ($records as $record) {
+        $accountType = $record['account_type'] ?? 'domestic_revenue';
+        $accountName = $record['account_name'] ?? 'Unknown Account';
+        $accountId = $record['account_id'];
+        $monthlySum = 0.0;
+
+        // Sum up all months
+        for ($m = 1; $m <= 12; $m++) {
+            $monthlySum += (float)($record["m$m"] ?? 0);
+        }
+
+        // Assign totals based on account type
+        if ($accountType === 'export_revenue') {
+            $exportTotal += $monthlySum;
+        } else {
+            $domesticTotal += $monthlySum;
+        }
+
+        $accountBreakdown[] = [
+            'account_id' => $accountId,
+            'account_name' => $accountName,
+            'account_type' => $accountType,
+            'total' => round($monthlySum, 2)
+        ];
+    }
+
+    $revenueTotal = $domesticTotal + $exportTotal;
+    $exportRatio = $revenueTotal > 0 ? ($exportTotal / $revenueTotal) * 100 : 0;
+
+    // Use first record for year context
+    $first = $records[0];
+
+    return [
+        'financial_year_id' => $financialYearId,
+        'financial_year_name' => $first['financial_year_name'] ?? "FY $financialYearId",
+        'fy_start_year' => (int)$first['fy_start_year'],
+        'fy_end_year' => (int)$first['fy_end_year'],
+        'revenue_total' => round($revenueTotal, 2),
+        'export_total' => round($exportTotal, 2),
+        'export_ratio' => round($exportRatio, 2),
+        'account_breakdown' => $accountBreakdown
+    ];
+}
+
 
     /* =========================================================================
        DELETE / STATUS

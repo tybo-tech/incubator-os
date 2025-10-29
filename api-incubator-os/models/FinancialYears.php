@@ -138,7 +138,7 @@ final class FinancialYears
         }
 
         // Default ordering
-        $sql .= " ORDER BY fy_start_year DESC, id DESC";
+        $sql .= " ORDER BY id";
 
         // Pagination
         if (isset($filters['limit'])) {
