@@ -75,35 +75,75 @@ type CostType = 'direct' | 'operational';
 
         <!-- Modal Body -->
         <div class="flex-1 overflow-hidden flex flex-col">
-          <!-- Add New Category Form -->
-          <div class="p-4 bg-blue-50 border-b border-blue-200">
-            <h3 class="text-sm font-semibold text-blue-800 mb-2">Add New Category</h3>
-            <div class="flex gap-3 items-end">
-              <div class="flex-1">
-                <input
-                  type="text"
-                  [(ngModel)]="newCategoryName"
-                  placeholder="Enter new category name"
-                  class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  (keydown.enter)="addNewCategory()">
-              </div>
-              <div>
-                <select
-                  [(ngModel)]="newCategoryIndustryId"
-                  class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-w-40">
-                  <option [ngValue]="null">No Industry</option>
-                  <option *ngFor="let industry of industries()" [ngValue]="industry.id">
-                    {{ industry.data.name }}
-                  </option>
-                </select>
-              </div>
+          <!-- Add New Category Section -->
+          <div class="border-b border-gray-200">
+            <!-- Add Button (shown when form is closed) -->
+            <div *ngIf="!showAddForm()" class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
               <button
                 type="button"
-                (click)="addNewCategory()"
-                [disabled]="!newCategoryName.trim() || loading()"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm whitespace-nowrap">
-                {{ loading() ? 'Adding...' : 'Add Category' }}
+                (click)="toggleAddForm()"
+                class="w-full px-4 py-3 bg-white border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all group">
+                <div class="flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-plus group-hover:scale-110 transition-transform"></i>
+                  <span class="font-medium">Add New {{ costType() | titlecase }} Category</span>
+                </div>
               </button>
+            </div>
+
+            <!-- Add New Category Form (shown when form is open) -->
+            <div *ngIf="showAddForm()" class="p-4 bg-blue-50 border-blue-200">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                  <i class="fa-solid fa-plus"></i>
+                  Add New {{ costType() | titlecase }} Category
+                </h3>
+                <button
+                  type="button"
+                  (click)="cancelAddForm()"
+                  class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full p-1">
+                  <i class="fa-solid fa-times text-sm"></i>
+                </button>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Category Name *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="newCategoryName"
+                    placeholder="Enter new category name"
+                    class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    (keydown.enter)="addNewCategory()">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Industry (Optional)</label>
+                  <select
+                    [(ngModel)]="newCategoryIndustryId"
+                    class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <option [ngValue]="null">No Industry</option>
+                    <option *ngFor="let industry of industries()" [ngValue]="industry.id">
+                      {{ industry.data.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    (click)="addNewCategory()"
+                    [disabled]="!newCategoryName.trim() || loading()"
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm font-medium">
+                    {{ loading() ? 'Adding...' : 'Add Category' }}
+                  </button>
+                  <button
+                    type="button"
+                    (click)="cancelAddForm()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm font-medium">
+                    Cancel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -134,8 +174,15 @@ type CostType = 'direct' | 'operational';
 
                 <!-- Edit Form (shown when editing) -->
                 <div *ngIf="editingCategory()?.id === category.id" class="p-4 space-y-3">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                      <i class="fa-solid fa-edit"></i>
+                      Edit {{ costType() | titlecase }} Category
+                    </h4>
+                  </div>
+
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Category Name</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Category Name *</label>
                     <input
                       type="text"
                       [(ngModel)]="editCategoryName"
@@ -144,7 +191,7 @@ type CostType = 'direct' | 'operational';
                   </div>
 
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Industry</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Industry (Optional)</label>
                     <select
                       [(ngModel)]="editCategoryIndustryId"
                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
@@ -155,28 +202,18 @@ type CostType = 'direct' | 'operational';
                     </select>
                   </div>
 
-                  <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Cost Type</label>
-                    <select
-                      [(ngModel)]="editCategoryCostType"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                      <option value="direct">Direct</option>
-                      <option value="operational">Operational</option>
-                    </select>
-                  </div>
-
                   <div class="flex gap-2 mt-4">
                     <button
                       type="button"
                       (click)="saveEditedCategory(category)"
                       [disabled]="!editCategoryName.trim() || loading()"
-                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm">
-                      {{ loading() ? 'Saving...' : 'Save' }}
+                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm font-medium">
+                      {{ loading() ? 'Saving...' : 'Save Changes' }}
                     </button>
                     <button
                       type="button"
                       (click)="cancelEdit()"
-                      class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm">
+                      class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm font-medium">
                       Cancel
                     </button>
                   </div>
@@ -194,7 +231,7 @@ type CostType = 'direct' | 'operational';
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div 
+                    <div
                       *ngIf="openDropdownId() === category.id"
                       class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-20">
                       <button
@@ -292,6 +329,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
   @Input() usedCategoryIds: number[] = []; // Categories that are currently in use
   @Output() closed = new EventEmitter<void>();
   @Output() categorySelected = new EventEmitter<CostCategory>();
+  @Output() categoryManaged = new EventEmitter<void>(); // Emitted when a category is edited or deleted
 
   // Modal state
   readonly isOpen = signal(false);
@@ -307,6 +345,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
   readonly editingCategory = signal<CostCategory | null>(null);
   readonly openDropdownId = signal<number | null>(null);
   readonly deletingCategoryId = signal<number | null>(null);
+  readonly showAddForm = signal<boolean>(false); // Control visibility of add new category form
 
   // Filters - using signals for reactivity
   readonly selectedIndustryId = signal<number | null>(null);
@@ -461,9 +500,10 @@ export class CostCategoryPickerModalComponent implements OnInit {
         const currentCategories = this.categories();
         this.categories.set([...currentCategories, category]);
 
-        // Clear form
+        // Clear form and hide it
         this.newCategoryName = '';
         this.newCategoryIndustryId = null;
+        this.showAddForm.set(false);
 
         // Auto-select the new category
         this.selectCategory(category);
@@ -536,8 +576,30 @@ export class CostCategoryPickerModalComponent implements OnInit {
   private resetForm() {
     this.newCategoryName = '';
     this.newCategoryIndustryId = null;
+    this.showAddForm.set(false); // Hide add form when resetting
     this.resetFilters();
     this.resetEditForm();
+  }
+
+  /**
+   * Toggle the add new category form visibility
+   */
+  toggleAddForm() {
+    this.showAddForm.set(!this.showAddForm());
+    if (this.showAddForm()) {
+      // Reset form fields when opening
+      this.newCategoryName = '';
+      this.newCategoryIndustryId = null;
+    }
+  }
+
+  /**
+   * Cancel adding new category and hide the form
+   */
+  cancelAddForm() {
+    this.showAddForm.set(false);
+    this.newCategoryName = '';
+    this.newCategoryIndustryId = null;
   }
 
   /**
@@ -568,8 +630,9 @@ export class CostCategoryPickerModalComponent implements OnInit {
   startEdit(category: CostCategory) {
     this.editCategoryName = category.name;
     this.editCategoryIndustryId = category.industry_id || null;
-    this.editCategoryCostType = category.cost_type || 'direct';
-    
+    // Use the current modal's cost type instead of the category's cost type
+    this.editCategoryCostType = this.costType();
+
     this.editingCategory.set(category);
     this.openDropdownId.set(null);
   }
@@ -599,7 +662,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
       };
 
       const updatedCategory = await this.costCategoriesService.updateCostCategory(category.id, updateData).toPromise();
-      
+
       if (updatedCategory) {
         // Update the category in the local list
         const categories = this.categories();
@@ -611,6 +674,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
 
         this.toastService.success(`Category "${updatedCategory.name}" updated successfully`);
         this.resetEditForm();
+        this.categoryManaged.emit(); // Notify parent that category was updated
       }
     } catch (error: any) {
       console.error('Error updating category:', error);
@@ -632,7 +696,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
    */
   confirmDelete(category: CostCategory) {
     this.openDropdownId.set(null);
-    
+
     // Check if category is being used
     if (this.isCategoryInUse(category.id)) {
       this.toastService.warning(`Cannot delete "${category.name}" because it's currently being used in cost entries.`);
@@ -654,19 +718,20 @@ export class CostCategoryPickerModalComponent implements OnInit {
 
     try {
       const result = await this.costCategoriesService.deleteCostCategory(category.id).toPromise();
-      
+
       if (result?.success) {
         // Remove the category from the local list
         const categories = this.categories().filter(c => c.id !== category.id);
         this.categories.set(categories);
 
         this.toastService.success(`Category "${category.name}" deleted successfully`);
+        this.categoryManaged.emit(); // Notify parent that category was deleted
       } else {
         throw new Error(result?.message || 'Unknown error');
       }
     } catch (error: any) {
       console.error('Error deleting category:', error);
-      
+
       // Handle specific error cases
       if (error?.message?.includes('foreign key') || error?.message?.includes('constraint')) {
         this.toastService.error(`Cannot delete "${category.name}" because it's being used by existing cost entries.`);

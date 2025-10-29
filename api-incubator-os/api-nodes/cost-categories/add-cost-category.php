@@ -12,9 +12,10 @@ try {
     $result = $costCategories->addCostCategory(
         $data['name'],
         $data['parent_id'] ?? null,
-        $data['industry_id'] ?? null
+        $data['industry_id'] ?? null,
+        $data['cost_type'] ?? null
     );
-    
+
     echo json_encode($result);
 } catch (Exception $e) {
     http_response_code(400);
