@@ -20,46 +20,74 @@ interface CostLine {
   imports: [CommonModule, FormsModule],
   template: `
     <tr class="border-b last:border-b-0">
-      <td class="p-2">
+      <td class="p-2 w-60 min-w-[200px]">
         <div class="flex items-center gap-2">
-          <i [class]="getCategoryIcon()" class="text-xs"></i>
-          <span class="font-medium text-gray-900 text-sm">{{ row.category }}</span>
+          <i [class]="getCategoryIcon()" class="text-xs flex-shrink-0"></i>
+          <span 
+            class="font-medium text-gray-900 text-sm truncate flex-1 cursor-help" 
+            [title]="row.category">
+            {{ row.category }}
+          </span>
           <button
-            class="text-gray-400 hover:text-blue-600 text-xs ml-1"
+            class="text-gray-400 hover:text-blue-600 text-xs flex-shrink-0"
             (click)="onEditCategory()"
             title="Change category">
             <i class="fa-solid fa-pen-to-square"></i>
           </button>
-          <i *ngIf="row.isSaving" class="fa-solid fa-spinner fa-spin text-blue-500 text-xs"></i>
+          <i *ngIf="row.isSaving" class="fa-solid fa-spinner fa-spin text-blue-500 text-xs flex-shrink-0"></i>
         </div>
       </td>
 
-      <td class="p-1 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
+      <td class="p-1 w-20 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
         <div class="relative">
           <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">R</span>
           <input
             type="number"
-            class="ps-5 w-20 px-1 py-1 text-sm rounded border border-gray-200 text-right"
+            class="ps-5 w-full px-1 py-1 text-sm rounded border border-gray-200 text-right"
             [(ngModel)]="row.monthly[mi]"
             (change)="onCellChange()"
             [disabled]="disabled">
         </div>
       </td>
 
-      <td class="p-2 font-semibold text-sm text-right whitespace-nowrap">
+      <td class="p-2 w-32 font-semibold text-sm text-right whitespace-nowrap">
         R {{ row.total | number:'1.0-0' }}
       </td>
 
-      <td class="p-2 text-center whitespace-nowrap">
+      <td class="p-2 w-16 text-center whitespace-nowrap">
         <button
           class="text-rose-600 hover:text-rose-700 text-sm"
           (click)="onRemove()"
-          [disabled]="disabled">
+          [disabled]="disabled"
+          title="Remove this cost item">
           <i class="fa-solid fa-trash"></i>
         </button>
       </td>
     </tr>
-  `
+  `,
+  styles: [`
+    .truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Ensure consistent width for number inputs */
+    input[type="number"] {
+      min-width: 0;
+    }
+    
+    /* Remove number input spinners for cleaner look */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+  `]
 })
 export class CostRowComponent {
   @Input() row!: CostLine;

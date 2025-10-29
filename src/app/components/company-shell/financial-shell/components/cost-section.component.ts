@@ -52,12 +52,12 @@ type CostType = 'direct' | 'operational';
 
       <!-- Table -->
       <div class="overflow-x-auto">
-        <table class="min-w-[1000px] w-full">
+        <table class="min-w-[1000px] w-full table-fixed">
           <thead>
             <tr class="bg-gray-50 text-xs text-gray-500">
-              <th class="text-left p-2 min-w-[200px] w-56">Category</th>
+              <th class="text-left p-2 w-60 min-w-[200px]">Category</th>
               <th class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let m of months">{{ m }}</th>
-              <th class="p-2 w-40 text-right whitespace-nowrap">Total</th>
+              <th class="p-2 w-32 text-right whitespace-nowrap">Total</th>
               <th class="p-2 w-16 text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
@@ -77,18 +77,43 @@ type CostType = 'direct' | 'operational';
           <!-- Section Totals Footer -->
           <tfoot>
             <tr class="bg-gray-50 font-semibold text-sm">
-              <td class="p-2 text-right whitespace-nowrap">Section Total</td>
-              <td class="p-1 text-center whitespace-nowrap" *ngFor="let _m of months; let mi = index">
+              <td class="p-2 text-right w-60 min-w-[200px]">Section Total</td>
+              <td class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
                 R {{ getMonthTotal(mi) | number:'1.0-0' }}
               </td>
-              <td class="p-2 text-right whitespace-nowrap">R {{ sectionTotal | number:'1.0-0' }}</td>
-              <td class="p-2"></td>
+              <td class="p-2 text-right w-32 whitespace-nowrap">R {{ sectionTotal | number:'1.0-0' }}</td>
+              <td class="p-2 w-16"></td>
             </tr>
           </tfoot>
         </table>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    /* Ensure table layout is consistent */
+    .table-fixed {
+      table-layout: fixed;
+    }
+    
+    /* Better scrollbar styling for horizontal scroll */
+    .overflow-x-auto::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  `]
 })
 export class CostSectionComponent {
   @Input() costType!: CostType;
