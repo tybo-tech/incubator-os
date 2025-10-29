@@ -41,7 +41,7 @@ import { QuarterlyCostSummaryComponent } from './components/company-shell/financ
 import { SwotTabComponent } from './components/companies/company-detail/swot-tab/swot-tab.component';
 import { GpsTargetsTabComponent } from './components/companies/company-detail/gps-targets-tab/gps-targets-tab.component';
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
-import { ComplianceTabComponent } from './components/companies/company-detail';
+import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
 
 export const routes: Routes = [
@@ -94,7 +94,30 @@ export const routes: Routes = [
           },
           {
             path: 'compliance',
-            component: ComplianceTabComponent, // Placeholder - will create later
+            component: ComplianceShellComponent,
+            children: [
+              {
+                path: '',
+                redirectTo: 'annual-returns',
+                pathMatch: 'full'
+              },
+              {
+                path: 'annual-returns',
+                loadComponent: () => import('./components/compliance/annual-returns.component').then(m => m.AnnualReturnsComponent),
+              },
+              {
+                path: 'beneficial-ownership',
+                loadComponent: () => import('./components/compliance/beneficial-ownership.component').then(m => m.BeneficialOwnershipComponent),
+              },
+              {
+                path: 'tax-registrations',
+                loadComponent: () => import('./components/compliance/tax-registrations.component').then(m => m.TaxRegistrationsComponent),
+              },
+              {
+                path: 'other-statutory-tasks',
+                loadComponent: () => import('./components/compliance/other-statutory-tasks.component').then(m => m.OtherStatutoryTasksComponent),
+              }
+            ]
           },
           {
             path: 'coaching',
