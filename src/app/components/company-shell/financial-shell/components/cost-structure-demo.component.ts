@@ -9,23 +9,14 @@ import { CompanyCostingYearlyStatsService, CompanyCostingYearlyStats, MonthlyDat
 import { CompanyFinancialYearlyStatsService, YearlyRevenueSummary } from '../../../../../services/company-financial-yearly-stats.service';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CostCategoryPickerModalComponent } from './cost-category-picker-modal.component';
+import { CostSectionComponent } from './cost-section.component';
+import { CostKpiComponent } from './cost-kpi.component';
+import { CostStructureUtilsService, CostLine, CostType, CostTotals } from './cost-structure-utils.service';
 
-type CostType = 'direct' | 'operational';
-
-interface CostLine {
-  id: number;
-  costingStatsId?: number;    // Link to database record
-  type: CostType;
-  category: string;
-  categoryId?: number | null;  // Link to cost category
-  monthly: number[];          // length 12, Jan..Dec
-  total: number;              // cached for quick view
-  notes?: string;
-  isSaving?: boolean;         // Individual row saving state
-}@Component({
+@Component({
     selector: 'app-cost-structure-demo',
     standalone: true,
-    imports: [CommonModule, FormsModule, CostCategoryPickerModalComponent],
+    imports: [CommonModule, FormsModule, CostCategoryPickerModalComponent, CostSectionComponent, CostKpiComponent],
     template: `
     <div class="p-6 m-5">
       <!-- Page Header -->
@@ -55,217 +46,49 @@ interface CostLine {
         </div>
       </div>
 
-      <!-- KPIs -->
-      <div class="grid md:grid-cols-4 gap-4 mb-6">
-        <div class="p-4 rounded-2xl border border-gray-100 shadow-sm bg-white">
-          <div class="text-xs text-gray-500">Revenue</div>
-          <div class="text-xl font-semibold" [class.text-gray-400]="isLoading">
-            <span *ngIf="!isLoading">R {{ totalRevenue | number:'1.0-0' }}</span>
-            <span *ngIf="isLoading">Loading...</span>
-          </div>
-          <div class="text-xs text-green-600 mt-1" *ngIf="!isLoading">*From database</div>
-        </div>
-        <div class="p-4 rounded-2xl border border-gray-100 shadow-sm bg-white">
-          <div class="text-xs text-gray-500">Direct Costs (COGS)</div>
-          <div class="text-xl font-semibold">R {{ totals.direct | number:'1.0-0' }}</div>
-        </div>
-        <div class="p-4 rounded-2xl border border-gray-100 shadow-sm bg-white">
-          <div class="text-xs text-gray-500">Operating Expenses</div>
-          <div class="text-xl font-semibold">R {{ totals.operational | number:'1.0-0' }}</div>
-        </div>
-        <div class="p-4 rounded-2xl border border-gray-100 shadow-sm bg-white">
-          <div class="text-xs text-gray-500">Net Profit (Rev - COGS - OPEX)</div>
-          <div class="text-xl font-semibold"
-               [class.text-emerald-600]="grandNet >= 0"
-               [class.text-rose-600]="grandNet < 0">
-               R {{ grandNet | number:'1.0-0' }}
-          </div>
-        </div>
-      </div>
+      <!-- KPIs Component -->
+      <app-cost-kpi
+        [totalRevenue]="totalRevenue"
+        [directCosts]="totals.direct"
+        [operationalCosts]="totals.operational"
+        [isLoading]="isLoading">
+      </app-cost-kpi>
 
-      <!-- Sections -->
+      <!-- Cost Sections -->
       <div class="space-y-8">
+        <!-- Direct Costs Section -->
+        <app-cost-section
+          costType="direct"
+          [rows]="rows.direct"
+          [months]="months"
+          [disabled]="isSaving"
+          [sectionTotal]="totals.direct"
+          (addRow)="openCategoryPicker($event)"
+          (rowCellChange)="onCellChangeWithSave($event)"
+          (rowEditCategory)="openCategoryPickerForEdit($event.row, $event.type)"
+          (rowRemove)="removeRowWithSave($event.type, $event.id)">
+        </app-cost-section>
 
-        <!-- Direct Costs -->
-        <div class="rounded-2xl border border-gray-100 shadow-sm bg-white overflow-hidden">
-          <div class="px-4 py-3 bg-emerald-600 text-white flex items-center justify-between">
-            <div class="font-semibold flex items-center gap-2">
-              <i class="fa-solid fa-industry"></i>
-              Direct Costs
-            </div>
-            <div class="text-sm">Total: <span class="font-semibold">R {{ totals.direct | number:'1.0-0' }}</span></div>
-          </div>
-
-          <!-- Add Row -->
-          <div class="p-4 flex justify-start">
-            <button class="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-2 shadow-sm transition-all"
-                    (click)="openCategoryPicker('direct')" 
-                    [disabled]="isSaving">
-              <i class="fa-solid fa-plus"></i> 
-              <span *ngIf="!isSaving">Add Direct Cost</span>
-              <span *ngIf="isSaving">Saving...</span>
-            </button>
-          </div>
-
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-[1000px] w-full">
-              <thead>
-                <tr class="bg-gray-50 text-xs text-gray-500">
-                  <th class="text-left p-2 min-w-[200px] w-56">Category</th>
-                  <th class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let m of months">{{ m }}</th>
-                  <th class="p-2 w-40 text-right whitespace-nowrap">Total</th>
-                  <th class="p-2 w-16 text-center whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of rows.direct; trackBy: trackById" class="border-b last:border-b-0">
-                  <td class="p-2">
-                    <div class="flex items-center gap-2">
-                      <i class="fa-solid fa-box text-emerald-600 text-xs"></i>
-                      <span class="font-medium text-gray-900 text-sm">{{ row.category }}</span>
-                      <button 
-                        class="text-gray-400 hover:text-blue-600 text-xs ml-1" 
-                        (click)="openCategoryPickerForEdit(row, 'direct')"
-                        title="Change category">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </button>
-                      <i *ngIf="row.isSaving" class="fa-solid fa-spinner fa-spin text-blue-500 text-xs"></i>
-                    </div>
-                  </td>
-
-                  <td class="p-1 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-                    <div class="relative">
-                      <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">R</span>
-                      <input type="number" class="ps-5 w-20 px-1 py-1 text-sm rounded border border-gray-200 text-right"
-                             [(ngModel)]="row.monthly[mi]" (change)="onCellChangeWithSave(row)">
-                    </div>
-                  </td>
-
-                  <td class="p-2 font-semibold text-sm text-right whitespace-nowrap">R {{ row.total | number:'1.0-0' }}</td>
-                  <td class="p-2 text-center whitespace-nowrap">
-                    <button class="text-rose-600 hover:text-rose-700 text-sm" (click)="removeRowWithSave('direct', row.id)">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-
-              <tfoot>
-                <tr class="bg-gray-50 font-semibold text-sm">
-                  <td class="p-2 text-right whitespace-nowrap">Section Total</td>
-                  <td class="p-1 text-center whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-                    R {{ sectionMonthTotal('direct', mi) | number:'1.0-0' }}
-                  </td>
-                  <td class="p-2 text-right whitespace-nowrap">R {{ totals.direct | number:'1.0-0' }}</td>
-                  <td class="p-2"></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        <!-- Operational Costs -->
-        <div class="rounded-2xl border border-gray-100 shadow-sm bg-white overflow-hidden">
-          <div class="px-4 py-3 bg-sky-600 text-white flex items-center justify-between">
-            <div class="font-semibold flex items-center gap-2">
-              <i class="fa-solid fa-briefcase"></i>
-              Operational Costs
-            </div>
-            <div class="text-sm">Total: <span class="font-semibold">R {{ totals.operational | number:'1.0-0' }}</span></div>
-          </div>
-
-          <!-- Add Row -->
-          <div class="p-4 flex justify-start">
-            <button class="px-4 py-2 rounded-xl bg-sky-600 text-white hover:bg-sky-500 flex items-center gap-2 shadow-sm transition-all"
-                    (click)="openCategoryPicker('operational')" 
-                    [disabled]="isSaving">
-              <i class="fa-solid fa-plus"></i> 
-              <span *ngIf="!isSaving">Add Operational Cost</span>
-              <span *ngIf="isSaving">Saving...</span>
-            </button>
-          </div>
-
-          <!-- Table -->
-          <div class="overflow-x-auto">
-            <table class="min-w-[1000px] w-full">
-              <thead>
-                <tr class="bg-gray-50 text-xs text-gray-500">
-                  <th class="text-left p-2 min-w-[200px] w-56">Category</th>
-                  <th class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let m of months">{{ m }}</th>
-                  <th class="p-2 w-40 text-right whitespace-nowrap">Total</th>
-                  <th class="p-2 w-16 text-center whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of rows.operational; trackBy: trackById" class="border-b last:border-b-0">
-                  <td class="p-2">
-                    <div class="flex items-center gap-2">
-                      <i class="fa-solid fa-tags text-sky-600 text-xs"></i>
-                      <span class="font-medium text-gray-900 text-sm">{{ row.category }}</span>
-                      <button 
-                        class="text-gray-400 hover:text-blue-600 text-xs ml-1" 
-                        (click)="openCategoryPickerForEdit(row, 'operational')"
-                        title="Change category">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                      </button>
-                      <i *ngIf="row.isSaving" class="fa-solid fa-spinner fa-spin text-blue-500 text-xs"></i>
-                    </div>
-                  </td>
-
-                  <td class="p-1 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-                    <div class="relative">
-                      <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">R</span>
-                      <input type="number" class="ps-5 w-20 px-1 py-1 text-sm rounded border border-gray-200 text-right"
-                             [(ngModel)]="row.monthly[mi]" (change)="onCellChangeWithSave(row)">
-                    </div>
-                  </td>
-
-                  <td class="p-2 font-semibold text-sm text-right whitespace-nowrap">R {{ row.total | number:'1.0-0' }}</td>
-                  <td class="p-2 text-center whitespace-nowrap">
-                    <button class="text-rose-600 hover:text-rose-700 text-sm" (click)="removeRowWithSave('operational', row.id)">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-
-              <tfoot>
-                <tr class="bg-gray-50 font-semibold text-sm">
-                  <td class="p-2 text-right whitespace-nowrap">Section Total</td>
-                  <td class="p-1 text-center whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-                    R {{ sectionMonthTotal('operational', mi) | number:'1.0-0' }}
-                  </td>
-                  <td class="p-2 text-right whitespace-nowrap">R {{ totals.operational | number:'1.0-0' }}</td>
-                  <td class="p-2"></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Grand Totals -->
-      <div class="mt-8 p-4 rounded-2xl border border-gray-100 shadow-sm bg-white">
-        <div class="flex flex-wrap items-center gap-6">
-          <div class="text-lg font-semibold flex items-center gap-2">
-            <i class="fa-solid fa-sack-dollar"></i> Grand Totals
-          </div>
-          <div class="text-gray-700">Direct: <span class="font-semibold">R {{ totals.direct | number:'1.0-0' }}</span></div>
-          <div class="text-gray-700">Operational: <span class="font-semibold">R {{ totals.operational | number:'1.0-0' }}</span></div>
-          <div class="ms-auto text-gray-900 font-semibold">
-            Net: <span [class.text-emerald-600]="grandNet >= 0" [class.text-rose-600]="grandNet < 0">
-              R {{ grandNet | number:'1.0-0' }}
-            </span>
-          </div>
-        </div>
+        <!-- Operational Costs Section -->
+        <app-cost-section
+          costType="operational"
+          [rows]="rows.operational"
+          [months]="months"
+          [disabled]="isSaving"
+          [sectionTotal]="totals.operational"
+          (addRow)="openCategoryPicker($event)"
+          (rowCellChange)="onCellChangeWithSave($event)"
+          (rowEditCategory)="openCategoryPickerForEdit($event.row, $event.type)"
+          (rowRemove)="removeRowWithSave($event.type, $event.id)">
+        </app-cost-section>
       </div>
 
       <!-- Helper -->
       <p class="mt-4 text-xs text-gray-500">
-        💾 Changes are automatically saved to the database. 
-        📊 Cost categories are loaded from your configured categories. 
+        💾 Changes are automatically saved to the database.
+        📊 Cost categories are loaded from your configured categories.
         📱 On small screens you can horizontally scroll the tables.
+        📅 Months displayed follow your financial year calendar ({{ getSelectedFinancialYearName() }}).
       </p>
 
       <!-- Category Picker Modal -->
@@ -285,7 +108,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
     private saveSubject = new Subject<void>();
-    
+
     // Track row being edited for category change
     private rowBeingEdited: CostLine | null = null;
 
@@ -302,13 +125,13 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
 
   // UI State
   selectedYearId = 1;
-  
+
   // Data from services
-  financialYears: FinancialYear[] = [];    // Months (Jan..Dec)
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  financialYears: FinancialYear[] = [];
+  months: string[] = []; // Will be populated based on selected financial year
 
     // Totals cache
-    totals = { direct: 0, operational: 0 };
+    totals: CostTotals = { direct: 0, operational: 0 };
     totalRevenue = 0; // Will be loaded from database
 
     // Row storage - starts empty, loaded from database
@@ -323,13 +146,12 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         operational: { category: 'Salaries & Wages' },
     };
 
-    private autoId = 1;
-
   constructor(
     private costCategoriesService: CostCategoriesService,
     private costingStatsService: CompanyCostingYearlyStatsService,
     private companyFinancialStatsService: CompanyFinancialYearlyStatsService,
     private financialYearService: FinancialYearService,
+    private costStructureUtils: CostStructureUtilsService,
     private route: ActivatedRoute
   ) {
     this.setupAutoSave();
@@ -353,14 +175,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     // ---- Helpers ----
 
     makeRow(type: CostType, category: string, monthly?: number[]): CostLine {
-        const m = monthly ?? Array.from({ length: 12 }, () => 0);
-        return {
-            id: this.autoId++,
-            type,
-            category,
-            monthly: m.slice(0, 12),
-            total: m.reduce((a, b) => a + (Number(b) || 0), 0),
-        };
+        return this.costStructureUtils.createCostLine(type, category, monthly);
     }
 
     trackById = (_: number, row: CostLine) => row.id;
@@ -378,30 +193,16 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     }
 
     onCellChange(row: CostLine) {
-        // sanitize -> number and >= 0
-        row.monthly = row.monthly.map(v => {
-            const n = Number(v);
-            return isFinite(n) && n >= 0 ? n : 0;
-        });
-        row.total = row.monthly.reduce((a, b) => a + b, 0);
+        this.costStructureUtils.updateCostLineTotal(row);
         this.recalc();
     }
 
     recalc() {
-        // re-sum totals by section
-        const sum = (type: CostType) =>
-            this.rows[type].reduce((acc, r) => acc + r.total, 0);
-
-        this.totals.direct = sum('direct');
-        this.totals.operational = sum('operational');
-    }
-
-    sectionMonthTotal(type: CostType, monthIdx: number): number {
-        return this.rows[type].reduce((acc, r) => acc + (r.monthly?.[monthIdx] || 0), 0);
+        this.totals = this.costStructureUtils.calculateSectionTotals(this.rows);
     }
 
     get grandNet(): number {
-        // Calculate profit based on actual revenue data
+        // Calculate profit based on actual revenue data - kept for backward compatibility
         return this.totalRevenue - this.totals.direct - this.totals.operational;
     }
 
@@ -442,22 +243,27 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         }
     }
 
-  async loadDropdownData() {
-    try {
-      // Load real financial years from service
-      this.financialYears = await this.financialYearService.getAllFinancialYears().toPromise() || [];
-      
-      // Set default selected year to first available year or first active year
-      if (this.financialYears.length > 0) {
-        const activeYear = this.financialYears.find(fy => fy.is_active);
-        this.selectedYearId = activeYear ? activeYear.id : this.financialYears[0].id;
-      }
-    } catch (error) {
-      console.error('Error loading financial years:', error);
-      // Fallback to current year if service fails
-      this.selectedYearId = 1;
-    }
-  }    async loadCostCategories() {
+    async loadDropdownData() {
+        try {
+            // Load real financial years from service
+            this.financialYears = await this.financialYearService.getAllFinancialYears().toPromise() || [];
+
+            // Set default selected year to first available year or first active year
+            if (this.financialYears.length > 0) {
+                const activeYear = this.financialYears.find(fy => fy.is_active);
+                this.selectedYearId = activeYear ? activeYear.id : this.financialYears[0].id;
+            }
+
+            // Update months based on selected financial year
+            this.updateMonthsForSelectedYear();
+        } catch (error) {
+            console.error('Error loading financial years:', error);
+            // Fallback to current year if service fails
+            this.selectedYearId = 1;
+            // Set default months as fallback
+            this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        }
+    }    async loadCostCategories() {
         try {
             // Load cost categories by type from database (using the cost_type field)
             const [directCategories, operationalCategories] = await Promise.all([
@@ -467,7 +273,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
 
             this.directCostCategories = directCategories || [];
             this.operationalCostCategories = operationalCategories || [];
-            
+
             // Combine for full list
             this.costCategories = [...this.directCostCategories, ...this.operationalCostCategories];
 
@@ -494,7 +300,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     async loadCostingData() {
         try {
             console.log(`📊 Loading costing data for company ${this.companyId}, financial year ${this.selectedYearId}`);
-            
+
             const costingStats = await this.costingStatsService.getCostingByYear(
                 this.companyId,
                 this.selectedYearId
@@ -523,19 +329,8 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     }
 
     convertStatsToRow(stat: CompanyCostingYearlyStats): CostLine {
-        return {
-            id: this.autoId++,
-            costingStatsId: stat.id,
-            type: stat.cost_type,
-            category: this.getCategoryName(stat.category_id ?? null),
-            categoryId: stat.category_id,
-            monthly: [
-                stat.m1, stat.m2, stat.m3, stat.m4, stat.m5, stat.m6,
-                stat.m7, stat.m8, stat.m9, stat.m10, stat.m11, stat.m12
-            ],
-            total: stat.total_amount,
-            notes: stat.notes || undefined
-        };
+        const categoryName = this.getCategoryName(stat.category_id ?? null);
+        return this.costStructureUtils.convertStatsToRow(stat, categoryName);
     }
 
     getCategoryName(categoryId: number | null): string {
@@ -547,7 +342,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     async loadRevenueData() {
         try {
             console.log(`💰 Loading revenue data for company ${this.companyId}, financial year ${this.selectedYearId}`);
-            
+
             const revenueSummary = await this.companyFinancialStatsService.getYearlyRevenue(
                 this.companyId,
                 this.selectedYearId
@@ -588,26 +383,10 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         row.isSaving = true;
         try {
             const categoryId = this.findCategoryIdByName(row.category, row.type);
+            const costingData = this.costStructureUtils.convertRowToStats(row, this.companyId, this.selectedYearId);
 
-            const costingData: Partial<CompanyCostingYearlyStats> = {
-                company_id: this.companyId,
-                financial_year_id: this.selectedYearId,
-                cost_type: row.type,
-                category_id: categoryId,
-                m1: row.monthly[0] || 0,
-                m2: row.monthly[1] || 0,
-                m3: row.monthly[2] || 0,
-                m4: row.monthly[3] || 0,
-                m5: row.monthly[4] || 0,
-                m6: row.monthly[5] || 0,
-                m7: row.monthly[6] || 0,
-                m8: row.monthly[7] || 0,
-                m9: row.monthly[8] || 0,
-                m10: row.monthly[9] || 0,
-                m11: row.monthly[10] || 0,
-                m12: row.monthly[11] || 0,
-                notes: row.notes
-            };
+            // Override category_id in case it was found during conversion
+            costingData.category_id = categoryId;
 
             if (row.costingStatsId) {
                 // Update existing record
@@ -637,7 +416,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     }
 
     // Category Picker Modal Methods
-    
+
     /**
      * Open category picker modal for adding new cost type
      */
@@ -659,7 +438,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     onCategorySelected(category: CostCategory) {
         console.log('✅ Category selected:', category);
-        
+
         // Check if we're editing an existing row or adding a new one
         if (this.rowBeingEdited) {
             // Edit mode: update the existing row's category
@@ -694,21 +473,14 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         this.isSaving = true;
         try {
             // Create the database record first
-            const costingData: Partial<CompanyCostingYearlyStats> = {
-                company_id: this.companyId,
-                financial_year_id: this.selectedYearId,
-                cost_type: type,
-                category_id: category.id,
-                m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0,
-                m7: 0, m8: 0, m9: 0, m10: 0, m11: 0, m12: 0,
-                notes: null
-            };
+            const newRow = this.costStructureUtils.createCostLine(type, category.name);
+            const costingData = this.costStructureUtils.convertRowToStats(newRow, this.companyId, this.selectedYearId);
+            costingData.category_id = category.id;
 
             const created = await this.costingStatsService.addCostingStats(costingData).toPromise();
 
             if (created) {
                 // Now create the UI row with the database ID
-                const newRow = this.makeRow(type, category.name);
                 newRow.costingStatsId = created.id;
                 newRow.categoryId = category.id;
 
@@ -736,7 +508,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
 
         // Show saving indicator
         row.isSaving = true;
-        
+
         try {
             // Update database record with new category
             const updateData: Partial<CompanyCostingYearlyStats> = {
@@ -787,7 +559,31 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
 
     // Method to refresh data when year changes
     async onYearChange() {
+        this.updateMonthsForSelectedYear();
         await this.loadData();
+    }
+
+    /**
+     * Update months array based on selected financial year
+     */
+    private updateMonthsForSelectedYear() {
+        const selectedYear = this.financialYears.find(fy => fy.id === this.selectedYearId);
+        if (selectedYear) {
+            this.months = this.costStructureUtils.generateMonthNames(selectedYear);
+            console.log(`📅 Updated months for financial year ${selectedYear.name}:`, this.months);
+        } else {
+            // Fallback to calendar year if selected year not found
+            this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            console.warn('⚠️ Selected financial year not found, using calendar year months');
+        }
+    }
+
+    /**
+     * Get the selected financial year name for display
+     */
+    getSelectedFinancialYearName(): string {
+        const selectedYear = this.financialYears.find(fy => fy.id === this.selectedYearId);
+        return selectedYear ? selectedYear.name : 'Current Year';
     }
 
 
