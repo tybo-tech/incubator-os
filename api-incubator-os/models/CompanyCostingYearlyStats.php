@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class CompanyCostingYearlyStats
 {
     private PDO $conn;
-    
+
     // Define writable fields for security
     private const WRITABLE = [
         'tenant_id', 'client_id', 'program_id', 'cohort_id', 'company_id',
@@ -90,7 +90,7 @@ final class CompanyCostingYearlyStats
             $sets[] = "$key = ?";
             $params[] = $value;
         }
-        
+
         $params[] = $id;
         $sql = "UPDATE company_costing_yearly_stats SET " . implode(', ', $sets) . " WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
@@ -109,7 +109,7 @@ final class CompanyCostingYearlyStats
 
         $validMonths = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'];
         $filtered = array_intersect_key($monthlyData, array_flip($validMonths));
-        
+
         if (empty($filtered)) return $current;
 
         // Validate monthly values are numeric
@@ -206,7 +206,7 @@ final class CompanyCostingYearlyStats
             'company_id' => $companyId,
             'financial_year_id' => $financialYearId
         ];
-        
+
         if ($costType) {
             $filters['cost_type'] = $costType;
         }
@@ -231,7 +231,7 @@ final class CompanyCostingYearlyStats
      */
     public function getCompanyCostingSummary(int $companyId, int $financialYearId): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
             cost_type,
             COUNT(*) as record_count,
             SUM(total_amount) as total_cost,
@@ -239,7 +239,7 @@ final class CompanyCostingYearlyStats
             SUM(m4) as apr_total, SUM(m5) as may_total, SUM(m6) as jun_total,
             SUM(m7) as jul_total, SUM(m8) as aug_total, SUM(m9) as sep_total,
             SUM(m10) as oct_total, SUM(m11) as nov_total, SUM(m12) as dec_total
-        FROM company_costing_yearly_stats 
+        FROM company_costing_yearly_stats
         WHERE company_id = ? AND financial_year_id = ?
         GROUP BY cost_type";
 
@@ -282,11 +282,11 @@ final class CompanyCostingYearlyStats
         }
 
         $placeholders = str_repeat('?,', count($financialYearIds) - 1) . '?';
-        $sql = "SELECT 
+        $sql = "SELECT
             financial_year_id,
             cost_type,
             SUM(total_amount) as total_cost
-        FROM company_costing_yearly_stats 
+        FROM company_costing_yearly_stats
         WHERE company_id = ? AND financial_year_id IN ($placeholders)
         GROUP BY financial_year_id, cost_type
         ORDER BY financial_year_id, cost_type";
@@ -369,7 +369,7 @@ final class CompanyCostingYearlyStats
             $newData = $record;
             unset($newData['id'], $newData['created_at'], $newData['updated_at'], $newData['total_amount']);
             $newData['financial_year_id'] = $toYearId;
-            
+
             // Reset monthly values to 0 for new year
             for ($i = 1; $i <= 12; $i++) {
                 $newData["m$i"] = 0.00;
@@ -475,12 +475,12 @@ final class CompanyCostingYearlyStats
     private function findExistingRecord(int $companyId, int $financialYearId, string $costType, ?int $categoryId): ?array
     {
         if ($categoryId === null) {
-            $sql = "SELECT * FROM company_costing_yearly_stats 
+            $sql = "SELECT * FROM company_costing_yearly_stats
                     WHERE company_id = ? AND financial_year_id = ? AND cost_type = ? AND category_id IS NULL
                     LIMIT 1";
             $params = [$companyId, $financialYearId, $costType];
         } else {
-            $sql = "SELECT * FROM company_costing_yearly_stats 
+            $sql = "SELECT * FROM company_costing_yearly_stats
                     WHERE company_id = ? AND financial_year_id = ? AND cost_type = ? AND category_id = ?
                     LIMIT 1";
             $params = [$companyId, $financialYearId, $costType, $categoryId];
@@ -694,37 +694,37 @@ final class CompanyCostingYearlyStats
     public function getQuarterlyCostsByCategory(int $companyId, int $financialYearId): array
     {
         $quarterlyData = $this->getQuarterlyCosts($companyId, $financialYearId);
-        
+
         if (empty($quarterlyData['category_breakdown'])) {
             return [];
         }
 
         $startMonth = $quarterlyData['start_month'];
-        
+
         // Process each category to calculate quarterly values
         $categoryQuarterly = [];
         foreach ($quarterlyData['category_breakdown'] as $category) {
             $monthly = $category['monthly_data'];
-            
+
             // Convert monthly data to array for rotation
             $monthlyArray = [];
             for ($i = 1; $i <= 12; $i++) {
                 $monthlyArray[$i] = (float)($monthly["m$i"] ?? 0);
             }
-            
+
             // Rotate based on financial year start month
             $values = array_values($monthlyArray);
             $rotated = array_merge(
                 array_slice($values, $startMonth - 1),
                 array_slice($values, 0, $startMonth - 1)
             );
-            
+
             // Calculate quarterly totals
             $q1 = array_sum(array_slice($rotated, 0, 3));
             $q2 = array_sum(array_slice($rotated, 3, 3));
             $q3 = array_sum(array_slice($rotated, 6, 3));
             $q4 = array_sum(array_slice($rotated, 9, 3));
-            
+
             $categoryQuarterly[] = [
                 'category_id' => $category['category_id'],
                 'category_name' => $category['category_name'],
@@ -736,7 +736,7 @@ final class CompanyCostingYearlyStats
                 'total' => round($category['total'], 2)
             ];
         }
-        
+
         return [
             'financial_year_id' => $quarterlyData['financial_year_id'],
             'financial_year_name' => $quarterlyData['financial_year_name'],
@@ -753,13 +753,13 @@ final class CompanyCostingYearlyStats
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
-        
+
         $result = [];
         for ($i = 0; $i < 3; $i++) {
             $monthIndex = ($startMonth + $quarterOffset + $i - 1) % 12;
             $result[] = $monthNames[$monthIndex];
         }
-        
+
         return $result;
     }
 }

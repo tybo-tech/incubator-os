@@ -97,8 +97,31 @@ export const routes: Routes = [
             component: ComplianceTabComponent, // Placeholder - will create later
           },
           {
-            path: 'coaching-guide',
+            path: 'coaching',
             component: CoachingGuideShellComponent,
+            children: [
+              {
+                path: '',
+                redirectTo: 'products-services',
+                pathMatch: 'full'
+              },
+              {
+                path: 'products-services',
+                loadComponent: () => import('./components/coaching-guide/products-services.component').then(m => m.ProductsServicesComponent),
+              },
+              {
+                path: 'marketing',
+                loadComponent: () => import('./components/coaching-guide/marketing.component').then(m => m.MarketingComponent),
+              },
+              {
+                path: 'sales',
+                loadComponent: () => import('./components/coaching-guide/sales.component').then(m => m.SalesComponent),
+              },
+              {
+                path: 'coaching-notes',
+                loadComponent: () => import('./components/coaching-guide/coaching-notes.component').then(m => m.CoachingNotesComponent),
+              }
+            ]
           },
           {
             path: 'financials',
