@@ -184,7 +184,7 @@ final class CompanyCostingYearlyStats
         if ($where) {
             $sql .= " WHERE " . implode(' AND ', $where);
         }
-        $sql .= " ORDER BY created_at DESC";
+        $sql .= " ORDER BY id ASC"; // Excel-like ordering: oldest records first
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);

@@ -530,7 +530,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
             // Validate the category selection
             const validation = this.validateCategorySelection(category, targetCostType);
             console.log('🔍 Category validation result:', validation);
-            
+
             if (!validation.valid) {
                 this.toastService.warning(validation.message || 'Cannot add this category');
                 return;
@@ -563,16 +563,16 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     onCategoryCreated(category: CostCategory) {
         console.log('🆕 New category created:', category);
-        
+
         // Add the new category to our local lists immediately
         this.costCategories = [...this.costCategories, category];
-        
+
         if (category.cost_type === 'direct') {
             this.directCostCategories = [...this.directCostCategories, category];
         } else if (category.cost_type === 'operational') {
             this.operationalCostCategories = [...this.operationalCostCategories, category];
         }
-        
+
         console.log('✅ Added new category to local lists');
     }
 
@@ -597,7 +597,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
             // Create the database record first
             const newRow = this.costStructureUtils.createCostLine(type, category.name);
             console.log('📝 Created new cost line object:', newRow);
-            
+
             const costingData = this.costStructureUtils.convertRowToStats(newRow, this.companyId, this.selectedYearId);
             costingData.category_id = category.id;
             console.log('💾 Costing data to save:', costingData);

@@ -532,7 +532,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
       cost_type: category.cost_type,
       industry_id: category.industry_id
     });
-    
+
     this.categorySelected.emit(category);
     this.close();
   }
