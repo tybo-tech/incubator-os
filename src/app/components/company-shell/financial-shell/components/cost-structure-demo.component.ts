@@ -97,6 +97,7 @@ import { CostStructureUtilsService, CostLine, CostType, CostTotals } from './cos
         #categoryPickerModal
         [companyId]="companyId"
         (categorySelected)="onCategorySelected($event)"
+        (categoryManaged)="onCategoryManaged()"
         (closed)="onCategoryPickerClosed()">
       </app-cost-category-picker-modal>
     </div>
@@ -537,6 +538,14 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     onCategoryPickerClosed() {
         console.log('Category picker modal closed');
+    }
+
+    /**
+     * Handle category management (edit/delete) from modal
+     */
+    onCategoryManaged() {
+        // Refresh the data to reflect any changes in categories
+        this.loadData();
     }
 
     /**

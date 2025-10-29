@@ -10,15 +10,17 @@ import { ToastService } from '../../../../services/toast.service';
 type CostType = 'direct' | 'operational';
 
 /**
- * Smart category picker modal with industry filtering and add-on-the-fly functionality
+ * Smart category picker modal with category management functionality
  */
 @Component({
   selector: 'app-cost-category-picker-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div *ngIf="isOpen()" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+    <div *ngIf="isOpen()" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
+         (click)="onOutsideClick($event)">
+      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+           (click)="$event.stopPropagation()">
         <!-- Modal Header -->
         <header class="flex justify-between items-center p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div>
@@ -26,7 +28,7 @@ type CostType = 'direct' | 'operational';
               <i class="fa-solid fa-folder-tree"></i>
               Select {{ costType() | titlecase }} Cost Category
             </h2>
-            <p class="text-sm text-blue-600 mt-1">Choose from existing categories or create a new one</p>
+            <p class="text-sm text-blue-600 mt-1">Choose from existing categories, create new ones, or manage existing categories</p>
           </div>
           <button
             type="button"
@@ -126,42 +128,136 @@ type CostType = 'direct' | 'operational';
             </div>
 
             <div *ngIf="filteredCategories().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <button
+              <div
                 *ngFor="let category of filteredCategories(); trackBy: trackCategory"
-                type="button"
-                (click)="selectCategory(category)"
-                class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-left transition-all group">
+                class="relative border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 focus-within:ring-2 focus-within:ring-blue-500 transition-all group">
 
-                <div class="flex items-start justify-between mb-2">
-                  <h4 class="font-medium text-gray-900 group-hover:text-blue-800 text-sm line-clamp-2">
-                    {{ category.name }}
-                  </h4>
-                  <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ml-2 flex-shrink-0"
-                        [class]="getCostTypeBadgeClass(category.cost_type)">
-                    {{ category.cost_type || 'Untyped' }}
-                  </span>
+                <!-- Edit Form (shown when editing) -->
+                <div *ngIf="editingCategory()?.id === category.id" class="p-4 space-y-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Category Name</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="editCategoryName"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      placeholder="Enter category name">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Industry</label>
+                    <select
+                      [(ngModel)]="editCategoryIndustryId"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                      <option [ngValue]="null">No Industry</option>
+                      <option *ngFor="let industry of industries()" [ngValue]="industry.id">
+                        {{ industry.data.name }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Cost Type</label>
+                    <select
+                      [(ngModel)]="editCategoryCostType"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                      <option value="direct">Direct</option>
+                      <option value="operational">Operational</option>
+                    </select>
+                  </div>
+
+                  <div class="flex gap-2 mt-4">
+                    <button
+                      type="button"
+                      (click)="saveEditedCategory(category)"
+                      [disabled]="!editCategoryName.trim() || loading()"
+                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 text-sm">
+                      {{ loading() ? 'Saving...' : 'Save' }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="cancelEdit()"
+                      class="flex-1 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm">
+                      Cancel
+                    </button>
+                  </div>
                 </div>
 
-                <div class="space-y-1">
-                  <!-- Industry Info -->
-                  <div *ngIf="getIndustryName(category.industry_id)" class="flex items-center text-xs text-gray-600">
-                    <i class="fa-solid fa-industry w-3 h-3 mr-1"></i>
-                    <span class="truncate">{{ getIndustryName(category.industry_id) }}</span>
+                <!-- Normal Category Card (shown when not editing) -->
+                <div *ngIf="editingCategory()?.id !== category.id" class="relative">
+                  <!-- Management Dropdown -->
+                  <div class="absolute top-2 right-2 z-10">
+                    <button
+                      type="button"
+                      (click)="toggleDropdown(category.id); $event.stopPropagation()"
+                      class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <i class="fa-solid fa-ellipsis-vertical text-gray-500 text-sm"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div 
+                      *ngIf="openDropdownId() === category.id"
+                      class="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-20">
+                      <button
+                        type="button"
+                        (click)="startEdit(category); $event.stopPropagation()"
+                        class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <i class="fa-solid fa-edit w-3 h-3"></i>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        (click)="confirmDelete(category); $event.stopPropagation()"
+                        [disabled]="isCategoryInUse(category.id)"
+                        [class]="isCategoryInUse(category.id) ? 'w-full px-3 py-2 text-left text-sm text-gray-400 cursor-not-allowed' : 'w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50'"
+                        class="flex items-center gap-2">
+                        <i class="fa-solid fa-trash w-3 h-3"></i>
+                        <span>{{ isCategoryInUse(category.id) ? 'In Use' : 'Delete' }}</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <!-- Parent Info -->
-                  <div *ngIf="category.parent_id" class="flex items-center text-xs text-gray-600">
-                    <i class="fa-solid fa-folder w-3 h-3 mr-1"></i>
-                    <span class="truncate">Parent: {{ getParentName(category.parent_id) }}</span>
-                  </div>
+                  <!-- Clickable Category Content -->
+                  <button
+                    type="button"
+                    (click)="selectCategory(category)"
+                    class="w-full p-4 text-left focus:outline-none">
 
-                  <!-- ID for debugging -->
-                  <div class="flex items-center text-xs text-gray-400">
-                    <i class="fa-solid fa-hashtag w-3 h-3 mr-1"></i>
-                    <span>ID: {{ category.id }}</span>
-                  </div>
+                    <div class="flex items-start justify-between mb-2">
+                      <h4 class="font-medium text-gray-900 group-hover:text-blue-800 text-sm line-clamp-2 pr-8">
+                        {{ category.name }}
+                        <span *ngIf="isCategoryInUse(category.id)" class="inline-flex items-center ml-2 px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                          <i class="fa-solid fa-check-circle w-2 h-2 mr-1"></i>
+                          In Use
+                        </span>
+                      </h4>
+                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ml-2 flex-shrink-0"
+                            [class]="getCostTypeBadgeClass(category.cost_type)">
+                        {{ category.cost_type || 'Untyped' }}
+                      </span>
+                    </div>
+
+                    <div class="space-y-1">
+                      <!-- Industry Info -->
+                      <div *ngIf="getIndustryName(category.industry_id)" class="flex items-center text-xs text-gray-600">
+                        <i class="fa-solid fa-industry w-3 h-3 mr-1"></i>
+                        <span class="truncate">{{ getIndustryName(category.industry_id) }}</span>
+                      </div>
+
+                      <!-- Parent Info -->
+                      <div *ngIf="category.parent_id" class="flex items-center text-xs text-gray-600">
+                        <i class="fa-solid fa-folder w-3 h-3 mr-1"></i>
+                        <span class="truncate">Parent: {{ getParentName(category.parent_id) }}</span>
+                      </div>
+
+                      <!-- ID for debugging -->
+                      <div class="flex items-center text-xs text-gray-400">
+                        <i class="fa-solid fa-hashtag w-3 h-3 mr-1"></i>
+                        <span>ID: {{ category.id }}</span>
+                      </div>
+                    </div>
+                  </button>
                 </div>
-              </button>
+              </div>
             </div>
           </div>
         </div>
@@ -170,7 +266,7 @@ type CostType = 'direct' | 'operational';
         <footer class="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
           <div class="text-sm text-gray-600">
             <i class="fa-solid fa-info-circle mr-1"></i>
-            Click on a category to select it
+            Click on a category to select it, or use the <i class="fa-solid fa-ellipsis-vertical mx-1"></i> menu to edit/delete
           </div>
           <button
             type="button"
@@ -193,6 +289,7 @@ type CostType = 'direct' | 'operational';
 })
 export class CostCategoryPickerModalComponent implements OnInit {
   @Input() companyId!: number;
+  @Input() usedCategoryIds: number[] = []; // Categories that are currently in use
   @Output() closed = new EventEmitter<void>();
   @Output() categorySelected = new EventEmitter<CostCategory>();
 
@@ -206,6 +303,11 @@ export class CostCategoryPickerModalComponent implements OnInit {
   readonly industries = signal<INode<Industry>[]>([]);
   readonly excludedCategoryIds = signal<number[]>([]); // Categories to exclude from selection
 
+  // Category Management State
+  readonly editingCategory = signal<CostCategory | null>(null);
+  readonly openDropdownId = signal<number | null>(null);
+  readonly deletingCategoryId = signal<number | null>(null);
+
   // Filters - using signals for reactivity
   readonly selectedIndustryId = signal<number | null>(null);
   readonly searchTerm = signal<string>('');
@@ -213,6 +315,11 @@ export class CostCategoryPickerModalComponent implements OnInit {
   // New category form
   newCategoryName = '';
   newCategoryIndustryId: number | null = null;
+
+  // Edit category form
+  editCategoryName = '';
+  editCategoryIndustryId: number | null = null;
+  editCategoryCostType: CostType = 'direct';
 
   // Computed filtered categories
   readonly filteredCategories = computed(() => {
@@ -430,5 +537,153 @@ export class CostCategoryPickerModalComponent implements OnInit {
     this.newCategoryName = '';
     this.newCategoryIndustryId = null;
     this.resetFilters();
+    this.resetEditForm();
+  }
+
+  /**
+   * Reset edit form to default values
+   */
+  private resetEditForm() {
+    this.editCategoryName = '';
+    this.editCategoryIndustryId = null;
+    this.editCategoryCostType = 'direct';
+    this.editingCategory.set(null);
+    this.openDropdownId.set(null);
+    this.deletingCategoryId.set(null);
+  }
+
+  // === CATEGORY MANAGEMENT METHODS ===
+
+  /**
+   * Toggle dropdown menu for category management
+   */
+  toggleDropdown(categoryId: number) {
+    const currentId = this.openDropdownId();
+    this.openDropdownId.set(currentId === categoryId ? null : categoryId);
+  }
+
+  /**
+   * Start editing a category
+   */
+  startEdit(category: CostCategory) {
+    this.editCategoryName = category.name;
+    this.editCategoryIndustryId = category.industry_id || null;
+    this.editCategoryCostType = category.cost_type || 'direct';
+    
+    this.editingCategory.set(category);
+    this.openDropdownId.set(null);
+  }
+
+  /**
+   * Cancel editing a category
+   */
+  cancelEdit() {
+    this.resetEditForm();
+  }
+
+  /**
+   * Save edited category
+   */
+  async saveEditedCategory(category: CostCategory) {
+    if (!this.editCategoryName.trim()) {
+      this.toastService.warning('Category name is required');
+      return;
+    }
+
+    this.loading.set(true);
+    try {
+      const updateData: Partial<CostCategory> = {
+        name: this.editCategoryName.trim(),
+        industry_id: this.editCategoryIndustryId,
+        cost_type: this.editCategoryCostType
+      };
+
+      const updatedCategory = await this.costCategoriesService.updateCostCategory(category.id, updateData).toPromise();
+      
+      if (updatedCategory) {
+        // Update the category in the local list
+        const categories = this.categories();
+        const index = categories.findIndex(c => c.id === category.id);
+        if (index !== -1) {
+          categories[index] = { ...categories[index], ...updatedCategory };
+          this.categories.set([...categories]);
+        }
+
+        this.toastService.success(`Category "${updatedCategory.name}" updated successfully`);
+        this.resetEditForm();
+      }
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      this.toastService.error('Failed to update category. Please try again.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  /**
+   * Check if a category is currently being used
+   */
+  isCategoryInUse(categoryId: number): boolean {
+    return this.usedCategoryIds.includes(categoryId);
+  }
+
+  /**
+   * Confirm category deletion
+   */
+  confirmDelete(category: CostCategory) {
+    this.openDropdownId.set(null);
+    
+    // Check if category is being used
+    if (this.isCategoryInUse(category.id)) {
+      this.toastService.warning(`Cannot delete "${category.name}" because it's currently being used in cost entries.`);
+      return;
+    }
+
+    // Simple confirmation - in a real app you might want a proper modal
+    if (confirm(`Are you sure you want to delete the category "${category.name}"?\n\nThis action cannot be undone.`)) {
+      this.deleteCategory(category);
+    }
+  }
+
+  /**
+   * Delete a category
+   */
+  async deleteCategory(category: CostCategory) {
+    this.deletingCategoryId.set(category.id);
+    this.loading.set(true);
+
+    try {
+      const result = await this.costCategoriesService.deleteCostCategory(category.id).toPromise();
+      
+      if (result?.success) {
+        // Remove the category from the local list
+        const categories = this.categories().filter(c => c.id !== category.id);
+        this.categories.set(categories);
+
+        this.toastService.success(`Category "${category.name}" deleted successfully`);
+      } else {
+        throw new Error(result?.message || 'Unknown error');
+      }
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      
+      // Handle specific error cases
+      if (error?.message?.includes('foreign key') || error?.message?.includes('constraint')) {
+        this.toastService.error(`Cannot delete "${category.name}" because it's being used by existing cost entries.`);
+      } else {
+        this.toastService.error(`Failed to delete "${category.name}". Please try again.`);
+      }
+    } finally {
+      this.deletingCategoryId.set(null);
+      this.loading.set(false);
+    }
+  }
+
+  /**
+   * Handle click outside dropdown to close it
+   */
+  onOutsideClick(event: Event) {
+    // Close any open dropdowns when clicking outside
+    this.openDropdownId.set(null);
   }
 }
