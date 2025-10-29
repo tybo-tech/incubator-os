@@ -42,6 +42,7 @@ import { SwotTabComponent } from './components/companies/company-detail/swot-tab
 import { GpsTargetsTabComponent } from './components/companies/company-detail/gps-targets-tab/gps-targets-tab.component';
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
 import { ComplianceTabComponent } from './components/companies/company-detail';
+import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
 
 export const routes: Routes = [
   {
@@ -94,6 +95,10 @@ export const routes: Routes = [
           {
             path: 'compliance',
             component: ComplianceTabComponent, // Placeholder - will create later
+          },
+          {
+            path: 'coaching-guide',
+            component: CoachingGuideShellComponent,
           },
           {
             path: 'financials',

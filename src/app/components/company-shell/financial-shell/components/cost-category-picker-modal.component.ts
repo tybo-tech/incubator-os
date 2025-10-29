@@ -330,6 +330,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
   @Output() closed = new EventEmitter<void>();
   @Output() categorySelected = new EventEmitter<CostCategory>();
   @Output() categoryManaged = new EventEmitter<void>(); // Emitted when a category is edited or deleted
+  @Output() categoryCreated = new EventEmitter<CostCategory>(); // Emitted when a new category is created
 
   // Modal state
   readonly isOpen = signal(false);
@@ -500,12 +501,16 @@ export class CostCategoryPickerModalComponent implements OnInit {
         const currentCategories = this.categories();
         this.categories.set([...currentCategories, category]);
 
+        // Emit categoryCreated event to notify parent
+        this.categoryCreated.emit(category);
+
         // Clear form and hide it
         this.newCategoryName = '';
         this.newCategoryIndustryId = null;
         this.showAddForm.set(false);
 
-        // Auto-select the new category
+        // Auto-select the new category - ensure it's properly emitted
+        console.log('🚀 Auto-selecting newly created category:', category);
         this.selectCategory(category);
       },
       error: (error) => {
@@ -521,6 +526,13 @@ export class CostCategoryPickerModalComponent implements OnInit {
    */
   selectCategory(category: CostCategory) {
     console.log('✅ Category selected:', category);
+    console.log('📤 Emitting categorySelected event with category:', {
+      id: category.id,
+      name: category.name,
+      cost_type: category.cost_type,
+      industry_id: category.industry_id
+    });
+    
     this.categorySelected.emit(category);
     this.close();
   }

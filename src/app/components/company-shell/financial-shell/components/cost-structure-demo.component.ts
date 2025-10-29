@@ -92,11 +92,12 @@ import { CostStructureUtilsService, CostLine, CostType, CostTotals } from './cos
         📅 Months displayed follow your financial year calendar ({{ getSelectedFinancialYearName() }}).
       </p>
 
-      <!-- Category Picker Modal -->
+        <!-- Category Picker Modal -->
       <app-cost-category-picker-modal
         #categoryPickerModal
         [companyId]="companyId"
         (categorySelected)="onCategorySelected($event)"
+        (categoryCreated)="onCategoryCreated($event)"
         (categoryManaged)="onCategoryManaged()"
         (closed)="onCategoryPickerClosed()">
       </app-cost-category-picker-modal>
@@ -500,15 +501,18 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      * Handle category selection from modal
      */
     onCategorySelected(category: CostCategory) {
-        console.log('✅ Category selected:', category);
+        console.log('✅ Category selected in parent component:', category);
+        console.log('🔍 Current rowBeingEdited state:', this.rowBeingEdited);
 
         // Check if we're editing an existing row or adding a new one
         if (this.rowBeingEdited) {
             // Edit mode: update the existing row's category
+            console.log('📝 Edit mode: updating existing row category');
             this.updateRowCategory(this.rowBeingEdited, category);
             this.rowBeingEdited = null; // Clear edit state
         } else {
             // Add mode: create a new row with selected category
+            console.log('➕ Add mode: creating new row with selected category');
             let targetCostType: CostType;
 
             // Determine target cost type
@@ -521,14 +525,19 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
                 targetCostType = 'direct';
             }
 
+            console.log(`🎯 Target cost type determined: ${targetCostType}`);
+
             // Validate the category selection
             const validation = this.validateCategorySelection(category, targetCostType);
+            console.log('🔍 Category validation result:', validation);
+            
             if (!validation.valid) {
                 this.toastService.warning(validation.message || 'Cannot add this category');
                 return;
             }
 
             // Proceed with adding the category
+            console.log(`🚀 Proceeding to add row with category: ${category.name} (ID: ${category.id})`);
             this.addRowWithSelectedCategory(targetCostType, category);
         }
     }
@@ -544,8 +553,27 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      * Handle category management (edit/delete) from modal
      */
     onCategoryManaged() {
+        console.log('📝 Category was managed (edited/deleted), refreshing data...');
         // Refresh the data to reflect any changes in categories
         this.loadData();
+    }
+
+    /**
+     * Handle new category creation from modal
+     */
+    onCategoryCreated(category: CostCategory) {
+        console.log('🆕 New category created:', category);
+        
+        // Add the new category to our local lists immediately
+        this.costCategories = [...this.costCategories, category];
+        
+        if (category.cost_type === 'direct') {
+            this.directCostCategories = [...this.directCostCategories, category];
+        } else if (category.cost_type === 'operational') {
+            this.operationalCostCategories = [...this.operationalCostCategories, category];
+        }
+        
+        console.log('✅ Added new category to local lists');
     }
 
     /**
@@ -554,9 +582,12 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     async addRowWithSelectedCategory(type: CostType, category: CostCategory) {
         if (this.isSaving) return;
 
+        console.log(`🚀 Adding new ${type} row with category:`, category);
+
         // Double-check validation before proceeding
         const validation = this.validateCategorySelection(category, type);
         if (!validation.valid) {
+            console.error('❌ Validation failed:', validation.message);
             this.toastService.warning(validation.message || 'Cannot add this category');
             return;
         }
@@ -565,15 +596,20 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         try {
             // Create the database record first
             const newRow = this.costStructureUtils.createCostLine(type, category.name);
+            console.log('📝 Created new cost line object:', newRow);
+            
             const costingData = this.costStructureUtils.convertRowToStats(newRow, this.companyId, this.selectedYearId);
             costingData.category_id = category.id;
+            console.log('💾 Costing data to save:', costingData);
 
             const created = await this.costingStatsService.addCostingStats(costingData).toPromise();
+            console.log('✅ Database record created:', created);
 
             if (created) {
                 // Now create the UI row with the database ID
                 newRow.costingStatsId = created.id;
                 newRow.categoryId = category.id;
+                console.log('🎯 Final row object with IDs:', newRow);
 
                 this.rows[type] = [...this.rows[type], newRow];
                 this.recalc();
@@ -582,7 +618,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
                 this.toastService.success(`Added "${category.name}" to ${type} costs`);
             }
         } catch (error: any) {
-            console.error('Error adding new cost row:', error);
+            console.error('❌ Error adding new cost row:', error);
 
             // Handle specific duplicate entry error
             if (error?.error?.error?.includes('Duplicate entry') || error?.message?.includes('1062')) {

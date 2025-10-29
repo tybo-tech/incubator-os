@@ -41,14 +41,17 @@ export class CostStructureUtilsService {
    * Create a new cost line for UI
    */
   createCostLine(type: CostType, category: string, monthly?: number[]): CostLine {
+    console.log(`🏗️ Creating cost line with type: ${type}, category: "${category}"`);
     const monthlyValues = monthly ?? Array.from({ length: 12 }, () => 0);
-    return {
+    const costLine = {
       id: this.autoIdCounter++,
       type,
       category,
       monthly: monthlyValues.slice(0, 12),
       total: this.calculateTotal(monthlyValues),
     };
+    console.log('🏗️ Created cost line object:', costLine);
+    return costLine;
   }
 
   /**
