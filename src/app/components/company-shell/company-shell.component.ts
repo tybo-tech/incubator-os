@@ -131,6 +131,12 @@ export class CompanyShellComponent implements OnInit {
       label: 'Compliance',
       route: 'compliance',
       icon: 'fas fa-shield-alt'
+    },
+    //coaching/guide
+    {
+      label: 'Coaching / Guide',
+      route: 'coaching',
+      icon: 'fas fa-chalkboard-teacher'
     }
   ];
 

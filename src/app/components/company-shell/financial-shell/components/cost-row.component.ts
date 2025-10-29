@@ -19,12 +19,12 @@ interface CostLine {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <tr class="border-b last:border-b-0">
-      <td class="p-2 w-60 min-w-[200px]">
+    <div class="cost-row">
+      <div class="row-cell category-col">
         <div class="flex items-center gap-2">
           <i [class]="getCategoryIcon()" class="text-xs flex-shrink-0"></i>
-          <span 
-            class="font-medium text-gray-900 text-sm truncate flex-1 cursor-help" 
+          <span
+            class="font-medium text-gray-900 text-sm truncate flex-1 cursor-help"
             [title]="row.category">
             {{ row.category }}
           </span>
@@ -36,10 +36,10 @@ interface CostLine {
           </button>
           <i *ngIf="row.isSaving" class="fa-solid fa-spinner fa-spin text-blue-500 text-xs flex-shrink-0"></i>
         </div>
-      </td>
+      </div>
 
-      <td class="p-1 w-20 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-        <div class="relative">
+      <div class="row-cell month-col" *ngFor="let _m of months; let mi = index">
+        <div class="relative w-full">
           <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">R</span>
           <input
             type="number"
@@ -48,13 +48,13 @@ interface CostLine {
             (change)="onCellChange()"
             [disabled]="disabled">
         </div>
-      </td>
+      </div>
 
-      <td class="p-2 w-32 font-semibold text-sm text-right whitespace-nowrap">
-        R {{ row.total | number:'1.0-0' }}
-      </td>
+      <div class="row-cell total-col">
+        <span class="font-semibold text-sm">R {{ row.total | number:'1.0-0' }}</span>
+      </div>
 
-      <td class="p-2 w-16 text-center whitespace-nowrap">
+      <div class="row-cell actions-col">
         <button
           class="text-rose-600 hover:text-rose-700 text-sm"
           (click)="onRemove()"
@@ -62,29 +62,69 @@ interface CostLine {
           title="Remove this cost item">
           <i class="fa-solid fa-trash"></i>
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   `,
   styles: [`
+    /* Flexbox row layout to match header/footer */
+    .cost-row {
+      display: flex;
+      width: 100%;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .cost-row:hover {
+      background-color: #f9fafb;
+    }
+
+    .row-cell {
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .category-col {
+      width: 240px;
+      min-width: 240px;
+      justify-content: flex-start;
+    }
+
+    .month-col {
+      width: 80px;
+      min-width: 80px;
+      justify-content: center;
+    }
+
+    .total-col {
+      width: 120px;
+      min-width: 120px;
+      justify-content: flex-end;
+    }
+
+    .actions-col {
+      width: 64px;
+      min-width: 64px;
+      justify-content: center;
+    }
+
     .truncate {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    
+
     /* Ensure consistent width for number inputs */
     input[type="number"] {
       min-width: 0;
     }
-    
+
     /* Remove number input spinners for cleaner look */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
-    }
-    
-    input[type="number"] {
+    }    input[type="number"] {
       -moz-appearance: textfield;
     }
   `]

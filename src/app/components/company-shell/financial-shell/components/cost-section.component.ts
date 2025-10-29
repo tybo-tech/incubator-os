@@ -50,66 +50,148 @@ type CostType = 'direct' | 'operational';
         </button>
       </div>
 
-      <!-- Table -->
+      <!-- Table with Fixed Layout -->
       <div class="overflow-x-auto">
-        <table class="min-w-[1000px] w-full table-fixed">
-          <thead>
-            <tr class="bg-gray-50 text-xs text-gray-500">
-              <th class="text-left p-2 w-60 min-w-[200px]">Category</th>
-              <th class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let m of months">{{ m }}</th>
-              <th class="p-2 w-32 text-right whitespace-nowrap">Total</th>
-              <th class="p-2 w-16 text-center whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
+        <div class="min-w-[1000px]">
+          <!-- Header Row -->
+          <div class="cost-header">
+            <div class="header-cell category-col">Category</div>
+            <div class="header-cell month-col" *ngFor="let m of months">{{ m }}</div>
+            <div class="header-cell total-col">Total</div>
+            <div class="header-cell actions-col">Actions</div>
+          </div>
 
-          <tbody>
-            <app-cost-row
-              *ngFor="let row of rows; trackBy: trackById"
-              [row]="row"
-              [months]="months"
-              [disabled]="disabled"
-              (cellChange)="onRowCellChange($event)"
-              (editCategory)="onRowEditCategory($event)"
-              (remove)="onRowRemove($event)">
-            </app-cost-row>
-          </tbody>
+          <!-- Data Rows -->
+          <app-cost-row
+            *ngFor="let row of rows; trackBy: trackById"
+            [row]="row"
+            [months]="months"
+            [disabled]="disabled"
+            (cellChange)="onRowCellChange($event)"
+            (editCategory)="onRowEditCategory($event)"
+            (remove)="onRowRemove($event)">
+          </app-cost-row>
 
           <!-- Section Totals Footer -->
-          <tfoot>
-            <tr class="bg-gray-50 font-semibold text-sm">
-              <td class="p-2 text-right w-60 min-w-[200px]">Section Total</td>
-              <td class="p-1 text-center w-20 whitespace-nowrap" *ngFor="let _m of months; let mi = index">
-                R {{ getMonthTotal(mi) | number:'1.0-0' }}
-              </td>
-              <td class="p-2 text-right w-32 whitespace-nowrap">R {{ sectionTotal | number:'1.0-0' }}</td>
-              <td class="p-2 w-16"></td>
-            </tr>
-          </tfoot>
-        </table>
+          <div class="cost-footer">
+            <div class="footer-cell category-col">Section Total</div>
+            <div class="footer-cell month-col" *ngFor="let _m of months; let mi = index">
+              R {{ getMonthTotal(mi) | number:'1.0-0' }}
+            </div>
+            <div class="footer-cell total-col">R {{ sectionTotal | number:'1.0-0' }}</div>
+            <div class="footer-cell actions-col"></div>
+          </div>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    /* Ensure table layout is consistent */
-    .table-fixed {
-      table-layout: fixed;
+    /* Flexbox Layout for consistent column alignment */
+    .cost-header,
+    .cost-footer {
+      display: flex;
+      width: 100%;
     }
-    
+
+    .cost-header {
+      background-color: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .cost-footer {
+      background-color: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      font-weight: 600;
+    }
+
+    .header-cell,
+    .footer-cell {
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      flex-shrink: 0;
+    }
+
+    .footer-cell {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+      text-transform: none;
+    }
+
+    .category-col {
+      width: 240px;
+      min-width: 240px;
+      text-align: left;
+    }
+
+    .month-col {
+      width: 80px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .total-col {
+      width: 120px;
+      min-width: 120px;
+      text-align: right;
+    }
+
+    .actions-col {
+      width: 64px;
+      min-width: 64px;
+      text-align: center;
+    }
+
     /* Better scrollbar styling for horizontal scroll */
     .overflow-x-auto::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .footer-cell.month-col {
+      text-align: center;
+    }
+
+    .footer-cell.total-col {
+      text-align: right;
+    }
+
+    .footer-cell.actions-col {
+      text-align: center;
+    }
+
+    /* Better scrollbar styling for horizontal scroll */
+    .overflow-x-auto::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
