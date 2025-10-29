@@ -430,34 +430,19 @@ final class CompanyFinancialYearlyStats
             ];
         }
 
-        // Rotate months based on financial year start month
-        $rotate = function(array $months, int $startMonth): array {
-            $values = array_values($months);
-            return array_merge(
-                array_slice($values, $startMonth - 1),
-                array_slice($values, 0, $startMonth - 1)
-            );
-        };
+        // Calculate quarterly totals directly from sequential months (m1-m12)
+        // Q1 = months 1-3, Q2 = months 4-6, Q3 = months 7-9, Q4 = months 10-12
+        $revenueQ1 = $domestic[1] + $domestic[2] + $domestic[3];
+        $revenueQ2 = $domestic[4] + $domestic[5] + $domestic[6];
+        $revenueQ3 = $domestic[7] + $domestic[8] + $domestic[9];
+        $revenueQ4 = $domestic[10] + $domestic[11] + $domestic[12];
+        $revenueTotal = array_sum($domestic);
 
-        $domesticRotated = $rotate($domestic, $startMonth);
-        $exportRotated = $rotate($export, $startMonth);
-
-        // Calculate quarterly totals
-        $sumQuarter = function(array $months, int $startIndex): float {
-            return array_sum(array_slice($months, $startIndex, 3));
-        };
-
-        $revenueQ1 = $sumQuarter($domesticRotated, 0);
-        $revenueQ2 = $sumQuarter($domesticRotated, 3);
-        $revenueQ3 = $sumQuarter($domesticRotated, 6);
-        $revenueQ4 = $sumQuarter($domesticRotated, 9);
-        $revenueTotal = array_sum($domesticRotated);
-
-        $exportQ1 = $sumQuarter($exportRotated, 0);
-        $exportQ2 = $sumQuarter($exportRotated, 3);
-        $exportQ3 = $sumQuarter($exportRotated, 6);
-        $exportQ4 = $sumQuarter($exportRotated, 9);
-        $exportTotal = array_sum($exportRotated);
+        $exportQ1 = $export[1] + $export[2] + $export[3];
+        $exportQ2 = $export[4] + $export[5] + $export[6];
+        $exportQ3 = $export[7] + $export[8] + $export[9];
+        $exportQ4 = $export[10] + $export[11] + $export[12];
+        $exportTotal = array_sum($export);
 
         // Calculate export ratio
         $exportRatio = $revenueTotal > 0 ? ($exportTotal / $revenueTotal) * 100 : 0;
@@ -481,10 +466,10 @@ final class CompanyFinancialYearlyStats
             'export_ratio' => round($exportRatio, 2),
             'account_breakdown' => $accountBreakdown,
             'quarter_details' => [
-                'q1_months' => $this->getQuarterMonthNames($startMonth, 0),
-                'q2_months' => $this->getQuarterMonthNames($startMonth, 3),
-                'q3_months' => $this->getQuarterMonthNames($startMonth, 6),
-                'q4_months' => $this->getQuarterMonthNames($startMonth, 9)
+                'q1_months' => ['Month 1', 'Month 2', 'Month 3'],
+                'q2_months' => ['Month 4', 'Month 5', 'Month 6'],
+                'q3_months' => ['Month 7', 'Month 8', 'Month 9'],
+                'q4_months' => ['Month 10', 'Month 11', 'Month 12']
             ]
         ];
     }

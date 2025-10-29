@@ -12,6 +12,22 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-account-management-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  styles: [`
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  `],
   template: `
     <div *ngIf="isOpen()" class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
@@ -30,38 +46,72 @@ import { ToastService } from '../../../../services/toast.service';
 
         <!-- Modal Body -->
         <div class="flex-1 overflow-y-auto p-4">
-          <!-- Add New Account -->
-          <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-            <div class="grid grid-cols-4 gap-3">
-              <input
-                type="text"
-                [(ngModel)]="newAccount.account_name"
-                placeholder="Account Name*"
-                class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-              <select
-                [(ngModel)]="newAccount.account_type"
-                class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <option *ngFor="let type of accountTypes()" [value]="type.key">
-                  {{ type.label }}
-                </option>
-              </select>
-              <input
-                type="text"
-                [(ngModel)]="newAccount.account_number"
-                placeholder="Account Number (Optional)"
-                class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-              <input
-                type="text"
-                [(ngModel)]="newAccount.description"
-                placeholder="Description (Optional)"
-                class="px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+          <!-- Add Account Toggle Button -->
+          <div class="mb-4 flex justify-between items-center">
+            <h3 class="text-lg font-medium text-gray-900">Company Accounts</h3>
+            <button
+              type="button"
+              (click)="toggleAddForm()"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path *ngIf="!showAddForm()" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <path *ngIf="showAddForm()" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              {{ showAddForm() ? 'Cancel' : 'Add New Account' }}
+            </button>
+          </div>
+
+          <!-- Add New Account Form (Collapsible) -->
+          <div *ngIf="showAddForm()" class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fadeIn">
+            <h4 class="text-md font-medium text-blue-800 mb-3">Add New Account</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Name *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="newAccount.account_name"
+                  placeholder="Enter account name"
+                  class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+                <select
+                  [(ngModel)]="newAccount.account_type"
+                  class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                  <option *ngFor="let type of accountTypes()" [value]="type.key">
+                    {{ type.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                <input
+                  type="text"
+                  [(ngModel)]="newAccount.account_number"
+                  placeholder="Optional account number"
+                  class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <input
+                  type="text"
+                  [(ngModel)]="newAccount.description"
+                  placeholder="Optional description"
+                  class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+              </div>
             </div>
-            <div class="mt-2 flex justify-end">
+            <div class="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                (click)="cancelAddForm()"
+                class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-sm">
+                Cancel
+              </button>
               <button
                 type="button"
                 (click)="addAccount()"
                 [disabled]="!newAccount.account_name || loading()"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm">
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors text-sm">
                 {{ loading() ? 'Adding...' : 'Add Account' }}
               </button>
             </div>
@@ -238,6 +288,7 @@ export class AccountManagementModalComponent implements OnInit {
   readonly accounts = signal<CompanyAccount[]>([]);
   readonly editingId = signal<number | null>(null);
   readonly accountTypes = signal<AccountType[]>([]);
+  readonly showAddForm = signal(false);
 
   // Form data
   newAccount = {
@@ -297,7 +348,26 @@ export class AccountManagementModalComponent implements OnInit {
   close() {
     this.isOpen.set(false);
     this.cancelEdit();
+    this.showAddForm.set(false);
     this.closed.emit();
+  }
+
+  /**
+   * Toggle the add account form visibility
+   */
+  toggleAddForm() {
+    this.showAddForm.set(!this.showAddForm());
+    if (!this.showAddForm()) {
+      this.resetNewAccount();
+    }
+  }
+
+  /**
+   * Cancel adding new account and hide form
+   */
+  cancelAddForm() {
+    this.showAddForm.set(false);
+    this.resetNewAccount();
   }
 
   /**
@@ -345,7 +415,9 @@ export class AccountManagementModalComponent implements OnInit {
         if (response.success) {
           this.loadAccounts();
           this.resetNewAccount();
+          this.showAddForm.set(false); // Hide form after successful addition
           this.accountsUpdated.emit();
+          this.toastService.success('Account added successfully');
         } else {
           this.toastService.error('Failed to add account. Please try again.');
         }
