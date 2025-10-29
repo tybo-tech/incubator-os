@@ -85,12 +85,12 @@ interface SalesActivity {
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr 
-              *ngFor="let activity of activities; trackBy: trackByFn" 
+            <tr
+              *ngFor="let activity of activities; trackBy: trackByFn"
               class="hover:bg-gray-50 transition-colors"
               [class.border-l-4]="activity.id === editingId"
               [class.border-green-500]="activity.id === editingId">
-              
+
               <!-- Approach Date -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <input
@@ -274,17 +274,17 @@ interface SalesActivity {
     .overflow-x-auto::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
@@ -303,7 +303,7 @@ export class SalesComponent implements OnInit {
     const today = new Date();
     const pastDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
     const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
-    
+
     this.activities = [
       {
         id: this.nextId++,
@@ -390,7 +390,7 @@ export class SalesComponent implements OnInit {
   onAddNew(): void {
     const today = new Date();
     const followUpDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    
+
     const newActivity: SalesActivity = {
       id: this.nextId++,
       approachDate: today.toISOString().split('T')[0],
@@ -402,7 +402,7 @@ export class SalesComponent implements OnInit {
       nextFollowUp: followUpDate.toISOString().split('T')[0],
       notes: ''
     };
-    
+
     this.activities.unshift(newActivity);
     this.setEditing(newActivity.id);
   }
@@ -426,7 +426,7 @@ export class SalesComponent implements OnInit {
   }
 
   getInProgressCount(): number {
-    return this.activities.filter(activity => 
+    return this.activities.filter(activity =>
       activity.outcome === 'In Progress' || activity.outcome === 'Follow Up'
     ).length;
   }
@@ -434,7 +434,7 @@ export class SalesComponent implements OnInit {
   getConversionRate(): number {
     const totalActivities = this.activities.length;
     if (totalActivities === 0) return 0;
-    
+
     const convertedCount = this.getConvertedCount();
     return (convertedCount / totalActivities) * 100;
   }
@@ -442,11 +442,11 @@ export class SalesComponent implements OnInit {
   getUpcomingFollowUps(): SalesActivity[] {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
+
     return this.activities
-      .filter(activity => 
-        activity.nextFollowUp && 
-        activity.nextFollowUp >= today && 
+      .filter(activity =>
+        activity.nextFollowUp &&
+        activity.nextFollowUp >= today &&
         activity.nextFollowUp <= nextWeek
       )
       .sort((a, b) => (a.nextFollowUp! > b.nextFollowUp!) ? 1 : -1);

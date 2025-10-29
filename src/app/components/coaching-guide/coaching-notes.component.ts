@@ -81,12 +81,12 @@ interface CoachingSession {
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr 
-              *ngFor="let session of sessions; trackBy: trackByFn" 
+            <tr
+              *ngFor="let session of sessions; trackBy: trackByFn"
               class="hover:bg-gray-50 transition-colors"
               [class.border-l-4]="session.id === editingId"
               [class.border-purple-500]="session.id === editingId">
-              
+
               <!-- Session Date -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <input
@@ -272,17 +272,17 @@ interface CoachingSession {
     .overflow-x-auto::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
@@ -302,7 +302,7 @@ export class CoachingNotesComponent implements OnInit {
     const pastDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
     const overdueDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-    
+
     this.sessions = [
       {
         id: this.nextId++,
@@ -355,7 +355,7 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'Team morale improving. Need to formalize growth opportunities.'
       }
     ];
-    
+
     // Auto-update status based on due dates
     this.sessions.forEach(session => this.updateStatus(session));
   }
@@ -376,7 +376,7 @@ export class CoachingNotesComponent implements OnInit {
   onAddNew(): void {
     const today = new Date();
     const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // Due in 2 weeks
-    
+
     const newSession: CoachingSession = {
       id: this.nextId++,
       sessionDate: today.toISOString().split('T')[0],
@@ -387,7 +387,7 @@ export class CoachingNotesComponent implements OnInit {
       priority: 'Medium',
       notes: ''
     };
-    
+
     this.sessions.unshift(newSession);
     this.setEditing(newSession.id);
   }
@@ -427,11 +427,11 @@ export class CoachingNotesComponent implements OnInit {
   getUpcomingActions(): CoachingSession[] {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
+
     return this.sessions
-      .filter(session => 
+      .filter(session =>
         (session.status === 'Pending' || session.status === 'In Progress') &&
-        session.dueDate >= today && 
+        session.dueDate >= today &&
         session.dueDate <= nextWeek
       )
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));

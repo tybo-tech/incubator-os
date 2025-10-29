@@ -77,12 +77,12 @@ interface ProductServiceItem {
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr 
-              *ngFor="let item of items; trackBy: trackByFn" 
+            <tr
+              *ngFor="let item of items; trackBy: trackByFn"
               class="hover:bg-gray-50 transition-colors"
               [class.border-l-4]="item.id === editingId"
               [class.border-blue-500]="item.id === editingId">
-              
+
               <!-- Name -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <input
@@ -217,17 +217,17 @@ interface ProductServiceItem {
     .overflow-x-auto::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
@@ -244,53 +244,53 @@ export class ProductsServicesComponent implements OnInit {
 
   loadMockData(): void {
     this.items = [
-      { 
-        id: this.nextId++, 
-        name: 'Basic Website Build', 
-        type: 'Service', 
-        unitPrice: 15000, 
-        avgMonthlySales: 2, 
-        revenue: 0, 
-        notes: 'Entry-level web development service including responsive design and basic SEO' 
+      {
+        id: this.nextId++,
+        name: 'Basic Website Build',
+        type: 'Service',
+        unitPrice: 15000,
+        avgMonthlySales: 2,
+        revenue: 0,
+        notes: 'Entry-level web development service including responsive design and basic SEO'
       },
-      { 
-        id: this.nextId++, 
-        name: 'Monthly SEO Retainer', 
-        type: 'Service', 
-        unitPrice: 3500, 
-        avgMonthlySales: 5, 
-        revenue: 0, 
-        notes: 'Ongoing monthly SEO optimization and content strategy' 
+      {
+        id: this.nextId++,
+        name: 'Monthly SEO Retainer',
+        type: 'Service',
+        unitPrice: 3500,
+        avgMonthlySales: 5,
+        revenue: 0,
+        notes: 'Ongoing monthly SEO optimization and content strategy'
       },
-      { 
-        id: this.nextId++, 
-        name: 'E-commerce Platform Setup', 
-        type: 'Service', 
-        unitPrice: 25000, 
-        avgMonthlySales: 1, 
-        revenue: 0, 
-        notes: 'Complete e-commerce solution with payment integration' 
+      {
+        id: this.nextId++,
+        name: 'E-commerce Platform Setup',
+        type: 'Service',
+        unitPrice: 25000,
+        avgMonthlySales: 1,
+        revenue: 0,
+        notes: 'Complete e-commerce solution with payment integration'
       },
-      { 
-        id: this.nextId++, 
-        name: 'Digital Marketing Course', 
-        type: 'Product', 
-        unitPrice: 1200, 
-        avgMonthlySales: 15, 
-        revenue: 0, 
-        notes: 'Online course covering social media marketing and advertising' 
+      {
+        id: this.nextId++,
+        name: 'Digital Marketing Course',
+        type: 'Product',
+        unitPrice: 1200,
+        avgMonthlySales: 15,
+        revenue: 0,
+        notes: 'Online course covering social media marketing and advertising'
       },
-      { 
-        id: this.nextId++, 
-        name: 'Business Consultation', 
-        type: 'Service', 
-        unitPrice: 800, 
-        avgMonthlySales: 8, 
-        revenue: 0, 
-        notes: 'One-on-one business strategy consultation sessions' 
+      {
+        id: this.nextId++,
+        name: 'Business Consultation',
+        type: 'Service',
+        unitPrice: 800,
+        avgMonthlySales: 8,
+        revenue: 0,
+        notes: 'One-on-one business strategy consultation sessions'
       }
     ];
-    
+
     // Calculate initial revenue for all items
     this.items.forEach(item => this.updateRevenue(item));
   }
@@ -317,7 +317,7 @@ export class ProductsServicesComponent implements OnInit {
       revenue: 0,
       notes: ''
     };
-    
+
     this.items.unshift(newItem);
     this.setEditing(newItem.id);
   }

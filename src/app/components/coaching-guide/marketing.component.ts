@@ -89,12 +89,12 @@ interface MarketingCampaign {
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr 
-              *ngFor="let campaign of campaigns; trackBy: trackByFn" 
+            <tr
+              *ngFor="let campaign of campaigns; trackBy: trackByFn"
               class="hover:bg-gray-50 transition-colors"
               [class.border-l-4]="campaign.id === editingId"
               [class.border-orange-500]="campaign.id === editingId">
-              
+
               <!-- Campaign Name -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <input
@@ -273,17 +273,17 @@ interface MarketingCampaign {
     .overflow-x-auto::-webkit-scrollbar {
       height: 8px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
     }
-    
+
     .overflow-x-auto::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
@@ -301,7 +301,7 @@ export class MarketingComponent implements OnInit {
   loadMockData(): void {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + 1);
-    
+
     this.campaigns = [
       {
         id: this.nextId++,
@@ -364,7 +364,7 @@ export class MarketingComponent implements OnInit {
         notes: 'Incentivized referral program for existing customers'
       }
     ];
-    
+
     // Calculate initial conversion rates for all campaigns
     this.campaigns.forEach(campaign => this.updateConversionRate(campaign));
   }
@@ -388,7 +388,7 @@ export class MarketingComponent implements OnInit {
   onAddNew(): void {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + 1);
-    
+
     const newCampaign: MarketingCampaign = {
       id: this.nextId++,
       campaignName: '',
@@ -401,7 +401,7 @@ export class MarketingComponent implements OnInit {
       dueDate: futureDate.toISOString().split('T')[0],
       notes: ''
     };
-    
+
     this.campaigns.unshift(newCampaign);
     this.setEditing(newCampaign.id);
   }
