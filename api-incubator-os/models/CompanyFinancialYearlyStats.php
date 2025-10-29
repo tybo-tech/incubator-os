@@ -408,9 +408,27 @@ final class CompanyFinancialYearlyStats
             $accountTotal = 0;
             $accountMonthly = [];
 
+            // CORRECTED: Database columns represent financial year months in order
+            // m1=March, m2=April, m3=May, m4=June, m5=July, m6=August, m7=Sep, m8=Oct, m9=Nov, m10=Dec, m11=Jan, m12=Feb
+            $monthMapping = [
+                1 => 'm1',   // March
+                2 => 'm2',   // April
+                3 => 'm3',   // May
+                4 => 'm4',   // June
+                5 => 'm5',   // July
+                6 => 'm6',   // August
+                7 => 'm7',   // September
+                8 => 'm8',   // October
+                9 => 'm9',   // November
+                10 => 'm10', // December
+                11 => 'm11', // January
+                12 => 'm12'  // February
+            ];
+
             for ($month = 1; $month <= 12; $month++) {
-                $monthlyValue = (float)($record["m$month"] ?? 0);
-                $accountMonthly["m$month"] = $monthlyValue;
+                $dbColumn = $monthMapping[$month];
+                $monthlyValue = (float)($record[$dbColumn] ?? 0);
+                $accountMonthly[$dbColumn] = $monthlyValue;
                 $accountTotal += $monthlyValue;
 
                 if ($accountType === 'export_revenue') {
@@ -430,34 +448,30 @@ final class CompanyFinancialYearlyStats
             ];
         }
 
-        // Rotate months based on financial year start month
-        $rotate = function(array $months, int $startMonth): array {
-            $values = array_values($months);
-            return array_merge(
-                array_slice($values, $startMonth - 1),
-                array_slice($values, 0, $startMonth - 1)
-            );
-        };
+        // Data is already in financial year order (March=1, April=2, etc.) - no rotation needed
+        // Since we corrected the month mapping above, quarters can be calculated directly
+        // Note: Arrays are 1-indexed (array_fill(1, 12, 0.0))
 
-        $domesticRotated = $rotate($domestic, $startMonth);
-        $exportRotated = $rotate($export, $startMonth);
-
-        // Calculate quarterly totals
+        // Calculate quarterly totals  
         $sumQuarter = function(array $months, int $startIndex): float {
-            return array_sum(array_slice($months, $startIndex, 3));
+            $sum = 0;
+            for ($i = 0; $i < 3; $i++) {
+                $sum += $months[$startIndex + $i] ?? 0;
+            }
+            return $sum;
         };
 
-        $revenueQ1 = $sumQuarter($domesticRotated, 0);
-        $revenueQ2 = $sumQuarter($domesticRotated, 3);
-        $revenueQ3 = $sumQuarter($domesticRotated, 6);
-        $revenueQ4 = $sumQuarter($domesticRotated, 9);
-        $revenueTotal = array_sum($domesticRotated);
+        $revenueQ1 = $sumQuarter($domestic, 1);  // Indices 1-3: March, April, May
+        $revenueQ2 = $sumQuarter($domestic, 4);  // Indices 4-6: June, July, August  
+        $revenueQ3 = $sumQuarter($domestic, 7);  // Indices 7-9: September, October, November
+        $revenueQ4 = $sumQuarter($domestic, 10); // Indices 10-12: December, January, February
+        $revenueTotal = array_sum($domestic);
 
-        $exportQ1 = $sumQuarter($exportRotated, 0);
-        $exportQ2 = $sumQuarter($exportRotated, 3);
-        $exportQ3 = $sumQuarter($exportRotated, 6);
-        $exportQ4 = $sumQuarter($exportRotated, 9);
-        $exportTotal = array_sum($exportRotated);
+        $exportQ1 = $sumQuarter($export, 1);   // Indices 1-3: March, April, May
+        $exportQ2 = $sumQuarter($export, 4);   // Indices 4-6: June, July, August
+        $exportQ3 = $sumQuarter($export, 7);   // Indices 7-9: September, October, November
+        $exportQ4 = $sumQuarter($export, 10);  // Indices 10-12: December, January, February
+        $exportTotal = array_sum($export);
 
         // Calculate export ratio
         $exportRatio = $revenueTotal > 0 ? ($exportTotal / $revenueTotal) * 100 : 0;
