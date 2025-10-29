@@ -114,8 +114,15 @@ type CostType = 'direct' | 'operational';
 
             <div *ngIf="!loading() && filteredCategories().length === 0" class="text-center py-8 text-gray-500">
               <i class="fa-solid fa-folder-open text-2xl mb-2"></i>
-              <p>No categories found</p>
-              <p class="text-sm">Try adjusting your filters or add a new category above</p>
+              <div *ngIf="excludedCategoryIds().length > 0">
+                <p class="font-medium">No available categories</p>
+                <p class="text-sm">All {{ costType() }} cost categories are already in use for this financial year.</p>
+                <p class="text-sm mt-2">You can add a new category above.</p>
+              </div>
+              <div *ngIf="excludedCategoryIds().length === 0">
+                <p>No categories found</p>
+                <p class="text-sm">Try adjusting your filters or add a new category above</p>
+              </div>
             </div>
 
             <div *ngIf="filteredCategories().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -197,6 +204,7 @@ export class CostCategoryPickerModalComponent implements OnInit {
   // Data
   readonly categories = signal<CostCategory[]>([]);
   readonly industries = signal<INode<Industry>[]>([]);
+  readonly excludedCategoryIds = signal<number[]>([]); // Categories to exclude from selection
 
   // Filters - using signals for reactivity
   readonly selectedIndustryId = signal<number | null>(null);
@@ -212,6 +220,12 @@ export class CostCategoryPickerModalComponent implements OnInit {
 
     // Filter by cost type
     filtered = filtered.filter(cat => cat.cost_type === this.costType());
+
+    // Exclude already used categories
+    const excludedIds = this.excludedCategoryIds();
+    if (excludedIds.length > 0) {
+      filtered = filtered.filter(cat => !excludedIds.includes(cat.id));
+    }
 
     // Filter by industry if selected
     const industryId = this.selectedIndustryId();
@@ -245,8 +259,9 @@ export class CostCategoryPickerModalComponent implements OnInit {
   /**
    * Open the modal for a specific cost type
    */
-  open(costType: CostType = 'direct') {
+  open(costType: CostType = 'direct', excludedCategoryIds: number[] = []) {
     this.costType.set(costType);
+    this.excludedCategoryIds.set(excludedCategoryIds);
     this.isOpen.set(true);
     this.resetFilters();
     this.loadCategories();

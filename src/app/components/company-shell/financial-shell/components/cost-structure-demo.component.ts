@@ -8,6 +8,7 @@ import { CostCategoriesService, CostCategory } from '../../../../../services/cos
 import { CompanyCostingYearlyStatsService, CompanyCostingYearlyStats, MonthlyData } from '../../../../../services/company-costing-yearly-stats.service';
 import { CompanyFinancialYearlyStatsService, YearlyRevenueSummary } from '../../../../../services/company-financial-yearly-stats.service';
 import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
+import { ToastService } from '../../../../services/toast.service';
 import { CostCategoryPickerModalComponent } from './cost-category-picker-modal.component';
 import { CostSectionComponent } from './cost-section.component';
 import { CostKpiComponent } from './cost-kpi.component';
@@ -152,6 +153,7 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     private companyFinancialStatsService: CompanyFinancialYearlyStatsService,
     private financialYearService: FinancialYearService,
     private costStructureUtils: CostStructureUtilsService,
+    private toastService: ToastService,
     private route: ActivatedRoute
   ) {
     this.setupAutoSave();
@@ -393,6 +395,8 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
                 const updated = await this.costingStatsService.updateCostingStats(row.costingStatsId, costingData).toPromise();
                 if (updated) {
                     console.log(`Updated cost record ID: ${row.costingStatsId}`);
+                    // Don't show toast for every cell change - it would be too noisy
+                    // this.toastService.success('Data saved');
                 }
             } else {
                 // Create new record (fallback for orphaned rows)
@@ -402,8 +406,15 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
                     console.log(`Created new cost record ID: ${created.id}`);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving row:', error);
+
+            // Handle specific duplicate entry error
+            if (error?.error?.error?.includes('Duplicate entry') || error?.message?.includes('1062')) {
+                this.toastService.error(`Duplicate entry detected. This category is already being used.`);
+            } else {
+                this.toastService.error('Failed to save data. Please try again.');
+            }
         } finally {
             row.isSaving = false;
         }
@@ -415,6 +426,44 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         return category?.id || null;
     }
 
+    /**
+     * Check if a category is already being used for the current company, financial year, and cost type
+     */
+    isCategoryAlreadyUsed(categoryId: number, costType: CostType): boolean {
+        return this.rows[costType].some(row => row.categoryId === categoryId);
+    }
+
+    /**
+     * Get available categories for a cost type (excluding already used ones)
+     */
+    getAvailableCategories(costType: CostType): CostCategory[] {
+        const allCategories = costType === 'direct' ? this.directCostCategories : this.operationalCostCategories;
+        return allCategories.filter(category => !this.isCategoryAlreadyUsed(category.id, costType));
+    }
+
+    /**
+     * Validate if a category can be added
+     */
+    validateCategorySelection(category: CostCategory, costType: CostType): { valid: boolean; message?: string } {
+        // Check if category already exists for this cost type
+        if (this.isCategoryAlreadyUsed(category.id, costType)) {
+            return {
+                valid: false,
+                message: `The category "${category.name}" is already being used for ${costType} costs in this financial year.`
+            };
+        }
+
+        // Check if category type matches the section type
+        if (category.cost_type !== costType) {
+            return {
+                valid: false,
+                message: `The category "${category.name}" is designed for ${category.cost_type} costs, not ${costType} costs.`
+            };
+        }
+
+        return { valid: true };
+    }
+
     // Category Picker Modal Methods
 
     /**
@@ -422,7 +471,13 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     openCategoryPicker(costType: CostType) {
         this.rowBeingEdited = null; // Clear any edit state
-        this.categoryPickerModal.open(costType);
+
+        // Get list of already used category IDs for this cost type
+        const usedCategoryIds = this.rows[costType]
+            .map(row => row.categoryId)
+            .filter(id => id !== null && id !== undefined) as number[];
+
+        this.categoryPickerModal.open(costType, usedCategoryIds);
     }
 
     /**
@@ -430,7 +485,14 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     openCategoryPickerForEdit(row: CostLine, costType: CostType) {
         this.rowBeingEdited = row; // Track which row is being edited
-        this.categoryPickerModal.open(costType);
+
+        // Get list of already used category IDs for this cost type, excluding the current row
+        const usedCategoryIds = this.rows[costType]
+            .filter(r => r.id !== row.id) // Exclude current row
+            .map(r => r.categoryId)
+            .filter(id => id !== null && id !== undefined) as number[];
+
+        this.categoryPickerModal.open(costType, usedCategoryIds);
     }
 
     /**
@@ -446,14 +508,27 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
             this.rowBeingEdited = null; // Clear edit state
         } else {
             // Add mode: create a new row with selected category
+            let targetCostType: CostType;
+
+            // Determine target cost type
             if (category.cost_type === 'direct') {
-                this.addRowWithSelectedCategory('direct', category);
+                targetCostType = 'direct';
             } else if (category.cost_type === 'operational') {
-                this.addRowWithSelectedCategory('operational', category);
+                targetCostType = 'operational';
             } else {
                 console.warn('Category has no cost_type, defaulting to direct');
-                this.addRowWithSelectedCategory('direct', category);
+                targetCostType = 'direct';
             }
+
+            // Validate the category selection
+            const validation = this.validateCategorySelection(category, targetCostType);
+            if (!validation.valid) {
+                this.toastService.warning(validation.message || 'Cannot add this category');
+                return;
+            }
+
+            // Proceed with adding the category
+            this.addRowWithSelectedCategory(targetCostType, category);
         }
     }
 
@@ -469,6 +544,13 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
      */
     async addRowWithSelectedCategory(type: CostType, category: CostCategory) {
         if (this.isSaving) return;
+
+        // Double-check validation before proceeding
+        const validation = this.validateCategorySelection(category, type);
+        if (!validation.valid) {
+            this.toastService.warning(validation.message || 'Cannot add this category');
+            return;
+        }
 
         this.isSaving = true;
         try {
@@ -488,10 +570,17 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
                 this.recalc();
 
                 console.log(`✅ New ${type} cost record created: "${category.name}" (ID: ${created.id})`);
+                this.toastService.success(`Added "${category.name}" to ${type} costs`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error adding new cost row:', error);
-            alert('Failed to add cost category. Please try again.');
+
+            // Handle specific duplicate entry error
+            if (error?.error?.error?.includes('Duplicate entry') || error?.message?.includes('1062')) {
+                this.toastService.error(`The category "${category.name}" is already being used for ${type} costs in this financial year.`);
+            } else {
+                this.toastService.error(`Failed to add "${category.name}". Please try again.`);
+            }
         } finally {
             this.isSaving = false;
         }
@@ -503,6 +592,23 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
     async updateRowCategory(row: CostLine, category: CostCategory) {
         if (!row.costingStatsId) {
             console.error('Cannot update category: row has no database ID');
+            this.toastService.error('Cannot update category: invalid row data');
+            return;
+        }
+
+        // Check if this category is already being used by another row of the same type
+        const otherRowsWithSameCategory = this.rows[row.type].filter(r =>
+            r.id !== row.id && r.categoryId === category.id
+        );
+
+        if (otherRowsWithSameCategory.length > 0) {
+            this.toastService.warning(`The category "${category.name}" is already being used for ${row.type} costs in this financial year.`);
+            return;
+        }
+
+        // Check if category type matches the row type
+        if (category.cost_type !== row.type) {
+            this.toastService.warning(`The category "${category.name}" is designed for ${category.cost_type} costs, not ${row.type} costs.`);
             return;
         }
 
@@ -522,15 +628,20 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
             row.categoryId = category.id;
 
             console.log(`✅ Category updated to "${category.name}" for row ID: ${row.costingStatsId}`);
-        } catch (error) {
+            this.toastService.success(`Updated category to "${category.name}"`);
+        } catch (error: any) {
             console.error('Error updating category:', error);
-            alert('Failed to update category. Please try again.');
+
+            // Handle specific duplicate entry error
+            if (error?.error?.error?.includes('Duplicate entry') || error?.message?.includes('1062')) {
+                this.toastService.error(`The category "${category.name}" is already being used for ${row.type} costs in this financial year.`);
+            } else {
+                this.toastService.error('Failed to update category. Please try again.');
+            }
         } finally {
             row.isSaving = false;
         }
-    }
-
-    // Override existing methods for immediate save
+    }    // Override existing methods for immediate save
     async onCellChangeWithSave(row: CostLine) {
         this.onCellChange(row);
 
@@ -540,8 +651,6 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         }
     }
 
-
-
     async removeRowWithSave(type: CostType, id: number) {
         const row = this.rows[type].find(r => r.id === id);
 
@@ -549,8 +658,11 @@ export class CostStructureDemoComponent implements OnInit, OnDestroy {
         if (row?.costingStatsId) {
             try {
                 await this.costingStatsService.deleteCostingStats(row.costingStatsId).toPromise();
+                this.toastService.success(`Removed "${row.category}" from ${type} costs`);
             } catch (error) {
                 console.error('Error deleting row:', error);
+                this.toastService.error(`Failed to remove "${row.category}". Please try again.`);
+                return; // Don't remove from UI if database deletion failed
             }
         }
 
