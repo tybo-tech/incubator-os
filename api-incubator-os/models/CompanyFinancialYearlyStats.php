@@ -452,7 +452,7 @@ final class CompanyFinancialYearlyStats
         // Since we corrected the month mapping above, quarters can be calculated directly
         // Note: Arrays are 1-indexed (array_fill(1, 12, 0.0))
 
-        // Calculate quarterly totals  
+        // Calculate quarterly totals
         $sumQuarter = function(array $months, int $startIndex): float {
             $sum = 0;
             for ($i = 0; $i < 3; $i++) {
@@ -462,7 +462,7 @@ final class CompanyFinancialYearlyStats
         };
 
         $revenueQ1 = $sumQuarter($domestic, 1);  // Indices 1-3: March, April, May
-        $revenueQ2 = $sumQuarter($domestic, 4);  // Indices 4-6: June, July, August  
+        $revenueQ2 = $sumQuarter($domestic, 4);  // Indices 4-6: June, July, August
         $revenueQ3 = $sumQuarter($domestic, 7);  // Indices 7-9: September, October, November
         $revenueQ4 = $sumQuarter($domestic, 10); // Indices 10-12: December, January, February
         $revenueTotal = array_sum($domestic);
