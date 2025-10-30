@@ -97,6 +97,11 @@ export class ComplianceShellComponent implements OnInit {
       icon: 'fas fa-file-invoice-dollar'
     },
     {
+      label: 'B-BBEE Compliance',
+      route: 'bbbee-compliance',
+      icon: 'fas fa-chart-line'
+    },
+    {
       label: 'Other Statutory Tasks',
       route: 'other-statutory-tasks',
       icon: 'fas fa-balance-scale'

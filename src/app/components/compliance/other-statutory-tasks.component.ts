@@ -467,8 +467,11 @@ export class OtherStatutoryTasksComponent implements OnInit {
   }
 
   addNewTask(): void {
+    const newId = this.nextId;
+    this.nextId++;
+
     const newTask: StatutoryTask = {
-      id: this.nextId++,
+      id: newId,
       taskName: 'New Statutory Task',
       responsiblePerson: 'Assign Person',
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
@@ -481,8 +484,11 @@ export class OtherStatutoryTasksComponent implements OnInit {
   }
 
   addTaskFromTemplate(template: any): void {
+    const newId = this.nextId;
+    this.nextId++;
+
     const newTask: StatutoryTask = {
-      id: this.nextId++,
+      id: newId,
       ...template.template,
       dueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 90 days from now
     };

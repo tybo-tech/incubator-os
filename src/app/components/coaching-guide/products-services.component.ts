@@ -243,9 +243,11 @@ export class ProductsServicesComponent implements OnInit {
   }
 
   loadMockData(): void {
+    let currentId = this.nextId;
+
     this.items = [
       {
-        id: this.nextId++,
+        id: currentId++,
         name: 'Basic Website Build',
         type: 'Service',
         unitPrice: 15000,
@@ -254,7 +256,7 @@ export class ProductsServicesComponent implements OnInit {
         notes: 'Entry-level web development service including responsive design and basic SEO'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         name: 'Monthly SEO Retainer',
         type: 'Service',
         unitPrice: 3500,
@@ -263,7 +265,7 @@ export class ProductsServicesComponent implements OnInit {
         notes: 'Ongoing monthly SEO optimization and content strategy'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         name: 'E-commerce Platform Setup',
         type: 'Service',
         unitPrice: 25000,
@@ -272,7 +274,7 @@ export class ProductsServicesComponent implements OnInit {
         notes: 'Complete e-commerce solution with payment integration'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         name: 'Digital Marketing Course',
         type: 'Product',
         unitPrice: 1200,
@@ -281,7 +283,7 @@ export class ProductsServicesComponent implements OnInit {
         notes: 'Online course covering social media marketing and advertising'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         name: 'Business Consultation',
         type: 'Service',
         unitPrice: 800,
@@ -290,6 +292,8 @@ export class ProductsServicesComponent implements OnInit {
         notes: 'One-on-one business strategy consultation sessions'
       }
     ];
+
+    this.nextId = currentId;
 
     // Calculate initial revenue for all items
     this.items.forEach(item => this.updateRevenue(item));
@@ -308,8 +312,11 @@ export class ProductsServicesComponent implements OnInit {
   }
 
   onAddNew(): void {
+    const newId = this.nextId;
+    this.nextId++;
+
     const newItem: ProductServiceItem = {
-      id: this.nextId++,
+      id: newId,
       name: '',
       type: 'Product',
       unitPrice: 0,

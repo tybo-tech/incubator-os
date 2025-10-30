@@ -302,10 +302,11 @@ export class CoachingNotesComponent implements OnInit {
     const pastDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
     const overdueDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    let currentId = this.nextId;
 
     this.sessions = [
       {
-        id: this.nextId++,
+        id: currentId++,
         sessionDate: pastDate.toISOString().split('T')[0],
         topic: 'Product Positioning Strategy',
         actionItems: '1. Research competitor pricing\n2. Define unique value proposition\n3. Create customer persona profiles',
@@ -315,7 +316,7 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'Focus on differentiating from main competitors. Need clearer messaging.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         sessionDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         topic: 'Marketing Channel Optimization',
         actionItems: '1. Set up Google Analytics tracking\n2. Create social media content calendar\n3. Launch email marketing campaign',
@@ -325,7 +326,7 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'Social media presence needs immediate attention. Email list is growing.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         sessionDate: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         topic: 'Sales Process Improvement',
         actionItems: '1. Create sales funnel document\n2. Implement CRM system\n3. Train team on consultative selling',
@@ -335,7 +336,7 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'CRM implementation successful. Team showing improved close rates.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         sessionDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         topic: 'Financial Planning & Budgeting',
         actionItems: '1. Create monthly budget template\n2. Set up expense tracking system\n3. Define key financial metrics',
@@ -345,7 +346,7 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'Need to establish better financial controls and regular reporting.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         sessionDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         topic: 'Team Development & Leadership',
         actionItems: '1. Schedule one-on-one meetings with team\n2. Create professional development plan\n3. Implement feedback system',
@@ -355,6 +356,8 @@ export class CoachingNotesComponent implements OnInit {
         notes: 'Team morale improving. Need to formalize growth opportunities.'
       }
     ];
+
+    this.nextId = currentId;
 
     // Auto-update status based on due dates
     this.sessions.forEach(session => this.updateStatus(session));
@@ -376,9 +379,11 @@ export class CoachingNotesComponent implements OnInit {
   onAddNew(): void {
     const today = new Date();
     const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // Due in 2 weeks
+    const newId = this.nextId;
+    this.nextId++;
 
     const newSession: CoachingSession = {
-      id: this.nextId++,
+      id: newId,
       sessionDate: today.toISOString().split('T')[0],
       topic: '',
       actionItems: '',

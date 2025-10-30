@@ -43,8 +43,11 @@ export class CostStructureUtilsService {
   createCostLine(type: CostType, category: string, monthly?: number[]): CostLine {
     console.log(`🏗️ Creating cost line with type: ${type}, category: "${category}"`);
     const monthlyValues = monthly ?? Array.from({ length: 12 }, () => 0);
+    const newId = this.autoIdCounter;
+    this.autoIdCounter++;
+
     const costLine = {
-      id: this.autoIdCounter++,
+      id: newId,
       type,
       category,
       monthly: monthlyValues.slice(0, 12),
@@ -58,8 +61,11 @@ export class CostStructureUtilsService {
    * Convert database stats to UI cost line
    */
   convertStatsToRow(stat: CompanyCostingYearlyStats, categoryName: string): CostLine {
+    const newId = this.autoIdCounter;
+    this.autoIdCounter++;
+
     return {
-      id: this.autoIdCounter++,
+      id: newId,
       costingStatsId: stat.id,
       type: stat.cost_type,
       category: categoryName,

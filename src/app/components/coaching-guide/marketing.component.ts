@@ -301,10 +301,11 @@ export class MarketingComponent implements OnInit {
   loadMockData(): void {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + 1);
+    let currentId = this.nextId;
 
     this.campaigns = [
       {
-        id: this.nextId++,
+        id: currentId++,
         campaignName: 'Social Media Brand Awareness',
         channel: 'Social Media',
         budget: 5000,
@@ -316,7 +317,7 @@ export class MarketingComponent implements OnInit {
         notes: 'Focus on Instagram and Facebook with engaging visual content'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         campaignName: 'Google Ads - Service Keywords',
         channel: 'Google Ads',
         budget: 8000,
@@ -328,7 +329,7 @@ export class MarketingComponent implements OnInit {
         notes: 'Targeting high-intent keywords for our main services'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         campaignName: 'Email Newsletter Campaign',
         channel: 'Email',
         budget: 1200,
@@ -340,7 +341,7 @@ export class MarketingComponent implements OnInit {
         notes: 'Weekly newsletter with industry insights and service updates'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         campaignName: 'Content Marketing Blog Series',
         channel: 'Content Marketing',
         budget: 3000,
@@ -352,7 +353,7 @@ export class MarketingComponent implements OnInit {
         notes: 'Educational blog series about industry best practices'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         campaignName: 'Referral Program Launch',
         channel: 'Referral',
         budget: 2500,
@@ -364,6 +365,8 @@ export class MarketingComponent implements OnInit {
         notes: 'Incentivized referral program for existing customers'
       }
     ];
+
+    this.nextId = currentId;
 
     // Calculate initial conversion rates for all campaigns
     this.campaigns.forEach(campaign => this.updateConversionRate(campaign));
@@ -388,9 +391,11 @@ export class MarketingComponent implements OnInit {
   onAddNew(): void {
     const futureDate = new Date();
     futureDate.setMonth(futureDate.getMonth() + 1);
+    const newId = this.nextId;
+    this.nextId++;
 
     const newCampaign: MarketingCampaign = {
-      id: this.nextId++,
+      id: newId,
       campaignName: '',
       channel: 'Social Media',
       budget: 0,

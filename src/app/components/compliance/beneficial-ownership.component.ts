@@ -328,8 +328,11 @@ export class BeneficialOwnershipComponent implements OnInit {
   }
 
   addNewRecord(): void {
+    const newId = this.nextId;
+    this.nextId++;
+
     const newRecord: BeneficialOwnershipRecord = {
-      id: this.nextId++,
+      id: newId,
       declarationType: 'Initial Register',
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       status: 'Not Submitted',

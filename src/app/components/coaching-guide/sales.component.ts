@@ -303,10 +303,11 @@ export class SalesComponent implements OnInit {
     const today = new Date();
     const pastDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
     const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
+    let currentId = this.nextId;
 
     this.activities = [
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: pastDate.toISOString().split('T')[0],
         customerName: 'ABC Enterprises',
         productService: 'E-commerce Platform Setup',
@@ -316,7 +317,7 @@ export class SalesComponent implements OnInit {
         notes: 'Signed contract after demo. Very satisfied with our proposal.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         customerName: 'StartupCorp',
         productService: 'Basic Website Build',
@@ -327,7 +328,7 @@ export class SalesComponent implements OnInit {
         notes: 'Waiting for their final decision. Proposal sent last week.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         customerName: 'Tech Solutions Ltd',
         productService: 'Monthly SEO Retainer',
@@ -337,7 +338,7 @@ export class SalesComponent implements OnInit {
         notes: 'Monthly retainer started. Very happy with initial SEO audit.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         customerName: 'Local Restaurant',
         productService: 'Digital Marketing Course',
@@ -348,7 +349,7 @@ export class SalesComponent implements OnInit {
         notes: 'Interested but wants to discuss with their team first.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         customerName: 'Manufacturing Co',
         productService: 'Business Consultation',
@@ -358,7 +359,7 @@ export class SalesComponent implements OnInit {
         notes: 'Decided to go with internal team instead. Price was not the issue.'
       },
       {
-        id: this.nextId++,
+        id: currentId++,
         approachDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         customerName: 'Online Retailer',
         productService: 'E-commerce Platform Setup',
@@ -369,6 +370,8 @@ export class SalesComponent implements OnInit {
         notes: 'Very interested. Requested additional features in proposal.'
       }
     ];
+
+    this.nextId = currentId;
   }
 
   onOutcomeChange(activity: SalesActivity): void {
@@ -390,9 +393,11 @@ export class SalesComponent implements OnInit {
   onAddNew(): void {
     const today = new Date();
     const followUpDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const newId = this.nextId;
+    this.nextId++;
 
     const newActivity: SalesActivity = {
-      id: this.nextId++,
+      id: newId,
       approachDate: today.toISOString().split('T')[0],
       customerName: '',
       productService: '',

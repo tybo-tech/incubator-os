@@ -402,8 +402,11 @@ export class TaxRegistrationsComponent implements OnInit {
   }
 
   addNewRecord(): void {
+    const newId = this.nextId;
+    this.nextId++;
+
     const newRecord: TaxRegistrationRecord = {
-      id: this.nextId++,
+      id: newId,
       registrationType: 'Income Tax',
       registrationDate: new Date().toISOString().split('T')[0],
       status: 'Active',

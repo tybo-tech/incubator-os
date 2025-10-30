@@ -114,6 +114,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./components/compliance/tax-registrations.component').then(m => m.TaxRegistrationsComponent),
               },
               {
+                path: 'bbbee-compliance',
+                loadComponent: () => import('./components/compliance/bbbee-compliance.component').then(m => m.BbbeeComplianceComponent),
+              },
+              {
                 path: 'other-statutory-tasks',
                 loadComponent: () => import('./components/compliance/other-statutory-tasks.component').then(m => m.OtherStatutoryTasksComponent),
               }
