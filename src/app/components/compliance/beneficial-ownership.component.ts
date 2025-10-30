@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 interface BeneficialOwnershipRecord {
   id: number;
-  entityName: string;
-  registerSubmittedDate?: string;
+  declarationType: 'Initial Register' | 'Annual Update' | 'Change Notification';
   dueDate: string;
+  submittedDate?: string;
   status: 'Not Submitted' | 'Submitted' | 'Overdue';
   notes?: string;
 }
@@ -41,7 +41,7 @@ interface BeneficialOwnershipRecord {
               <i class="fas fa-users text-blue-500 text-xl"></i>
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-500">Total Entities</p>
+              <p class="text-sm font-medium text-gray-500">Total Records</p>
               <p class="text-lg font-semibold text-gray-900">{{ beneficialOwnershipRecords.length }}</p>
             </div>
           </div>
@@ -95,7 +95,7 @@ interface BeneficialOwnershipRecord {
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Declaration Type</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -106,18 +106,21 @@ interface BeneficialOwnershipRecord {
             <tbody class="bg-white divide-y divide-gray-200">
               <tr *ngFor="let record of beneficialOwnershipRecords; trackBy: trackById" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="editingId === record.id; else entityNameDisplay"
-                    [(ngModel)]="record.entityName"
+                  <select
+                    *ngIf="editingId === record.id; else declarationTypeDisplay"
+                    [(ngModel)]="record.declarationType"
                     (blur)="stopEditing()"
-                    (keyup.enter)="stopEditing()"
-                    (keyup.escape)="stopEditing()"
+                    (change)="stopEditing()"
                     class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                  <ng-template #entityNameDisplay>
+                    <option value="Initial Register">Initial Register</option>
+                    <option value="Annual Update">Annual Update</option>
+                    <option value="Change Notification">Change Notification</option>
+                  </select>
+                  <ng-template #declarationTypeDisplay>
                     <div
-                      (click)="startEditing(record.id, 'entityName')"
+                      (click)="startEditing(record.id, 'declarationType')"
                       class="text-sm font-medium text-gray-900 cursor-pointer hover:bg-gray-100 p-1 rounded">
-                      {{ record.entityName }}
+                      {{ record.declarationType }}
                     </div>
                   </ng-template>
                 </td>
@@ -146,7 +149,7 @@ interface BeneficialOwnershipRecord {
                 <td class="px-6 py-4 whitespace-nowrap">
                   <input
                     *ngIf="editingId === record.id; else submittedDateDisplay"
-                    [(ngModel)]="record.registerSubmittedDate"
+                    [(ngModel)]="record.submittedDate"
                     type="date"
                     (blur)="stopEditing()"
                     (keyup.enter)="stopEditing()"
@@ -154,9 +157,9 @@ interface BeneficialOwnershipRecord {
                     class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                   <ng-template #submittedDateDisplay>
                     <div
-                      (click)="startEditing(record.id, 'registerSubmittedDate')"
+                      (click)="startEditing(record.id, 'submittedDate')"
                       class="text-sm text-gray-900 cursor-pointer hover:bg-gray-100 p-1 rounded">
-                      {{ record.registerSubmittedDate ? (record.registerSubmittedDate | date:'mediumDate') : '-' }}
+                      {{ record.submittedDate ? (record.submittedDate | date:'mediumDate') : '-' }}
                     </div>
                   </ng-template>
                 </td>
@@ -217,7 +220,7 @@ interface BeneficialOwnershipRecord {
               <tr *ngIf="beneficialOwnershipRecords.length === 0">
                 <td colspan="6" class="px-6 py-12 text-center">
                   <i class="fas fa-users text-gray-400 text-3xl mb-4"></i>
-                  <p class="text-gray-500 text-sm">No beneficial ownership records yet.</p>
+                  <p class="text-gray-500 text-sm">No beneficial ownership records for this company yet.</p>
                   <p class="text-gray-400 text-xs mt-1">Click "Add Declaration" to get started.</p>
                 </td>
               </tr>
@@ -259,37 +262,37 @@ export class BeneficialOwnershipComponent implements OnInit {
   beneficialOwnershipRecords: BeneficialOwnershipRecord[] = [
     {
       id: 1,
-      entityName: 'TechStart Solutions (Pty) Ltd',
+      declarationType: 'Annual Update',
       dueDate: '2024-04-30',
-      registerSubmittedDate: '2024-04-25',
+      submittedDate: '2024-04-25',
       status: 'Submitted',
       notes: 'Submitted with annual return - all beneficial owners disclosed'
     },
     {
       id: 2,
-      entityName: 'Innovation Hub CC',
+      declarationType: 'Initial Register',
       dueDate: '2024-08-15',
       status: 'Not Submitted',
       notes: 'Awaiting member information for beneficial ownership register'
     },
     {
       id: 3,
-      entityName: 'Green Energy Ventures (Pty) Ltd',
+      declarationType: 'Change Notification',
       dueDate: '2024-01-15',
       status: 'Overdue',
       notes: 'URGENT: Beneficial ownership register overdue - risk of penalties'
     },
     {
       id: 4,
-      entityName: 'Digital Marketing Agency (Pty) Ltd',
+      declarationType: 'Initial Register',
       dueDate: '2024-06-20',
-      registerSubmittedDate: '2024-06-18',
+      submittedDate: '2024-06-18',
       status: 'Submitted',
       notes: 'Initial beneficial ownership register filed'
     },
     {
       id: 5,
-      entityName: 'Consulting Excellence CC',
+      declarationType: 'Annual Update',
       dueDate: '2024-10-15',
       status: 'Not Submitted',
       notes: 'First beneficial ownership register due with annual return'
@@ -327,14 +330,14 @@ export class BeneficialOwnershipComponent implements OnInit {
   addNewRecord(): void {
     const newRecord: BeneficialOwnershipRecord = {
       id: this.nextId++,
-      entityName: 'New Entity',
+      declarationType: 'Initial Register',
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       status: 'Not Submitted',
       notes: ''
     };
 
     this.beneficialOwnershipRecords.unshift(newRecord);
-    this.startEditing(newRecord.id, 'entityName');
+    this.startEditing(newRecord.id, 'declarationType');
   }
 
   deleteRecord(id: number): void {

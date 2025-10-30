@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 interface AnnualReturnRecord {
   id: number;
-  entityName: string;
+  yearEnding: string;  // Financial year ending date
   anniversaryDate: string;  // Incorporation date
   dueDate: string;
   filingDate?: string;
@@ -96,7 +96,7 @@ interface AnnualReturnRecord {
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity Name</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year Ending</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anniversary Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filing Date</th>
@@ -110,18 +110,19 @@ interface AnnualReturnRecord {
               <tr *ngFor="let record of annualReturns; trackBy: trackById" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <input
-                    *ngIf="editingId === record.id; else entityNameDisplay"
-                    [(ngModel)]="record.entityName"
+                    *ngIf="editingId === record.id; else yearEndingDisplay"
+                    [(ngModel)]="record.yearEnding"
+                    type="date"
                     (blur)="stopEditing()"
                     (keyup.enter)="stopEditing()"
                     (keyup.escape)="stopEditing()"
                     class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    #entityInput>
-                  <ng-template #entityNameDisplay>
+                    #yearInput>
+                  <ng-template #yearEndingDisplay>
                     <div
-                      (click)="startEditing(record.id, 'entityName')"
+                      (click)="startEditing(record.id, 'yearEnding')"
                       class="text-sm font-medium text-gray-900 cursor-pointer hover:bg-gray-100 p-1 rounded">
-                      {{ record.entityName }}
+                      {{ record.yearEnding | date:'mediumDate' }}
                     </div>
                   </ng-template>
                 </td>
@@ -280,7 +281,7 @@ export class AnnualReturnsComponent implements OnInit {
   annualReturns: AnnualReturnRecord[] = [
     {
       id: 1,
-      entityName: 'TechStart Solutions (Pty) Ltd',
+      yearEnding: '2024-02-29',
       anniversaryDate: '2020-03-15',
       dueDate: '2024-04-30',
       filingDate: '2024-04-25',
@@ -290,7 +291,7 @@ export class AnnualReturnsComponent implements OnInit {
     },
     {
       id: 2,
-      entityName: 'Innovation Hub CC',
+      yearEnding: '2024-06-30',
       anniversaryDate: '2021-07-08',
       dueDate: '2024-08-15',
       status: 'Pending',
@@ -298,7 +299,7 @@ export class AnnualReturnsComponent implements OnInit {
     },
     {
       id: 3,
-      entityName: 'Green Energy Ventures (Pty) Ltd',
+      yearEnding: '2023-12-31',
       anniversaryDate: '2019-11-22',
       dueDate: '2024-01-15',
       status: 'Overdue',
@@ -306,7 +307,7 @@ export class AnnualReturnsComponent implements OnInit {
     },
     {
       id: 4,
-      entityName: 'Digital Marketing Agency (Pty) Ltd',
+      yearEnding: '2024-05-31',
       anniversaryDate: '2022-05-10',
       dueDate: '2024-06-20',
       filingDate: '2024-06-18',
@@ -316,7 +317,7 @@ export class AnnualReturnsComponent implements OnInit {
     },
     {
       id: 5,
-      entityName: 'Consulting Excellence CC',
+      yearEnding: '2024-09-30',
       anniversaryDate: '2023-09-03',
       dueDate: '2024-10-15',
       status: 'Pending',
@@ -355,7 +356,7 @@ export class AnnualReturnsComponent implements OnInit {
   addNewRecord(): void {
     const newRecord: AnnualReturnRecord = {
       id: this.nextId++,
-      entityName: 'New Entity',
+      yearEnding: new Date().toISOString().split('T')[0],
       anniversaryDate: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
       status: 'Pending',
@@ -363,7 +364,7 @@ export class AnnualReturnsComponent implements OnInit {
     };
 
     this.annualReturns.unshift(newRecord);
-    this.startEditing(newRecord.id, 'entityName');
+    this.startEditing(newRecord.id, 'yearEnding');
   }
 
   deleteRecord(id: number): void {

@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 
 interface TaxRegistrationRecord {
   id: number;
-  entityName: string;
   registrationType: 'Income Tax' | 'VAT' | 'Turnover Tax' | 'PAYE';
   registrationDate: string;
   nextFilingDueDate?: string;
@@ -113,7 +112,6 @@ interface TaxRegistrationRecord {
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity Name</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Type</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration Date</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Next Filing Due</th>
@@ -124,23 +122,6 @@ interface TaxRegistrationRecord {
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr *ngFor="let record of filteredRegistrations; trackBy: trackById" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <input
-                    *ngIf="editingId === record.id; else entityNameDisplay"
-                    [(ngModel)]="record.entityName"
-                    (blur)="stopEditing()"
-                    (keyup.enter)="stopEditing()"
-                    (keyup.escape)="stopEditing()"
-                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                  <ng-template #entityNameDisplay>
-                    <div
-                      (click)="startEditing(record.id, 'entityName')"
-                      class="text-sm font-medium text-gray-900 cursor-pointer hover:bg-gray-100 p-1 rounded">
-                      {{ record.entityName }}
-                    </div>
-                  </ng-template>
-                </td>
-
                 <td class="px-6 py-4 whitespace-nowrap">
                   <select
                     *ngIf="editingId === record.id; else registrationTypeDisplay"
@@ -263,7 +244,7 @@ interface TaxRegistrationRecord {
 
               <!-- Empty state -->
               <tr *ngIf="filteredRegistrations.length === 0">
-                <td colspan="7" class="px-6 py-12 text-center">
+                <td colspan="6" class="px-6 py-12 text-center">
                   <i class="fas fa-file-invoice-dollar text-gray-400 text-3xl mb-4"></i>
                   <p class="text-gray-500 text-sm">No tax registrations for this filter.</p>
                   <p class="text-gray-400 text-xs mt-1">Click "Add Registration" to get started.</p>
@@ -306,7 +287,6 @@ export class TaxRegistrationsComponent implements OnInit {
   taxRegistrations: TaxRegistrationRecord[] = [
     {
       id: 1,
-      entityName: 'TechStart Solutions (Pty) Ltd',
       registrationType: 'Income Tax',
       registrationDate: '2020-04-15',
       nextFilingDueDate: '2024-12-31',
@@ -315,7 +295,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 2,
-      entityName: 'TechStart Solutions (Pty) Ltd',
       registrationType: 'VAT',
       registrationDate: '2021-02-10',
       nextFilingDueDate: '2024-11-25',
@@ -324,7 +303,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 3,
-      entityName: 'TechStart Solutions (Pty) Ltd',
       registrationType: 'PAYE',
       registrationDate: '2021-06-01',
       nextFilingDueDate: '2024-11-07',
@@ -333,7 +311,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 4,
-      entityName: 'Innovation Hub CC',
       registrationType: 'Income Tax',
       registrationDate: '2021-08-08',
       nextFilingDueDate: '2024-12-31',
@@ -342,7 +319,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 5,
-      entityName: 'Innovation Hub CC',
       registrationType: 'Turnover Tax',
       registrationDate: '2021-08-08',
       nextFilingDueDate: '2024-11-30',
@@ -351,7 +327,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 6,
-      entityName: 'Green Energy Ventures (Pty) Ltd',
       registrationType: 'Income Tax',
       registrationDate: '2019-12-22',
       status: 'Dormant',
@@ -359,7 +334,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 7,
-      entityName: 'Digital Marketing Agency (Pty) Ltd',
       registrationType: 'Income Tax',
       registrationDate: '2022-06-10',
       nextFilingDueDate: '2024-12-31',
@@ -368,7 +342,6 @@ export class TaxRegistrationsComponent implements OnInit {
     },
     {
       id: 8,
-      entityName: 'Digital Marketing Agency (Pty) Ltd',
       registrationType: 'PAYE',
       registrationDate: '2023-01-15',
       nextFilingDueDate: '2024-11-07',
@@ -431,7 +404,6 @@ export class TaxRegistrationsComponent implements OnInit {
   addNewRecord(): void {
     const newRecord: TaxRegistrationRecord = {
       id: this.nextId++,
-      entityName: 'New Entity',
       registrationType: 'Income Tax',
       registrationDate: new Date().toISOString().split('T')[0],
       status: 'Active',
@@ -439,7 +411,7 @@ export class TaxRegistrationsComponent implements OnInit {
     };
 
     this.taxRegistrations.unshift(newRecord);
-    this.startEditing(newRecord.id, 'entityName');
+    this.startEditing(newRecord.id, 'registrationType');
   }
 
   deleteRecord(id: number): void {
