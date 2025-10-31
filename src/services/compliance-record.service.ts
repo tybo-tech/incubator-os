@@ -120,7 +120,7 @@ export class ComplianceRecordService {
     console.log('📋 Adding compliance record:', data);
     // Convert camelCase to snake_case for backend
     const snakeData = this.camelToSnakeObject(data);
-    
+
     return this.http.post<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/add-compliance-record.php`, snakeData, this.httpOptions)
       .pipe(
         catchError(this.handleError('Add compliance record')),
@@ -135,7 +135,7 @@ export class ComplianceRecordService {
     console.log('📋 Updating compliance record:', id, data);
     // Convert camelCase to snake_case for backend
     const snakeData = this.camelToSnakeObject(data);
-    
+
     return this.http.put<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/update-compliance-record.php?id=${id}`, snakeData, this.httpOptions)
       .pipe(
         catchError(this.handleError('Update compliance record')),
@@ -222,7 +222,7 @@ export class ComplianceRecordService {
     console.log('📋 Bulk creating compliance records:', records.length);
     // Convert each record from camelCase to snake_case
     const snakeRecords = records.map(record => this.camelToSnakeObject(record));
-    
+
     return this.http.post<BulkOperationResult>(`${this.apiUrl}/bulk-operations.php`, {
       operation: 'create',
       records: snakeRecords
@@ -240,7 +240,7 @@ export class ComplianceRecordService {
       id: update.id,
       data: this.camelToSnakeObject(update.data)
     }));
-    
+
     return this.http.post<BulkOperationResult>(`${this.apiUrl}/bulk-operations.php`, {
       operation: 'update',
       records: snakeUpdates
