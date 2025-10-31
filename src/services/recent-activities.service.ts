@@ -8,16 +8,36 @@ export interface RecentActivity {
   company_id?: number;
   company_name: string;
   total_amount?: number;
+  total_amount_raw?: number;
   updated_at: string;
   created_at: string;
   action_type: 'Created' | 'Updated';
   notes?: string;
   financial_year?: string;
   affected_period?: string;
+  entry_type?: 'Revenue' | 'Cost';
+  reference_id?: number;
   // Company-specific fields
   registration_no?: string;
   industry?: string;
   city?: string;
+}
+
+export interface FinancialStatistics {
+  type: string;
+  data: any;
+  title: string;
+  subtitle: string;
+}
+
+export interface FinancialStatisticsResponse {
+  success: boolean;
+  result: FinancialStatistics;
+  metadata: {
+    generated_at: string;
+    financial_year_id?: number;
+    limit: number;
+  };
 }
 
 export interface RecentActivitiesResponse {
@@ -34,7 +54,9 @@ export interface RecentActivitiesResponse {
   };
 }
 
-export type ActivityType = 'recent_revenue' | 'recent_costs' | 'recent_companies' | 'recent_compliance';
+export type ActivityType = 'recent_revenue' | 'recent_costs' | 'recent_companies' | 'recent_compliance' | 'recent_revenue_enhanced' | 'recent_financial_updates';
+
+export type StatisticsType = 'top_revenue' | 'max_revenue' | 'recent_high_value' | 'monthly_summary' | 'active_companies' | 'summary';
 
 export interface ActivityTypeOption {
   value: ActivityType;
@@ -85,8 +107,31 @@ export class RecentActivitiesService {
         label: 'Recent Compliance',
         description: 'Latest compliance activities',
         icon: 'fas fa-shield-alt'
+      },
+      {
+        value: 'recent_revenue_enhanced',
+        label: 'Enhanced Revenue Activity',
+        description: 'Recent revenue with amounts and totals',
+        icon: 'fas fa-money-bill-wave'
+      },
+      {
+        value: 'recent_financial_updates',
+        label: 'Financial Updates',
+        description: 'High-value financial transactions',
+        icon: 'fas fa-chart-line'
       }
     ];
+  }
+
+  getFinancialStatistics(type: StatisticsType, limit: number = 10, financialYearId?: number): Observable<FinancialStatisticsResponse> {
+    let params = new HttpParams();
+    params = params.set('type', type);
+    params = params.set('limit', limit.toString());
+    if (financialYearId) {
+      params = params.set('financial_year_id', financialYearId.toString());
+    }
+
+    return this.http.get<FinancialStatisticsResponse>(`${this.apiUrl}/financial-statistics.php`, { params });
   }
 
   formatCurrency(amount: number): string {

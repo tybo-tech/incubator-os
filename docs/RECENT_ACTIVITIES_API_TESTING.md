@@ -188,22 +188,49 @@ $response = Invoke-RestMethod -Uri "http://localhost:8080/api-nodes/dashboard/re
 5. **Filter Testing**: Test different combinations of filters
 6. **Error Handling**: Test with invalid parameters to verify error responses
 
-## Quick Test Sequence
+## Quick Test Results (Fixed)
+
+### Working Endpoint Tests:
 ```powershell
-# 1. Basic recent activities
-$basic = Invoke-RestMethod -Uri "http://localhost:8080/api-nodes/dashboard/get-recent-activities.php?limit=3" -Method GET
-
-# 2. Financial activities only
-$financial = Invoke-RestMethod -Uri "http://localhost:8080/api-nodes/dashboard/get-recent-activities.php?module=company_financial_yearly_stats&limit=2" -Method GET
-
-# 3. Categorized recent revenue
+# 1. Recent revenue activities (fixed filter: company_financial_yearly_stats + created)
 $revenue = Invoke-RestMethod -Uri "http://localhost:8080/api-nodes/dashboard/recent-activities.php?type=recent_revenue&limit=3" -Method GET
+$revenue.result.data | Select-Object company_name, updated_at, reference_id
 
-# 4. Check pagination
-$basic.pagination
-$financial.pagination  
+# Result: Real company names from database lookup
+# company_name            updated_at          reference_id
+# SmaEve Designs          2025-10-30 09:41:49          208
+# TSCUAA                  2025-10-30 09:34:08          206
+# Mesda Bed and Breakfast 2025-10-30 09:29:19          205
+
+# 2. Check pagination (50 total activities found)
 $revenue.result.pagination
+# total: 50, limit: 3, has_more: True
+
+# 3. Enhanced activities endpoint (uses RecentActivities model directly)
+$enhanced = Invoke-RestMethod -Uri "http://localhost:8080/api-nodes/dashboard/get-recent-activities.php?module=company_financial_yearly_stats&limit=2" -Method GET
+$enhanced.data | Select-Object description, company_id, activity_date
 ```
+
+### Key Fixes Applied:
+
+**1. Correct Module Filtering** ✅
+- **Before**: `module = 'financial_data'` (didn't match actual data)
+- **After**: `module = 'company_financial_yearly_stats'` (matches SQL data)
+
+**2. Real Company Names** ✅
+- **Before**: Using activity description as company name
+- **After**: Database lookup with `SELECT id, name as company_name FROM companies`
+- **Result**: Real company names like "SmaEve Designs", "TSCUAA", "Mesda Bed and Breakfast"
+
+**3. Fixed Parameter Binding** ✅
+- **Issue**: PDO parameter binding error with company ID arrays
+- **Fix**: Using `array_values($companyIds)` for sequential array keys
+
+### Current Data Structure:
+Based on the actual `recent_activities` SQL data:
+- **All activities**: `module = 'company_financial_yearly_stats'` and `action = 'created'`
+- **50 total activities**: All are financial data creation events
+- **Activity differentiation**: Currently requires looking at `reference_id` to determine revenue vs costs from the actual financial records
 
 ## Integration Status ✅
 

@@ -891,4 +891,145 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
             error_log("Failed to log activity for CompanyFinancialYearlyStats: " . $e->getMessage());
         }
     }
+
+    /* =========================================================================
+       DASHBOARD STATISTICS METHODS
+       ========================================================================= */
+
+    /**
+     * Get top performing companies by total revenue
+     */
+    public function getTopRevenueCompanies(int $limit = 10, int $financialYearId = null): array
+    {
+        $whereClause = $financialYearId ? "WHERE fs.financial_year_id = :financial_year_id" : "";
+        $sql = "SELECT 
+                    c.id as company_id,
+                    c.name as company_name,
+                    SUM(fs.total_amount) as total_revenue,
+                    COUNT(fs.id) as revenue_entries,
+                    MAX(fs.updated_at) as last_updated
+                FROM company_financial_yearly_stats fs
+                INNER JOIN companies c ON c.id = fs.company_id
+                $whereClause
+                AND fs.is_revenue = 1
+                GROUP BY c.id, c.name
+                ORDER BY total_revenue DESC
+                LIMIT :limit";
+
+        $stmt = $this->conn->prepare($sql);
+        if ($financialYearId) {
+            $stmt->bindValue(':financial_year_id', $financialYearId, PDO::PARAM_INT);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get maximum revenue record
+     */
+    public function getMaxRevenueRecord(): ?array
+    {
+        $sql = "SELECT 
+                    fs.*,
+                    c.name as company_name
+                FROM company_financial_yearly_stats fs
+                INNER JOIN companies c ON c.id = fs.company_id
+                WHERE fs.is_revenue = 1
+                ORDER BY fs.total_amount DESC
+                LIMIT 1";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    /**
+     * Get recent high-value transactions (updated records with amounts)
+     */
+    public function getRecentHighValueUpdates(int $limit = 20): array
+    {
+        $sql = "SELECT 
+                    fs.id,
+                    fs.company_id,
+                    c.name as company_name,
+                    fs.total_amount,
+                    fs.updated_at,
+                    fs.financial_year_id,
+                    fy.name as financial_year_name,
+                    CASE 
+                        WHEN fs.is_revenue = 1 THEN 'Revenue'
+                        ELSE 'Cost'
+                    END as entry_type
+                FROM company_financial_yearly_stats fs
+                INNER JOIN companies c ON c.id = fs.company_id
+                LEFT JOIN financial_years fy ON fy.id = fs.financial_year_id
+                WHERE fs.total_amount > 0
+                ORDER BY fs.updated_at DESC
+                LIMIT :limit";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get monthly performance summary for dashboard
+     */
+    public function getMonthlyPerformanceSummary(int $financialYearId = null): array
+    {
+        $whereClause = $financialYearId ? "WHERE fs.financial_year_id = :financial_year_id" : "";
+        $sql = "SELECT 
+                    COUNT(DISTINCT fs.company_id) as active_companies,
+                    SUM(CASE WHEN fs.is_revenue = 1 THEN fs.total_amount ELSE 0 END) as total_revenue,
+                    SUM(CASE WHEN fs.is_revenue = 0 THEN fs.total_amount ELSE 0 END) as total_costs,
+                    AVG(CASE WHEN fs.is_revenue = 1 THEN fs.total_amount ELSE NULL END) as avg_revenue_per_company,
+                    MAX(fs.total_amount) as highest_single_amount,
+                    COUNT(fs.id) as total_entries
+                FROM company_financial_yearly_stats fs
+                $whereClause";
+
+        $stmt = $this->conn->prepare($sql);
+        if ($financialYearId) {
+            $stmt->bindValue(':financial_year_id', $financialYearId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        $summary = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Calculate net profit
+        $summary['net_profit'] = $summary['total_revenue'] - $summary['total_costs'];
+        $summary['profit_margin'] = $summary['total_revenue'] > 0 ? 
+            round(($summary['net_profit'] / $summary['total_revenue']) * 100, 2) : 0;
+
+        return $summary;
+    }
+
+    /**
+     * Get companies with recent activity (last 30 days)
+     */
+    public function getCompaniesWithRecentActivity(int $days = 30): array
+    {
+        $sql = "SELECT 
+                    c.id as company_id,
+                    c.name as company_name,
+                    COUNT(fs.id) as recent_entries,
+                    SUM(CASE WHEN fs.is_revenue = 1 THEN fs.total_amount ELSE 0 END) as recent_revenue,
+                    MAX(fs.updated_at) as last_activity
+                FROM companies c
+                INNER JOIN company_financial_yearly_stats fs ON fs.company_id = c.id
+                WHERE fs.updated_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                GROUP BY c.id, c.name
+                ORDER BY last_activity DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReportsService, DashboardData } from '../../../services/reports.service';
-import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOption } from '../../../services/recent-activities.service';
+import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOption, FinancialStatistics, StatisticsType } from '../../../services/recent-activities.service';
 
 @Component({
   selector: 'app-reports-overview',
@@ -77,78 +77,207 @@ import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOpti
             </div>
           </div>
 
-          <!-- Recent Activities Section -->
-          <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900">
-                  <i class="fas fa-clock mr-2 text-blue-500"></i>
-                  Recent Activities
-                </h2>
-                <div class="flex items-center space-x-3">
-                  <!-- Activity Type Filter -->
-                  <select
-                    [(ngModel)]="selectedActivityType"
-                    (ngModelChange)="onActivityTypeChange()"
-                    class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option *ngFor="let option of activityTypeOptions" [value]="option.value">
-                      {{ option.label }}
-                    </option>
-                  </select>
-                  <!-- Refresh Button -->
-                  <button
-                    (click)="loadRecentActivities()"
-                    [disabled]="isLoadingActivities"
-                    class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 disabled:opacity-50">
-                    <i class="fas fa-sync-alt" [class.animate-spin]="isLoadingActivities"></i>
-                    Refresh
-                  </button>
+          <!-- Enhanced Financial Dashboard - 3 Column Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Column 1: Recent Financial Activities -->
+            <div class="bg-white rounded-lg shadow">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-clock mr-2 text-blue-500"></i>
+                    Recent Financial Activities
+                  </h2>
+                  <div class="flex items-center space-x-2">
+                    <!-- Activity Type Filter -->
+                    <select
+                      [(ngModel)]="selectedActivityType"
+                      (ngModelChange)="onActivityTypeChange()"
+                      class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option *ngFor="let option of activityTypeOptions" [value]="option.value">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                    <!-- Refresh Button -->
+                    <button
+                      (click)="loadRecentActivities()"
+                      [disabled]="isLoadingActivities"
+                      class="text-sm bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                      <i class="fas fa-sync-alt" [class.animate-spin]="isLoadingActivities"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4">
+                <!-- Loading State for Activities -->
+                <div *ngIf="isLoadingActivities" class="flex justify-center items-center py-6">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span class="ml-2 text-gray-600 text-sm">Loading...</span>
+                </div>
+
+                <!-- Activities Error State -->
+                <div *ngIf="activitiesError" class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                  <p class="text-red-600 text-sm">{{ activitiesError }}</p>
+                </div>
+
+                <!-- Activities List -->
+                <div *ngIf="!isLoadingActivities && !activitiesError" class="space-y-2">
+                  <div *ngFor="let activity of recentActivities.slice(0, 6)"
+                       class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                       (click)="navigateToActivity(activity)">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ activity.company_name }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getActivityDescription(activity) }}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0 ml-2">
+                      <p class="text-sm font-semibold text-green-600" *ngIf="activity.total_amount">
+                        {{ formatCurrency(activity.total_amount_raw || activity.total_amount) }}
+                      </p>
+                      <p class="text-xs text-gray-500">{{ formatTimeAgo(activity.updated_at) }}</p>
+                    </div>
+                  </div>
+
+                  <!-- View All Activities Link -->
+                  <div class="pt-3 border-t border-gray-200">
+                    <button
+                      (click)="viewAllActivities()"
+                      class="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+                      View All Activities →
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="p-6">
-              <!-- Loading State for Activities -->
-              <div *ngIf="isLoadingActivities" class="flex justify-center items-center py-8">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span class="ml-3 text-gray-600">Loading activities...</span>
-              </div>
 
-              <!-- Activities Error State -->
-              <div *ngIf="activitiesError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                <p class="text-red-600 text-sm">{{ activitiesError }}</p>
+            <!-- Column 2: Top Revenue Companies -->
+            <div class="bg-white rounded-lg shadow">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">
+                  <i class="fas fa-trophy mr-2 text-yellow-500"></i>
+                  Top Revenue Companies
+                </h2>
               </div>
-
-              <!-- Activities List -->
-              <div *ngIf="!isLoadingActivities && !activitiesError" class="space-y-3">
-                <div *ngFor="let activity of recentActivities.slice(0, 8)"
-                     class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                     (click)="navigateToActivity(activity)">
-                  <div class="flex items-center space-x-3">
-                    <div class="flex-shrink-0">
-                      <i [class]="getActivityIcon(activity)" class="text-lg"></i>
-                    </div>
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ activity.company_name }}</p>
-                      <p class="text-xs text-gray-500">
-                        {{ getActivityDescription(activity) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900" *ngIf="activity.total_amount">
-                      {{ formatCurrency(activity.total_amount) }}
-                    </p>
-                    <p class="text-xs text-gray-500">{{ formatTimeAgo(activity.updated_at) }}</p>
-                  </div>
+              <div class="p-4">
+                <!-- Loading State for Stats -->
+                <div *ngIf="isLoadingStats" class="flex justify-center items-center py-6">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span class="ml-2 text-gray-600 text-sm">Loading...</span>
                 </div>
 
-                <!-- View All Activities Link -->
-                <div class="pt-4 border-t border-gray-200">
-                  <button
-                    (click)="viewAllActivities()"
-                    class="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
-                    View All Recent Activities →
-                  </button>
+                <!-- Stats Error State -->
+                <div *ngIf="statsError" class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                  <p class="text-red-600 text-sm">{{ statsError }}</p>
+                </div>
+
+                <!-- Top Companies List -->
+                <div *ngIf="!isLoadingStats && !statsError" class="space-y-3">
+                  <div *ngFor="let company of topRevenueCompanies; let i = index"
+                       class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200 hover:from-green-100 hover:to-blue-100 transition-colors cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                      <div class="flex-shrink-0">
+                        <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-800 text-sm font-bold">
+                          {{ i + 1 }}
+                        </span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ company.company_name }}</p>
+                        <p class="text-xs text-gray-500">{{ company.revenue_entries }} revenue entries</p>
+                      </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                      <p class="text-sm font-bold text-green-600">{{ formatCurrency(company.total_revenue) }}</p>
+                      <p class="text-xs text-gray-500">{{ formatTimeAgo(company.last_updated) }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Max Revenue Highlight -->
+                  <div *ngIf="maxRevenueRecord" class="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-sm font-medium text-gray-900">🏆 Highest Single Entry</p>
+                        <p class="text-xs text-gray-600">{{ maxRevenueRecord.company_name }}</p>
+                      </div>
+                      <p class="text-lg font-bold text-orange-600">{{ formatCurrency(maxRevenueRecord.total_amount) }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 3: Performance Overview -->
+            <div class="bg-white rounded-lg shadow">
+              <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">
+                  <i class="fas fa-chart-pie mr-2 text-purple-500"></i>
+                  Performance Overview
+                </h2>
+              </div>
+              <div class="p-4">
+                <!-- Loading State -->
+                <div *ngIf="isLoadingStats" class="flex justify-center items-center py-6">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span class="ml-2 text-gray-600 text-sm">Loading...</span>
+                </div>
+
+                <!-- Performance Stats -->
+                <div *ngIf="!isLoadingStats && monthlyPerformance" class="space-y-4">
+                  <!-- Summary Cards -->
+                  <div class="grid grid-cols-2 gap-3">
+                    <div [class]="getStatCardClass('revenue')" class="p-3 rounded-lg">
+                      <p class="text-xs text-white opacity-90">Total Revenue</p>
+                      <p class="text-lg font-bold text-white">{{ formatCurrency(monthlyPerformance.total_revenue) }}</p>
+                    </div>
+                    <div [class]="getStatCardClass('cost')" class="p-3 rounded-lg">
+                      <p class="text-xs text-white opacity-90">Total Costs</p>
+                      <p class="text-lg font-bold text-white">{{ formatCurrency(monthlyPerformance.total_costs) }}</p>
+                    </div>
+                    <div [class]="getStatCardClass('profit')" class="p-3 rounded-lg">
+                      <p class="text-xs text-white opacity-90">Net Profit</p>
+                      <p class="text-lg font-bold text-white">{{ formatCurrency(monthlyPerformance.net_profit) }}</p>
+                    </div>
+                    <div [class]="getStatCardClass('companies')" class="p-3 rounded-lg">
+                      <p class="text-xs text-white opacity-90">Active Companies</p>
+                      <p class="text-lg font-bold text-white">{{ monthlyPerformance.active_companies }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Key Metrics -->
+                  <div class="space-y-2 pt-2 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600">Profit Margin</span>
+                      <span class="text-sm font-semibold" 
+                            [class]="monthlyPerformance.profit_margin > 0 ? 'text-green-600' : 'text-red-600'">
+                        {{ monthlyPerformance.profit_margin }}%
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600">Avg Revenue/Company</span>
+                      <span class="text-sm font-semibold text-gray-900">
+                        {{ formatCurrency(monthlyPerformance.avg_revenue_per_company) }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600">Highest Entry</span>
+                      <span class="text-sm font-semibold text-gray-900">
+                        {{ formatCurrency(monthlyPerformance.highest_single_amount) }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm text-gray-600">Total Entries</span>
+                      <span class="text-sm font-semibold text-gray-900">{{ monthlyPerformance.total_entries }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Refresh Button -->
+                  <div class="pt-3 border-t border-gray-200">
+                    <button
+                      (click)="loadFinancialStatistics()"
+                      [disabled]="isLoadingStats"
+                      class="w-full text-center text-sm bg-purple-600 text-white py-2 px-3 rounded-md hover:bg-purple-700 disabled:opacity-50">
+                      <i class="fas fa-sync-alt mr-1" [class.animate-spin]="isLoadingStats"></i>
+                      Refresh Statistics
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -252,8 +381,22 @@ export class ReportsOverviewComponent implements OnInit {
   recentActivities: RecentActivity[] = [];
   isLoadingActivities = false;
   activitiesError: string | null = null;
-  selectedActivityType: ActivityType = 'recent_revenue';
+  selectedActivityType: ActivityType = 'recent_revenue_enhanced';
+
+  // Financial Statistics properties
+  topRevenueCompanies: any[] = [];
+  maxRevenueRecord: any = null;
+  monthlyPerformance: any = null;
+  isLoadingStats = false;
+  statsError: string | null = null;
+
   activityTypeOptions: ActivityTypeOption[] = [
+    {
+      value: 'recent_revenue_enhanced',
+      label: 'Enhanced Revenue Activity',
+      description: 'Recent revenue with amounts and totals',
+      icon: 'fas fa-money-bill-wave text-green-500'
+    },
     {
       value: 'recent_revenue',
       label: 'Recent Revenue',
@@ -289,6 +432,7 @@ export class ReportsOverviewComponent implements OnInit {
   ngOnInit(): void {
     this.loadReports();
     this.loadRecentActivities();
+    this.loadFinancialStatistics();
   }
 
   loadReports(): void {
@@ -423,6 +567,49 @@ export class ReportsOverviewComponent implements OnInit {
       case 'yellow': return `${baseClasses} bg-yellow-100 text-yellow-800`;
       case 'red': return `${baseClasses} bg-red-100 text-red-800`;
       default: return `${baseClasses} bg-gray-100 text-gray-800`;
+    }
+  }
+
+  // Financial Statistics Methods
+  loadFinancialStatistics(): void {
+    this.isLoadingStats = true;
+    this.statsError = null;
+
+    // Load multiple statistics in parallel
+    const topCompanies$ = this.recentActivitiesService.getFinancialStatistics('top_revenue', 5);
+    const maxRevenue$ = this.recentActivitiesService.getFinancialStatistics('max_revenue', 1);
+    const monthlySummary$ = this.recentActivitiesService.getFinancialStatistics('monthly_summary', 1);
+
+    // Combine all statistics
+    Promise.all([
+      topCompanies$.toPromise(),
+      maxRevenue$.toPromise(),
+      monthlySummary$.toPromise()
+    ]).then(([topCompanies, maxRevenue, monthlySummary]) => {
+      if (topCompanies?.success) {
+        this.topRevenueCompanies = topCompanies.result.data;
+      }
+      if (maxRevenue?.success) {
+        this.maxRevenueRecord = maxRevenue.result.data;
+      }
+      if (monthlySummary?.success) {
+        this.monthlyPerformance = monthlySummary.result.data;
+      }
+      this.isLoadingStats = false;
+    }).catch((error) => {
+      this.statsError = 'Failed to load financial statistics';
+      this.isLoadingStats = false;
+      console.error('Financial statistics error:', error);
+    });
+  }
+
+  getStatCardClass(type: string): string {
+    switch (type) {
+      case 'revenue': return 'bg-gradient-to-br from-green-500 to-green-600 text-white';
+      case 'cost': return 'bg-gradient-to-br from-red-500 to-red-600 text-white';
+      case 'profit': return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white';
+      case 'companies': return 'bg-gradient-to-br from-purple-500 to-purple-600 text-white';
+      default: return 'bg-gradient-to-br from-gray-500 to-gray-600 text-white';
     }
   }
 }
