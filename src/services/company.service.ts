@@ -51,8 +51,19 @@ export class CompanyService {
   }
 
   searchCompanies(filters: any = {}, limit: number = 50, offset: number = 0): Observable<ICompany[]> {
-    const params = new URLSearchParams({ ...filters, limit: String(limit), offset: String(offset) });
-    return this.http.get<ICompany[]>(`${this.apiUrl}/search-companies.php?${params}`);
+    let params = new HttpParams();
+
+    // Add filters to params
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== null) {
+        params = params.set(key, String(filters[key]));
+      }
+    });
+
+    params = params.set('limit', String(limit));
+    params = params.set('offset', String(offset));
+
+    return this.http.get<ICompany[]>(`${this.apiUrl}/search-companies.php`, { params });
   }
 
   listCompanies(limit: number = 50, offset: number = 0): Observable<ICompany[]> {

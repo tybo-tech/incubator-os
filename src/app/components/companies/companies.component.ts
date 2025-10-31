@@ -63,45 +63,38 @@ export class CompaniesComponent implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    const params = new URLSearchParams();
-    params.append('page', this.currentPage().toString());
-    params.append('limit', this.pageSize.toString());
+    const options: CompanyListOptions = {
+      page: this.currentPage(),
+      limit: this.pageSize,
+      search: this.searchQuery() || undefined,
+      industry_id: this.selectedIndustry() || undefined
+    };
 
-    if (this.searchQuery()) {
-      params.append('q', this.searchQuery());
-    }
-    if (this.selectedIndustry()) {
-      params.append('industry_id', this.selectedIndustry()!.toString());
-    }
-
-    const url = `http://localhost:8080/api-nodes/company/search-companies.php?${params.toString()}`;
-
-    // Use native fetch with enhanced pagination response
-    fetch(url)
-      .then(response => response.json())
-      .then((apiResponse: any) => {
-        // Map the API response to match the expected interface
-        const mappedCompanies: ICompany[] = apiResponse.data.map((company: any) => ({
-          ...company,
-          sector_name: company.service_offering, // Map service_offering to sector_name for display
-        }));
-
-        this.companies.set(mappedCompanies);
-
-        // Update pagination state with real backend data
-        if (apiResponse.pagination) {
-          this.totalPages.set(apiResponse.pagination.pages);
-          this.totalCompanies.set(apiResponse.pagination.total);
-          this.currentPage.set(apiResponse.pagination.current_page);
-        }
-
-        this.isLoading.set(false);
-      })
-      .catch(err => {
+    this.companyService.searchCompaniesAdvanced(options).pipe(
+      catchError(err => {
         console.error('Error fetching companies:', err);
         this.error.set('Failed to load companies. Please try again.');
         this.isLoading.set(false);
-      });
+        return EMPTY;
+      })
+    ).subscribe((response: CompanyListResponse) => {
+      // Map the API response to match the expected interface
+      const mappedCompanies: ICompany[] = response.data.map((company: any) => ({
+        ...company,
+        sector_name: company.service_offering, // Map service_offering to sector_name for display
+      }));
+
+      this.companies.set(mappedCompanies);
+
+      // Update pagination state with real backend data
+      if (response.pagination) {
+        this.totalPages.set(response.pagination.pages);
+        this.totalCompanies.set(response.pagination.total);
+        this.currentPage.set(response.pagination.page);
+      }
+
+      this.isLoading.set(false);
+    });
   }
 
   // Search handling
