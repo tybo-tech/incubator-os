@@ -20,7 +20,7 @@ try {
     $complianceRecord = new ComplianceRecord($db);
 
     $deleted = $complianceRecord->delete($id);
-    
+
     if ($deleted) {
         echo json_encode([
             'success' => true,

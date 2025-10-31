@@ -9,7 +9,7 @@ try {
 
     // Build filters from query parameters
     $filters = [];
-    
+
     // Standard filters
     $allowedFilters = ['tenant_id', 'client_id', 'program_id', 'cohort_id', 'company_id', 'financial_year_id', 'type', 'status'];
     foreach ($allowedFilters as $filter) {
@@ -32,7 +32,7 @@ try {
     }
 
     $records = $complianceRecord->listAll($filters);
-    
+
     echo json_encode([
         'success' => true,
         'data' => $records,

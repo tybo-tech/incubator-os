@@ -45,7 +45,7 @@ try {
     $complianceRecord = new ComplianceRecord($db);
 
     $result = $complianceRecord->update($id, $data);
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'Compliance record updated successfully',

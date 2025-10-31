@@ -21,7 +21,7 @@ try {
 
     // Build filters with company_id
     $filters = ['company_id' => $companyId];
-    
+
     // Additional optional filters
     $allowedFilters = ['financial_year_id', 'type', 'status'];
     foreach ($allowedFilters as $filter) {
@@ -39,7 +39,7 @@ try {
     }
 
     $records = $complianceRecord->listAll($filters);
-    
+
     echo json_encode([
         'success' => true,
         'data' => $records,

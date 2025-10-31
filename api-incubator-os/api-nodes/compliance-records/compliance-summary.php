@@ -8,7 +8,7 @@ try {
     $complianceRecord = new ComplianceRecord($db);
 
     // Get summary statistics
-    $sql = "SELECT 
+    $sql = "SELECT
                 COUNT(*) as total_records,
                 COUNT(DISTINCT company_id) as total_companies,
                 SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed_records,
@@ -16,21 +16,21 @@ try {
                 SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress_records,
                 SUM(CASE WHEN status = 'Overdue' THEN 1 ELSE 0 END) as overdue_records
             FROM compliance_records";
-    
+
     $stmt = $db->prepare($sql);
     $stmt->execute();
     $summary = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // Get records by type
-    $sql = "SELECT 
+    $sql = "SELECT
                 type,
                 COUNT(*) as count,
                 SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed,
                 SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending
-            FROM compliance_records 
-            GROUP BY type 
+            FROM compliance_records
+            GROUP BY type
             ORDER BY count DESC";
-    
+
     $stmt = $db->prepare($sql);
     $stmt->execute();
     $byType = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -39,8 +39,8 @@ try {
     $recentRecords = $complianceRecord->listAll(['limit' => 10]);
 
     // Calculate compliance rate
-    $completionRate = $summary['total_records'] > 0 
-        ? round(($summary['completed_records'] / $summary['total_records']) * 100, 2) 
+    $completionRate = $summary['total_records'] > 0
+        ? round(($summary['completed_records'] / $summary['total_records']) * 100, 2)
         : 0;
 
     echo json_encode([

@@ -31,7 +31,7 @@ try {
     $database = new Database();
     $db = $database->connect();
     $complianceRecord = new ComplianceRecord($db);
-    
+
     $results = [];
     $errors = [];
 
@@ -40,7 +40,7 @@ try {
             if (!isset($data['records']) || !is_array($data['records'])) {
                 throw new Exception('Records array is required for bulk create');
             }
-            
+
             foreach ($data['records'] as $index => $recordData) {
                 try {
                     $result = $complianceRecord->add($recordData);
@@ -55,13 +55,13 @@ try {
             if (!isset($data['updates']) || !is_array($data['updates'])) {
                 throw new Exception('Updates array is required for bulk update');
             }
-            
+
             foreach ($data['updates'] as $update) {
                 if (!isset($update['id']) || !isset($update['data'])) {
                     $errors[] = 'Each update must have id and data fields';
                     continue;
                 }
-                
+
                 try {
                     $result = $complianceRecord->update($update['id'], $update['data']);
                     $results[] = $result;
@@ -75,7 +75,7 @@ try {
             if (!isset($data['ids']) || !is_array($data['ids'])) {
                 throw new Exception('IDs array is required for bulk delete');
             }
-            
+
             foreach ($data['ids'] as $id) {
                 try {
                     $deleted = $complianceRecord->delete($id);
@@ -90,7 +90,7 @@ try {
             if (!isset($data['ids']) || !isset($data['status'])) {
                 throw new Exception('IDs array and status are required for bulk status update');
             }
-            
+
             foreach ($data['ids'] as $id) {
                 try {
                     $result = $complianceRecord->update($id, ['status' => $data['status']]);

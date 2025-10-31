@@ -20,7 +20,7 @@ try {
     $complianceRecord = new ComplianceRecord($db);
 
     $record = $complianceRecord->getById($id);
-    
+
     echo json_encode([
         'success' => true,
         'data' => $record
