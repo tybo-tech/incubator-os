@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReportsService, DashboardData } from '../../../services/reports.service';
 import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOption, FinancialStatistics, StatisticsType } from '../../../services/recent-activities.service';
+import { EnhancedActivitiesModalComponent } from '../../../components/enhanced-activities-modal/enhanced-activities-modal.component';
 
 @Component({
   selector: 'app-reports-overview',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EnhancedActivitiesModalComponent],
   template: `
     <div class="min-h-screen bg-gray-50 p-6">
       <div class="max-w-7xl mx-auto">
@@ -370,6 +371,13 @@ import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOpti
         </div>
       </div>
     </div>
+
+    <!-- Enhanced Activities Modal -->
+    <app-enhanced-activities-modal
+      [isVisible]="showEnhancedModal"
+      (closeEvent)="closeEnhancedModal()"
+      (viewCompanyEvent)="onViewCompanyFromModal($event)">
+    </app-enhanced-activities-modal>
   `
 })
 export class ReportsOverviewComponent implements OnInit {
@@ -389,6 +397,9 @@ export class ReportsOverviewComponent implements OnInit {
   monthlyPerformance: any = null;
   isLoadingStats = false;
   statsError: string | null = null;
+
+  // Enhanced Activities Modal properties
+  showEnhancedModal = false;
 
   activityTypeOptions: ActivityTypeOption[] = [
     {
@@ -515,8 +526,25 @@ export class ReportsOverviewComponent implements OnInit {
   }
 
   viewAllActivities(): void {
-    // Navigate to the dedicated recent activities dashboard
-    this.router.navigate(['/dashboard/recent-activities']);
+    // Check if we're using enhanced activities
+    if (this.selectedActivityType === 'recent_revenue_enhanced' || this.selectedActivityType === 'recent_financial_updates') {
+      // Show the enhanced activities modal
+      this.showEnhancedModal = true;
+    } else {
+      // Navigate to the traditional activities page for other types
+      this.router.navigate(['/dashboard/recent-activities']);
+    }
+  }
+
+  // Enhanced Modal Methods
+  closeEnhancedModal(): void {
+    this.showEnhancedModal = false;
+  }
+
+  onViewCompanyFromModal(companyId: number): void {
+    if (companyId && companyId > 0) {
+      this.router.navigate(['/company', companyId]);
+    }
   }
 
   get topCohorts() {
