@@ -115,13 +115,13 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
   `,
 })
 export class AnnualReturnsComponent extends ComplianceBaseComponent {
-  override complianceType: 'annual_return' = 'annual_return';
+  override complianceType: 'annual_returns' = 'annual_returns'; // Correct API type
   pageTitle = 'Annual Returns Management';
   pageDescription =
     'Track CIPC annual return filing status and due dates. Companies must file within 30 business days of their anniversary month.';
 
   columnConfig: ComplianceColumnConfig[] = [
-    { key: 'period', label: 'Year Ending', type: 'date' },
+    { key: 'period', label: 'Year Ending', type: 'text' },
     { key: 'date1', label: 'Anniversary Date', type: 'date' },
     { key: 'date2', label: 'Due Date', type: 'date' },
     { key: 'date3', label: 'Filing Date', type: 'date' },
@@ -132,11 +132,11 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
 
   override getDefaultRecordValues(): Partial<ComplianceRecord> {
     return {
-      period: new Date().toISOString().split('T')[0],
-      date1: new Date().toISOString().split('T')[0],
-      date2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
+      type: 'annual_returns',
+      title: 'Annual Return',
+      period: `FY${new Date().getFullYear()}`,
+      date1: new Date().toISOString().split('T')[0], // Anniversary date
+      date2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Due date
       status: 'Pending',
       notes: '',
     };

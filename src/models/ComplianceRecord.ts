@@ -10,7 +10,7 @@ export interface ComplianceRecord {
   financialYearId: number;
 
   // Core structure
-  type: 'annual_return' | 'beneficial_ownership' | 'tax_registration' | 'bbbee_compliance' | 'statutory_task';
+  type: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   period?: string;
   title?: string;
   subType?: string;

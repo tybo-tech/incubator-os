@@ -50,7 +50,7 @@ export abstract class ComplianceBaseComponent implements OnInit {
   editingId: number | null = null;
 
   // Abstract properties that child components must implement
-  abstract complianceType: 'annual_return' | 'beneficial_ownership' | 'tax_registration' | 'bbbee_compliance' | 'statutory_task';
+  abstract complianceType: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   abstract pageTitle: string;
   abstract pageDescription: string;
   abstract columnConfig: ComplianceColumnConfig[];
@@ -73,7 +73,8 @@ export abstract class ComplianceBaseComponent implements OnInit {
 
   private extractRouteParameters(): void {
     // Get companyId from route params (following revenue component pattern)
-    const companyId = this.route.parent?.parent?.parent?.snapshot.params['id'];
+    const companyId = this.route.parent?.parent?.snapshot.params['id'];
+    alert(companyId);
     // Get query parameters
     const queryParams = this.route.parent?.parent?.parent?.snapshot.queryParams;
 
