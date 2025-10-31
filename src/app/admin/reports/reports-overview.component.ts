@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ReportsService, DashboardData } from '../../../services/reports.service';
+import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOption } from '../../../services/recent-activities.service';
 
 @Component({
   selector: 'app-reports-overview',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-gray-50 p-6">
       <div class="max-w-7xl mx-auto">
@@ -70,6 +73,83 @@ import { ReportsService, DashboardData } from '../../../services/reports.service
                   <p class="text-2xl font-bold text-orange-600">{{ dashboard.summary.total_companies || 0 }}</p>
                 </div>
                 <i class="fas fa-industry text-orange-500 text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities Section -->
+          <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">
+                  <i class="fas fa-clock mr-2 text-blue-500"></i>
+                  Recent Activities
+                </h2>
+                <div class="flex items-center space-x-3">
+                  <!-- Activity Type Filter -->
+                  <select
+                    [(ngModel)]="selectedActivityType"
+                    (ngModelChange)="onActivityTypeChange()"
+                    class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option *ngFor="let option of activityTypeOptions" [value]="option.value">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <!-- Refresh Button -->
+                  <button
+                    (click)="loadRecentActivities()"
+                    [disabled]="isLoadingActivities"
+                    class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                    <i class="fas fa-sync-alt" [class.animate-spin]="isLoadingActivities"></i>
+                    Refresh
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="p-6">
+              <!-- Loading State for Activities -->
+              <div *ngIf="isLoadingActivities" class="flex justify-center items-center py-8">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-600">Loading activities...</span>
+              </div>
+
+              <!-- Activities Error State -->
+              <div *ngIf="activitiesError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p class="text-red-600 text-sm">{{ activitiesError }}</p>
+              </div>
+
+              <!-- Activities List -->
+              <div *ngIf="!isLoadingActivities && !activitiesError" class="space-y-3">
+                <div *ngFor="let activity of recentActivities.slice(0, 8)"
+                     class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                     (click)="navigateToActivity(activity)">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                      <i [class]="getActivityIcon(activity)" class="text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">{{ activity.company_name }}</p>
+                      <p class="text-xs text-gray-500">
+                        {{ getActivityDescription(activity) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-medium text-gray-900" *ngIf="activity.total_amount">
+                      {{ formatCurrency(activity.total_amount) }}
+                    </p>
+                    <p class="text-xs text-gray-500">{{ formatTimeAgo(activity.updated_at) }}</p>
+                  </div>
+                </div>
+
+                <!-- View All Activities Link -->
+                <div class="pt-4 border-t border-gray-200">
+                  <button
+                    (click)="viewAllActivities()"
+                    class="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    View All Recent Activities →
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -168,10 +248,47 @@ export class ReportsOverviewComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
-  constructor(private reportsService: ReportsService) {}
+  // Recent Activities properties
+  recentActivities: RecentActivity[] = [];
+  isLoadingActivities = false;
+  activitiesError: string | null = null;
+  selectedActivityType: ActivityType = 'recent_revenue';
+  activityTypeOptions: ActivityTypeOption[] = [
+    {
+      value: 'recent_revenue',
+      label: 'Recent Revenue',
+      description: 'Latest revenue entries and updates',
+      icon: 'fas fa-chart-line text-green-500'
+    },
+    {
+      value: 'recent_costs',
+      label: 'Recent Costs',
+      description: 'Latest cost entries and updates',
+      icon: 'fas fa-chart-bar text-red-500'
+    },
+    {
+      value: 'recent_companies',
+      label: 'Recent Companies',
+      description: 'Latest company registrations and updates',
+      icon: 'fas fa-building text-blue-500'
+    },
+    {
+      value: 'recent_compliance',
+      label: 'Recent Compliance',
+      description: 'Latest compliance activities',
+      icon: 'fas fa-shield-alt text-purple-500'
+    }
+  ];
+
+  constructor(
+    private reportsService: ReportsService,
+    private recentActivitiesService: RecentActivitiesService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadReports();
+    this.loadRecentActivities();
   }
 
   loadReports(): void {
@@ -189,6 +306,73 @@ export class ReportsOverviewComponent implements OnInit {
         console.error('Reports error:', err);
       }
     });
+  }
+
+  // Recent Activities Methods
+  loadRecentActivities(): void {
+    this.isLoadingActivities = true;
+    this.activitiesError = null;
+
+    this.recentActivitiesService.getRecentActivities(this.selectedActivityType, 8, 0).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.recentActivities = response.result.data;
+        } else {
+          this.activitiesError = 'Failed to load recent activities';
+        }
+        this.isLoadingActivities = false;
+      },
+      error: (err) => {
+        this.activitiesError = err.message || 'Failed to load recent activities';
+        this.isLoadingActivities = false;
+        console.error('Recent activities error:', err);
+      }
+    });
+  }
+
+  onActivityTypeChange(): void {
+    this.loadRecentActivities();
+  }
+
+  getActivityIcon(activity: RecentActivity): string {
+    const option = this.activityTypeOptions.find(opt => opt.value === this.selectedActivityType);
+    return option?.icon || 'fas fa-circle text-gray-400';
+  }
+
+  getActivityDescription(activity: RecentActivity): string {
+    const action = activity.action_type || 'Updated';
+
+    switch (this.selectedActivityType) {
+      case 'recent_revenue':
+        return `${action} revenue data${activity.financial_year ? ` for ${activity.financial_year}` : ''}`;
+      case 'recent_costs':
+        return `${action} cost data${activity.affected_period ? ` for ${activity.affected_period}` : ''}`;
+      case 'recent_companies':
+        return `${action} company profile${activity.registration_no ? ` (${activity.registration_no})` : ''}`;
+      case 'recent_compliance':
+        return `${action} compliance information`;
+      default:
+        return `${action} business data`;
+    }
+  }
+
+  formatTimeAgo(dateString: string): string {
+    return this.recentActivitiesService.formatTimeAgo(dateString);
+  }
+
+  navigateToActivity(activity: RecentActivity): void {
+    if (activity.company_id) {
+      // Navigate to the specific company
+      this.router.navigate(['/company', activity.company_id]);
+    } else {
+      // Navigate to companies list
+      this.router.navigate(['/companies']);
+    }
+  }
+
+  viewAllActivities(): void {
+    // Navigate to the dedicated recent activities dashboard
+    this.router.navigate(['/dashboard/recent-activities']);
   }
 
   get topCohorts() {

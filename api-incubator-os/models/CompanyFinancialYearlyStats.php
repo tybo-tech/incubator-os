@@ -66,6 +66,9 @@ final class CompanyFinancialYearlyStats
         $id = (int)$this->conn->lastInsertId();
         $result = $this->getById($id);
 
+        // Log this activity
+        $this->logActivity($filteredData['company_id'], 'created', $id, $result);
+
         return [
             'success' => true,
             'message' => 'Financial yearly stats created successfully',
@@ -105,6 +108,12 @@ final class CompanyFinancialYearlyStats
         $stmt->execute($params);
 
         $result = $this->getById($id);
+
+        // Log this activity
+        if ($result) {
+            $this->logActivity($result['company_id'], 'updated', $id, $result);
+        }
+
         return [
             'success' => true,
             'message' => 'Financial yearly stats updated successfully',
@@ -842,5 +851,44 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
         }
 
         return $quarterlyProfits;
+    }
+
+    /* =========================================================================
+       ACTIVITY LOGGING
+       ========================================================================= */
+
+    /**
+     * Log an activity for financial yearly stats operations.
+     */
+    private function logActivity(int $companyId, string $action, int $recordId, ?array $recordData = null): void
+    {
+        try {
+            require_once __DIR__ . '/RecentActivities.php';
+            $recentActivities = new RecentActivities($this->conn);
+
+            $description = match($action) {
+                'created' => 'Financial yearly stats record created',
+                'updated' => 'Financial yearly stats record updated',
+                'deleted' => 'Financial yearly stats record deleted',
+                default => 'Financial yearly stats record modified'
+            };
+
+            // Add context from the record if available
+            if ($recordData && isset($recordData['financial_year_id'])) {
+                $description .= " for financial year ID {$recordData['financial_year_id']}";
+            }
+
+            $recentActivities->addActivity([
+                'company_id' => $companyId,
+                'module' => 'financial_data',
+                'action' => $action,
+                'reference_id' => $recordId,
+                'description' => $description,
+                'activity_date' => date('Y-m-d H:i:s')
+            ]);
+        } catch (Exception $e) {
+            // Log the error but don't break the main operation
+            error_log("Failed to log activity for CompanyFinancialYearlyStats: " . $e->getMessage());
+        }
     }
 }

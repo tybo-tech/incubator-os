@@ -43,6 +43,7 @@ import { GpsTargetsTabComponent } from './components/companies/company-detail/gp
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
 import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
+import { DashboardRecentActivitiesComponent } from './dashboard/dashboard-recent-activities/dashboard-recent-activities.component';
 
 export const routes: Routes = [
   {
@@ -280,6 +281,10 @@ export const routes: Routes = [
       {
         path: 'companies',
         component: CompaniesListComponent,
+      },
+      {
+        path: 'dashboard/recent-activities',
+        component: DashboardRecentActivitiesComponent,
       },
       {
         path: 'import',
