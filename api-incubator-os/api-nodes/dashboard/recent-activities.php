@@ -17,7 +17,7 @@ try {
     // For enhanced data, use the financial stats model directly
     if ($type === 'recent_revenue_enhanced' || $type === 'recent_financial_updates') {
         $enhancedData = $financialStats->getRecentHighValueUpdates($limit);
-        
+
         $result = [
             'data' => array_map(function($record) {
                 return [

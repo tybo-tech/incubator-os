@@ -902,7 +902,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
     public function getTopRevenueCompanies(int $limit = 10, int $financialYearId = null): array
     {
         $whereClause = $financialYearId ? "WHERE fs.financial_year_id = :financial_year_id" : "";
-        $sql = "SELECT 
+        $sql = "SELECT
                     c.id as company_id,
                     c.name as company_name,
                     SUM(fs.total_amount) as total_revenue,
@@ -931,7 +931,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
      */
     public function getMaxRevenueRecord(): ?array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     fs.*,
                     c.name as company_name
                 FROM company_financial_yearly_stats fs
@@ -951,7 +951,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
      */
     public function getRecentHighValueUpdates(int $limit = 20): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     fs.id,
                     fs.company_id,
                     c.name as company_name,
@@ -959,7 +959,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
                     fs.updated_at,
                     fs.financial_year_id,
                     fy.name as financial_year_name,
-                    CASE 
+                    CASE
                         WHEN fs.is_revenue = 1 THEN 'Revenue'
                         ELSE 'Cost'
                     END as entry_type
@@ -983,7 +983,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
     public function getMonthlyPerformanceSummary(int $financialYearId = null): array
     {
         $whereClause = $financialYearId ? "WHERE fs.financial_year_id = :financial_year_id" : "";
-        $sql = "SELECT 
+        $sql = "SELECT
                     COUNT(DISTINCT fs.company_id) as active_companies,
                     SUM(CASE WHEN fs.is_revenue = 1 THEN fs.total_amount ELSE 0 END) as total_revenue,
                     SUM(CASE WHEN fs.is_revenue = 0 THEN fs.total_amount ELSE 0 END) as total_costs,
@@ -1000,10 +1000,10 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
         $stmt->execute();
 
         $summary = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         // Calculate net profit
         $summary['net_profit'] = $summary['total_revenue'] - $summary['total_costs'];
-        $summary['profit_margin'] = $summary['total_revenue'] > 0 ? 
+        $summary['profit_margin'] = $summary['total_revenue'] > 0 ?
             round(($summary['net_profit'] / $summary['total_revenue']) * 100, 2) : 0;
 
         return $summary;
@@ -1014,7 +1014,7 @@ public function getYearlyRevenue(int $companyId, int $financialYearId): array
      */
     public function getCompaniesWithRecentActivity(int $days = 30): array
     {
-        $sql = "SELECT 
+        $sql = "SELECT
                     c.id as company_id,
                     c.name as company_name,
                     COUNT(fs.id) as recent_entries,

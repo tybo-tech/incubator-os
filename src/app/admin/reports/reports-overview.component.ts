@@ -79,7 +79,7 @@ import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOpti
 
           <!-- Enhanced Financial Dashboard - 3 Column Layout -->
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             <!-- Column 1: Recent Financial Activities -->
             <div class="bg-white rounded-lg shadow">
               <div class="px-6 py-4 border-b border-gray-200">
@@ -245,7 +245,7 @@ import { RecentActivitiesService, RecentActivity, ActivityType, ActivityTypeOpti
                   <div class="space-y-2 pt-2 border-t border-gray-200">
                     <div class="flex justify-between items-center">
                       <span class="text-sm text-gray-600">Profit Margin</span>
-                      <span class="text-sm font-semibold" 
+                      <span class="text-sm font-semibold"
                             [class]="monthlyPerformance.profit_margin > 0 ? 'text-green-600' : 'text-red-600'">
                         {{ monthlyPerformance.profit_margin }}%
                       </span>
