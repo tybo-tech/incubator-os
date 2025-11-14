@@ -26,32 +26,32 @@ export interface ComplianceFormConfig {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="bg-white">
       <!-- Form Header -->
       <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-medium text-gray-900">
+        <h3 class="text-lg font-semibold text-gray-900">
           {{ config.title }}
         </h3>
-        <p class="text-sm text-gray-500 mt-1" *ngIf="getFieldCount() > 0">
+        <p class="text-sm text-gray-600 mt-1" *ngIf="getFieldCount() > 0">
           {{ getRequiredFieldCount() }} required field{{ getRequiredFieldCount() !== 1 ? 's' : '' }}
           of {{ getFieldCount() }} total
         </p>
       </div>
 
       <!-- Dynamic Form Fields -->
-      <form (ngSubmit)="onSubmit()" class="px-6 py-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form (ngSubmit)="onSubmit()" class="px-6 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div
             *ngFor="let field of config.fields; trackBy: trackByField"
-            class="space-y-1"
+            class="space-y-2"
             [class.md:col-span-2]="isFullWidthField(field)"
           >
             <!-- Field Label -->
-            <label class="block text-sm font-medium text-gray-700">
+            <label class="block text-sm font-semibold text-gray-700">
               {{ field.label }}
               <span
                 *ngIf="isFieldRequired(field) && config.showRequiredIndicator !== false"
-                class="text-red-500 ml-1"
+                class="text-red-600 ml-0.5"
               >*</span>
             </label>
 
@@ -89,8 +89,8 @@ export interface ComplianceFormConfig {
 
             <!-- Currency Input -->
             <div *ngIf="field.type === 'currency'" class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 sm:text-sm">R</span>
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span class="text-gray-600 text-sm font-semibold">R</span>
               </div>
               <input
                 type="number"
@@ -99,7 +99,7 @@ export interface ComplianceFormConfig {
                 [placeholder]="getFieldPlaceholder(field)"
                 [step]="getInputStep(field)"
                 [required]="isFieldRequired(field)"
-                class="block w-full pl-7 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                class="block w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none hover:border-gray-400 text-sm transition-colors"
               />
             </div>
 
@@ -114,10 +114,10 @@ export interface ComplianceFormConfig {
                 min="0"
                 max="100"
                 [required]="isFieldRequired(field)"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm pr-8"
+                class="block w-full pl-4 pr-10 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none hover:border-gray-400 text-sm transition-colors"
               />
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 sm:text-sm">%</span>
+              <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                <span class="text-gray-600 text-sm font-semibold">%</span>
               </div>
             </div>
 
@@ -160,11 +160,11 @@ export interface ComplianceFormConfig {
         </div>
 
         <!-- Form Actions -->
-        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-8">
           <button
             type="button"
             (click)="onCancel()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
           >
             {{ config.cancelButtonText || 'Cancel' }}
           </button>
@@ -173,6 +173,8 @@ export interface ComplianceFormConfig {
             [disabled]="!isFormValid()"
             [class]="getSubmitButtonClasses()"
           >
+            <i class="fas fa-check mr-2" *ngIf="!loading"></i>
+            <i class="fas fa-spinner fa-spin mr-2" *ngIf="loading"></i>
             {{ config.submitButtonText || (config.mode === 'edit' ? 'Update' : 'Create') }}
           </button>
         </div>
@@ -363,11 +365,12 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
    * Get CSS classes for input fields
    */
   getInputClasses(field: ComplianceColumnConfig): string {
-    const baseClasses = 'block w-full rounded-md border-gray-300 shadow-sm text-sm';
-    const focusClasses = 'focus:ring-indigo-500 focus:border-indigo-500';
+    const baseClasses = 'block w-full rounded-lg border border-gray-300 shadow-sm text-sm px-4 py-2.5 transition-colors';
+    const focusClasses = 'focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none';
     const errorClasses = this.hasFieldError(field) ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : '';
+    const hoverClasses = 'hover:border-gray-400';
 
-    return `${baseClasses} ${focusClasses} ${errorClasses}`.trim();
+    return `${baseClasses} ${focusClasses} ${errorClasses} ${hoverClasses}`.trim();
   }
 
   /**
@@ -375,17 +378,17 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
    */
   getSubmitButtonClasses(): string {
     const color = this.config.submitButtonColor || 'blue';
-    const baseClasses = 'px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const baseClasses = 'px-5 py-2.5 text-sm font-semibold text-white border border-transparent rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm';
 
     const colorClasses = {
-      blue: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-      green: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
-      purple: 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500',
-      red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-      yellow: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
+      blue: 'bg-blue-600 hover:bg-blue-700 hover:shadow-md focus:ring-blue-500',
+      green: 'bg-green-600 hover:bg-green-700 hover:shadow-md focus:ring-green-500',
+      purple: 'bg-purple-600 hover:bg-purple-700 hover:shadow-md focus:ring-purple-500',
+      red: 'bg-red-600 hover:bg-red-700 hover:shadow-md focus:ring-red-500',
+      yellow: 'bg-yellow-600 hover:bg-yellow-700 hover:shadow-md focus:ring-yellow-500'
     };
 
-    const disabledClasses = !this.isFormValid() ? 'opacity-50 cursor-not-allowed' : '';
+    const disabledClasses = !this.isFormValid() ? 'opacity-50 cursor-not-allowed hover:bg-blue-600 hover:shadow-sm' : '';
 
     return `${baseClasses} ${colorClasses[color]} ${disabledClasses}`.trim();
   }

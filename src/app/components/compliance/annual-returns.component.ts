@@ -22,9 +22,9 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
         </div>
         <button
           (click)="startNewForm()"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+          class="inline-flex items-center px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          <i class="fas fa-plus w-4 h-4 mr-2"></i>
+          <i class="fas fa-plus mr-2"></i>
           Add Return
         </button>
       </div>
@@ -33,12 +33,14 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div
           *ngFor="let card of getSummaryCards()"
-          class="bg-white rounded-lg shadow p-4 border border-gray-200 flex items-center"
+          class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-5 border border-gray-200 flex items-center"
         >
-          <i [class]="card.icon + ' ' + card.color + ' text-xl'"></i>
-          <div class="ml-3">
-            <p class="text-sm font-medium text-gray-500">{{ card.title }}</p>
-            <p class="text-lg font-semibold text-gray-900">{{ card.value }}</p>
+          <div class="flex-shrink-0">
+            <i [class]="card.icon + ' ' + card.color + ' text-2xl'"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">{{ card.title }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ card.value }}</p>
           </div>
         </div>
       </div>
@@ -47,8 +49,8 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
       <div
         class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"
       >
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Annual Returns</h3>
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h3 class="text-lg font-semibold text-gray-900">Annual Returns</h3>
         </div>
 
         <div class="overflow-x-auto">
@@ -57,12 +59,12 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
               <tr>
                 <th
                   *ngFor="let col of columnConfig"
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   {{ col.label }}
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   Actions
                 </th>
@@ -71,7 +73,7 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
             <tbody class="bg-white divide-y divide-gray-200">
               <tr
                 *ngFor="let record of records$ | async; trackBy: trackById"
-                class="hover:bg-gray-50"
+                class="hover:bg-gray-50 transition-colors"
               >
                 <td
                   *ngFor="let col of columnConfig"
@@ -85,17 +87,17 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
                 >
                   <button
                     (click)="startEditForm(record)"
-                    class="text-blue-600 hover:text-blue-900 transition-colors mr-3"
+                    class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all mr-2"
                     title="Edit record"
                   >
-                    <i class="fas fa-edit w-4 h-4"></i>
+                    <i class="fas fa-edit"></i>
                   </button>
                   <button
                     (click)="deleteRecord(record.id)"
-                    class="text-red-600 hover:text-red-900 transition-colors"
+                    class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete record"
                   >
-                    <i class="fas fa-trash w-4 h-4"></i>
+                    <i class="fas fa-trash"></i>
                   </button>
                 </td>
               </tr>
@@ -103,17 +105,19 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
               <tr *ngIf="(records$ | async)?.length === 0">
                 <td
                   [attr.colspan]="columnConfig.length + 1"
-                  class="px-6 py-12 text-center"
+                  class="px-6 py-16 text-center"
                 >
-                  <i
-                    class="fas fa-calendar-check text-gray-400 text-3xl mb-4"
-                  ></i>
-                  <p class="text-gray-500 text-sm">
-                    No annual returns recorded yet.
-                  </p>
-                  <p class="text-gray-400 text-xs mt-1">
-                    Click "Add Return" to get started.
-                  </p>
+                  <div class="flex flex-col items-center justify-center">
+                    <div class="bg-gray-100 rounded-full p-6 mb-4">
+                      <i class="fas fa-calendar-check text-gray-400 text-4xl"></i>
+                    </div>
+                    <p class="text-gray-600 text-base font-medium mb-1">
+                      No annual returns recorded yet
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                      Click "Add Return" to create your first record
+                    </p>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -124,28 +128,24 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
       <!-- Compliance Form Modal -->
       <div
         *ngIf="showForm"
-        class="fixed inset-0 z-50 overflow-y-auto"
+        class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-50 flex items-center justify-center p-4"
         aria-labelledby="modal-title"
         role="dialog"
         aria-modal="true"
+        (click)="onFormCancel()"
       >
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <!-- Background overlay -->
-          <div
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-            (click)="onFormCancel()"
-          ></div>
-
-          <!-- Modal panel -->
-          <div class="inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <app-compliance-form
-              [config]="getFormConfig()"
-              [initialData]="formData"
-              [loading]="loading"
-              (formSubmit)="onFormSubmit($event)"
-              (formCancel)="onFormCancel()"
-            ></app-compliance-form>
-          </div>
+        <!-- Modal panel -->
+        <div
+          class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          (click)="$event.stopPropagation()"
+        >
+          <app-compliance-form
+            [config]="getFormConfig()"
+            [initialData]="formData"
+            [loading]="loading"
+            (formSubmit)="onFormSubmit($event)"
+            (formCancel)="onFormCancel()"
+          ></app-compliance-form>
         </div>
       </div>
     </div>
@@ -156,6 +156,10 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
   pageTitle = 'Annual Returns Management';
   pageDescription =
     'Track CIPC annual return filing status and due dates. Companies must file within 30 business days of their anniversary month.';
+
+  override getFormTitle(): string {
+    return 'Annual Return';
+  }
 
   // ✅ Column config using snake_case to match database fields
   columnConfig: ComplianceColumnConfig[] = [
