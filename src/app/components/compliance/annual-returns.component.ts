@@ -157,11 +157,12 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
   pageDescription =
     'Track CIPC annual return filing status and due dates. Companies must file within 30 business days of their anniversary month.';
 
+  // ✅ Column config using snake_case to match database fields
   columnConfig: ComplianceColumnConfig[] = [
     { key: 'period', label: 'Year Ending', type: 'text', required: true, placeholder: 'e.g., FY2024' },
-    { key: 'date1', label: 'Anniversary Date', type: 'date', required: true },
-    { key: 'date2', label: 'Due Date', type: 'date', required: true },
-    { key: 'date3', label: 'Filing Date', type: 'date' },
+    { key: 'date_1', label: 'Anniversary Date', type: 'date', required: true },
+    { key: 'date_2', label: 'Due Date', type: 'date', required: true },
+    { key: 'date_3', label: 'Filing Date', type: 'date' },
     {
       key: 'status',
       label: 'Status',
@@ -175,17 +176,18 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
         { value: 'Not Required', label: 'Not Required', color: 'text-gray-600' }
       ]
     },
-    { key: 'amount1', label: 'Fee Paid', type: 'currency', step: 0.01, placeholder: '0.00' },
+    { key: 'amount_1', label: 'Fee Paid', type: 'currency', step: 0.01, placeholder: '0.00' },
     { key: 'notes', label: 'Notes', type: 'textarea', rows: 3, placeholder: 'Additional notes about this annual return...' },
   ];
 
+  // ✅ Using snake_case field names
   override getDefaultRecordValues(): Partial<ComplianceRecord> {
     return {
       type: 'annual_returns',
       title: 'Annual Return',
       period: `FY${new Date().getFullYear()}`,
-      date1: new Date().toISOString().split('T')[0], // Anniversary date
-      date2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Due date
+      date_1: new Date().toISOString().split('T')[0], // Anniversary date
+      date_2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Due date (30 days from now)
       status: 'Pending',
       notes: '',
     };

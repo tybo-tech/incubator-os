@@ -7,14 +7,15 @@ import { ComplianceRecord } from '../models/ComplianceRecord';
 
 /**
  * Compliance Record filters interface
+ * ✅ MATCHES API QUERY PARAMETERS - Uses snake_case
  */
 export interface ComplianceRecordFilters {
-  tenantId?: number;
-  clientId?: number;
-  programId?: number;
-  cohortId?: number;
-  companyId?: number;
-  financialYearId?: number;
+  tenant_id?: number;
+  client_id?: number;
+  program_id?: number;
+  cohort_id?: number;
+  company_id?: number;
+  financial_year_id?: number;
   type?: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   status?: string;
   search?: string;
@@ -74,6 +75,7 @@ export class ComplianceRecordService {
 
   /**
    * Get all compliance records with optional filters
+   * ✅ NO CONVERSION - Passes snake_case directly to API
    */
   getAllComplianceRecords(filters?: ComplianceRecordFilters): Observable<ComplianceRecord[]> {
     console.log('📋 Getting all compliance records with filters:', filters);
@@ -83,9 +85,7 @@ export class ComplianceRecordService {
       const params = new URLSearchParams();
       Object.keys(filters).forEach(key => {
         if (filters[key as keyof ComplianceRecordFilters] !== undefined) {
-          // Convert camelCase to snake_case for backend
-          const snakeKey = this.camelToSnake(key);
-          params.append(snakeKey, String(filters[key as keyof ComplianceRecordFilters]));
+          params.append(key, String(filters[key as keyof ComplianceRecordFilters]));
         }
       });
       if (params.toString()) {
@@ -96,7 +96,6 @@ export class ComplianceRecordService {
     return this.http.get<{ success: boolean; data: ComplianceRecord[] }>(url)
       .pipe(
         catchError(this.handleError('Get all compliance records')),
-        // Extract data from response wrapper
         this.extractData()
       );
   }
@@ -115,13 +114,12 @@ export class ComplianceRecordService {
 
   /**
    * Add new compliance record
+   * ✅ NO CONVERSION - Passes object directly to API
    */
   addComplianceRecord(data: Partial<ComplianceRecord>): Observable<ComplianceRecord> {
     console.log('📋 Adding compliance record:', data);
-    // Convert camelCase to snake_case for backend
-    const snakeData = this.camelToSnakeObject(data);
 
-    return this.http.post<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/add-compliance-record.php`, snakeData, this.httpOptions)
+    return this.http.post<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/add-compliance-record.php`, data, this.httpOptions)
       .pipe(
         catchError(this.handleError('Add compliance record')),
         this.extractSingleData()
@@ -130,13 +128,12 @@ export class ComplianceRecordService {
 
   /**
    * Update compliance record
+   * ✅ NO CONVERSION - Passes object directly to API
    */
   updateComplianceRecord(id: number, data: Partial<ComplianceRecord>): Observable<ComplianceRecord> {
     console.log('📋 Updating compliance record:', id, data);
-    // Convert camelCase to snake_case for backend
-    const snakeData = this.camelToSnakeObject(data);
 
-    return this.http.put<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/update-compliance-record.php?id=${id}`, snakeData, this.httpOptions)
+    return this.http.put<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/update-compliance-record.php?id=${id}`, data, this.httpOptions)
       .pipe(
         catchError(this.handleError('Update compliance record')),
         this.extractSingleData()
@@ -188,6 +185,7 @@ export class ComplianceRecordService {
 
   /**
    * Get compliance statistics
+   * ✅ Using snake_case filter properties
    */
   getComplianceStatistics(filters?: Partial<ComplianceRecordFilters>): Observable<ComplianceRecordStatistics> {
     console.log('📋 Getting compliance statistics');
@@ -195,9 +193,9 @@ export class ComplianceRecordService {
     let url = `${this.apiUrl}/compliance-summary.php`;
     if (filters) {
       const params = new URLSearchParams();
-      if (filters.companyId) params.append('company_id', String(filters.companyId));
+      if (filters.company_id) params.append('company_id', String(filters.company_id));
       if (filters.type) params.append('type', filters.type);
-      if (filters.financialYearId) params.append('financial_year_id', String(filters.financialYearId));
+      if (filters.financial_year_id) params.append('financial_year_id', String(filters.financial_year_id));
       if (params.toString()) {
         url += `?${params.toString()}`;
       }
@@ -206,7 +204,6 @@ export class ComplianceRecordService {
     return this.http.get<{ success: boolean; data: ComplianceRecordStatistics }>(url)
       .pipe(
         catchError(this.handleError('Get compliance statistics')),
-        // Custom extraction for statistics data
         this.extractStatisticsData()
       );
   }
@@ -217,33 +214,28 @@ export class ComplianceRecordService {
 
   /**
    * Bulk create compliance records
+   * ✅ NO CONVERSION - Passes objects directly to API
    */
   bulkCreateComplianceRecords(records: Partial<ComplianceRecord>[]): Observable<BulkOperationResult> {
     console.log('📋 Bulk creating compliance records:', records.length);
-    // Convert each record from camelCase to snake_case
-    const snakeRecords = records.map(record => this.camelToSnakeObject(record));
 
     return this.http.post<BulkOperationResult>(`${this.apiUrl}/bulk-operations.php`, {
       operation: 'create',
-      records: snakeRecords
+      records: records
     }, this.httpOptions)
       .pipe(catchError(this.handleError('Bulk create compliance records')));
   }
 
   /**
    * Bulk update compliance records
+   * ✅ NO CONVERSION - Passes objects directly to API
    */
   bulkUpdateComplianceRecords(updates: Array<{ id: number; data: Partial<ComplianceRecord> }>): Observable<BulkOperationResult> {
     console.log('📋 Bulk updating compliance records:', updates.length);
-    // Convert each update data from camelCase to snake_case
-    const snakeUpdates = updates.map(update => ({
-      id: update.id,
-      data: this.camelToSnakeObject(update.data)
-    }));
 
     return this.http.post<BulkOperationResult>(`${this.apiUrl}/bulk-operations.php`, {
       operation: 'update',
-      records: snakeUpdates
+      records: updates
     }, this.httpOptions)
       .pipe(catchError(this.handleError('Bulk update compliance records')));
   }
@@ -363,53 +355,8 @@ export class ComplianceRecordService {
      ========================================================================= */
 
   /**
-   * Convert camelCase to snake_case
-   */
-  private camelToSnake(str: string): string {
-    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-  }
-
-  /**
-   * Convert camelCase object keys to snake_case
-   */
-  private camelToSnakeObject(obj: any): any {
-    if (obj === null || obj === undefined) return obj;
-    if (typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return obj.map(item => this.camelToSnakeObject(item));
-
-    const result: any = {};
-    Object.keys(obj).forEach(key => {
-      const snakeKey = this.camelToSnake(key);
-      result[snakeKey] = this.camelToSnakeObject(obj[key]);
-    });
-    return result;
-  }
-
-  /**
-   * Convert snake_case to camelCase
-   */
-  private snakeToCamel(str: string): string {
-    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-  }
-
-  /**
-   * Convert snake_case object keys to camelCase
-   */
-  private snakeToCamelObject(obj: any): any {
-    if (obj === null || obj === undefined) return obj;
-    if (typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return obj.map(item => this.snakeToCamelObject(item));
-
-    const result: any = {};
-    Object.keys(obj).forEach(key => {
-      const camelKey = this.snakeToCamel(key);
-      result[camelKey] = this.snakeToCamelObject(obj[key]);
-    });
-    return result;
-  }
-
-  /**
    * Extract data array from API response wrapper
+   * ✅ NO CONVERSION - Returns data as-is (snake_case)
    */
   private extractData() {
     return (source: Observable<{ success: boolean; data: ComplianceRecord[] }>) =>
@@ -417,9 +364,7 @@ export class ComplianceRecordService {
         source.subscribe({
           next: response => {
             if (response.success && response.data) {
-              // Convert snake_case to camelCase for frontend
-              const camelData = response.data.map(record => this.snakeToCamelObject(record));
-              observer.next(camelData);
+              observer.next(response.data);
             } else {
               observer.next([]);
             }
@@ -432,6 +377,7 @@ export class ComplianceRecordService {
 
   /**
    * Extract single data object from API response wrapper
+   * ✅ NO CONVERSION - Returns data as-is (snake_case)
    */
   private extractSingleData() {
     return (source: Observable<{ success: boolean; data: ComplianceRecord }>) =>
@@ -439,9 +385,7 @@ export class ComplianceRecordService {
         source.subscribe({
           next: response => {
             if (response.success && response.data) {
-              // Convert snake_case to camelCase for frontend
-              const camelData = this.snakeToCamelObject(response.data);
-              observer.next(camelData);
+              observer.next(response.data);
             } else {
               throw new Error('No data returned');
             }

@@ -116,9 +116,10 @@ export abstract class ComplianceBaseComponent implements OnInit {
     this.loading = true;
     try {
       // Load compliance records of the specific type for this company
+      // ✅ Using snake_case to match API expectations
       const records = await this.complianceService.getAllComplianceRecords({
-        companyId: this.companyId,
-        clientId: this.clientId,
+        company_id: this.companyId,
+        client_id: this.clientId,
         type: this.complianceType
       }).toPromise();
 
@@ -141,15 +142,16 @@ export abstract class ComplianceBaseComponent implements OnInit {
 
   /**
    * Create a new compliance record
+   * ✅ Using snake_case field names
    */
   async addNewRecord(): Promise<void> {
     try {
       const newRecord: Partial<ComplianceRecord> = {
-        companyId: this.companyId,
-        clientId: this.clientId,
-        programId: this.programId,
-        cohortId: this.cohortId,
-        financialYearId: 1, // Default to current year - can be made dynamic
+        company_id: this.companyId,
+        client_id: this.clientId,
+        program_id: this.programId,
+        cohort_id: this.cohortId,
+        financial_year_id: 1, // Default to current year - can be made dynamic
         type: this.complianceType,
         status: 'Pending',
         ...this.getDefaultRecordValues()
@@ -395,13 +397,14 @@ export abstract class ComplianceBaseComponent implements OnInit {
 
   /**
    * Check if a record is overdue (override in child components)
+   * ✅ Using snake_case field name date_1
    */
   protected isRecordOverdue(record: ComplianceRecord): boolean {
     if (this.isRecordCompleted(record)) return false;
 
-    // Default logic - check if date1 (due date) is in the past
-    if (record.date1) {
-      const dueDate = new Date(record.date1);
+    // Default logic - check if date_1 (due date) is in the past
+    if (record.date_1) {
+      const dueDate = new Date(record.date_1);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return dueDate < today;
@@ -500,12 +503,13 @@ export abstract class ComplianceBaseComponent implements OnInit {
         await this.updateRecord(this.editingId, formData);
       } else {
         // For create mode, merge with required IDs
+        // ✅ Using snake_case field names
         const newRecord: Partial<ComplianceRecord> = {
-          companyId: this.companyId,
-          clientId: this.clientId,
-          programId: this.programId,
-          cohortId: this.cohortId,
-          financialYearId: 1,
+          company_id: this.companyId,
+          client_id: this.clientId,
+          program_id: this.programId,
+          cohort_id: this.cohortId,
+          financial_year_id: 1,
           type: this.complianceType,
           ...formData
         };

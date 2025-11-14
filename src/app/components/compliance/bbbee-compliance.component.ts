@@ -159,12 +159,12 @@ export class BBBEEComplianceComponent extends ComplianceBaseComponent {
 
   columnConfig: ComplianceColumnConfig[] = [
     { key: 'period', label: 'Assessment Period', type: 'text', required: true, placeholder: 'e.g., FY2024' },
-    { key: 'date1', label: 'Verification Date', type: 'date', required: true },
-    { key: 'date2', label: 'Certificate Issue Date', type: 'date' },
-    { key: 'date3', label: 'Certificate Expiry Date', type: 'date' },
-    { 
-      key: 'status', 
-      label: 'Status', 
+    { key: 'date_1', label: 'Verification Date', type: 'date', required: true },
+    { key: 'date_2', label: 'Certificate Issue Date', type: 'date' },
+    { key: 'date_3', label: 'Certificate Expiry Date', type: 'date' },
+    {
+      key: 'status',
+      label: 'Status',
       type: 'select',
       required: true,
       options: [
@@ -175,16 +175,16 @@ export class BBBEEComplianceComponent extends ComplianceBaseComponent {
         { value: 'Not Required', label: 'Not Required', color: 'text-gray-600' }
       ]
     },
-    { 
-      key: 'amount1', 
-      label: 'Score', 
-      type: 'number', 
-      step: 0.1, 
+    {
+      key: 'amount_1',
+      label: 'Score',
+      type: 'number',
+      step: 0.1,
       placeholder: '0.0'
     },
-    { 
-      key: 'text1', 
-      label: 'Level', 
+    {
+      key: 'text1',
+      label: 'Level',
       type: 'select',
       options: [
         { value: 'Level 1', label: 'Level 1', color: 'text-green-600' },
@@ -206,7 +206,7 @@ export class BBBEEComplianceComponent extends ComplianceBaseComponent {
       type: 'bbbee_certificate',
       title: 'BBBEE Assessment',
       period: `FY${new Date().getFullYear()}`,
-      date1: new Date().toISOString().split('T')[0], // Verification date
+      date_1: new Date().toISOString().split('T')[0], // Verification date
       status: 'Pending',
       notes: '',
     };

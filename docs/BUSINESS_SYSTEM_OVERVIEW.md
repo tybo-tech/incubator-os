@@ -351,61 +351,145 @@ Three-tier profit structure:
 - Compliance with financial reporting requirements
 
 ##### **F. Compliance Tab**
-**Regulatory compliance tracking and management**
+**Unified regulatory compliance tracking and management system**
+
+**🎯 Unified Compliance Records Architecture**
+
+The system uses a **single unified compliance_records table** that handles all compliance types through flexible fields. This eliminates data silos and provides:
+- Centralized compliance tracking
+- Consistent data structure across all compliance types
+- Easy reporting and analytics
+- Simplified maintenance and updates
+
+**Database Structure:**
+- **Flexible Date Fields** (date_1, date_2, date_3) - Used for anniversary dates, due dates, filing dates, expiry dates, etc.
+- **Flexible Count Fields** (count_1, count_2) - Used for employee counts, director counts, ownership percentages
+- **Flexible Amount Fields** (amount_1, amount_2, amount_3) - Used for fees paid, skills investment, procurement spend, tax amounts
+- **Metadata** - JSON field for additional type-specific data
+- **Status Tracking** - Current state (Pending, In Progress, Completed, Overdue)
+- **Progress Tracking** - Percentage completion for ongoing tasks
 
 **Sub-Sections:**
 
-**1. Annual Returns**
+**1. Annual Returns (CIPC)**
 - CIPC annual return filing status
-- Due dates and reminders
+- Anniversary date tracking (date_1)
+- Due dates (30 business days from anniversary) (date_2)
+- Filing date recording (date_3)
+- Fee paid tracking (amount_1)
 - Historical filing records
 - Outstanding returns alerts
+- Automatic overdue status detection
 
 **2. Beneficial Ownership**
-- Director information
-- Shareholder register
+- Director information and count (count_1)
+- Shareholder register and count (count_2)
 - Ownership percentages
-- Beneficial ownership declarations
-- Changes tracking
+- Beneficial ownership declarations (date_1)
+- Changes tracking with effective dates (date_2)
+- Submission dates (date_3)
+- Compliance with Companies Act requirements
 
-**3. Tax Registrations**
-**SARS Compliance:**
-- **Income Tax Status** - Current, non-compliant, exempt
-- **PAYE Status** - Employer tax compliance
-- **VAT Registration** - VAT number and status
-- **Tax Clearance Certificate** - Valid, expired, application pending
-- **UIF Registration** - Unemployment insurance fund
-- **Outstanding Issues** - Flags and resolution tracking
+**3. Tax Registrations (SARS)**
+**Unified Tax Compliance Tracking:**
+- **Income Tax** - Registration date (date_1), renewal date (date_2), tax number, status
+- **PAYE (Pay-As-You-Earn)** - Employer tax compliance, employee count (count_1), monthly submission tracking
+- **VAT Registration** - VAT number, registration date (date_1), turnover threshold tracking
+- **Tax Clearance Certificate** - Issue date (date_1), expiry date (date_2), pin number
+- **UIF Registration** - Unemployment insurance fund status and compliance
+- **Outstanding Tax Issues** - Amount owed (amount_1), penalties (amount_2), payment arrangements (amount_3)
 
 **4. B-BBEE Compliance**
-- B-BBEE Level (1-8, EME, QSE)
-- Certificate validity dates
+- B-BBEE Level (level field: 1-8, EME, QSE)
+- Certificate issue date (date_1)
+- Certificate expiry date (date_2)
+- Verification date (date_3)
+- Black ownership percentage (count_1)
+- Total employee count (count_2)
+- Skills development spend (amount_1)
+- Procurement from B-BBEE suppliers (amount_2)
+- Enterprise & Supplier Development spend (amount_3)
+- Score breakdown via metadata JSON field
 - Expiry alerts and renewal reminders
-- Score breakdown (if available)
-- Supplier classification
+- Supplier classification tracking
 
 **5. Other Statutory Tasks**
-- **Employment Equity** - EE plan submission and compliance
-- **Occupational Health & Safety** - OHS requirements and inspections
-- **COIDA** - Compensation for Occupational Injuries and Diseases
-- **Skills Development** - SETA registrations and reporting
-- **Short-Term Insurance** - Asset protection policies
-- **Other Industry-Specific** - Sector regulations
+Each task type tracked with flexible fields:
+
+- **Employment Equity**
+  - EE plan submission date (date_1)
+  - Next submission due (date_2)
+  - Black employees (count_1)
+  - Total employees (count_2)
+  - Plan implementation progress (progress %)
+
+- **Occupational Health & Safety (OHS)**
+  - Last inspection date (date_1)
+  - Next inspection due (date_2)
+  - Incidents count (count_1)
+  - Compliance certificate date (date_3)
+  - Fine/penalty amounts (amount_1)
+
+- **COIDA (Compensation for Occupational Injuries and Diseases)**
+  - Certificate issue date (date_1)
+  - Certificate expiry date (date_2)
+  - Annual assessment amount (amount_1)
+  - Claims paid (amount_2)
+
+- **Skills Development (SETA)**
+  - WSP submission date (date_1)
+  - ATR due date (date_2)
+  - Skills levy paid (amount_1)
+  - Mandatory grant received (amount_2)
+  - Discretionary grant received (amount_3)
+
+- **Workmen's Compensation**
+  - Policy start date (date_1)
+  - Policy end date (date_2)
+  - Premium amount (amount_1)
+  - Claims history via metadata
+
+- **Short-Term Insurance**
+  - Policy start date (date_1)
+  - Policy end date (date_2)
+  - Premium amount (amount_1)
+  - Insured value (amount_2)
+
+- **Industry-Specific Regulations**
+  - Captured via sub_type field
+  - Flexible field usage per industry requirements
 
 **Dynamic Forms System:**
-Each compliance category has customizable forms for data capture and status tracking.
+Each compliance category has:
+- Customizable forms for data capture
+- Field-specific validation rules
+- Status tracking workflows
+- Document attachment support (via metadata)
+- Automated calculations where applicable
 
-**Alert System:**
-- Automated reminders for upcoming deadlines
-- Non-compliance warnings
-- Bulk notifications for cohort administrators
+**Intelligent Alert System:**
+- **Automated Deadline Reminders** - 30, 14, 7, and 1 day before due dates
+- **Overdue Notifications** - Daily alerts for overdue items
+- **Status Change Alerts** - Real-time notifications when status updates
+- **Bulk Cohort Notifications** - Administrator alerts for multiple companies
+- **Compliance Risk Scoring** - Predictive alerts for at-risk companies
+
+**Analytics & Reporting:**
+- **Company Compliance Score** - Overall compliance percentage
+- **Type-Based Dashboards** - Separate views for each compliance category
+- **Trend Analysis** - Track compliance improvements over time
+- **Cohort Comparisons** - Benchmark companies against each other
+- **Export Capabilities** - PDF/Excel reports for auditors
 
 **Benefits:**
-- Prevent regulatory penalties
-- Maintain funding eligibility
-- Build business credibility
-- Streamline audit processes
-- Demonstrate corporate governance
+- ✅ **Single Source of Truth** - All compliance in one unified table
+- ✅ **Prevent Regulatory Penalties** - Proactive deadline management
+- ✅ **Maintain Funding Eligibility** - Ensure all requirements met
+- ✅ **Build Business Credibility** - Professional compliance records
+- ✅ **Streamline Audit Processes** - Organized documentation
+- ✅ **Demonstrate Good Governance** - Track and prove compliance
+- ✅ **Flexible & Scalable** - Easy to add new compliance types
+- ✅ **Historical Tracking** - Complete audit trail of all compliance activities
 
 ##### **G. Coaching Tab**
 **Structured mentorship and business development**
