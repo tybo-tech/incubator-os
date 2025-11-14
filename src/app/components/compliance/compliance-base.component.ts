@@ -5,7 +5,7 @@ import { ComplianceRecordService } from '../../../services/compliance-record.ser
 import { ComplianceRecord } from '../../../models/ComplianceRecord';
 
 /**
- * Column configuration for compliance tables
+ * Column configuration for compliance tables and dynamic forms
  */
 export interface ComplianceColumnConfig {
   key: keyof ComplianceRecord | string;
@@ -15,6 +15,8 @@ export interface ComplianceColumnConfig {
   options?: { value: string; label: string; color?: string }[];
   required?: boolean;
   placeholder?: string;
+  step?: number; // For number/currency inputs
+  rows?: number; // For textarea
 }
 
 /**
@@ -49,6 +51,11 @@ export abstract class ComplianceBaseComponent implements OnInit {
   loading = false;
   editingId: number | null = null;
 
+  // Form component management
+  showForm = false;
+  formMode: 'create' | 'edit' = 'create';
+  formData: Partial<ComplianceRecord> = {};
+
   // Abstract properties that child components must implement
   abstract complianceType: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   abstract pageTitle: string;
@@ -74,7 +81,7 @@ export abstract class ComplianceBaseComponent implements OnInit {
   private extractRouteParameters(): void {
     // Get companyId from route params (following revenue component pattern)
     const companyId = this.route.parent?.parent?.snapshot.params['id'];
-    alert(companyId);
+    // alert(companyId);
     // Get query parameters
     const queryParams = this.route.parent?.parent?.parent?.snapshot.queryParams;
 
@@ -423,5 +430,108 @@ export abstract class ComplianceBaseComponent implements OnInit {
     if (hasChanges) {
       this.records$.next([...records]);
     }
+  }
+
+  /* =========================================================================
+     FORM COMPONENT INTEGRATION
+     ========================================================================= */
+
+  /**
+   * Get form configuration for the compliance form component
+   */
+  getFormConfig(): any {
+    return {
+      title: this.formMode === 'create' ? `Add New ${this.getFormTitle()}` : `Edit ${this.getFormTitle()}`,
+      fields: this.columnConfig,
+      submitButtonText: this.formMode === 'create' ? `Create ${this.getFormTitle()}` : `Update ${this.getFormTitle()}`,
+      cancelButtonText: 'Cancel',
+      submitButtonColor: this.getFormButtonColor(),
+      mode: this.formMode,
+      showRequiredIndicator: true
+    };
+  }
+
+  /**
+   * Get form title (override in child components)
+   */
+  protected getFormTitle(): string {
+    return this.complianceType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  /**
+   * Get form button color (override in child components)
+   */
+  protected getFormButtonColor(): 'blue' | 'green' | 'purple' | 'red' | 'yellow' {
+    return 'blue';
+  }
+
+  /**
+   * Start creating a new record using the form component
+   */
+  startNewForm(): void {
+    this.formMode = 'create';
+    this.editingId = null;
+    this.formData = this.getDefaultRecordValues();
+    this.showForm = true;
+  }
+
+  /**
+   * Start editing an existing record using the form component
+   */
+  startEditForm(record: ComplianceRecord): void {
+    this.formMode = 'edit';
+    this.editingId = record.id;
+    this.formData = { ...record };
+    this.showForm = true;
+  }
+
+  /**
+   * Handle form submission from the compliance form component
+   */
+  async onFormSubmit(formData: Partial<ComplianceRecord>): Promise<void> {
+    if (!formData || Object.keys(formData).length === 0) {
+      return;
+    }
+
+    this.loading = true;
+
+    try {
+      if (this.formMode === 'edit' && this.editingId) {
+        await this.updateRecord(this.editingId, formData);
+      } else {
+        // For create mode, merge with required IDs
+        const newRecord: Partial<ComplianceRecord> = {
+          companyId: this.companyId,
+          clientId: this.clientId,
+          programId: this.programId,
+          cohortId: this.cohortId,
+          financialYearId: 1,
+          type: this.complianceType,
+          ...formData
+        };
+
+        const createdRecord = await this.complianceService.addComplianceRecord(newRecord).toPromise();
+        if (createdRecord) {
+          const currentRecords = this.records$.getValue();
+          this.records$.next([createdRecord, ...currentRecords]);
+        }
+      }
+
+      this.onFormCancel();
+    } catch (error) {
+      console.error(`Error saving ${this.complianceType} record:`, error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  /**
+   * Handle form cancellation from the compliance form component
+   */
+  onFormCancel(): void {
+    this.showForm = false;
+    this.formData = {};
+    this.editingId = null;
+    this.formMode = 'create';
   }
 }

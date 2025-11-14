@@ -116,7 +116,7 @@ export const routes: Routes = [
               },
               {
                 path: 'bbbee-compliance',
-                loadComponent: () => import('./components/compliance/bbbee-compliance.component').then(m => m.BbbeeComplianceComponent),
+                loadComponent: () => import('./components/compliance/bbbee-compliance.component').then(m => m.BBBEEComplianceComponent),
               },
               {
                 path: 'other-statutory-tasks',

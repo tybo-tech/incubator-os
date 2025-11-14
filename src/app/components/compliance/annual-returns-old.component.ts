@@ -121,7 +121,7 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
         </div>
       </div>
 
-      <!-- Compliance Form Modal -->
+      <!-- Dynamic Form Modal -->
       <div
         *ngIf="showForm"
         class="fixed inset-0 z-50 overflow-y-auto"
@@ -133,26 +133,134 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
           <!-- Background overlay -->
           <div
             class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-            (click)="onFormCancel()"
+            (click)="cancelForm()"
           ></div>
 
           <!-- Modal panel -->
-          <div class="inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <app-compliance-form
-              [config]="getFormConfig()"
-              [initialData]="formData"
-              [loading]="loading"
-              (formSubmit)="onFormSubmit($event)"
-              (formCancel)="onFormCancel()"
-            ></app-compliance-form>
+          <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <!-- Modal header -->
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                  {{ formMode === 'create' ? 'Add New' : 'Edit' }} Annual Return
+                </h3>
+                <button
+                  (click)="cancelForm()"
+                  class="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <i class="fas fa-times w-5 h-5"></i>
+                </button>
+              </div>
+
+              <!-- Dynamic Form Fields -->
+              <form (ngSubmit)="saveForm()" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4">
+                  <div *ngFor="let field of columnConfig" class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">
+                      {{ field.label }}
+                      <span *ngIf="isFieldRequired(field)" class="text-red-500">*</span>
+                    </label>
+
+                    <!-- Text Input -->
+                    <input
+                      *ngIf="field.type === 'text'"
+                      [value]="getFormFieldValue(field)"
+                      (input)="onFieldChange(field, $event)"
+                      [placeholder]="getFieldPlaceholder(field)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+
+                    <!-- Date Input -->
+                    <input
+                      *ngIf="field.type === 'date'"
+                      type="date"
+                      [value]="getFormFieldValue(field)"
+                      (input)="onFieldChange(field, $event)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+
+                    <!-- Currency Input -->
+                    <input
+                      *ngIf="field.type === 'currency'"
+                      [type]="getInputType(field)"
+                      [step]="getInputStep(field)"
+                      [value]="getFormFieldValue(field)"
+                      (input)="onFieldChange(field, $event)"
+                      [placeholder]="getFieldPlaceholder(field)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+
+                    <!-- Number Input -->
+                    <input
+                      *ngIf="field.type === 'number'"
+                      [type]="getInputType(field)"
+                      [step]="getInputStep(field)"
+                      [value]="getFormFieldValue(field)"
+                      (input)="onFieldChange(field, $event)"
+                      [placeholder]="getFieldPlaceholder(field)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+
+                    <!-- Select Dropdown -->
+                    <select
+                      *ngIf="field.type === 'select'"
+                      [value]="getFormFieldValue(field)"
+                      (change)="onFieldChange(field, $event)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="">Select {{ field.label }}</option>
+                      <option
+                        *ngFor="let opt of getFieldOptions(field)"
+                        [value]="opt.value"
+                      >
+                        {{ opt.label }}
+                      </option>
+                    </select>
+
+                    <!-- Textarea -->
+                    <textarea
+                      *ngIf="field.type === 'textarea'"
+                      [value]="getFormFieldValue(field)"
+                      (input)="onFieldChange(field, $event)"
+                      [placeholder]="getFieldPlaceholder(field)"
+                      [rows]="getTextareaRows(field)"
+                      [required]="isFieldRequired(field)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    (click)="onFormCancel()"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    {{ formMode === 'create' ? 'Create' : 'Update' }} Annual Return
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   `,
 })
 export class AnnualReturnsComponent extends ComplianceBaseComponent {
-  override complianceType: 'annual_returns' = 'annual_returns';
+  override complianceType: 'annual_returns' = 'annual_returns'; // Correct API type
   pageTitle = 'Annual Returns Management';
   pageDescription =
     'Track CIPC annual return filing status and due dates. Companies must file within 30 business days of their anniversary month.';
