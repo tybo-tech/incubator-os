@@ -192,8 +192,8 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
       period: `FY${new Date().getFullYear()}`,
       date_1: new Date().toISOString().split('T')[0], // Anniversary date
       date_2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Due date (30 days from now)
-      status: 'Pending',
-      notes: '',
+      status: 'Pending'
+      // Don't include empty strings for optional fields - they should be null/undefined
     };
   }
 

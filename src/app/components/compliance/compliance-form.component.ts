@@ -443,10 +443,21 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
 
   /**
    * Handle form submission
+   * Cleans up empty values (empty strings, null, undefined) to prevent API errors
    */
   onSubmit(): void {
     if (this.isFormValid()) {
-      this.formSubmit.emit({ ...this.formData });
+      // Clean up the form data - remove empty strings, null, undefined
+      const cleanData: any = {};
+      Object.keys(this.formData).forEach(key => {
+        const value = this.formData[key];
+        // Only include non-empty values
+        if (value !== '' && value !== null && value !== undefined) {
+          cleanData[key] = value;
+        }
+      });
+
+      this.formSubmit.emit(cleanData);
     }
   }
 
