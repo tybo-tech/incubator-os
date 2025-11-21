@@ -175,8 +175,15 @@ export abstract class ComplianceBaseComponent implements OnInit {
    * Update an existing compliance record
    */
   async updateRecord(id: number, data: Partial<ComplianceRecord>): Promise<void> {
+    console.log('\n🔄 ========== UPDATE RECORD METHOD ==========');
+    console.log('🔄 [UPDATE] Record ID:', id);
+    console.log('🔄 [UPDATE] Data received:', data);
+    console.log('🔄 [UPDATE] Data keys:', Object.keys(data));
+    console.log('🔄 [UPDATE] Calling service.updateComplianceRecord()...');
+
     try {
       const updatedRecord = await this.complianceService.updateComplianceRecord(id, data).toPromise();
+      console.log('✅ [UPDATE] Service returned:', updatedRecord);
 
       if (updatedRecord) {
         const currentRecords = this.records$.getValue();
@@ -184,9 +191,11 @@ export abstract class ComplianceBaseComponent implements OnInit {
           record.id === id ? updatedRecord : record
         );
         this.records$.next(updatedRecords);
+        console.log('✅ [UPDATE] Local records updated successfully');
       }
     } catch (error) {
-      console.error(`Error updating ${this.complianceType} record:`, error);
+      console.error(`❌ [UPDATE] Error updating ${this.complianceType} record:`, error);
+      throw error;
     }
   }
 
@@ -482,17 +491,35 @@ export abstract class ComplianceBaseComponent implements OnInit {
    * Start editing an existing record using the form component
    */
   startEditForm(record: ComplianceRecord): void {
+    console.log('\n✏️ ========== START EDIT FORM ==========');
+    console.log('✏️ [EDIT] Record to edit:', record);
+    console.log('✏️ [EDIT] Record ID:', record.id);
+    console.log('✏️ [EDIT] Record keys:', Object.keys(record));
+
     this.formMode = 'edit';
     this.editingId = record.id;
     this.formData = { ...record };
+
+    console.log('✏️ [EDIT] formData set to:', {...this.formData});
+    console.log('✏️ [EDIT] Opening form...');
+
     this.showForm = true;
+    console.log('✏️ ========== FORM OPENED ==========\n');
   }
 
   /**
    * Handle form submission from the compliance form component
    */
   async onFormSubmit(formData: Partial<ComplianceRecord>): Promise<void> {
+    console.log('\n🎯 ========== BASE COMPONENT RECEIVED DATA ==========');
+    console.log('📋 [BASE] Form mode:', this.formMode);
+    console.log('📋 [BASE] Editing ID:', this.editingId);
+    console.log('📋 [BASE] Received formData:', formData);
+    console.log('📋 [BASE] formData keys:', Object.keys(formData));
+    console.log('📋 [BASE] formData values:', Object.values(formData));
+
     if (!formData || Object.keys(formData).length === 0) {
+      console.log('❌ [BASE] No data received, aborting');
       return;
     }
 
@@ -500,6 +527,9 @@ export abstract class ComplianceBaseComponent implements OnInit {
 
     try {
       if (this.formMode === 'edit' && this.editingId) {
+        console.log('\n✏️  [BASE] UPDATE MODE');
+        console.log('📝 [BASE] Record ID to update:', this.editingId);
+        console.log('📝 [BASE] Data to send to updateRecord():', formData);
         await this.updateRecord(this.editingId, formData);
       } else {
         // For create mode, merge with required IDs

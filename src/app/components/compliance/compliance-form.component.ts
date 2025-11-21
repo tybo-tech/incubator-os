@@ -58,8 +58,8 @@ export interface ComplianceFormConfig {
             <!-- Text Input -->
             <input
               *ngIf="field.type === 'text' || !field.type"
-              [value]="getFieldValue(field)"
-              (input)="setFieldValue(field, $event)"
+              [(ngModel)]="formData[field.key]"
+              [name]="field.key"
               [placeholder]="getFieldPlaceholder(field)"
               [required]="isFieldRequired(field)"
               [class]="getInputClasses(field)"
@@ -69,8 +69,8 @@ export interface ComplianceFormConfig {
             <input
               *ngIf="field.type === 'date'"
               type="date"
-              [value]="getFieldValue(field)"
-              (input)="setFieldValue(field, $event)"
+              [(ngModel)]="formData[field.key]"
+              [name]="field.key"
               [required]="isFieldRequired(field)"
               [class]="getInputClasses(field)"
             />
@@ -79,8 +79,8 @@ export interface ComplianceFormConfig {
             <input
               *ngIf="field.type === 'number'"
               type="number"
-              [value]="getFieldValue(field)"
-              (input)="setFieldValue(field, $event)"
+              [(ngModel)]="formData[field.key]"
+              [name]="field.key"
               [placeholder]="getFieldPlaceholder(field)"
               [step]="getInputStep(field)"
               [required]="isFieldRequired(field)"
@@ -94,8 +94,8 @@ export interface ComplianceFormConfig {
               </div>
               <input
                 type="number"
-                [value]="getFieldValue(field)"
-                (input)="setFieldValue(field, $event)"
+                [(ngModel)]="formData[field.key]"
+                [name]="field.key"
                 [placeholder]="getFieldPlaceholder(field)"
                 [step]="getInputStep(field)"
                 [required]="isFieldRequired(field)"
@@ -107,8 +107,8 @@ export interface ComplianceFormConfig {
             <div *ngIf="field.type === 'percentage'" class="relative">
               <input
                 type="number"
-                [value]="getFieldValue(field)"
-                (input)="setFieldValue(field, $event)"
+                [(ngModel)]="formData[field.key]"
+                [name]="field.key"
                 [placeholder]="getFieldPlaceholder(field)"
                 [step]="getInputStep(field)"
                 min="0"
@@ -124,8 +124,8 @@ export interface ComplianceFormConfig {
             <!-- Select Dropdown -->
             <select
               *ngIf="field.type === 'select'"
-              [value]="getFieldValue(field)"
-              (change)="setFieldValue(field, $event)"
+              [(ngModel)]="formData[field.key]"
+              [name]="field.key"
               [required]="isFieldRequired(field)"
               [class]="getInputClasses(field)"
             >
@@ -141,8 +141,8 @@ export interface ComplianceFormConfig {
             <!-- Textarea -->
             <textarea
               *ngIf="field.type === 'textarea'"
-              [value]="getFieldValue(field)"
-              (input)="setFieldValue(field, $event)"
+              [(ngModel)]="formData[field.key]"
+              [name]="field.key"
               [placeholder]="getFieldPlaceholder(field)"
               [rows]="getTextareaRows(field)"
               [required]="isFieldRequired(field)"
@@ -203,49 +203,49 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialData'] || changes['config']) {
+    // Only re-initialize if this is the first change or if we're switching between records
+    if (changes['initialData'] && changes['initialData'].currentValue) {
+      const previousId = changes['initialData'].previousValue?.id;
+      const currentId = changes['initialData'].currentValue?.id;
+
+      // Only reinitialize if ID changed or this is first time
+      if (previousId !== currentId) {
+        console.log('🔄 [CHANGE] initialData changed, re-initializing form');
+        this.initializeForm();
+      }
+    } else if (changes['config'] && !changes['initialData']) {
       this.initializeForm();
     }
   }
 
   /**
    * Initialize form data with default values
+   * ✅ SIMPLIFIED: Only process fields in the config, clean dates for HTML inputs
    */
   private initializeForm(): void {
+    console.log('\n🎬 ========== FORM INITIALIZATION ==========');
+    console.log('📥 [INIT] Received initialData:', this.initialData);
+    console.log('📥 [INIT] Form config mode:', this.config?.mode);
+
     this.formData = {};
     this.fieldErrors = {};
 
-    // Set initial data if provided
-    if (this.initialData) {
-      this.formData = { ...this.initialData };
-    }
-
-    // Set default values for fields that don't have data
+    // Only initialize fields that are in the config
     this.config?.fields?.forEach(field => {
-      if (this.formData[field.key] === undefined || this.formData[field.key] === null) {
-        this.formData[field.key] = this.getDefaultFieldValue(field);
-      }
-    });
-  }
+      let value = this.initialData?.[field.key as keyof ComplianceRecord];
 
-  /**
-   * Get default value for a field based on its type
-   */
-  private getDefaultFieldValue(field: ComplianceColumnConfig): any {
-    switch (field.type) {
-      case 'number':
-      case 'currency':
-      case 'percentage':
-        return 0;
-      case 'date':
-        return '';
-      case 'select':
-        return '';
-      case 'textarea':
-        return '';
-      default:
-        return '';
-    }
+      // Clean up date values - remove timestamp for HTML date inputs
+      if (field.type === 'date' && value && typeof value === 'string') {
+        value = value.split('T')[0].split(' ')[0]; // Get just YYYY-MM-DD
+      }
+
+      // Set the value (null/undefined becomes empty string for inputs)
+      this.formData[field.key] = value ?? '';
+      console.log(`  ✅ [INIT] "${field.key}" =`, this.formData[field.key]);
+    });
+
+    console.log('✨ [INIT] Final formData:', {...this.formData});
+    console.log('🎬 ========== FORM INITIALIZATION COMPLETE ==========\n');
   }
 
   /**
@@ -262,34 +262,7 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
     return option.value;
   }
 
-  /**
-   * Get field value from form data
-   */
-  getFieldValue(field: ComplianceColumnConfig): any {
-    return this.formData[field.key] || '';
-  }
 
-  /**
-   * Set field value in form data
-   */
-  setFieldValue(field: ComplianceColumnConfig, event: Event): void {
-    const target = event.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-    if (target) {
-      let value: any = target.value;
-
-      // Convert numeric values
-      if (field.type === 'number' || field.type === 'currency' || field.type === 'percentage') {
-        value = value === '' ? null : Number(value);
-      }
-
-      this.formData[field.key] = value;
-
-      // Clear field error when user starts typing
-      if (this.fieldErrors[field.key as string]) {
-        delete this.fieldErrors[field.key as string];
-      }
-    }
-  }
 
   /**
    * Check if field is required
@@ -416,7 +389,7 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
 
     this.config.fields.forEach(field => {
       if (this.isFieldRequired(field)) {
-        const value = this.getFieldValue(field);
+        const value = this.formData[field.key];
         if (value === '' || value === null || value === undefined) {
           this.fieldErrors[field.key as string] = `${field.label} is required`;
           isValid = false;
@@ -443,21 +416,35 @@ export class ComplianceFormComponent implements OnInit, OnChanges {
 
   /**
    * Handle form submission
-   * Cleans up empty values (empty strings, null, undefined) to prevent API errors
+   * ✅ SIMPLIFIED: Only include fields that are in the column config
+   * ✅ Keeps the values as-is from ngModel (no conversion needed)
    */
   onSubmit(): void {
+    console.log('\n📤 ========== FORM SUBMISSION START ==========');
+    console.log('📋 [FORM] Raw formData:', {...this.formData});
+    console.log('📋 [FORM] Form mode:', this.config.mode);
+
     if (this.isFormValid()) {
-      // Clean up the form data - remove empty strings, null, undefined
+      // Only send fields that are in the config (exclude extra fields like id, created_at, etc. unless in config)
       const cleanData: any = {};
-      Object.keys(this.formData).forEach(key => {
-        const value = this.formData[key];
-        // Only include non-empty values
-        if (value !== '' && value !== null && value !== undefined) {
-          cleanData[key] = value;
+
+      this.config.fields.forEach(field => {
+        const value = this.formData[field.key];
+
+        // Include the field if it has a value (not null, not undefined, not empty string)
+        if (value !== null && value !== undefined && value !== '') {
+          cleanData[field.key as string] = value;
+          console.log(`  ✅ [FORM] Including "${field.key}":`, value);
+        } else {
+          console.log(`  ⏭️  [FORM] Skipping "${field.key}" (empty)`);
         }
       });
 
+      console.log('\n✨ [FORM] Final data to emit:', cleanData);
+      console.log('📤 ========== FORM SUBMISSION END ==========\n');
       this.formSubmit.emit(cleanData);
+    } else {
+      console.log('❌ [FORM] Form validation failed');
     }
   }
 

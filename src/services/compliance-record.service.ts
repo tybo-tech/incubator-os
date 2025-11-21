@@ -129,11 +129,18 @@ export class ComplianceRecordService {
   /**
    * Update compliance record
    * ✅ NO CONVERSION - Passes object directly to API
+   * ✅ Using POST to match PHP backend (reads from php://input)
    */
   updateComplianceRecord(id: number, data: Partial<ComplianceRecord>): Observable<ComplianceRecord> {
-    console.log('📋 Updating compliance record:', id, data);
+    console.log('\n🌐 ========== SERVICE API CALL ==========');
+    console.log('🌐 [SERVICE] Method: POST');
+    console.log('🌐 [SERVICE] URL:', `${this.apiUrl}/update-compliance-record.php?id=${id}`);
+    console.log('🌐 [SERVICE] Payload (data param):', data);
+    console.log('🌐 [SERVICE] Payload JSON:', JSON.stringify(data, null, 2));
+    console.log('🌐 [SERVICE] Headers:', this.httpOptions.headers);
+    console.log('🌐 ========== SENDING REQUEST... ==========\n');
 
-    return this.http.put<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/update-compliance-record.php?id=${id}`, data, this.httpOptions)
+    return this.http.post<{ success: boolean; data: ComplianceRecord }>(`${this.apiUrl}/update-compliance-record.php?id=${id}`, data, this.httpOptions)
       .pipe(
         catchError(this.handleError('Update compliance record')),
         this.extractSingleData()
