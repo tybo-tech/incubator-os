@@ -7,6 +7,7 @@ import {
 } from './compliance-base.component';
 import { ComplianceFormComponent } from './compliance-form.component';
 import { ComplianceRecord } from '../../../models/ComplianceRecord';
+import { annualReturnConfig } from './column-config/annual-returns.config';
 
 @Component({
   selector: 'app-annual-returns',
@@ -40,7 +41,9 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium text-gray-600">{{ card.title }}</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ card.value }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">
+              {{ card.value }}
+            </p>
           </div>
         </div>
       </div>
@@ -109,7 +112,9 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
                 >
                   <div class="flex flex-col items-center justify-center">
                     <div class="bg-gray-100 rounded-full p-6 mb-4">
-                      <i class="fas fa-calendar-check text-gray-400 text-4xl"></i>
+                      <i
+                        class="fas fa-calendar-check text-gray-400 text-4xl"
+                      ></i>
                     </div>
                     <p class="text-gray-600 text-base font-medium mb-1">
                       No annual returns recorded yet
@@ -154,35 +159,14 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
 export class AnnualReturnsComponent extends ComplianceBaseComponent {
   override complianceType: 'annual_returns' = 'annual_returns';
   pageTitle = 'Annual Returns Management';
-  pageDescription =
-    'Track CIPC annual return filing status and due dates. Companies must file within 30 business days of their anniversary month.';
+  pageDescription = annualReturnConfig().description;
 
   override getFormTitle(): string {
     return 'Annual Return';
   }
 
   // ✅ Column config using snake_case to match database fields
-  columnConfig: ComplianceColumnConfig[] = [
-    { key: 'period', label: 'Year Ending', type: 'text', required: true, placeholder: 'e.g., FY2024' },
-    { key: 'date_1', label: 'Anniversary Date', type: 'date', required: true },
-    { key: 'date_2', label: 'Due Date', type: 'date', required: true },
-    { key: 'date_3', label: 'Filing Date', type: 'date' },
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'Pending', label: 'Pending', color: 'text-yellow-600' },
-        { value: 'In Progress', label: 'In Progress', color: 'text-blue-600' },
-        { value: 'Filed', label: 'Filed', color: 'text-green-600' },
-        { value: 'Overdue', label: 'Overdue', color: 'text-red-600' },
-        { value: 'Not Required', label: 'Not Required', color: 'text-gray-600' }
-      ]
-    },
-    { key: 'amount_1', label: 'Fee Paid', type: 'currency', step: 0.01, placeholder: '0.00' },
-    { key: 'notes', label: 'Notes', type: 'textarea', rows: 3, placeholder: 'Additional notes about this annual return...' },
-  ];
+  columnConfig: ComplianceColumnConfig[] = annualReturnConfig().config;
 
   // ✅ Using snake_case field names
   override getDefaultRecordValues(): Partial<ComplianceRecord> {
@@ -191,8 +175,10 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
       title: 'Annual Return',
       period: `FY${new Date().getFullYear()}`,
       date_1: new Date().toISOString().split('T')[0], // Anniversary date
-      date_2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Due date (30 days from now)
-      status: 'Pending'
+      date_2: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0], // Due date (30 days from now)
+      status: 'Pending',
       // Don't include empty strings for optional fields - they should be null/undefined
     };
   }
