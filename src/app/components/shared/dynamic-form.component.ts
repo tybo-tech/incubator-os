@@ -89,8 +89,8 @@ export interface FormFieldOption {
                 [(ngModel)]="formData()[field.key]"
                 [placeholder]="field.placeholder || '0'"
                 [required]="field.required || false"
-                [min]="field.min"
-                [max]="field.max"
+                [min]="field.min || 0"
+                [max]="field.max || null"
                 [step]="field.step || 1"
                 class="block w-full rounded-lg border border-gray-300 shadow-sm text-sm px-4 py-2.5 transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none hover:border-gray-400"
               />

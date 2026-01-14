@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Oct 17, 2025 at 06:15 AM
+-- Generation Time: Jan 14, 2026 at 09:37 AM
 -- Server version: 8.0.43
 -- PHP Version: 8.2.27
 
@@ -20,6 +20,110 @@ SET time_zone = "+00:00";
 --
 -- Database: `incubator_os`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `action_items`
+--
+
+CREATE TABLE `action_items` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT '1',
+  `client_id` int NOT NULL,
+  `company_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `financial_year_id` int DEFAULT '1',
+  `context_type` enum('swot','gps') NOT NULL COMMENT 'SWOT = analysis items, GPS = goal tracking items',
+  `category` varchar(100) DEFAULT NULL COMMENT 'e.g., weakness, strength, threat, opportunity, finance, strategy, etc.',
+  `description` text NOT NULL COMMENT 'Item or goal description',
+  `action_required` text COMMENT 'Action steps to be taken',
+  `evidence` text COMMENT 'Proof or evidence for GPS targets',
+  `assigned_to` varchar(255) DEFAULT NULL,
+  `target_date` date DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Not Started',
+  `priority` varchar(50) DEFAULT NULL,
+  `impact` varchar(50) DEFAULT NULL,
+  `progress` decimal(5,2) DEFAULT '0.00',
+  `analysis_date` datetime DEFAULT NULL,
+  `is_complete` tinyint(1) DEFAULT '0',
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `action_items`
+--
+
+INSERT INTO `action_items` (`id`, `tenant_id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `financial_year_id`, `context_type`, `category`, `description`, `action_required`, `evidence`, `assigned_to`, `target_date`, `status`, `priority`, `impact`, `progress`, `analysis_date`, `is_complete`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(373, 1, 11, 11, NULL, NULL, 1, 'gps', 'Finance', 'Apply for funding at SEAD/SEFDA', NULL, 'Application completed and submitted', 'Director', '2025-09-16', 'Not Started', 'critical', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(374, 1, 11, 11, NULL, NULL, 1, 'gps', 'Finance', 'Create a budget for the business', NULL, 'completed budget for 12 months', 'Director', '2025-09-16', 'Not Started', 'high', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(375, 1, 11, 11, NULL, NULL, 1, 'gps', 'Finance', 'Set targets based on budget for the business', NULL, 'the business budget with targets', NULL, '2025-09-30', 'Not Started', 'high', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(376, 1, 11, 11, NULL, NULL, 1, 'gps', 'Finance', 'Introduce booking system.', NULL, 'SAGE setup', 'Director', '2024-03-15', 'Not Started', 'medium', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(377, 1, 11, 11, NULL, NULL, 1, 'gps', 'Finance', 'submit financial information March 2025 to Current.', NULL, 'receipt of bank statements', 'Director', '2025-09-05', 'Not Started', 'medium', NULL, 0.00, '2025-08-29 09:48:05', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(378, 1, 11, 11, NULL, NULL, 1, 'gps', 'Sales & Marketing', 'Create a marketing strategy for the business.', NULL, 'Strategy document in place', 'Marketing Manager', '2025-09-29', 'Not Started', 'high', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(379, 1, 11, 11, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the business certification SACAS quality control.', NULL, 'commence with application process', 'Director', '2025-12-10', 'Not Started', 'high', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(380, 1, 11, 11, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the certification of the equipment.', NULL, '', NULL, '2024-04-30', 'Not Started', 'high', NULL, 0.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(381, 1, 11, 11, NULL, NULL, 1, 'gps', 'Strategy/General', 'Implement business systems manual', NULL, '', NULL, '2024-03-15', 'In Progress', 'medium', NULL, 50.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(382, 1, 11, 11, NULL, NULL, 1, 'gps', 'Strategy/General', 'Remove existing partner from Share holding in the business.', NULL, 'CIPC documents showing directors and shareholding', NULL, '2024-03-15', 'In Progress', 'critical', NULL, 75.00, '2025-08-29 09:31:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(383, 1, 11, 11, NULL, NULL, 1, 'gps', 'Strategy/General', 'Introduce new service like perm make up and IV drips.', NULL, 'New Brochure is done and service is in place.', NULL, '2024-03-31', 'Completed', 'medium', NULL, 100.00, '2025-08-29 09:31:21', 1, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(384, 1, 11, 11, NULL, NULL, 1, 'gps', 'Personal Development', 'reading - develop a vision board', NULL, 'vision board', NULL, '2025-09-26', 'In Progress', 'medium', NULL, 0.00, '2025-08-29 09:42:37', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(385, 1, 20, 20, NULL, NULL, 1, 'gps', 'Finance', 'Introduce inhouse accounting system', NULL, '', 'CFO', '2024-03-31', 'Not Started', 'critical', NULL, 0.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(386, 1, 20, 20, NULL, NULL, 1, 'gps', 'Finance', 'Create a budget for the business', NULL, '', 'Finance Manager', '2024-03-15', 'In Progress', 'high', NULL, 60.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(387, 1, 20, 20, NULL, NULL, 1, 'gps', 'Finance', 'Set targets based on budget for the business', NULL, '', NULL, '2024-03-15', 'Not Started', 'high', NULL, 0.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(388, 1, 20, 20, NULL, NULL, 1, 'gps', 'Finance', 'Introduce booking system.', NULL, '', 'IT Manager', '2024-03-15', 'In Progress', 'medium', NULL, 30.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(389, 1, 20, 20, NULL, NULL, 1, 'gps', 'Sales & Marketing', 'Create a marketing strategy for the business.', NULL, '', 'Marketing Manager', NULL, 'Not Started', 'high', NULL, 0.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(390, 1, 20, 20, NULL, NULL, 1, 'gps', 'Sales & Marketing', 'Visit the Ixopo Buddhist retreat for Ideas.', NULL, '', NULL, NULL, 'Not Started', 'low', NULL, 0.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(391, 1, 20, 20, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the business certification.', NULL, '', NULL, '2024-04-30', 'In Progress', 'high', NULL, 25.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(392, 1, 20, 20, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the certification of the equipment.', NULL, '', NULL, '2024-04-30', 'Not Started', 'high', NULL, 0.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(393, 1, 20, 20, NULL, NULL, 1, 'gps', 'Strategy/General', 'Implement business systems manual', NULL, '', NULL, '2024-03-15', 'In Progress', 'medium', NULL, 50.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(394, 1, 20, 20, NULL, NULL, 1, 'gps', 'Strategy/General', 'Remove existing partner from Share holding in the business.', NULL, 'CIPC documents showing directors and shareholding', NULL, '2024-03-15', 'In Progress', 'critical', NULL, 75.00, '2025-09-01 08:57:31', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(395, 1, 20, 20, NULL, NULL, 1, 'gps', 'Strategy/General', 'Introduce new service like perm make up and IV drips.', NULL, 'New Brochure is done and service is in place.', NULL, '2024-03-31', 'Completed', 'medium', NULL, 100.00, '2025-09-01 08:57:31', 1, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(396, 1, 22, 22, NULL, NULL, 1, 'gps', 'Finance', 'Introduce inhouse accounting system', NULL, '', 'CFO', '2024-03-31', 'Not Started', 'critical', NULL, 0.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(397, 1, 22, 22, NULL, NULL, 1, 'gps', 'Finance', 'Create a budget for the business', NULL, '', 'Finance Manager', '2024-03-15', 'In Progress', 'high', NULL, 60.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(398, 1, 22, 22, NULL, NULL, 1, 'gps', 'Finance', 'Set targets based on budget for the business', NULL, '', NULL, '2024-03-15', 'Not Started', 'high', NULL, 0.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(399, 1, 22, 22, NULL, NULL, 1, 'gps', 'Finance', 'Introduce booking system.', NULL, '', 'IT Manager', '2024-03-15', 'In Progress', 'medium', NULL, 30.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(400, 1, 22, 22, NULL, NULL, 1, 'gps', 'Sales & Marketing', 'Create a marketing strategy for the business.', NULL, '', 'Marketing Manager', NULL, 'Not Started', 'high', NULL, 0.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(401, 1, 22, 22, NULL, NULL, 1, 'gps', 'Sales & Marketing', 'Visit the Ixopo Buddhist retreat for Ideas.', NULL, '', NULL, NULL, 'Not Started', 'low', NULL, 0.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(402, 1, 22, 22, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the business certification.', NULL, '', NULL, '2024-04-30', 'In Progress', 'high', NULL, 25.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(403, 1, 22, 22, NULL, NULL, 1, 'gps', 'Strategy/General', 'Complete the certification of the equipment.', NULL, '', NULL, '2024-04-30', 'Not Started', 'high', NULL, 0.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(404, 1, 22, 22, NULL, NULL, 1, 'gps', 'Strategy/General', 'Implement business systems manual', NULL, '', NULL, '2024-03-15', 'In Progress', 'medium', NULL, 50.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(405, 1, 22, 22, NULL, NULL, 1, 'gps', 'Strategy/General', 'Remove existing partner from Share holding in the business.', NULL, 'CIPC documents showing directors and shareholding', NULL, '2024-03-15', 'In Progress', 'critical', NULL, 75.00, '2025-08-25 10:52:21', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(406, 1, 22, 22, NULL, NULL, 1, 'gps', 'Strategy/General', 'Introduce new service like perm make up and IV drips.', NULL, 'New Brochure is done and service is in place.', NULL, '2024-03-31', 'Completed', 'medium', NULL, 100.00, '2025-08-25 10:52:21', 1, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(407, 1, 26, 26, NULL, NULL, 1, 'gps', 'Strategy/General', 'test 1', NULL, 'test 1', NULL, '2025-10-31', 'In Progress', 'medium', NULL, 0.00, '2025-10-04 11:27:26', 0, NULL, NULL, '2025-10-20 03:51:31', '2025-10-20 03:51:31'),
+(438, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'Do have the training in place', 'Continue training programs', NULL, 'HR Manager', NULL, 'Identified', 'medium', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(439, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'Have sales training', 'Expand sales training to new team members', NULL, NULL, NULL, 'Identified', 'high', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(440, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'S', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(441, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'SGiant', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(442, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'SGi', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(443, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'Social Giant - enjoys networking', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(444, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'qualified and talented fasion designer', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:03', '2025-10-20 04:32:03'),
+(445, 1, 11, 11, NULL, NULL, 1, 'swot', 'Strengths', 'qualified and talented fashion designer', NULL, NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(446, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'State of the finance is a weakness', 'Implement financial management system', NULL, 'CFO', '2025-09-05', 'Identified', 'critical', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(447, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'No accounting system', 'Introduce accounting system', NULL, 'Finance Team', '2025-10-10', 'Identified', 'high', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(448, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'Marketing is very weak', 'Develop marketing strategy and hire marketing specialist', NULL, 'CEO', NULL, 'Identified', 'high', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(449, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'Cash flow', 'Introduce a budget', NULL, NULL, '2025-09-12', 'Identified', 'critical', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(450, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'Booking system needed', 'Introduce a booking system', NULL, 'IT Manager', '2025-10-24', 'Identified', 'medium', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(451, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'current premises is very small', 'looking for alternative premises', NULL, 'Director', '2025-09-29', 'Identified', 'medium', NULL, 0.00, '2025-08-29 09:54:45', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(452, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'Finance Management', 'Implement financial management system/', NULL, 'CFO', '2025-09-26', 'Identified', 'critical', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(453, 1, 11, 11, NULL, NULL, 1, 'swot', 'Weaknesses', 'Weak on HR Matters', 'Introduce a booking system', NULL, 'IT Manager', '2025-10-24', 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(454, 1, 11, 11, NULL, NULL, 1, 'swot', 'Opportunities', 'collaboration - bulk sewing', 'approach and pitch to existing manufacturers', NULL, NULL, NULL, 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(455, 1, 11, 11, NULL, NULL, 1, 'swot', 'Threats', 'Going to change the name of the business', 'Plan brand transition strategy', NULL, 'Marketing Team', '2025-11-21', 'Identified', 'medium', NULL, 0.00, '2025-08-29 08:58:03', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(456, 1, 11, 11, NULL, NULL, 1, 'swot', 'Threats', 'to many competitors', 'Plan brand transition strategy', NULL, 'Marketing Team', '2025-11-21', 'Identified', 'medium', NULL, 0.00, '2025-10-20 03:37:40', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(457, 1, 20, 20, NULL, NULL, 1, 'swot', 'Strengths', 'Existing business operational and with paying customers', 'Leverage customer base for growth', NULL, 'Sales Manager', '2025-09-12', 'Identified', 'medium', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(458, 1, 20, 20, NULL, NULL, 1, 'swot', 'Weaknesses', 'State of the finance is a weakness', 'Implement financial management system', NULL, 'CFO', '2025-09-26', 'Identified', 'critical', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(459, 1, 20, 20, NULL, NULL, 1, 'swot', 'Weaknesses', 'No accounting system', 'Introduce accounting system', NULL, 'Finance Team', '2025-10-10', 'Identified', 'high', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(460, 1, 20, 20, NULL, NULL, 1, 'swot', 'Weaknesses', 'Marketing is very weak', 'Develop marketing strategy and hire marketing specialist', NULL, 'CEO', NULL, 'Identified', 'high', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(461, 1, 20, 20, NULL, NULL, 1, 'swot', 'Weaknesses', 'Cash flow', 'Introduce a budget', NULL, NULL, '2025-09-12', 'Identified', 'critical', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(462, 1, 20, 20, NULL, NULL, 1, 'swot', 'Weaknesses', 'Booking system needed', 'Introduce a booking system', NULL, 'IT Manager', '2025-10-24', 'Identified', 'medium', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(463, 1, 20, 20, NULL, NULL, 1, 'swot', 'Threats', 'Going to change the name of the business', 'Plan brand transition strategy', NULL, 'Marketing Team', '2025-11-21', 'Identified', 'medium', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(464, 1, 20, 20, NULL, NULL, 1, 'swot', 'Strengths', 'Existing business operational and with paying customers!!ww', 'Leverage customer base for growth', NULL, 'Sales Manager', '2025-09-12', 'Identified', 'medium', NULL, 0.00, '2025-08-29 09:15:58', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(465, 1, 26, 26, NULL, NULL, 1, 'swot', 'Strengths', 'Qualified Graphic Designer', 'Need to include this fact in own marketing', NULL, 'Bradley', '2025-10-31', 'In Progress', 'medium', NULL, 50.00, '2025-10-03 09:45:42', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(466, 1, 26, 26, NULL, NULL, 1, 'swot', 'Strengths', 'Experience in the industry', 'Use experience gained in the past to attract more customers, knowing their pain.', NULL, 'Bradley', '2025-10-31', 'Identified', 'medium', NULL, 0.00, '2025-10-03 09:46:41', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04'),
+(467, 1, 26, 26, NULL, NULL, 1, 'swot', 'Strengths', 'Received Digital Printer and Vinal cutter', 'Develop Sales FAB with this in mind and redesign a brochure for this equipemnt', NULL, 'Bradley', '2025-10-31', 'Identified', 'medium', NULL, 0.00, '2025-10-03 09:47:43', 0, NULL, NULL, '2025-10-20 04:32:04', '2025-10-20 04:32:04');
 
 -- --------------------------------------------------------
 
@@ -411,8 +515,72 @@ INSERT INTO `company_accounts` (`id`, `company_id`, `account_name`, `account_typ
 (77, 40, 'Main Account', 'domestic_revenue', 'Default primary account for Vuks Engineering and Construction', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
 (78, 96, 'Main Account', 'domestic_revenue', 'Default primary account for Zano Magic Hands', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
 (79, 97, 'Main Account', 'domestic_revenue', 'Default primary account for Zanokuhle Trading and General Service', NULL, NULL, 1, '2025-10-15 02:06:47', '2025-10-15 02:06:47'),
-(80, 1, 'KZN Art Inst ', 'domestic_revenue', '', '', NULL, 1, '2025-10-16 02:35:24', '2025-10-16 04:16:10'),
-(84, 1, 'Final Test Account 045346', 'domestic_revenue', 'Final test after all fixes', 'FIN-861', NULL, 1, '2025-10-16 02:53:46', '2025-10-16 02:56:18');
+(80, 1, 'KZN Art Inst ', 'domestic_revenue', '', '', NULL, 1, '2025-10-16 02:35:24', '2025-10-17 08:13:17'),
+(84, 1, 'Direct Cost', 'expense', 'Final test after all fixes', 'FIN-861', NULL, 1, '2025-10-16 02:53:46', '2025-10-19 05:19:50'),
+(85, 1, 'Direct Cost ', 'expense', '', '', NULL, 1, '2025-10-19 05:19:33', '2025-10-19 05:19:33'),
+(86, 68, 'FNB', 'domestic_revenue', '', '', NULL, 1, '2025-10-28 03:49:00', '2025-10-28 03:49:00'),
+(87, 68, 'Absa', 'domestic_revenue', '', '', NULL, 1, '2025-10-28 03:50:58', '2025-10-28 03:50:58'),
+(88, 68, 'Capitec', 'domestic_revenue', '', '', NULL, 1, '2025-10-28 03:54:01', '2025-10-28 03:54:01'),
+(89, 68, 'tyme', 'domestic_revenue', '', '', NULL, 1, '2025-10-28 03:54:41', '2025-10-28 03:54:41'),
+(90, 59, 'Secondary', 'domestic_revenue', '', '', NULL, 1, '2025-10-29 06:49:57', '2025-10-29 06:49:57'),
+(91, 59, 'FNB', 'domestic_revenue', '', '', NULL, 1, '2025-10-29 06:54:05', '2025-10-29 06:54:05'),
+(92, 59, 'Absa', 'domestic_revenue', '', '', NULL, 1, '2025-10-29 06:57:47', '2025-10-29 06:57:47');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_costing_yearly_stats`
+--
+
+CREATE TABLE `company_costing_yearly_stats` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL DEFAULT '1',
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `financial_year_id` int NOT NULL,
+  `cost_type` enum('direct','operational') NOT NULL DEFAULT 'direct',
+  `category_id` int DEFAULT NULL,
+  `subcategory_id` int DEFAULT NULL,
+  `m1` decimal(14,2) DEFAULT '0.00',
+  `m2` decimal(14,2) DEFAULT '0.00',
+  `m3` decimal(14,2) DEFAULT '0.00',
+  `m4` decimal(14,2) DEFAULT '0.00',
+  `m5` decimal(14,2) DEFAULT '0.00',
+  `m6` decimal(14,2) DEFAULT '0.00',
+  `m7` decimal(14,2) DEFAULT '0.00',
+  `m8` decimal(14,2) DEFAULT '0.00',
+  `m9` decimal(14,2) DEFAULT '0.00',
+  `m10` decimal(14,2) DEFAULT '0.00',
+  `m11` decimal(14,2) DEFAULT '0.00',
+  `m12` decimal(14,2) DEFAULT '0.00',
+  `total_amount` decimal(14,2) GENERATED ALWAYS AS ((((((((((((coalesce(`m1`,0) + coalesce(`m2`,0)) + coalesce(`m3`,0)) + coalesce(`m4`,0)) + coalesce(`m5`,0)) + coalesce(`m6`,0)) + coalesce(`m7`,0)) + coalesce(`m8`,0)) + coalesce(`m9`,0)) + coalesce(`m10`,0)) + coalesce(`m11`,0)) + coalesce(`m12`,0))) STORED,
+  `notes` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `company_costing_yearly_stats`
+--
+
+INSERT INTO `company_costing_yearly_stats` (`id`, `tenant_id`, `client_id`, `program_id`, `cohort_id`, `company_id`, `financial_year_id`, `cost_type`, `category_id`, `subcategory_id`, `m1`, `m2`, `m3`, `m4`, `m5`, `m6`, `m7`, `m8`, `m9`, `m10`, `m11`, `m12`, `notes`, `created_at`, `updated_at`) VALUES
+(1, NULL, 1, NULL, NULL, 1, 1, 'direct', 10, NULL, 2000.00, 3000.00, 4000.00, 5000.00, 2000.00, 3000.00, 4000.00, 8000.00, 5000.00, 150.00, 0.00, 200.00, NULL, '2025-10-22 13:48:01', '2025-10-22 13:56:34'),
+(3, NULL, 1, NULL, NULL, 1, 1, 'direct', 47, NULL, 0.00, 0.00, 3000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-22 14:02:11', '2025-10-22 14:12:38'),
+(4, NULL, 1, NULL, NULL, 1, 1, 'operational', 26, NULL, 3000.00, 0.00, 4000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-22 14:16:19', '2025-10-22 14:16:27'),
+(5, NULL, 1, NULL, NULL, 1, 1, 'operational', 69, NULL, 6000.00, 250.00, 0.00, 5800.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-22 14:16:22', '2025-10-22 14:16:36'),
+(7, NULL, 1, NULL, NULL, 11, 1, 'direct', 72, NULL, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, 2000.00, NULL, '2025-10-23 05:13:31', '2025-10-23 05:59:39'),
+(9, NULL, 1, NULL, NULL, 11, 1, 'operational', 67, NULL, 700.00, 0.00, 750.00, 0.00, 700.00, 0.00, 750.00, 0.00, 700.00, 0.00, 0.00, 1000.00, NULL, '2025-10-23 05:25:37', '2025-10-23 05:25:56'),
+(10, NULL, 1, NULL, NULL, 11, 1, 'direct', 33, NULL, 700.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, 2500.00, NULL, '2025-10-23 05:58:47', '2025-10-23 08:37:52'),
+(11, NULL, 1, NULL, NULL, 11, 1, 'direct', 9, NULL, 500.00, 700.00, 200.00, 300.00, 500.00, 700.00, 200.00, 250.00, 2555.00, 2500.00, 200.00, 200.00, NULL, '2025-10-23 08:39:10', '2025-10-23 08:40:40'),
+(12, NULL, 1, NULL, NULL, 11, 1, 'direct', 73, NULL, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-23 08:41:20', '2025-10-23 08:41:20'),
+(13, NULL, 1, NULL, NULL, 26, 1, 'operational', 39, NULL, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-27 12:23:36', '2025-10-27 12:23:36'),
+(14, NULL, 1, NULL, NULL, 26, 1, 'direct', NULL, NULL, 2000.00, 5800.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-27 14:41:13', '2025-10-27 14:43:28'),
+(15, NULL, 1, NULL, NULL, 26, 1, 'direct', 51, NULL, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-27 14:43:15', '2025-10-27 14:43:15'),
+(16, NULL, 1, NULL, NULL, 59, 1, 'direct', 51, NULL, 5000.00, 20000.00, 30000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-28 10:23:35', '2025-10-29 03:08:14'),
+(17, NULL, 1, NULL, NULL, 59, 1, 'operational', 42, NULL, 35000.00, 5000.00, 6000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-28 10:23:38', '2025-10-29 04:03:23'),
+(20, NULL, 1, NULL, NULL, 59, 1, 'direct', 77, NULL, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-29 03:27:32', '2025-10-29 03:27:32');
 
 -- --------------------------------------------------------
 
@@ -937,7 +1105,15 @@ INSERT INTO `company_financial_items` (`id`, `tenant_id`, `client_id`, `company_
 (58, NULL, 1, 11, 2, 3, 2025, 'asset', 9, 'New item', 7500.00, 'Store 1', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
 (59, NULL, 1, 11, 2, 3, 2025, 'liability', 13, 'New item', 4000.00, 'Ask CEO Form Statement', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
 (60, NULL, 1, 11, 2, 3, 2025, 'liability', 12, 'New item', 5000.00, 'Nedbank loan', 1, NULL, NULL, '2025-10-12 13:51:11', '2025-10-12 17:40:09'),
-(61, NULL, 1, 11, 2, 3, 2025, 'direct_cost', 15, 'New item', 2500.00, '', 1, NULL, NULL, '2025-10-12 17:14:17', '2025-10-12 17:14:17');
+(61, NULL, 1, 11, 2, 3, 2025, 'direct_cost', 15, 'New item', 2500.00, '', 1, NULL, NULL, '2025-10-12 17:14:17', '2025-10-12 17:14:17'),
+(62, NULL, 1, 1, 2, 3, 2025, 'direct_cost', 2, 'New item', 10000.00, '', 1, NULL, NULL, '2025-10-17 09:01:56', '2025-10-17 09:01:56'),
+(63, NULL, 1, 1, 2, 3, 2025, 'direct_cost', 1, 'New item', 15000.00, '', 1, NULL, NULL, '2025-10-17 09:02:13', '2025-10-17 09:02:13'),
+(64, NULL, 1, 1, 2, 3, 2025, 'operational_cost', 6, 'New item', 15000.00, '', 1, NULL, NULL, '2025-10-17 09:02:38', '2025-10-17 09:02:38'),
+(65, NULL, 1, 1, 2, 3, 2025, 'operational_cost', 4, 'New item', 18000.00, '', 1, NULL, NULL, '2025-10-17 09:02:38', '2025-10-17 09:02:38'),
+(66, NULL, 1, 1, 2, 3, 2025, 'asset', 10, 'New item', 5000.00, '', 1, NULL, NULL, '2025-10-18 08:18:24', '2025-10-18 08:18:24'),
+(67, NULL, 1, 1, 2, 3, 2025, 'liability', 12, 'New item', 3000.00, '', 1, NULL, NULL, '2025-10-18 08:18:24', '2025-10-18 08:18:24'),
+(68, NULL, 1, 1, 2, 3, 2025, 'liability', 13, 'New item', 8000.00, '', 1, NULL, NULL, '2025-10-18 08:18:24', '2025-10-18 08:18:24'),
+(69, NULL, 1, 1, 2, 3, 2025, 'asset', 9, 'New item', 6000.00, '', 1, NULL, NULL, '2025-10-18 08:18:24', '2025-10-18 08:18:24');
 
 -- --------------------------------------------------------
 
@@ -969,56 +1145,72 @@ CREATE TABLE `company_financial_yearly_stats` (
   `total_amount` decimal(14,2) GENERATED ALWAYS AS ((((((((((((coalesce(`m1`,0) + coalesce(`m2`,0)) + coalesce(`m3`,0)) + coalesce(`m4`,0)) + coalesce(`m5`,0)) + coalesce(`m6`,0)) + coalesce(`m7`,0)) + coalesce(`m8`,0)) + coalesce(`m9`,0)) + coalesce(`m10`,0)) + coalesce(`m11`,0)) + coalesce(`m12`,0))) STORED,
   `notes` text,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `created_by` int DEFAULT '65',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by` int DEFAULT '65',
+  `is_revenue` int NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `company_financial_yearly_stats`
 --
 
-INSERT INTO `company_financial_yearly_stats` (`id`, `tenant_id`, `client_id`, `program_id`, `cohort_id`, `company_id`, `account_id`, `financial_year_id`, `m1`, `m2`, `m3`, `m4`, `m5`, `m6`, `m7`, `m8`, `m9`, `m10`, `m11`, `m12`, `notes`, `created_at`, `updated_at`) VALUES
-(1, NULL, 1, 2, 3, 1, 2, 5, 10000.00, 2000.00, 40000.00, 0.00, 10000.00, 188.00, 855.00, 8854.00, 8222.00, 8855.00, 8225.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-16 04:04:07'),
-(2, NULL, 1, 2, 3, 1, 80, 5, 7999.99, 588.00, 558.00, 0.01, 0.00, 0.00, 8200.00, 8200.00, 810.00, 0.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-16 04:16:44'),
-(3, NULL, 1, 2, 3, 3, NULL, 1, 16894.00, 15607.00, 16607.00, 6913.00, 10852.00, 12500.00, 26044.00, 28659.00, 30176.00, 35988.00, 21012.00, 32371.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(4, NULL, 1, 2, 3, 4, NULL, 1, 1000.00, 46672.00, 57851.00, 10770.00, 70345.00, 35194.00, 19466.00, 49712.00, 74173.00, 550.00, 30438.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(5, NULL, 1, 2, 3, 5, NULL, 1, 13403.00, 11385.00, 19470.00, 11106.00, 20699.00, 13996.00, 21838.00, 10765.00, 9908.00, 7824.00, 6714.00, 15127.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(6, NULL, 1, 2, 3, 6, NULL, 1, 4742.00, 1930.00, 3170.00, 6882.00, 4560.00, 12904.00, 1867.00, 5688.00, 4721.00, 8347.00, 15568.00, 3106.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(7, NULL, 1, 2, 3, 7, NULL, 1, 0.00, 76252.00, 28579.00, 130.00, 24001.00, 40141.00, 0.00, 0.00, 488.00, 531.00, 80855.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(8, NULL, 1, 2, 3, 8, NULL, 1, 5375.00, 5075.00, 1200.00, 1500.00, 0.00, 21937.00, 0.00, 2150.00, 24087.00, 7200.00, 2150.00, 1100.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(9, NULL, 1, 2, 3, 9, NULL, 1, 16820.00, 121001.00, 25544.00, 10563.00, 17954.00, 22034.00, 12060.00, 25483.00, 14248.00, 25240.00, 20978.00, 51520.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(10, NULL, 1, 2, 3, 10, NULL, 1, 0.00, 0.00, 16000.00, 1500.00, 13450.00, 11830.00, 4730.00, 32827.00, 25496.00, 7490.00, 27372.00, 5700.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(11, NULL, 1, 2, 3, 12, NULL, 1, 53109.00, 40206.00, 67815.00, 28200.00, 35000.00, 41000.00, 53000.00, 57000.00, 29000.00, 60000.00, 52000.00, 38000.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(12, NULL, 1, 2, 3, 13, NULL, 1, 6619.00, 12783.00, 11408.00, 11324.00, 12054.00, 1710.00, 6252.00, 10512.00, 1651.00, 10058.00, 10.00, 8003.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(13, NULL, 1, 2, 3, 14, NULL, 1, 200.00, 0.00, 4120.00, 320.00, 0.00, 750.00, 3650.00, 10577.00, 17541.00, 22845.00, 15673.00, 14443.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(14, NULL, 1, 2, 3, 15, NULL, 1, 9340.00, 3999.00, 7584.00, 12925.00, 1000.00, 4291.00, 10700.00, 2750.00, 55425.00, 9460.00, 1560.00, 7215.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(15, NULL, 1, 2, 3, 16, NULL, 1, 5000.00, 12673.00, 1200.00, 33000.00, 11300.00, 7154.00, 22057.00, 9549.00, 10876.00, 12708.00, 1500.00, 3500.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(16, NULL, 1, 2, 3, 17, NULL, 1, 14389.00, 42722.00, 24044.00, 12534.00, 37132.00, 24103.00, 0.00, 25858.00, 29481.00, 17451.00, 49904.00, 36796.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(17, NULL, 1, 2, 3, 18, NULL, 1, 0.00, 0.00, 0.00, 10850.00, 25365.00, 33835.00, 38917.00, 40950.00, 18250.00, 5703.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(18, NULL, 1, 2, 3, 19, NULL, 1, 1550.00, 10000.00, 4400.00, 8150.00, 8120.00, 8020.00, 26653.00, 25250.00, 27150.00, 10100.00, 16712.00, 7200.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(19, NULL, 1, 2, 3, 20, NULL, 1, 200.00, 64800.00, 14800.00, 31084.00, 8000.00, 65194.00, 7655.00, 3950.00, 131900.00, 700.00, 230.00, 150.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(20, NULL, 1, 2, 3, 21, NULL, 1, 4600.00, 7127.00, 18980.00, 16524.00, 28668.00, 6202.00, 3190.00, 20557.00, 18682.00, 23520.00, 5295.00, 2300.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(21, NULL, 1, 2, 3, 22, NULL, 1, 13821.00, 7271.00, 4934.00, 5080.00, 9230.00, 34082.00, 8592.00, 17313.00, 37987.00, 11980.00, 16899.00, 11223.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(22, NULL, 1, 2, 3, 23, NULL, 1, 3809.00, 47402.00, 37594.00, 50101.00, 54309.00, 47328.00, 41508.00, 40122.00, 51729.00, 44333.00, 34134.00, 38540.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(23, NULL, 1, 2, 3, 24, NULL, 1, 1943.00, 3475.00, 16600.00, 18347.00, 25241.00, 16800.00, 3747.00, 15445.00, 19962.00, 20063.00, 23254.00, 8330.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(24, NULL, 1, 2, 3, 27, NULL, 1, 41530.00, 10577.00, 50785.00, 17936.00, 15043.00, 22781.00, 23423.00, 27776.00, 73817.00, 17844.00, 15981.00, 20260.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(25, NULL, 1, 2, 3, 28, NULL, 1, 600.00, 8000.00, 8350.00, 750.00, 250.00, 10540.00, 17749.00, 18460.00, 23200.00, 33970.00, 20340.00, 21622.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(26, NULL, 1, 2, 3, 30, NULL, 1, 770.00, 19863.00, 20922.00, 15820.00, 15182.00, 15702.00, 8941.00, 11775.00, 7677.00, 6787.00, 4973.00, 8625.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(27, NULL, 1, 2, 3, 31, NULL, 1, 19921.00, 20449.00, 23403.00, 39516.00, 32461.00, 25477.00, 13975.00, 56406.00, 34185.00, 76200.00, 41695.00, 11708.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(28, NULL, 1, 2, 3, 32, NULL, 1, 25825.00, 13160.00, 39010.00, 16650.00, 223900.00, 13000.00, 7450.00, 22400.00, 11340.00, 34360.00, 14310.00, 4900.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(29, NULL, 1, 2, 3, 33, NULL, 1, 20851.00, 28132.00, 26672.00, 10814.00, 20381.00, 12814.00, 24409.00, 29318.00, 32793.00, 36159.00, 38862.00, 31699.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(30, NULL, 1, 2, 3, 34, NULL, 1, 23898.00, 7250.00, 3040.00, 4650.00, 14323.00, 9100.00, 12285.00, 13330.00, 17420.00, 13200.00, 9065.00, 12900.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(31, NULL, 1, 2, 3, 35, NULL, 1, 1230.00, 4250.00, 5845.00, 3108.00, 10353.00, 5889.00, 5322.00, 2945.00, 6851.00, 3610.00, 10268.00, 11276.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(32, NULL, 1, 2, 3, 36, NULL, 1, 6728.00, 4683.00, 3364.00, 5249.00, 3585.00, 2071.00, 3200.00, 4379.00, 4424.00, 3901.00, 2479.00, 3558.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(33, NULL, 1, 2, 3, 37, NULL, 1, 14322.00, 12933.00, 7000.00, 17381.00, 6450.00, 1430.00, 14036.00, 12140.00, 11194.00, 11420.00, 15871.00, 14740.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(34, NULL, 1, 2, 3, 38, NULL, 1, 5267.00, 6720.00, 4850.00, 4206.00, 11055.00, 16265.00, 14313.00, 1747.00, 28196.00, 19900.00, 18675.00, 15980.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(35, NULL, 1, 2, 3, 39, NULL, 1, 4495.00, 7724.00, 10392.00, 12899.00, 20276.00, 10636.00, 8376.00, 10368.00, 39286.00, 9882.00, 6350.00, 9736.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(36, NULL, 1, 2, 3, 40, NULL, 1, 0.00, 44500.00, 0.00, 0.00, 750.00, 14450.00, 0.00, 10000.00, 6650.00, 9300.00, 3200.00, 38245.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(37, NULL, 1, 2, 3, 25, NULL, 1, 13649.00, 2641.00, 143700.00, 56010.00, 7299.00, 19940.00, 1717.00, 46057.00, 65187.00, 54870.00, 12070.00, 5290.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(38, NULL, 1, 2, 3, 11, NULL, 1, 570.00, 4928.00, 2860.00, 1380.00, 2775.00, 0.00, 9455.00, 4090.00, 4430.00, 1900.00, 25490.00, 4880.00, 'Migrated monthly revenue from company_financials', '2025-10-15 01:10:02', '2025-10-15 01:10:02'),
-(39, NULL, 1, NULL, NULL, 1, 2, 1, 5000.00, 6000.00, 7000.00, 8000.00, 9000.00, 10000.00, 11000.00, 12000.00, 13000.00, 14000.00, 15000.00, 16000.00, 'Test data via PowerShell', '2025-10-16 03:06:53', '2025-10-16 03:44:29'),
-(40, NULL, 1, NULL, NULL, 1, 80, 1, 8000.00, 2000.00, 5000.00, 50000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:17:07', '2025-10-16 04:24:18'),
-(41, NULL, 1, NULL, NULL, 1, 80, 4, 40000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:26:24', '2025-10-16 04:26:49'),
-(42, NULL, 1, NULL, NULL, 1, 2, 4, 2000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-16 04:26:28', '2025-10-16 04:26:47');
+INSERT INTO `company_financial_yearly_stats` (`id`, `tenant_id`, `client_id`, `program_id`, `cohort_id`, `company_id`, `account_id`, `financial_year_id`, `m1`, `m2`, `m3`, `m4`, `m5`, `m6`, `m7`, `m8`, `m9`, `m10`, `m11`, `m12`, `notes`, `created_at`, `created_by`, `updated_at`, `updated_by`, `is_revenue`) VALUES
+(102, NULL, 1, 2, 3, 1, 2, 1, 15745.00, 22436.00, 18922.00, 15062.00, 12176.00, 30842.00, 17529.00, 12669.00, 23108.00, 56091.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-29 05:13:47', 65, 1),
+(103, NULL, 1, 2, 3, 2, 3, 1, 25170.00, 11310.00, 16586.00, 12660.00, 16350.00, 5238.00, 7042.00, 5437.00, 15100.00, 17097.00, 14007.00, 89.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(104, NULL, 1, 2, 3, 3, 4, 1, 16894.00, 15607.00, 16607.00, 6913.00, 10852.00, 12500.00, 26044.00, 28659.00, 30176.00, 35988.00, 21012.00, 32371.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(105, NULL, 1, 2, 3, 4, 6, 1, 1000.00, 46672.00, 57851.00, 10770.00, 70345.00, 35194.00, 19466.00, 49712.00, 74173.00, 550.00, 30438.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(106, NULL, 1, 2, 3, 5, 8, 1, 13403.00, 11385.00, 19470.00, 11106.00, 20699.00, 13996.00, 21838.00, 10765.00, 9908.00, 7824.00, 6714.00, 15127.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(107, NULL, 1, 2, 3, 6, 10, 1, 4742.00, 1930.00, 3170.00, 6882.00, 4560.00, 12904.00, 1867.00, 5688.00, 4721.00, 8347.00, 15568.00, 3106.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(108, NULL, 1, 2, 3, 7, 11, 1, 0.00, 76252.00, 28579.00, 130.00, 24001.00, 40141.00, 0.00, 0.00, 488.00, 531.00, 80855.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(109, NULL, 1, 2, 3, 8, 13, 1, 5375.00, 5075.00, 1200.00, 1500.00, 0.00, 21937.00, 0.00, 2150.00, 24087.00, 7200.00, 2150.00, 1100.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(110, NULL, 1, 2, 3, 9, 14, 1, 16820.00, 121001.00, 25544.00, 10563.00, 17954.00, 22034.00, 12060.00, 25483.00, 14248.00, 25240.00, 20978.00, 51520.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(111, NULL, 1, 2, 3, 10, 15, 1, 0.00, 0.00, 16000.00, 1500.00, 13450.00, 11830.00, 4730.00, 32827.00, 25496.00, 7490.00, 27372.00, 5700.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(112, NULL, 1, 2, 3, 12, 17, 1, 53109.00, 40206.00, 67815.00, 28200.00, 35000.00, 41000.00, 53000.00, 57000.00, 29000.00, 60000.00, 52000.00, 38000.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(113, NULL, 1, 2, 3, 13, 18, 1, 6619.00, 12783.00, 11408.00, 11324.00, 12054.00, 1710.00, 6252.00, 10512.00, 1651.00, 10058.00, 10.00, 8003.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(114, NULL, 1, 2, 3, 14, 21, 1, 200.00, 0.00, 4120.00, 320.00, 0.00, 750.00, 3650.00, 10577.00, 17541.00, 22845.00, 15673.00, 14443.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(115, NULL, 1, 2, 3, 15, 22, 1, 9340.00, 3999.00, 7584.00, 12925.00, 1000.00, 4291.00, 10700.00, 2750.00, 55425.00, 9460.00, 1560.00, 7215.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(116, NULL, 1, 2, 3, 16, 25, 1, 5000.00, 12673.00, 1200.00, 33000.00, 11300.00, 7154.00, 22057.00, 9549.00, 10876.00, 12708.00, 1500.00, 3500.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(117, NULL, 1, 2, 3, 17, 30, 1, 14389.00, 42722.00, 24044.00, 12534.00, 37132.00, 24103.00, 0.00, 25858.00, 29481.00, 17451.00, 49904.00, 36796.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(118, NULL, 1, 2, 3, 18, 34, 1, 0.00, 0.00, 0.00, 10850.00, 25365.00, 33835.00, 38917.00, 40950.00, 18250.00, 5703.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(119, NULL, 1, 2, 3, 19, 37, 1, 1550.00, 10000.00, 4400.00, 8150.00, 8120.00, 8020.00, 26653.00, 25250.00, 27150.00, 10100.00, 16712.00, 7200.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(120, NULL, 1, 2, 3, 20, 42, 1, 200.00, 64800.00, 14800.00, 31084.00, 8000.00, 65194.00, 7655.00, 3950.00, 131900.00, 700.00, 230.00, 150.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(121, NULL, 1, 2, 3, 21, 45, 1, 4600.00, 7127.00, 18980.00, 16524.00, 28668.00, 6202.00, 3190.00, 20557.00, 18682.00, 23520.00, 5295.00, 2300.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(122, NULL, 1, 2, 3, 22, 49, 1, 13821.00, 7271.00, 4934.00, 5080.00, 9230.00, 34082.00, 8592.00, 17313.00, 37987.00, 11980.00, 16899.00, 11223.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(123, NULL, 1, 2, 3, 23, 51, 1, 3809.00, 47402.00, 37594.00, 50101.00, 54309.00, 47328.00, 41508.00, 40122.00, 51729.00, 44333.00, 34134.00, 38540.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(124, NULL, 1, 2, 3, 24, 53, 1, 1943.00, 3475.00, 16600.00, 18347.00, 25241.00, 16800.00, 3747.00, 15445.00, 19962.00, 20063.00, 23254.00, 8330.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(125, NULL, 1, 2, 3, 27, 60, 1, 41530.00, 10577.00, 50785.00, 17936.00, 15043.00, 22781.00, 23423.00, 27776.00, 73817.00, 17844.00, 15981.00, 20260.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(126, NULL, 1, 2, 3, 28, 61, 1, 600.00, 8000.00, 8350.00, 750.00, 250.00, 10540.00, 17749.00, 18460.00, 23200.00, 33970.00, 20340.00, 21622.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(127, NULL, 1, 2, 3, 30, 63, 1, 770.00, 19863.00, 20922.00, 15820.00, 15182.00, 15702.00, 8941.00, 11775.00, 7677.00, 6787.00, 4973.00, 8625.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(128, NULL, 1, 2, 3, 31, 64, 1, 19921.00, 20449.00, 23403.00, 39516.00, 32461.00, 25477.00, 13975.00, 56406.00, 34185.00, 76200.00, 41695.00, 11708.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(129, NULL, 1, 2, 3, 32, 65, 1, 25825.00, 13160.00, 39010.00, 16650.00, 223900.00, 13000.00, 7450.00, 22400.00, 11340.00, 34360.00, 14310.00, 4900.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(130, NULL, 1, 2, 3, 33, 66, 1, 20851.00, 28132.00, 26672.00, 10814.00, 20381.00, 12814.00, 24409.00, 29318.00, 32793.00, 36159.00, 38862.00, 31699.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(131, NULL, 1, 2, 3, 34, 67, 1, 23898.00, 7250.00, 3040.00, 4650.00, 14323.00, 9100.00, 12285.00, 13330.00, 17420.00, 13200.00, 9065.00, 12900.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(132, NULL, 1, 2, 3, 35, 69, 1, 1230.00, 4250.00, 5845.00, 3108.00, 10353.00, 5889.00, 5322.00, 2945.00, 6851.00, 3610.00, 10268.00, 11276.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(133, NULL, 1, 2, 3, 36, 70, 1, 6728.00, 4683.00, 3364.00, 5249.00, 3585.00, 2071.00, 3200.00, 4379.00, 4424.00, 3901.00, 2479.00, 3558.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(134, NULL, 1, 2, 3, 37, 72, 1, 14322.00, 12933.00, 7000.00, 17381.00, 6450.00, 1430.00, 14036.00, 12140.00, 11194.00, 11420.00, 15871.00, 14740.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(135, NULL, 1, 2, 3, 38, 73, 1, 5267.00, 6720.00, 4850.00, 4206.00, 11055.00, 16265.00, 14313.00, 1747.00, 28196.00, 19900.00, 18675.00, 15980.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(136, NULL, 1, 2, 3, 39, 76, 1, 4495.00, 7724.00, 10392.00, 12899.00, 20276.00, 10636.00, 8376.00, 10368.00, 39286.00, 9882.00, 6350.00, 9736.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(137, NULL, 1, 2, 3, 40, 77, 1, 0.00, 44500.00, 0.00, 0.00, 750.00, 14450.00, 0.00, 10000.00, 6650.00, 9300.00, 3200.00, 38245.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 11:34:56', 65, 1),
+(138, NULL, 1, 2, 3, 25, 57, 1, 13649.00, 2641.00, 143700.00, 56010.00, 7299.00, 19940.00, 1717.00, 46057.00, 65187.00, 54870.00, 0.00, 0.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-30 09:22:27', 65, 1),
+(139, NULL, 1, 2, 3, 11, 16, 1, 570.00, 4928.00, 2860.00, 1380.00, 2775.00, 13080.00, 9455.00, 4090.00, 4430.00, 1900.00, 25490.00, 4880.00, 'Migrated monthly revenue from company_financials', '2025-10-22 11:34:56', 65, '2025-10-22 12:21:18', 65, 1),
+(165, NULL, 1, NULL, NULL, 11, 16, 5, 2000.00, 2000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-23 08:32:35', 65, '2025-10-23 08:34:01', 65, 1),
+(166, NULL, 1, NULL, NULL, 11, 80, 5, 2000.00, 200.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-23 08:33:48', 65, '2025-10-23 08:33:59', 65, 1),
+(170, NULL, 1, NULL, NULL, 68, 26, 1, 2000.00, 2000.00, 1000.00, 2000.00, 8000.00, 100000.00, 1000.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-28 03:21:27', 65, '2025-10-28 07:12:30', 65, 1),
+(186, NULL, 1, NULL, NULL, 59, 1, 1, 2000.00, 500.00, 8000.00, 1000.00, 15000.00, 35000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 50000.00, NULL, '2025-10-28 06:20:16', 65, '2025-10-28 10:15:39', 65, 1),
+(193, NULL, 1, NULL, NULL, 68, 26, 5, 50000.00, 0.00, 15000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-28 06:36:52', 65, '2025-10-28 06:51:13', 65, 1),
+(194, NULL, 1, NULL, NULL, 59, 88, 1, 3000.00, 3000.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-28 10:15:54', 65, '2025-10-28 10:16:03', 65, 1),
+(195, NULL, 1, NULL, NULL, 59, 1, 5, 2000.00, 65000.00, 78222.00, 50000.00, 98800.00, 10000.00, 887000.00, 525588.00, 10000.00, 21288.00, 2544.00, 2554.00, NULL, '2025-10-28 10:17:20', 65, '2025-10-28 10:17:43', 65, 1),
+(196, NULL, 1, NULL, NULL, 26, 59, 1, 27101.00, 19238.00, 19862.00, 51943.00, 5536.00, 39799.00, 12081.00, 15521.00, 22029.00, 29259.00, 0.00, 0.00, NULL, '2025-10-29 05:49:14', 65, '2025-10-29 05:51:05', 65, 1),
+(198, NULL, 1, NULL, NULL, 26, 89, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-29 05:53:32', 65, '2025-10-29 05:53:50', 65, 1),
+(200, NULL, 1, NULL, NULL, 26, 59, 7, 15103.00, 31242.00, 30349.00, 103420.00, 159047.00, 28110.00, 40769.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 08:54:12', 65, '2025-10-30 08:55:48', 65, 1),
+(202, NULL, 1, NULL, NULL, 21, NULL, 7, 104686.00, 20620.00, 21400.00, 2100.00, 0.00, 34162.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:15:41', 65, '2025-10-30 09:16:36', 65, 1),
+(203, NULL, 1, NULL, NULL, 25, 57, 7, 0.00, 0.00, 11500.00, 6850.00, 8820.00, 32170.00, 13420.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:18:38', 65, '2025-10-30 09:19:21', 65, 1),
+(204, NULL, 1, NULL, NULL, 8, 13, 7, 0.00, 2000.00, 2900.00, 0.00, 33200.00, 1500.00, 700.00, 3350.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:26:15', 65, '2025-10-30 09:27:13', 65, 1),
+(205, NULL, 1, NULL, NULL, 18, 34, 7, 0.00, 2200.00, 16614.00, 139755.00, 48028.00, 25304.00, 33468.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:29:19', 65, '2025-10-30 09:31:26', 65, 1),
+(206, NULL, 1, NULL, NULL, 37, NULL, 7, 11561.00, 12045.00, 9100.00, 5540.00, 12614.00, 9445.00, 7300.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:34:08', 65, '2025-10-30 09:38:11', 65, 1),
+(207, NULL, 1, NULL, NULL, 29, 62, 1, 4100.00, 4725.00, 36885.00, 34650.00, 7295.00, 16820.00, 15012.00, 37360.00, 20015.00, 11500.00, 0.00, 0.00, NULL, '2025-10-30 09:41:27', 65, '2025-10-30 09:44:06', 65, 1),
+(208, NULL, 1, NULL, NULL, 29, 62, 7, 6720.00, 4140.00, 3410.00, 6397.00, 34609.00, 5550.00, 1950.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, '2025-10-30 09:41:49', 65, '2025-10-30 09:45:26', 65, 1);
 
 -- --------------------------------------------------------
 
@@ -1254,7 +1446,152 @@ CREATE TABLE `company_revenue_summary` (
 INSERT INTO `company_revenue_summary` (`id`, `tenant_id`, `client_id`, `company_id`, `program_id`, `cohort_id`, `year_`, `revenue_q1`, `revenue_q2`, `revenue_q3`, `revenue_q4`, `export_q1`, `export_q2`, `export_q3`, `export_q4`, `category_id`, `cycle_id`, `unit`, `notes`, `title`, `status_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
 (1, NULL, 1, 11, 2, 3, 2025, 100000.00, 150000.00, 20000.00, 25001.00, 8000.00, 12000.00, 15000.00, 20000.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-07 06:44:19', '2025-10-11 20:36:58'),
 (2, NULL, 1, 11, 2, 3, 2023, 125000.00, 100585.00, 85555.00, 85255.00, 3000.00, 4000.00, 0.00, 40000.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-07 06:44:32', '2025-10-11 20:36:34'),
-(3, NULL, 0, 11, 0, 0, 2024, 2000.00, 2200.00, 0.00, 0.00, 500.00, 500.00, 0.00, 0.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 08:19:18', '2025-10-11 10:07:12');
+(3, NULL, 0, 11, 0, 0, 2024, 2000.00, 2200.00, 0.00, 0.00, 500.00, 500.00, 0.00, 0.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-11 08:19:18', '2025-10-11 10:07:12'),
+(4, NULL, 1, 1, NULL, NULL, 2023, 54238.00, 26297.00, 26112.00, 20587.99, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'USD', NULL, NULL, 1, NULL, NULL, '2025-10-17 06:59:18', '2025-10-17 06:59:18');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `compliance_records`
+--
+
+CREATE TABLE `compliance_records` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `client_id` int NOT NULL,
+  `program_id` int DEFAULT NULL,
+  `cohort_id` int DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `financial_year_id` int NOT NULL,
+  `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Type of compliance e.g. annual_return, bbbee_compliance',
+  `period` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sub_type` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `date_1` date DEFAULT NULL,
+  `date_2` date DEFAULT NULL,
+  `date_3` date DEFAULT NULL,
+  `count_1` int DEFAULT NULL COMMENT 'General numeric count e.g. black employees',
+  `count_2` int DEFAULT NULL COMMENT 'General numeric count e.g. total employees',
+  `amount_1` decimal(15,2) DEFAULT NULL COMMENT 'Monetary field e.g. fee_paid or skills investment',
+  `amount_2` decimal(15,2) DEFAULT NULL COMMENT 'Monetary field e.g. procurement spend',
+  `amount_3` decimal(15,2) DEFAULT NULL COMMENT 'Optional numeric amount',
+  `level` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'e.g. B-BBEE Level 1-8',
+  `progress` int DEFAULT NULL COMMENT 'Task progress percentage',
+  `responsible_person` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pending',
+  `notes` text COLLATE utf8mb4_general_ci,
+  `metadata` json DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `compliance_records`
+--
+
+INSERT INTO `compliance_records` (`id`, `tenant_id`, `client_id`, `program_id`, `cohort_id`, `company_id`, `financial_year_id`, `type`, `period`, `title`, `sub_type`, `date_1`, `date_2`, `date_3`, `count_1`, `count_2`, `amount_1`, `amount_2`, `amount_3`, `level`, `progress`, `responsible_person`, `status`, `notes`, `metadata`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES
+(8, NULL, 1, 5, 6, 59, 1, 'annual_returns', 'FY2025', 'Annual Return', NULL, '2025-11-21', '2025-12-21', NULL, NULL, NULL, 0.00, NULL, NULL, NULL, NULL, NULL, 'Overdue', NULL, NULL, '2025-11-21 04:27:07', '2025-11-28 03:26:42', NULL, NULL),
+(9, NULL, 1, 5, 6, 59, 1, 'annual_returns', 'FY2025', NULL, NULL, '2025-11-28', '2025-12-28', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Pending', NULL, NULL, '2025-11-28 03:33:24', '2025-11-28 03:33:24', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cost_categories`
+--
+
+CREATE TABLE `cost_categories` (
+  `id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `parent_id` int DEFAULT NULL,
+  `industry_id` int DEFAULT NULL,
+  `cost_type` enum('direct','operational') DEFAULT NULL,
+  `status_id` tinyint DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `cost_categories`
+--
+
+INSERT INTO `cost_categories` (`id`, `name`, `parent_id`, `industry_id`, `cost_type`, `status_id`) VALUES
+(1, 'Raw Materials', NULL, 37, 'direct', 1),
+(2, 'Packaging Materials', 1, 37, 'direct', 1),
+(3, 'Components & Parts', 1, 37, 'direct', 1),
+(4, 'Factory Labour', NULL, 37, 'direct', 1),
+(5, 'Equipment Maintenance', NULL, 37, 'direct', 1),
+(6, 'Quality Control & Testing', NULL, 37, 'direct', 1),
+(7, 'Utilities (Production)', NULL, 37, 'direct', 1),
+(8, 'Waste Management', 7, 37, 'direct', 1),
+(9, 'Water & Electricity (Plant)', 7, 37, 'direct', 1),
+(10, 'Building Materials', NULL, 34, 'direct', 1),
+(11, 'Site Labour', NULL, 34, 'direct', 1),
+(12, 'Equipment Hire & Maintenance', NULL, 34, 'direct', 1),
+(13, 'Transport (Site Logistics)', NULL, 34, 'direct', 1),
+(14, 'Project Management', NULL, 34, 'direct', 1),
+(15, 'Safety & Compliance', NULL, 34, 'direct', 1),
+(16, 'Fleet Fuel & Lubricants', NULL, 33, 'direct', 1),
+(17, 'Vehicle Maintenance', NULL, 33, 'direct', 1),
+(18, 'Driver Wages', NULL, 33, 'direct', 1),
+(19, 'Insurance & Licensing', NULL, 33, 'direct', 1),
+(20, 'Warehousing & Storage', NULL, 33, 'direct', 1),
+(21, 'Software Subscriptions', NULL, 10, 'operational', 1),
+(22, 'Hardware & Equipment', NULL, 10, 'operational', 1),
+(23, 'IT Support & Maintenance', NULL, 10, 'operational', 1),
+(24, 'Cloud Hosting & Servers', NULL, 10, 'operational', 1),
+(25, 'Licensing & Compliance', NULL, 10, 'operational', 1),
+(26, 'Accounting & Bookkeeping', NULL, 8, 'operational', 1),
+(27, 'Legal & Advisory Services', NULL, 8, 'operational', 1),
+(28, 'Tax & Audit Services', NULL, 8, 'operational', 1),
+(29, 'Loan Interest & Fees', NULL, 8, 'operational', 1),
+(30, 'Insurance Premiums', NULL, 8, 'operational', 1),
+(31, 'Product Procurement', NULL, 36, 'direct', 1),
+(32, 'Packaging & Labelling', 31, 36, 'direct', 1),
+(33, 'Inventory Storage', NULL, 36, 'direct', 1),
+(34, 'Store Rent & Utilities', NULL, 36, 'direct', 1),
+(35, 'POS Software & Licenses', NULL, 36, 'direct', 1),
+(36, 'Advertising & Promotions', NULL, 36, 'operational', 1),
+(37, 'Staff Salaries & Allowances', NULL, 32, 'operational', 1),
+(38, 'Training & Development', NULL, 32, 'operational', 1),
+(39, 'Travel & Accommodation', NULL, 32, 'operational', 1),
+(40, 'Office Supplies', NULL, 32, 'operational', 1),
+(41, 'Marketing & Advertising', NULL, 32, 'operational', 1),
+(42, 'Cleaning & Sanitation', NULL, 32, 'operational', 1),
+(43, 'Seeds & Seedlings', NULL, 1, 'direct', 1),
+(44, 'Fertilizers & Chemicals', NULL, 1, 'direct', 1),
+(45, 'Farming Equipment Maintenance', NULL, 1, 'direct', 1),
+(46, 'Irrigation & Water Supply', NULL, 1, 'direct', 1),
+(47, 'Harvesting & Packaging', NULL, 1, 'direct', 1),
+(48, 'Transport to Market', NULL, 1, 'direct', 1),
+(49, 'Fuel & Generation Costs', NULL, 39, 'direct', 1),
+(50, 'Power Plant Maintenance', NULL, 39, 'direct', 1),
+(51, 'Distribution Network Costs', NULL, 39, 'direct', 1),
+(52, 'Waste & Environmental Fees', NULL, 39, 'direct', 1),
+(53, 'Security & Safety Compliance', NULL, 39, 'direct', 1),
+(54, 'Medical Supplies & Equipment', NULL, 50, 'direct', 1),
+(55, 'Clinical Staff Salaries', NULL, 50, 'direct', 1),
+(56, 'Facility Rent & Utilities', NULL, 50, 'direct', 1),
+(57, 'Patient Care Consumables', NULL, 50, 'direct', 1),
+(58, 'Waste Disposal (Biohazard)', NULL, 50, 'direct', 1),
+(59, 'Training Materials & Printing', NULL, 49, 'operational', 1),
+(60, 'Instructor Fees', NULL, 49, 'operational', 1),
+(61, 'Venue & Facilities', NULL, 49, 'operational', 1),
+(62, 'Online Learning Platforms', NULL, 49, 'operational', 1),
+(63, 'Marketing & Student Recruitment', NULL, 49, 'operational', 1),
+(64, 'Administration & Office', NULL, NULL, 'operational', 1),
+(65, 'Telecommunication & Internet', 64, NULL, 'operational', 1),
+(66, 'Security Services', 64, NULL, 'operational', 1),
+(67, 'Cleaning & Maintenance', 64, NULL, 'operational', 1),
+(68, 'Staff Welfare', NULL, NULL, 'operational', 1),
+(69, 'Rent & Utilities', NULL, NULL, 'operational', 1),
+(70, 'Training & Development', NULL, NULL, 'operational', 1),
+(71, 'Insurance', NULL, NULL, 'operational', 1),
+(72, 'Wages', NULL, NULL, 'direct', 1),
+(73, 'Test Op', NULL, NULL, NULL, 1),
+(74, 'Loan', NULL, NULL, NULL, 1),
+(75, 'Withdrawals', NULL, NULL, 'direct', 1),
+(76, 'Test', NULL, NULL, NULL, 1),
+(77, 'const 3', NULL, NULL, 'direct', 1);
 
 -- --------------------------------------------------------
 
@@ -1267,6 +1604,8 @@ CREATE TABLE `financial_categories` (
   `name` varchar(255) NOT NULL,
   `item_type` enum('direct_cost','operational_cost','asset','liability','equity') NOT NULL,
   `description` text,
+  `bg_color` varchar(50) NOT NULL DEFAULT '#16a085',
+  `text_color` varchar(50) NOT NULL DEFAULT '#ecf0f1',
   `is_active` tinyint(1) DEFAULT '1',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -1276,22 +1615,22 @@ CREATE TABLE `financial_categories` (
 -- Dumping data for table `financial_categories`
 --
 
-INSERT INTO `financial_categories` (`id`, `name`, `item_type`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Supplies', 'direct_cost', 'Materials or goods used in production', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(2, 'Direct Labor', 'direct_cost', 'Staff directly involved in producing goods or services', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(3, 'Personnel', 'operational_cost', 'Employee and HR related expenses', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(4, 'Sales & Marketing', 'operational_cost', 'Marketing and promotion costs', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(5, 'Transportation & Travel', 'operational_cost', 'Travel and logistics expenses', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(6, 'Facilities & Supplies', 'operational_cost', 'Rent, utilities, and office costs', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(7, 'Cash in Bank', 'asset', 'Company cash balance in bank', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(8, 'Accounts Receivable', 'asset', 'Money owed to the company by clients', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(9, 'Inventory', 'asset', 'Stock or materials held for sale or production', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(10, 'Equipment', 'asset', 'Machinery or tools owned by the company', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(11, 'Accounts Payable', 'liability', 'Money owed to suppliers', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(12, 'Loans Payable', 'liability', 'Outstanding loans from banks or lenders', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(13, 'Credit Line', 'liability', 'Credit facility or overdraft', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(14, 'Share Capital', 'equity', 'Owner’s equity contribution', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
-(15, 'Kitchen', 'direct_cost', NULL, 1, '2025-10-12 17:14:05', '2025-10-12 17:14:05');
+INSERT INTO `financial_categories` (`id`, `name`, `item_type`, `description`, `bg_color`, `text_color`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'Supplies', 'direct_cost', 'Materials or goods used in production', '#8e44ad', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:09:57'),
+(2, 'Direct Labor', 'direct_cost', 'Staff directly involved in producing goods or services', '#f39c12', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:09:50'),
+(3, 'Personnel', 'operational_cost', 'Employee and HR related expenses', '#2c3e50', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:17:34'),
+(4, 'Sales & Marketing', 'operational_cost', 'Marketing and promotion costs', '#27ae60', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:17:39'),
+(5, 'Transportation & Travel', 'operational_cost', 'Travel and logistics expenses', '#f39c12', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-17 14:48:11'),
+(6, 'Facilities & Supplies', 'operational_cost', 'Rent, utilities, and office costs', '#e84393', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:17:51'),
+(7, 'Cash in Bank', 'asset', 'Company cash balance in bank', '#16a085', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:37'),
+(8, 'Accounts Receivable', 'asset', 'Money owed to the company by clients', '#e74c3c', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:34'),
+(9, 'Inventory', 'asset', 'Stock or materials held for sale or production', '#f1c40f', '#2c3e50', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:43'),
+(10, 'Equipment', 'asset', 'Machinery or tools owned by the company', '#3498db', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:40'),
+(11, 'Accounts Payable', 'liability', 'Money owed to suppliers', '#e74c3c', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:51'),
+(12, 'Loans Payable', 'liability', 'Outstanding loans from banks or lenders', '#8e44ad', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 07:59:02'),
+(13, 'Credit Line', 'liability', 'Credit facility or overdraft', '#6c5ce7', '#ffffff', 1, '2025-10-07 04:30:24', '2025-10-18 08:18:55'),
+(14, 'Share Capital', 'equity', 'Owner’s equity contribution', '#16a085', '#ecf0f1', 1, '2025-10-07 04:30:24', '2025-10-07 04:30:24'),
+(15, 'Kitchen', 'direct_cost', NULL, '#2c3e50', '#ffffff', 1, '2025-10-12 17:14:05', '2025-10-18 08:09:54');
 
 -- --------------------------------------------------------
 
@@ -2201,12 +2540,12 @@ INSERT INTO `nodes` (`id`, `type`, `company_id`, `data`, `parent_id`, `created_b
 (1943, 'assessment_strategy_cascade', 11, '{\"section_id\": \"strategy_cascade\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:45:58.698Z\", \"response_date\": \"2025-08-29T08:45:58.698Z\", \"questionnaire_id\": \"business-assessment-v1\", \"question_responses\": [{\"value\": \"I see myself supplying uniforms, PPE locally and sewing for individuals.\", \"question_id\": \"sc_winning_aspiration\", \"response_date\": \"2025-08-29T08:45:58.698Z\"}, {\"value\": \"I want to play locally, be a local supplier within KCD. channels - schools; medical practitioners; corporates and farmers. including the hospitality industry. \", \"question_id\": \"sc_where_play\", \"response_date\": \"2025-08-29T08:45:58.698Z\"}, {\"value\": \"uniqueness - collaboration with other industry players. \", \"question_id\": \"sc_how_win\", \"response_date\": \"2025-08-29T08:45:58.698Z\"}, {\"value\": \"sewing and designing skills and manufacturing skills. management skills, marketing skills and strategies.\", \"question_id\": \"sc_capabilities\", \"response_date\": \"2025-08-29T08:45:58.698Z\"}, {\"value\": \"SACAS - ISO systems - quality control systems: use whiteboard to tracks orders. need a sales and marketing system. accounting systems, HR and payroll systems. Health and Safety systems.\", \"question_id\": \"sc_management_systems\", \"response_date\": \"2025-08-29T08:45:58.698Z\"}]}', NULL, NULL, NULL, '2025-08-29 10:29:12', '2025-08-29 10:45:58'),
 (1944, 'assessment_self_assessment', 11, '{\"section_id\": \"self_assessment\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:52:13.589Z\", \"response_date\": \"2025-08-29T08:52:13.589Z\", \"questionnaire_id\": \"business-assessment-v1\", \"question_responses\": [{\"value\": 6, \"question_id\": \"sa_sales_ability\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}, {\"value\": 6, \"question_id\": \"sa_marketing_ability\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}, {\"value\": 5, \"question_id\": \"sa_accounting_understanding\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}, {\"value\": 7, \"question_id\": \"sa_leadership_skills\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}, {\"value\": \"time keeping; ensure quality control of clients-garments. excellent communication skills. \", \"question_id\": \"sa_strengths\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}, {\"value\": \"need help with patternmaking, assistance with financial management skills including costing. need more business skills and mentoring ie HR, \", \"question_id\": \"sa_improvement_areas\", \"response_date\": \"2025-08-29T08:52:13.589Z\"}]}', NULL, NULL, NULL, '2025-08-29 10:46:53', '2025-08-29 10:52:13'),
 (1945, 'assessment_sars_compliance', 11, '{\"section_id\": \"sars_compliance\", \"is_complete\": true, \"last_updated\": \"2025-08-29T08:57:23.694Z\", \"response_date\": \"2025-08-29T08:57:23.694Z\", \"completed_date\": \"2025-09-02T04:05:14.082Z\", \"questionnaire_id\": \"business-assessment-v1\", \"question_responses\": [{\"value\": \"non_compliant\", \"question_id\": \"sars_vat_status\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}, {\"value\": \"non_compliant\", \"question_id\": \"sars_paye_status\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}, {\"value\": \"non_compliant\", \"question_id\": \"sars_income_tax_status\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}, {\"value\": true, \"question_id\": \"sars_tax_clearance\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}, {\"value\": \"New business venture.\", \"question_id\": \"sars_compliance_notes\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}, {\"value\": false, \"question_id\": \"sars_outstanding_issues\", \"response_date\": \"2025-08-29T08:57:23.694Z\"}]}', NULL, NULL, NULL, '2025-08-29 10:52:54', '2025-09-02 06:05:14'),
-(1946, 'swot_analysis', 11, '{\"summary\": \"there are non-negotiable compliance requirements that needs to be addressed right at the start.\", \"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"HR Manager\", \"description\": \"Do have the training in place\", \"action_required\": \"Continue training programs\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Have sales training\", \"action_required\": \"Expand sales training to new team members\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-05\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T09:54:45.487Z\", \"assigned_to\": \"Director\", \"description\": \"current premises is very small\", \"target_date\": \"2025-09-29\", \"action_required\": \"looking for alternative premises\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-09-02T04:17:14.020Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:20', '2025-09-02 06:17:14'),
+(1946, 'swot_analysis', 11, '{\"summary\": \"there are non-negotiable compliance requirements that needs to be addressed right at the start.\", \"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"threats\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": \"Marketing Team\", \"description\": \"to many competitors\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": [{\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"opportunities\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"collaboration - bulk sewing\", \"target_date\": null, \"action_required\": \"approach and pitch to existing manufacturers\"}]}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"HR Manager\", \"description\": \"Do have the training in place\", \"action_required\": \"Continue training programs\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Have sales training\", \"action_required\": \"Expand sales training to new team members\"}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"S\", \"target_date\": null, \"action_required\": null}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"SGiant\", \"target_date\": null, \"action_required\": null}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"SGi\", \"target_date\": null, \"action_required\": null}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"Social Giant - enjoys networking\", \"target_date\": null, \"action_required\": null}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"qualified and talented fasion designer\", \"target_date\": null, \"action_required\": null}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"strengths\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": null, \"description\": \"qualified and talented fashion designer\", \"target_date\": null, \"action_required\": null}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-05\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T09:54:45.487Z\", \"assigned_to\": \"Director\", \"description\": \"current premises is very small\", \"target_date\": \"2025-09-29\", \"action_required\": \"looking for alternative premises\"}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"weaknesses\", \"priority\": \"critical\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": \"CFO\", \"description\": \"Finance Management\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system/\"}, {\"impact\": \"medium\", \"status\": \"Identified\", \"category\": \"weaknesses\", \"priority\": \"medium\", \"date_added\": \"2025-10-20T03:37:40+00:00\", \"assigned_to\": \"IT Manager\", \"description\": \"Weak on HR Matters\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-10-20T03:37:40+00:00\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:20', '2025-10-20 03:37:40'),
 (1947, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:29.414Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:29', '2025-08-29 10:59:29'),
 (1948, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"S\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:34.223Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:34', '2025-08-29 10:59:34'),
-(1949, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGiant\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:37.563Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:37', '2025-08-29 10:59:37'),
-(1950, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGi\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:43.541Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:43', '2025-08-29 10:59:43');
+(1949, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGiant\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:37.563Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:37', '2025-08-29 10:59:37');
 INSERT INTO `nodes` (`id`, `type`, `company_id`, `data`, `parent_id`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1950, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGi\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:43.541Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:43', '2025-08-29 10:59:43'),
 (1951, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGi\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T08:59:53.804Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 10:59:53', '2025-08-29 10:59:53'),
 (1952, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"SGi\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T09:00:02.152Z\", \"description\": \"\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T09:00:04.156Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 11:00:04', '2025-08-29 11:00:04'),
 (1953, 'swot_analysis', 11, '{\"external\": {\"threats\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"threat\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Marketing Team\", \"description\": \"Going to change the name of the business\", \"target_date\": \"2025-11-21\", \"action_required\": \"Plan brand transition strategy\"}], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:59:32.222Z\", \"description\": \"Social Giant - enjoys networking\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T09:00:02.152Z\", \"description\": \"\"}], \"weaknesses\": [{\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CFO\", \"description\": \"State of the finance is a weakness\", \"target_date\": \"2025-09-26\", \"action_required\": \"Implement financial management system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"Finance Team\", \"description\": \"No accounting system\", \"target_date\": \"2025-10-10\", \"action_required\": \"Introduce accounting system\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"high\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"CEO\", \"description\": \"Marketing is very weak\", \"action_required\": \"Develop marketing strategy and hire marketing specialist\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"weakness\", \"priority\": \"critical\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"description\": \"Cash flow\", \"target_date\": \"2025-09-12\", \"action_required\": \"Introduce a budget\"}, {\"impact\": \"medium\", \"status\": \"identified\", \"category\": \"weakness\", \"priority\": \"medium\", \"date_added\": \"2025-08-29T08:58:03.421Z\", \"assigned_to\": \"IT Manager\", \"description\": \"Booking system needed\", \"target_date\": \"2025-10-24\", \"action_required\": \"Introduce a booking system\"}]}, \"company_id\": \"11\", \"is_complete\": false, \"last_updated\": \"2025-08-29T09:00:35.476Z\", \"analysis_date\": \"2025-08-29T08:58:03.421Z\"}', NULL, NULL, NULL, '2025-08-29 11:00:35', '2025-08-29 11:00:35'),
@@ -2257,6 +2596,86 @@ INSERT INTO `nodes` (`id`, `type`, `company_id`, `data`, `parent_id`, `created_b
 (1996, 'swot_analysis', 26, '{\"external\": {\"threats\": [], \"opportunities\": []}, \"internal\": {\"strengths\": [{\"impact\": \"medium\", \"status\": \"in_progress\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:45:42.454Z\", \"assigned_to\": \"Bradley\", \"description\": \"Qualified Graphic Designer\", \"target_date\": \"2025-10-31\", \"action_required\": \"Need to include this fact in own marketing\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:46:41.619Z\", \"assigned_to\": \"Bradley\", \"description\": \"Experience in the industry\", \"target_date\": \"2025-10-31\", \"action_required\": \"Use experience gained in the past to attract more customers, knowing their pain.\"}, {\"impact\": \"medium\", \"status\": \"planning\", \"category\": \"strength\", \"priority\": \"medium\", \"date_added\": \"2025-10-03T09:47:43.931Z\", \"assigned_to\": \"Bradley\", \"description\": \"Received Digital Printer and Vinal cutter\", \"target_date\": \"2025-10-31\", \"action_required\": \"Develop Sales FAB with this in mind and redesign a brochure for this equipemnt\"}], \"weaknesses\": []}, \"company_id\": \"26\", \"is_complete\": false, \"last_updated\": \"2025-10-03T09:49:13.852Z\", \"analysis_date\": \"2025-10-03T09:45:19.745Z\"}', NULL, NULL, NULL, '2025-10-03 11:45:44', '2025-10-03 11:49:13'),
 (1997, 'consolidated_assessment', 26, '{\"metadata\": {\"last_updated\": \"2025-10-03T10:17:12.902Z\", \"current_section\": \"sars_compliance\", \"answered_questions\": 17, \"progress_percentage\": 68}, \"responses\": {\"sc_how_win\": \"by offering quality and innovative offerings to customers, new/unique ideas as a media owner.\", \"sa_strengths\": \"Experience as a graphic designer\", \"sc_where_play\": \"We want to play nationally supplying to business of printing material.\", \"sc_capabilities\": \"Must have sufficient  cash flow. Enough staff to deal with the demand including sales staff.\", \"ps_primary_focus\": \"both\", \"ps_target_market\": \"Businesses that require signage\", \"sa_sales_ability\": 5, \"ps_offerings_list\": \"Any form of signage\", \"intro_business_stage\": \"startup\", \"sa_leadership_skills\": 5, \"sa_marketing_ability\": 5, \"sc_management_systems\": \"H\", \"sc_winning_aspiration\": \"Want to be in a position to import signage material and supply to national customers. We want to be a supplier to other printing businesses/signage companies. This include other and more modern signs, billboards window signs and so on.\", \"intro_operating_duration\": \"3_to_5_years\", \"intro_business_motivation\": \"I Started this business because I lost my job during COVID. I was a graphic designer. Started trading December 2020.\", \"intro_business_description\": \"A Fully fledged signage company, doing any form of signage, branding including vehicle branding.\", \"sa_accounting_understanding\": 5}, \"updated_at\": \"2025-10-03T10:17:12.902Z\"}', NULL, NULL, NULL, '2025-10-03 11:56:43', '2025-10-03 12:17:12'),
 (1998, 'gps_targets', 26, '{\"finance\": {\"name\": \"Finance Targets\", \"targets\": [], \"completion_percentage\": 0}, \"company_id\": \"26\", \"is_complete\": false, \"target_date\": \"2025-10-04T11:27:20.853Z\", \"last_updated\": \"2025-10-04T11:27:38.930Z\", \"sales_marketing\": {\"name\": \"Sales & Marketing Targets\", \"targets\": [], \"completion_percentage\": 0}, \"strategy_general\": {\"name\": \"Strategy/General Targets\", \"targets\": [{\"status\": \"in_progress\", \"due_date\": \"2025-10-31\", \"evidence\": \"test 1\", \"priority\": \"medium\", \"date_added\": \"2025-10-04T11:27:26.863Z\", \"description\": \"test 1\", \"progress_percentage\": 0}], \"completion_percentage\": 0}, \"personal_development\": {\"name\": \"Personal Development Targets\", \"targets\": [], \"completion_percentage\": 0}}', NULL, NULL, NULL, '2025-10-04 11:27:28', '2025-10-04 11:27:38');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `recent_activities`
+--
+
+CREATE TABLE `recent_activities` (
+  `id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `module` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `action` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_id` int DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `activity_date` datetime DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `recent_activities`
+--
+
+INSERT INTO `recent_activities` (`id`, `tenant_id`, `company_id`, `user_id`, `module`, `action`, `reference_id`, `description`, `activity_date`, `created_at`) VALUES
+(1, NULL, 29, 65, 'company_financial_yearly_stats', 'created', 208, 'Admin captured yearly financials for SmaEve Designs ', '2025-10-30 09:41:49', '2025-10-25 02:57:11'),
+(2, NULL, 29, 65, 'company_financial_yearly_stats', 'created', 207, 'Admin captured yearly financials for SmaEve Designs ', '2025-10-30 09:41:27', '2025-10-18 02:57:11'),
+(3, NULL, 37, 65, 'company_financial_yearly_stats', 'created', 206, 'Admin captured yearly financials for TSCUAA', '2025-10-30 09:34:08', '2025-10-15 02:57:11'),
+(4, NULL, 18, 65, 'company_financial_yearly_stats', 'created', 205, 'Admin captured yearly financials for Mesda Bed and Breakfast', '2025-10-30 09:29:19', '2025-10-20 02:57:11'),
+(5, NULL, 8, 65, 'company_financial_yearly_stats', 'created', 204, 'Admin captured yearly financials for Chaliluque Services', '2025-10-30 09:26:15', '2025-10-22 02:57:11'),
+(6, NULL, 25, 65, 'company_financial_yearly_stats', 'created', 203, 'Admin captured yearly financials for Shepard Media and Communications', '2025-10-30 09:18:38', '2025-10-19 02:57:11'),
+(7, NULL, 21, 65, 'company_financial_yearly_stats', 'created', 202, 'Admin captured yearly financials for Perfectionist Fashion Design', '2025-10-30 09:15:41', '2025-10-26 02:57:11'),
+(8, NULL, 26, 65, 'company_financial_yearly_stats', 'created', 200, 'Admin captured yearly financials for Signergy Signs (Pty) Ltd', '2025-10-30 08:54:12', '2025-10-14 02:57:11'),
+(9, NULL, 26, 65, 'company_financial_yearly_stats', 'created', 198, 'Admin captured yearly financials for Signergy Signs (Pty) Ltd', '2025-10-29 05:53:32', '2025-10-19 02:57:11'),
+(10, NULL, 26, 65, 'company_financial_yearly_stats', 'created', 196, 'Admin captured yearly financials for Signergy Signs (Pty) Ltd', '2025-10-29 05:49:14', '2025-10-22 02:57:11'),
+(11, NULL, 59, 65, 'company_financial_yearly_stats', 'created', 195, 'Admin captured yearly financials for 035 Freshcuts (Pty) Ltd', '2025-10-28 10:17:20', '2025-10-22 02:57:11'),
+(12, NULL, 59, 65, 'company_financial_yearly_stats', 'created', 194, 'Admin captured yearly financials for 035 Freshcuts (Pty) Ltd', '2025-10-28 10:15:54', '2025-10-11 02:57:11'),
+(13, NULL, 68, 65, 'company_financial_yearly_stats', 'created', 193, 'Admin captured yearly financials for Jele Group t/a Wynes Acessories', '2025-10-28 06:36:52', '2025-10-20 02:57:11'),
+(14, NULL, 59, 65, 'company_financial_yearly_stats', 'created', 186, 'Admin captured yearly financials for 035 Freshcuts (Pty) Ltd', '2025-10-28 06:20:16', '2025-10-04 02:57:11'),
+(15, NULL, 68, 65, 'company_financial_yearly_stats', 'created', 170, 'Admin captured yearly financials for Jele Group t/a Wynes Acessories', '2025-10-28 03:21:27', '2025-10-19 02:57:11'),
+(16, NULL, 11, 65, 'company_financial_yearly_stats', 'created', 166, 'Admin captured yearly financials for Dongelihle Enterprises', '2025-10-23 08:33:48', '2025-10-21 02:57:11'),
+(17, NULL, 11, 65, 'company_financial_yearly_stats', 'created', 165, 'Admin captured yearly financials for Dongelihle Enterprises', '2025-10-23 08:32:35', '2025-10-15 02:57:11'),
+(18, NULL, 32, 65, 'company_financial_yearly_stats', 'created', 129, 'Admin captured yearly financials for Sokhulu and Partners Car Hire', '2025-10-22 11:34:56', '2025-10-13 02:57:11'),
+(19, NULL, 11, 65, 'company_financial_yearly_stats', 'created', 139, 'Admin captured yearly financials for Dongelihle Enterprises', '2025-10-22 11:34:56', '2025-10-19 02:57:11'),
+(20, NULL, 25, 65, 'company_financial_yearly_stats', 'created', 138, 'Admin captured yearly financials for Shepard Media and Communications', '2025-10-22 11:34:56', '2025-10-21 02:57:11'),
+(21, NULL, 40, 65, 'company_financial_yearly_stats', 'created', 137, 'Admin captured yearly financials for Vuks Engineering and Construction', '2025-10-22 11:34:56', '2025-10-20 02:57:11'),
+(22, NULL, 39, 65, 'company_financial_yearly_stats', 'created', 136, 'Admin captured yearly financials for VBM Legacy', '2025-10-22 11:34:56', '2025-10-04 02:57:11'),
+(23, NULL, 38, 65, 'company_financial_yearly_stats', 'created', 135, 'Admin captured yearly financials for Umathole Amahle', '2025-10-22 11:34:56', '2025-10-20 02:57:11'),
+(24, NULL, 37, 65, 'company_financial_yearly_stats', 'created', 134, 'Admin captured yearly financials for TSCUAA', '2025-10-22 11:34:56', '2025-10-26 02:57:11'),
+(25, NULL, 36, 65, 'company_financial_yearly_stats', 'created', 133, 'Admin captured yearly financials for Thulys Fast Food', '2025-10-22 11:34:56', '2025-10-06 02:57:11'),
+(26, NULL, 35, 65, 'company_financial_yearly_stats', 'created', 132, 'Admin captured yearly financials for Thabza Net', '2025-10-22 11:34:56', '2025-10-14 02:57:11'),
+(27, NULL, 34, 65, 'company_financial_yearly_stats', 'created', 131, 'Admin captured yearly financials for Sthenjwa Visuals', '2025-10-22 11:34:56', '2025-10-18 02:57:11'),
+(28, NULL, 33, 65, 'company_financial_yearly_stats', 'created', 130, 'Admin captured yearly financials for Solwakhe', '2025-10-22 11:34:56', '2025-10-19 02:57:11'),
+(29, NULL, 16, 65, 'company_financial_yearly_stats', 'created', 116, 'Admin captured yearly financials for Izwelethu Developments', '2025-10-22 11:34:56', '2025-10-10 02:57:11'),
+(30, NULL, 2, 65, 'company_financial_yearly_stats', 'created', 103, 'Admin captured yearly financials for Alondekuhle', '2025-10-22 11:34:56', '2025-10-20 02:57:11'),
+(31, NULL, 3, 65, 'company_financial_yearly_stats', 'created', 104, 'Admin captured yearly financials for Amatshana Holdings', '2025-10-22 11:34:56', '2025-10-09 02:57:11'),
+(32, NULL, 4, 65, 'company_financial_yearly_stats', 'created', 105, 'Admin captured yearly financials for Asakhe Hardware', '2025-10-22 11:34:56', '2025-10-11 02:57:11'),
+(33, NULL, 5, 65, 'company_financial_yearly_stats', 'created', 106, 'Admin captured yearly financials for Bafisha', '2025-10-22 11:34:56', '2025-10-30 02:57:11'),
+(34, NULL, 6, 65, 'company_financial_yearly_stats', 'created', 107, 'Admin captured yearly financials for Bayanolwa', '2025-10-22 11:34:56', '2025-10-22 02:57:11'),
+(35, NULL, 7, 65, 'company_financial_yearly_stats', 'created', 108, 'Admin captured yearly financials for Bourwa Project and Consulting', '2025-10-22 11:34:56', '2025-10-22 02:57:11'),
+(36, NULL, 8, 65, 'company_financial_yearly_stats', 'created', 109, 'Admin captured yearly financials for Chaliluque Services', '2025-10-22 11:34:56', '2025-10-12 02:57:11'),
+(37, NULL, 9, 65, 'company_financial_yearly_stats', 'created', 110, 'Admin captured yearly financials for Chule Enterprise and Logistics', '2025-10-22 11:34:56', '2025-10-21 02:57:11'),
+(38, NULL, 10, 65, 'company_financial_yearly_stats', 'created', 111, 'Admin captured yearly financials for Dlakadla Holdings', '2025-10-22 11:34:56', '2025-10-09 02:57:11'),
+(39, NULL, 12, 65, 'company_financial_yearly_stats', 'created', 112, 'Admin captured yearly financials for Fefe Willy Beauty', '2025-10-22 11:34:56', '2025-10-08 02:57:11'),
+(40, NULL, 13, 65, 'company_financial_yearly_stats', 'created', 113, 'Admin captured yearly financials for FNS Visuals', '2025-10-22 11:34:56', '2025-10-13 02:57:11'),
+(41, NULL, 14, 65, 'company_financial_yearly_stats', 'created', 114, 'Admin captured yearly financials for Ikhonabox Lifestyle', '2025-10-22 11:34:56', '2025-10-11 02:57:11'),
+(42, NULL, 15, 65, 'company_financial_yearly_stats', 'created', 115, 'Admin captured yearly financials for Illuminous Pictures', '2025-10-22 11:34:56', '2025-10-15 02:57:11'),
+(43, NULL, 1, 65, 'company_financial_yearly_stats', 'created', 102, 'Admin captured yearly financials for Agrimika Holdings', '2025-10-22 11:34:56', '2025-10-08 02:57:11'),
+(44, NULL, 17, 65, 'company_financial_yearly_stats', 'created', 117, 'Admin captured yearly financials for Legendary S Academy and Training', '2025-10-22 11:34:56', '2025-10-24 02:57:11'),
+(45, NULL, 18, 65, 'company_financial_yearly_stats', 'created', 118, 'Admin captured yearly financials for Mesda Bed and Breakfast', '2025-10-22 11:34:56', '2025-10-06 02:57:11'),
+(46, NULL, 19, 65, 'company_financial_yearly_stats', 'created', 119, 'Admin captured yearly financials for Mkhunji Trading and Enterprises', '2025-10-22 11:34:56', '2025-10-14 02:57:11'),
+(47, NULL, 20, 65, 'company_financial_yearly_stats', 'created', 120, 'Admin captured yearly financials for Ntwaworld (Pty) Ltd', '2025-10-22 11:34:56', '2025-10-23 02:57:11'),
+(48, NULL, 21, 65, 'company_financial_yearly_stats', 'created', 121, 'Admin captured yearly financials for Perfectionist Fashion Design', '2025-10-22 11:34:56', '2025-10-11 02:57:11'),
+(49, NULL, 22, 65, 'company_financial_yearly_stats', 'created', 122, 'Admin captured yearly financials for Pure Vawter', '2025-10-22 11:34:56', '2025-10-13 02:57:11'),
+(50, NULL, 23, 65, 'company_financial_yearly_stats', 'created', 123, 'Admin captured yearly financials for Recovery Credit Dispute', '2025-10-22 11:34:56', '2025-10-29 02:57:11'),
+(51, NULL, 24, 65, 'company_financial_yearly_stats', 'created', 124, 'Admin captured yearly financials for S Dube Services', '2025-10-22 11:34:56', '2025-10-18 02:57:11'),
+(52, NULL, 27, 65, 'company_financial_yearly_stats', 'created', 125, 'Admin captured yearly financials for Siyaqhuba Electrical', '2025-10-22 11:34:56', '2025-10-30 02:57:11'),
+(53, NULL, 28, 65, 'company_financial_yearly_stats', 'created', 126, 'Admin captured yearly financials for SK and Mvelo Holdings', '2025-10-22 11:34:56', '2025-10-06 02:57:11'),
+(54, NULL, 30, 65, 'company_financial_yearly_stats', 'created', 127, 'Admin captured yearly financials for Snekhethelo Business Enterprise', '2025-10-22 11:34:56', '2025-10-28 02:57:11'),
+(55, NULL, 31, 65, 'company_financial_yearly_stats', 'created', 128, 'Admin captured yearly financials for SNV Solutions', '2025-10-22 11:34:56', '2025-10-29 02:57:11');
 
 -- --------------------------------------------------------
 
@@ -2345,11 +2764,21 @@ INSERT INTO `users` (`id`, `id_type`, `id_number`, `company_id`, `full_name`, `e
 (36, '', '', 36, 'Themba Gwala', 'senzi.sbambo@gmail.com', '073 850 8163', 'senzi.sbambo@gmail.com', 'Director', 'Black', NULL, 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54'),
 (37, '', '', 37, 'Nonhle Sithole', 'nonhlembali2@icloud.com', '0681590864', 'nonhlembali2@icloud.com', 'Director', 'Black', 'Female', 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54'),
 (38, '', '', 38, 'Vukani Mpotshane', 'thanivevukanimpontshane@gmail.com', '0736598189 / 0691781445', 'thanivevukanimpontshane@gmail.com', 'Director', 'Black', NULL, 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54'),
-(39, '', '', 39, 'Vukile Ndlovu', 'nvndlovuh@gmail.com', '0632215332', 'nvndlovuh@gmail.com', 'Director', 'Black', NULL, 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54');
+(39, '', '', 39, 'Vukile Ndlovu', 'nvndlovuh@gmail.com', '0632215332', 'nvndlovuh@gmail.com', 'Director', 'Black', NULL, 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54'),
+(65, '', '', 25, 'Admin', 'admin@rbtacc.co.za', '0836203205', 'admin@rbtacc.co.za', 'Director', 'Black', 'Female', 'active', NULL, '2025-08-18 00:08:54', '2025-08-18 00:08:54');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `action_items`
+--
+ALTER TABLE `action_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_company` (`company_id`),
+  ADD KEY `idx_program` (`program_id`),
+  ADD KEY `idx_context` (`context_type`,`category`);
 
 --
 -- Indexes for table `categories`
@@ -2386,6 +2815,15 @@ ALTER TABLE `companies`
 ALTER TABLE `company_accounts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_company_id` (`company_id`);
+
+--
+-- Indexes for table `company_costing_yearly_stats`
+--
+ALTER TABLE `company_costing_yearly_stats`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_company_year_type_category` (`company_id`,`financial_year_id`,`cost_type`,`category_id`),
+  ADD KEY `idx_fin_year` (`financial_year_id`),
+  ADD KEY `idx_cost_type` (`cost_type`);
 
 --
 -- Indexes for table `company_financials`
@@ -2430,6 +2868,26 @@ ALTER TABLE `company_purchases`
 -- Indexes for table `company_revenue_summary`
 --
 ALTER TABLE `company_revenue_summary`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `compliance_records`
+--
+ALTER TABLE `compliance_records`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_company` (`company_id`),
+  ADD KEY `idx_tenant` (`tenant_id`),
+  ADD KEY `idx_client` (`client_id`),
+  ADD KEY `idx_program` (`program_id`),
+  ADD KEY `idx_cohort` (`cohort_id`),
+  ADD KEY `idx_financial_year` (`financial_year_id`),
+  ADD KEY `idx_type` (`type`),
+  ADD KEY `idx_status` (`status`);
+
+--
+-- Indexes for table `cost_categories`
+--
+ALTER TABLE `cost_categories`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2514,6 +2972,12 @@ ALTER TABLE `nodes`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `recent_activities`
+--
+ALTER TABLE `recent_activities`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `session_field_responses`
 --
 ALTER TABLE `session_field_responses`
@@ -2530,6 +2994,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `action_items`
+--
+ALTER TABLE `action_items`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=468;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -2553,7 +3023,13 @@ ALTER TABLE `companies`
 -- AUTO_INCREMENT for table `company_accounts`
 --
 ALTER TABLE `company_accounts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+
+--
+-- AUTO_INCREMENT for table `company_costing_yearly_stats`
+--
+ALTER TABLE `company_costing_yearly_stats`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `company_financials`
@@ -2565,13 +3041,13 @@ ALTER TABLE `company_financials`
 -- AUTO_INCREMENT for table `company_financial_items`
 --
 ALTER TABLE `company_financial_items`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `company_financial_yearly_stats`
 --
 ALTER TABLE `company_financial_yearly_stats`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
 
 --
 -- AUTO_INCREMENT for table `company_profit_summary`
@@ -2589,7 +3065,19 @@ ALTER TABLE `company_purchases`
 -- AUTO_INCREMENT for table `company_revenue_summary`
 --
 ALTER TABLE `company_revenue_summary`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `compliance_records`
+--
+ALTER TABLE `compliance_records`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `cost_categories`
+--
+ALTER TABLE `cost_categories`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT for table `financial_categories`
@@ -2664,6 +3152,12 @@ ALTER TABLE `nodes`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1999;
 
 --
+-- AUTO_INCREMENT for table `recent_activities`
+--
+ALTER TABLE `recent_activities`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+
+--
 -- AUTO_INCREMENT for table `session_field_responses`
 --
 ALTER TABLE `session_field_responses`
@@ -2673,7 +3167,7 @@ ALTER TABLE `session_field_responses`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- Constraints for dumped tables
@@ -2690,6 +3184,13 @@ ALTER TABLE `companies`
 --
 ALTER TABLE `company_accounts`
   ADD CONSTRAINT `fk_company_account_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `company_costing_yearly_stats`
+--
+ALTER TABLE `company_costing_yearly_stats`
+  ADD CONSTRAINT `fk_costing_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_costing_finyear` FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `company_financials`
@@ -2710,6 +3211,13 @@ ALTER TABLE `company_financial_yearly_stats`
 --
 ALTER TABLE `company_purchases`
   ADD CONSTRAINT `fk_cp_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `compliance_records`
+--
+ALTER TABLE `compliance_records`
+  ADD CONSTRAINT `fk_compliance_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_compliance_finyear` FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `forms`

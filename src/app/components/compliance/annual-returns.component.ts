@@ -5,14 +5,17 @@ import {
   ComplianceBaseComponent,
   ComplianceColumnConfig,
 } from './compliance-base.component';
-import { ComplianceFormComponent } from './compliance-form.component';
 import { ComplianceRecord } from '../../../models/ComplianceRecord';
 import { annualReturnConfig } from './column-config/annual-returns.config';
+import {
+  DynamicFormComponent,
+  FormField,
+} from '../shared/dynamic-form.component';
 
 @Component({
   selector: 'app-annual-returns',
   standalone: true,
-  imports: [CommonModule, FormsModule, ComplianceFormComponent],
+  imports: [CommonModule, FormsModule, DynamicFormComponent],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -144,13 +147,14 @@ import { annualReturnConfig } from './column-config/annual-returns.config';
           class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           (click)="$event.stopPropagation()"
         >
-          <app-compliance-form
-            [config]="getFormConfig()"
-            [initialData]="formData"
-            [loading]="loading"
-            (formSubmit)="onFormSubmit($event)"
-            (formCancel)="onFormCancel()"
-          ></app-compliance-form>
+          <div class="p-4">
+            <app-dynamic-form
+              [fields]="dynamicFields"
+              [initialData]="formData"
+              [submitButtonText]="getFormTitle()"
+              (formSubmit)="onFormSubmit($event)"
+            ></app-dynamic-form>
+          </div>
         </div>
       </div>
     </div>
@@ -185,5 +189,31 @@ export class AnnualReturnsComponent extends ComplianceBaseComponent {
 
   override getFirstEditableField(): string {
     return 'period';
+  }
+
+  // Map existing column config to DynamicForm `FormField[]`
+  get dynamicFields(): FormField[] {
+    return this.columnConfig.map((col) => {
+      const field: FormField = {
+        key: col.key,
+        label: col.label,
+        type: (col.type as FormField['type']) || 'text',
+        placeholder: (col as any).placeholder,
+        required: !!col.required,
+        rows: (col as any).rows,
+        min: (col as any).min,
+        max: (col as any).max,
+        step: (col as any).step,
+      };
+
+      if ((col as any).options) {
+        field.options = (col as any).options.map((o: any) => ({
+          label: o.label ?? String(o.value),
+          value: o.value,
+        }));
+      }
+
+      return field;
+    });
   }
 }
