@@ -21,6 +21,7 @@ import {
   // BalanceSheetComponent, // Temporarily disabled for pie chart testing
   RatiosComponent,
   FundsReceivedComponent,
+  GrantFundingComponent,
   EmployeeCountComponent
 } from './components/company-shell/financial-shell/components';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
@@ -200,6 +201,10 @@ export const routes: Routes = [
               {
                 path: 'funds-received',
                 component: FundsReceivedComponent,
+              },
+              {
+                path: 'grant-funding',
+                component: GrantFundingComponent,
               },
               {
                 path: 'employee-count',
