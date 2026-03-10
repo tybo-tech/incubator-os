@@ -4,6 +4,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../services/node.service';
 import { CompanyService } from '../../../services';
+import { GrantFundingExportService } from '../../../services/pdf/grant-funding-export.service';
 import { INode } from '../../../models/schema';
 import { ICompany } from '../../../models/simple.schema';
 import {
@@ -22,7 +23,14 @@ import {
   imports: [CommonModule],
   template: `
     <div class="space-y-6">
-      <h2 class="text-xl font-semibold text-gray-900">Reports & Compliance</h2>
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-semibold text-gray-900">Reports &amp; Compliance</h2>
+        <button *ngIf="nodes.length > 0" (click)="exportAllReport()" [disabled]="exportingAll"
+                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors">
+          <i [class]="exportingAll ? 'fas fa-spinner fa-spin mr-2' : 'fas fa-file-pdf mr-2'"></i>
+          {{ exportingAll ? 'Exporting...' : 'Export Full Report' }}
+        </button>
+      </div>
 
       <div *ngIf="loading" class="flex justify-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -48,6 +56,12 @@ import {
               <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(node.data.status)">
                 {{ getStatusLabel(node.data.status) }}
               </span>
+              <button (click)="exportNode(node)" [disabled]="exportingId === node.id"
+                      title="Export PDF"
+                      class="inline-flex items-center px-3 py-1.5 text-xs text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
+                <i [class]="exportingId === node.id ? 'fas fa-spinner fa-spin mr-1' : 'fas fa-file-pdf mr-1'"></i>
+                {{ exportingId === node.id ? 'Exporting...' : 'PDF' }}
+              </button>
             </div>
           </div>
 
@@ -113,12 +127,16 @@ export class GrantReportsComponent implements OnInit, OnDestroy {
   loading = false;
   company: ICompany | null = null;
 
+  exportingId: number | null = null;
+  exportingAll = false;
+
   readonly approvalDefs = DEFAULT_APPROVALS;
 
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private nodeService = inject(NodeService<GrantFundingRequestData>);
   private companyService = inject(CompanyService);
+  private exportService = inject(GrantFundingExportService);
 
   ngOnInit(): void {
     const companyId = +this.route.parent?.parent?.snapshot.params['id'];
@@ -132,6 +150,40 @@ export class GrantReportsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+
+  exportNode(node: INode<GrantFundingRequestData>): void {
+    const companyName = this.company?.name ?? 'Company';
+    this.exportingId = node.id ?? null;
+    this.exportService.generateRequestPDF(node.data, companyName).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${companyName}_Grant_${node.data.request_title || 'Request'}_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exportingId = null;
+      },
+      error: () => { this.exportingId = null; }
+    });
+  }
+
+  exportAllReport(): void {
+    const companyName = this.company?.name ?? 'Company';
+    this.exportingAll = true;
+    this.exportService.generateReportPDF(this.nodes.map(n => n.data), companyName).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${companyName}_Grant_Funding_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exportingAll = false;
+      },
+      error: () => { this.exportingAll = false; }
+    });
+  }
 
   getStatusLabel(status: RequestStatus): string { return STATUS_LABELS[status] ?? status; }
   getStatusColor(status: RequestStatus): string { return STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-700'; }

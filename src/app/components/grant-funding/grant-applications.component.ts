@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../services/node.service';
 import { CompanyService } from '../../../services';
+import { GrantFundingExportService } from '../../../services/pdf/grant-funding-export.service';
 import { INode } from '../../../models/schema';
 import { ICompany } from '../../../models/simple.schema';
 import {
@@ -71,6 +72,11 @@ import {
                 <span [class]="'px-2 py-1 rounded-full text-xs font-medium ' + getStatusColor(node.data.status)">
                   {{ getStatusLabel(node.data.status) }}
                 </span>
+                <button (click)="exportNode($event, node)" title="Export PDF"
+                        [disabled]="exportingId === node.id"
+                        class="text-green-600 hover:text-green-800 p-1 disabled:opacity-40">
+                  <i [class]="exportingId === node.id ? 'fas fa-spinner fa-spin text-xs' : 'fas fa-file-pdf text-xs'"></i>
+                </button>
                 <button (click)="deleteNode($event, node)" class="text-red-400 hover:text-red-600 p-1">
                   <i class="fas fa-trash text-xs"></i>
                 </button>
@@ -86,9 +92,16 @@ import {
           <h3 class="text-lg font-semibold text-gray-900">
             {{ editingNode ? 'Edit Application' : 'New Funding Application' }}
           </h3>
-          <button (click)="closeForm()" class="text-gray-400 hover:text-gray-600">
-            <i class="fas fa-times"></i>
+          <div class="flex items-center space-x-2">
+            <button *ngIf="editingNode" (click)="exportEditingNode()" [disabled]="exportingId === editingNode?.id"
+                    class="inline-flex items-center px-3 py-1.5 text-xs text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50">
+              <i [class]="exportingId === editingNode?.id ? 'fas fa-spinner fa-spin mr-1' : 'fas fa-file-pdf mr-1'"></i>
+              {{ exportingId === editingNode?.id ? 'Exporting...' : 'Export PDF' }}
+            </button>
+            <button (click)="closeForm()" class="text-gray-400 hover:text-gray-600">
+              <i class="fas fa-times"></i>
           </button>
+            </div>
         </div>
 
         <div class="p-6 space-y-8">
@@ -289,10 +302,13 @@ export class GrantApplicationsComponent implements OnInit, OnDestroy {
   formData!: GrantFundingRequestData;
   company: ICompany | null = null;
 
+  exportingId: number | null = null;
+
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private nodeService = inject(NodeService<GrantFundingRequestData>);
   private companyService = inject(CompanyService);
+  private exportService = inject(GrantFundingExportService);
 
   readonly statusOptions: { value: RequestStatus; label: string }[] =
     (Object.entries(STATUS_LABELS) as [RequestStatus, string][]).map(([value, label]) => ({ value, label }));
@@ -325,6 +341,29 @@ export class GrantApplicationsComponent implements OnInit, OnDestroy {
     this.formData = initGrantFundingRequest(this.company?.id?.toString() ?? '');
     this.formData.approvals = DEFAULT_APPROVALS.map(a => initApproval(a.role));
     this.showForm = true;
+  }
+
+  exportNode(event: Event, node: INode<GrantFundingRequestData>): void {
+    event.stopPropagation();
+    const companyName = this.company?.name ?? 'Company';
+    this.exportingId = node.id ?? null;
+    this.exportService.generateRequestPDF(node.data, companyName).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${companyName}_Grant_${node.data.request_title || 'Request'}_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exportingId = null;
+      },
+      error: () => { this.exportingId = null; }
+    });
+  }
+
+  exportEditingNode(): void {
+    if (!this.editingNode) return;
+    this.exportNode(new Event('click'), this.editingNode);
   }
 
   openEdit(node: INode<GrantFundingRequestData>): void {
