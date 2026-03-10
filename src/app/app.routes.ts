@@ -44,6 +44,7 @@ import { GpsTargetsTabComponent } from './components/companies/company-detail/gp
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
 import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
+import { GrantFundingShellComponent } from './components/grant-funding/grant-funding-shell.component';
 import { DashboardRecentActivitiesComponent } from './dashboard/dashboard-recent-activities/dashboard-recent-activities.component';
 
 export const routes: Routes = [
@@ -149,6 +150,33 @@ export const routes: Routes = [
               {
                 path: 'coaching-notes',
                 loadComponent: () => import('./components/coaching-guide/coaching-notes.component').then(m => m.CoachingNotesComponent),
+              }
+            ]
+          },
+          {
+            path: 'grant-funding',
+            component: GrantFundingShellComponent,
+            children: [
+              {
+                path: '',
+                redirectTo: 'overview',
+                pathMatch: 'full'
+              },
+              {
+                path: 'overview',
+                loadComponent: () => import('./components/grant-funding/grant-overview.component').then(m => m.GrantOverviewComponent),
+              },
+              {
+                path: 'applications',
+                loadComponent: () => import('./components/grant-funding/grant-applications.component').then(m => m.GrantApplicationsComponent),
+              },
+              {
+                path: 'disbursements',
+                loadComponent: () => import('./components/grant-funding/grant-disbursements.component').then(m => m.GrantDisbursementsComponent),
+              },
+              {
+                path: 'reports',
+                loadComponent: () => import('./components/grant-funding/grant-reports.component').then(m => m.GrantReportsComponent),
               }
             ]
           },

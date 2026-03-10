@@ -137,6 +137,11 @@ export class CompanyShellComponent implements OnInit {
       label: 'Coaching / Guide',
       route: 'coaching',
       icon: 'fas fa-chalkboard-teacher'
+    },
+    {
+      label: 'Grant Funding',
+      route: 'grant-funding',
+      icon: 'fas fa-hand-holding-usd'
     }
   ];
 
