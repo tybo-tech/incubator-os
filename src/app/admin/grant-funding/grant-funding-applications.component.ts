@@ -354,7 +354,7 @@ import { WorkflowService } from './services/workflow.service';
            (click)="closeBulkModal()">
         <div class="bg-white rounded-xl shadow-2xl max-w-md w-full"
              (click)="$event.stopPropagation()">
-          
+
           <!-- Header -->
           <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">Move Applications to Stage</h3>
@@ -770,10 +770,10 @@ export class GrantFundingApplicationsComponent implements OnInit {
         next: (updatedApp) => {
           completed++;
           // Update local state
-          this.applications.update(list => 
+          this.applications.update(list =>
             list.map(app => app.id === updatedApp.id ? updatedApp : app)
           );
-          
+
           if (completed + failed === updates$.length) {
             this.finalizeBulkUpdate(completed, failed);
           }

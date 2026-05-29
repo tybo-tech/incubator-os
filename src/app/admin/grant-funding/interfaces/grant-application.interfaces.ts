@@ -141,14 +141,9 @@ export interface IScheduleReference {
 }
 
 export const DEFAULT_UPLOAD_REQUIREMENTS: Omit<IUploadedDocument, 'url' | 'uploaded_at'>[] = [
-  { id: 'certified_id',      label: 'Certified copy of ID (all directors)',       required: true  },
-  { id: 'cipc_documents',    label: 'CIPC registration documents',                 required: true  },
-  { id: 'bank_statements',   label: '12 months bank statements',                   required: true  },
-  { id: 'proof_of_address',  label: 'Proof of address (not older than 3 months)',  required: true  },
-  { id: 'tax_clearance',     label: 'SARS tax clearance certificate',               required: true  },
-  { id: 'bbbee_certificate', label: 'B-BBEE certificate',                           required: true  },
-  { id: 'business_plan',     label: 'Business plan',                                required: false },
-  { id: 'affidavit',         label: 'Affidavit',                                       required: false },
+  { id: 'cipc_registration',   label: 'CIPC Registration',           required: true  },
+  { id: 'directors_share_cert', label: 'Directors share certificate', required: true  },
+  { id: 'copy_of_id',          label: 'Copy of ID',                  required: true  },
 ];
 
 // ─── Compliance (child node, one per application) ────────────────────────────
