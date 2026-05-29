@@ -31,12 +31,12 @@ import { UploadService } from '../../../../../services/UploadService';
           <p class="text-xs text-gray-400 mt-0.5">
             Upload supporting documents for this application. Required items are marked <span class="text-orange-500 font-bold">*</span>.
           </p>
-          
+
           <!-- Tag filter pills -->
           <div *ngIf="usedTags().length > 0" class="flex flex-wrap gap-1.5 mt-2">
             <button
               (click)="filterTag.set(null)"
-              [class]="filterTag() === null 
+              [class]="filterTag() === null
                 ? 'px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 border border-blue-300 font-medium'
                 : 'px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'">
               All
@@ -117,7 +117,7 @@ import { UploadService } from '../../../../../services/UploadService';
                   </svg>
                 </button>
               </div>
-              
+
               <!-- Edit mode -->
               <div *ngIf="editingIndex() === item.index" class="flex items-center gap-2">
                 <input
@@ -169,7 +169,7 @@ import { UploadService } from '../../../../../services/UploadService';
                   + Tag
                 </button>
               </div>
-              
+
               <div *ngIf="!item.doc.tags || item.doc.tags.length === 0" class="mt-1.5">
                 <button
                   (click)="toggleEditTags(item.index)"
@@ -320,7 +320,7 @@ export class ApplicantDocumentsComponent implements OnInit {
   readonly AVAILABLE_TAGS = ['Legal', 'Financial', 'Identity', 'Compliance', 'Registration', 'Other'];
 
   uploadedCount = computed(() => this.documents().filter(d => !!d.url).length);
-  
+
   filteredDocuments = computed(() => {
     const tag = this.filterTag();
     const docs = this.documents();
