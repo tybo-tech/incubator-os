@@ -157,6 +157,37 @@ import { WorkflowService } from './services/workflow.service';
         </div>
       </div>
 
+      <!-- Bulk Action Bar -->
+      <div *ngIf="selectedIds().size > 0"
+           class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm font-medium text-blue-900">
+            {{ selectedIds().size }} application(s) selected
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="openBulkModal()"
+            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700
+                   transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+            Move to Stage
+          </button>
+          <button
+            (click)="clearSelection()"
+            class="px-3 py-2 text-gray-600 text-sm hover:text-gray-900 transition-colors">
+            Clear
+          </button>
+        </div>
+      </div>
+
       <!-- Loading -->
       <div *ngIf="isLoading()" class="flex justify-center items-center py-16">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -204,6 +235,14 @@ import { WorkflowService } from './services/workflow.service';
           <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th class="text-left px-4 py-3 w-12">
+                  <input
+                    type="checkbox"
+                    [checked]="allSelected"
+                    [indeterminate]="someSelected"
+                    (change)="toggleSelectAll()"
+                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                </th>
                 <th class="text-left px-4 py-3 font-medium text-gray-600">Company</th>
                 <th class="text-left px-4 py-3 font-medium text-gray-600 hidden sm:table-cell">Reg. No</th>
                 <th class="text-left px-4 py-3 font-medium text-gray-600 hidden md:table-cell">Province</th>
@@ -214,9 +253,16 @@ import { WorkflowService } from './services/workflow.service';
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr *ngFor="let app of filtered()"
-                  class="hover:bg-gray-50 transition-colors cursor-pointer"
-                  (click)="openApplicant(app)">
-                <td class="px-4 py-3">
+                  class="hover:bg-gray-50 transition-colors"
+                  [class.bg-blue-50]="isSelected(app.id)">
+                <td class="px-4 py-3" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(app.id)"
+                    (change)="toggleSelect(app.id)"
+                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                </td>
+                <td class="px-4 py-3 cursor-pointer" (click)="openApplicant(app)">
                   <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-teal-500 rounded-lg
                                 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
@@ -225,13 +271,13 @@ import { WorkflowService } from './services/workflow.service';
                     <span class="font-medium text-gray-900">{{ app.data.company_name }}</span>
                   </div>
                 </td>
-                <td class="px-4 py-3 hidden sm:table-cell text-gray-500">
+                <td class="px-4 py-3 hidden sm:table-cell text-gray-500 cursor-pointer" (click)="openApplicant(app)">
                   {{ app.data.registration_number || '—' }}
                 </td>
-                <td class="px-4 py-3 hidden md:table-cell text-gray-500">
+                <td class="px-4 py-3 hidden md:table-cell text-gray-500 cursor-pointer" (click)="openApplicant(app)">
                   {{ app.data.province || '—' }}
                 </td>
-                <td class="px-4 py-3 hidden lg:table-cell">
+                <td class="px-4 py-3 hidden lg:table-cell cursor-pointer" (click)="openApplicant(app)">
                   <ng-container *ngIf="app.data.bank_statement_months || app.data.bank_statement_grand_total; else noTurnover">
                     <div class="flex items-center gap-1.5">
                       <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-teal-50 text-teal-700
@@ -248,7 +294,7 @@ import { WorkflowService } from './services/workflow.service';
                     <span class="text-gray-300 text-xs">—</span>
                   </ng-template>
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 cursor-pointer" (click)="openApplicant(app)">
                   <span [class]="statusClass(app.data.status)">
                     {{ statusLabel(app.data.status) }}
                   </span>
@@ -302,6 +348,78 @@ import { WorkflowService } from './services/workflow.service';
         (closePanel)="showWorkflowSettings.set(false)">
       </app-workflow-settings>
 
+      <!-- Bulk Stage Change Modal -->
+      <div *ngIf="showBulkModal()"
+           class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+           (click)="closeBulkModal()">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full"
+             (click)="$event.stopPropagation()">
+          
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Move Applications to Stage</h3>
+            <p class="text-sm text-gray-500 mt-1">
+              Moving {{ selectedIds().size }} application(s) to a new workflow stage
+            </p>
+          </div>
+
+          <!-- Body -->
+          <div class="px-6 py-4 space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Target Stage <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="bulkTargetStage"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">-- Select a stage --</option>
+                <option *ngFor="let stage of workflowStages()" [value]="stage.key">
+                  {{ stage.label }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Note (optional)
+              </label>
+              <textarea
+                [(ngModel)]="bulkNote"
+                rows="3"
+                placeholder="Add a note about this bulk change…"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+            <button
+              (click)="closeBulkModal()"
+              [disabled]="isBulkProcessing()"
+              class="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg
+                     hover:bg-gray-50 transition-colors disabled:opacity-50">
+              Cancel
+            </button>
+            <button
+              (click)="executeBulkStageChange()"
+              [disabled]="!bulkTargetStage || isBulkProcessing()"
+              class="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg
+                     hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center gap-2">
+              <svg *ngIf="!isBulkProcessing()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M5 13l4 4L19 7"/>
+              </svg>
+              <div *ngIf="isBulkProcessing()" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {{ isBulkProcessing() ? 'Processing…' : 'Move Applications' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   `
 })
@@ -320,6 +438,13 @@ export class GrantFundingApplicationsComponent implements OnInit {
   sortField: 'name' | 'turnover' = 'name';
   sortDir: 'asc' | 'desc' = 'asc';
   searchQuery = '';
+
+  // Bulk selection
+  selectedIds = signal<Set<number>>(new Set());
+  showBulkModal = signal(false);
+  isBulkProcessing = signal(false);
+  bulkTargetStage = '';
+  bulkNote = '';
 
   createModalConfig: CreateModalConfig = {
     title: 'New Grant Application',
@@ -549,5 +674,133 @@ export class GrantFundingApplicationsComponent implements OnInit {
     if (value >= 1_000_000) return `R${+(value / 1_000_000).toFixed(1)}M`;
     if (value >= 1_000)    return `R${+(value / 1_000).toFixed(1)}K`;
     return `R${value}`;
+  }
+
+  // ── Bulk Selection ───────────────────────────────────────────────────────────
+
+  get allSelected(): boolean {
+    const ids = this.selectedIds();
+    return this.filtered().length > 0 && this.filtered().every(app => app.id && ids.has(app.id));
+  }
+
+  get someSelected(): boolean {
+    const ids = this.selectedIds();
+    return this.filtered().some(app => app.id && ids.has(app.id)) && !this.allSelected;
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.selectedIds.set(new Set());
+    } else {
+      const ids = new Set<number>();
+      this.filtered().forEach(app => app.id && ids.add(app.id));
+      this.selectedIds.set(ids);
+    }
+  }
+
+  toggleSelect(id: number | undefined): void {
+    if (!id) return;
+    const ids = new Set(this.selectedIds());
+    if (ids.has(id)) {
+      ids.delete(id);
+    } else {
+      ids.add(id);
+    }
+    this.selectedIds.set(ids);
+  }
+
+  isSelected(id: number | undefined): boolean {
+    return id ? this.selectedIds().has(id) : false;
+  }
+
+  clearSelection(): void {
+    this.selectedIds.set(new Set());
+  }
+
+  openBulkModal(): void {
+    this.bulkTargetStage = '';
+    this.bulkNote = '';
+    this.showBulkModal.set(true);
+  }
+
+  closeBulkModal(): void {
+    this.showBulkModal.set(false);
+  }
+
+  executeBulkStageChange(): void {
+    if (!this.bulkTargetStage) return;
+    const ids = Array.from(this.selectedIds());
+    if (ids.length === 0) return;
+
+    this.isBulkProcessing.set(true);
+    const now = new Date().toISOString();
+
+    // Process all selected applications
+    const updates$ = ids.map(id => {
+      const app = this.applications().find(a => a.id === id);
+      if (!app) return null;
+
+      const previousStatus = app.data.status ?? 'applied';
+      const historyEntry = {
+        status: this.bulkTargetStage,
+        timestamp: now,
+        note: this.bulkNote.trim() || 'Bulk stage change',
+        reviewed_by: 'Admin'
+      };
+      const updatedHistory = [...(app.data.status_history ?? []), historyEntry];
+
+      return this.grantService.updateApplication(id, {
+        status: this.bulkTargetStage,
+        status_history: updatedHistory,
+        previous_status: previousStatus
+      });
+    }).filter(obs => obs !== null);
+
+    // Execute all updates
+    if (updates$.length === 0) {
+      this.isBulkProcessing.set(false);
+      return;
+    }
+
+    let completed = 0;
+    let failed = 0;
+
+    updates$.forEach(update$ => {
+      update$!.subscribe({
+        next: (updatedApp) => {
+          completed++;
+          // Update local state
+          this.applications.update(list => 
+            list.map(app => app.id === updatedApp.id ? updatedApp : app)
+          );
+          
+          if (completed + failed === updates$.length) {
+            this.finalizeBulkUpdate(completed, failed);
+          }
+        },
+        error: () => {
+          failed++;
+          if (completed + failed === updates$.length) {
+            this.finalizeBulkUpdate(completed, failed);
+          }
+        }
+      });
+    });
+  }
+
+  private finalizeBulkUpdate(completed: number, failed: number): void {
+    this.isBulkProcessing.set(false);
+    this.applyFilter();
+    this.selectedIds.set(new Set());
+    this.closeBulkModal();
+
+    if (failed === 0) {
+      this.toastService.show(`${completed} application(s) moved successfully.`, 'success');
+    } else {
+      this.toastService.show(
+        `${completed} succeeded, ${failed} failed.`,
+        'warning'
+      );
+    }
   }
 }
