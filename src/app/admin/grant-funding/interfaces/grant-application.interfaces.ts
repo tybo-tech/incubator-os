@@ -128,6 +128,7 @@ export interface IUploadedDocument {
   uploaded_at?: string; // ISO timestamp of when the file was last uploaded
   required?: boolean;   // defaults true — required docs are visually highlighted
   note?: string;        // optional reviewer note
+  tags?: string[];      // optional tags for organization (e.g. ['Legal', 'Financial'])
 }
 
 // ─── Schedule back-references ─────────────────────────────────────────────────
