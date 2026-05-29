@@ -27,7 +27,13 @@ export class NodeService<T = any> {
   }
 
   // Get nodes with optional filters and hydrated relationships
-  getNodes(type?: string, parentId?: number): Observable<INode<T>[]> {
+  getNodes(
+    type?: string,
+    parentId?: number,
+    companyId?: number | null,
+    submittedByName?: string | null,
+    createdBy?: number | null
+  ): Observable<INode<T>[]> {
     let url = `${this.apiUrl}/get-nodes.php`;
     const params: string[] = [];
 
@@ -37,11 +43,32 @@ export class NodeService<T = any> {
     if (parentId !== undefined) {
       params.push(`parentId=${parentId}`);
     }
+    if (companyId !== undefined && companyId !== null) {
+      params.push(`companyId=${companyId}`);
+    }
+    if (submittedByName) {
+      params.push(`submittedByName=${encodeURIComponent(submittedByName)}`);
+    }
+    if (createdBy !== undefined && createdBy !== null) {
+      params.push(`createdBy=${createdBy}`);
+    }
 
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
 
+    return this.http.get<INode<T>[]>(url);
+  }
+
+  // Get nodes submitted by a specific name (external/guest judge)
+  getBySubmittedByName(
+    submittedByName: string,
+    type?: string,
+    parentId?: number
+  ): Observable<INode<T>[]> {
+    let url = `${this.apiUrl}/get-nodes-by-submitted-by.php?submittedByName=${encodeURIComponent(submittedByName)}`;
+    if (type) url += `&type=${encodeURIComponent(type)}`;
+    if (parentId !== undefined) url += `&parentId=${parentId}`;
     return this.http.get<INode<T>[]>(url);
   }
 
@@ -66,7 +93,12 @@ export class NodeService<T = any> {
   addNode(node: INode<T>): Observable<INode<T>> {
     const url = `${this.apiUrl}/add-node.php`;
     const cleanNode = this.cleanDataForSave(node);
-    return this.http.post<INode<T>>(url, cleanNode);
+    // Pass submitted_by_name as a top-level field alongside the node payload
+    const payload: any = { ...cleanNode };
+    if ((node as any).submitted_by_name !== undefined) {
+      payload.submitted_by_name = (node as any).submitted_by_name;
+    }
+    return this.http.post<INode<T>>(url, payload);
   }
 
   // Update an existing node

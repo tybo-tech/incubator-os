@@ -44,6 +44,34 @@ export class UserService {
     return this.http.post<INode<User>>(`${this.apiUrl}/update-user.php`, { id, ...data });
   }
 
+  changePassword(id: number, password: string): Observable<{ success: boolean; user: INode<User> }> {
+    return this.http.post<{ success: boolean; user: INode<User> }>(`${this.apiUrl}/change-password.php`, { id, password });
+  }
+
+  inviteUser(userId: number): Observable<{
+    success: boolean;
+    message: string;
+    dispatch?: {
+      recipient_name: string;
+      recipient_email: string;
+      token: string;
+    } | null;
+  }> {
+    return this.http.post<{
+      success: boolean;
+      message: string;
+      dispatch?: {
+        recipient_name: string;
+        recipient_email: string;
+        token: string;
+      } | null;
+    }>(
+      `${this.apiUrl}/invite-user.php`,
+      { user_id: userId },
+      { withCredentials: true },
+    );
+  }
+
   deleteUser(id: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/delete-user.php`, { id });
   }

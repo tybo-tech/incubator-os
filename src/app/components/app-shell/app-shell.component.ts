@@ -1,10 +1,11 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavComponent } from "../nav/nav.component";
 import { GlobalTaskModalComponent } from '../tasks/global-task-modal.component';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-app-shell',
@@ -16,17 +17,27 @@ export class AppShellComponent implements OnInit {
   showGlobalTaskModal = false;
   isMobileMenuOpen = false;
 
-  constructor() {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   ngOnInit() {
-    // App shell initialization - no need to load companies anymore
-    // Users will navigate through the proper hierarchy via Clients menu
+    this.auth.validateSession().subscribe({
+      next: (res) => {
+        if (!res?.valid) {
+          this.auth.logout();
+          this.router.navigate(['/login']);
+        }
+      },
+      error: () => {
+        this.auth.logout();
+        this.router.navigate(['/login']);
+      },
+    });
   }
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
-    // Close mobile menu on desktop resize
-    if (event.target.innerWidth >= 1024) {
+    // Close mobile drawer on tablet/desktop resize
+    if (event.target.innerWidth >= 768) {
       this.isMobileMenuOpen = false;
     }
   }

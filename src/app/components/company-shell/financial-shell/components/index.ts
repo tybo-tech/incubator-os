@@ -8,5 +8,4 @@ export { CostStructureComponent } from './cost-structure.component';
 // export { BalanceSheetComponent } from './balance-sheet.component'; // Temporarily disabled for pie chart testing
 export { RatiosComponent } from './ratios/ratios.component';
 export { FundsReceivedComponent } from './funds-received.component';
-export { GrantFundingComponent } from './grant-funding.component';
 export { EmployeeCountComponent } from './employee-count.component';

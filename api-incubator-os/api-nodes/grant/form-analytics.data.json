@@ -1,0 +1,599 @@
+{
+    "workflow_id": "grant-2026",
+    "workflow_name": "Grant Funding 2026",
+    "total_applicants": 179,
+    "stage_count": 6,
+    "stages": [
+        {
+            "stage_key": "due_diligence",
+            "stage_label": "Due Diligence",
+            "stage_type": "validation",
+            "stage_color": "orange",
+            "template_id": 2309,
+            "template_name": "Due Diligence Checklist",
+            "total_submissions": 2,
+            "submitted_count": 2,
+            "draft_count": 0,
+            "sections": [
+                {
+                    "id": "application_checklist",
+                    "title": "Application Checklist",
+                    "questions": [
+                        {
+                            "id": "id_copy",
+                            "label": "Certified copy of ID for all directors",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "cipc_docs",
+                            "label": "CIPC registration documents",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "bank_statements_submitted",
+                            "label": "12 months bank statements submitted",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "proof_of_address",
+                            "label": "Proof of address (not older than 3 months)",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "tax_clearance_doc",
+                            "label": "SARS tax clearance certificate submitted",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "bbbee_doc",
+                            "label": "B-BBEE certificate submitted",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "compliance_status",
+                    "title": "Compliance Status",
+                    "questions": [
+                        {
+                            "id": "bbbee_status",
+                            "label": "B-BBEE Certificate",
+                            "type": "select",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Valid": 2
+                            },
+                            "options": [
+                                "Valid",
+                                "Expired",
+                                "Missing"
+                            ]
+                        },
+                        {
+                            "id": "tax_clearance_status",
+                            "label": "SARS Tax Clearance Status (TCS)",
+                            "type": "select",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Valid": 2
+                            },
+                            "options": [
+                                "Valid",
+                                "Expired",
+                                "Missing"
+                            ]
+                        },
+                        {
+                            "id": "cipc_status",
+                            "label": "CIPC Registration",
+                            "type": "select",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Expired": 1,
+                                "Valid": 1
+                            },
+                            "options": [
+                                "Valid",
+                                "Expired",
+                                "Non-Compliant"
+                            ]
+                        },
+                        {
+                            "id": "sars_registered",
+                            "label": "Registered with SARS",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "eligibility",
+                    "title": "Eligibility Criteria",
+                    "questions": [
+                        {
+                            "id": "turnover_limit",
+                            "label": "Annual turnover not exceeding R500,000",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "proof_of_residence",
+                            "label": "Proof of residence provided",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "tax_pin",
+                            "label": "Tax clearance certificate and PIN provided",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "business_profile",
+                            "label": "Business profile submitted",
+                            "type": "boolean",
+                            "total_answered": 2,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "Yes": 2
+                            }
+                        },
+                        {
+                            "id": "youth_owned",
+                            "label": "Youth-owned business",
+                            "type": "boolean",
+                            "total_answered": 1,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "No": 1
+                            }
+                        },
+                        {
+                            "id": "black_woman_owned",
+                            "label": "Black woman-owned business",
+                            "type": "boolean",
+                            "total_answered": 1,
+                            "total_possible": 2,
+                            "breakdown": {
+                                "No": 1
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage_key": "stage_1777464072202",
+            "stage_label": "First Interviews",
+            "stage_type": "review",
+            "stage_color": "teal",
+            "template_id": 2303,
+            "template_name": "Interview Questions \u2013 Enterprise Development Grant Fund",
+            "total_submissions": 3,
+            "submitted_count": 1,
+            "draft_count": 2,
+            "sections": [
+                {
+                    "id": "finance_perspective",
+                    "title": "Finance Perspective",
+                    "questions": [
+                        {
+                            "id": "q_financial_support",
+                            "label": "Have you received any financial support \u2014 loans, grants, etc.?",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": []
+                        }
+                    ]
+                },
+                {
+                    "id": "governance_esg",
+                    "title": "Social Perspectives, Environmental & Governance",
+                    "questions": [
+                        {
+                            "id": "q_has_employees",
+                            "label": "Job creation \u2014 do you have employees?",
+                            "type": "boolean",
+                            "total_answered": 1,
+                            "total_possible": 3,
+                            "breakdown": {
+                                "Yes": 1
+                            }
+                        },
+                        {
+                            "id": "q_health_safety",
+                            "label": "Do you ensure the health and safety of your employees?",
+                            "type": "select",
+                            "total_answered": 1,
+                            "total_possible": 3,
+                            "breakdown": {
+                                "Yes": 1
+                            },
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        },
+                        {
+                            "id": "q_registered_wca",
+                            "label": "Are you registered with WCA \/ UIF \/ SARS PAYE?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        },
+                        {
+                            "id": "q_regulatory_requirements",
+                            "label": "Are there any regulatory requirements in your sector?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        },
+                        {
+                            "id": "q_waste",
+                            "label": "Does your company generate any waste?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No",
+                                "N\/A"
+                            ]
+                        },
+                        {
+                            "id": "q_recycling",
+                            "label": "Do you consider recycling waste generated from your business operations?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No",
+                                "N\/A"
+                            ]
+                        },
+                        {
+                            "id": "q_record_keeping",
+                            "label": "Do you keep records of all your business transactions?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        },
+                        {
+                            "id": "q_accounting_system",
+                            "label": "Are you currently using an accounting system?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        },
+                        {
+                            "id": "q_cipc_returns",
+                            "label": "Are your CIPC annual returns up to date?",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": [],
+                            "options": [
+                                "Yes",
+                                "No"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "needs_analysis",
+                    "title": "Needs Analysis",
+                    "questions": [
+                        {
+                            "id": "q_extra_jobs",
+                            "label": "How many extra jobs will this create?",
+                            "type": "number",
+                            "total_answered": 0,
+                            "total_possible": 3,
+                            "breakdown": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage_key": "demo",
+            "stage_label": "Pitch Workshop",
+            "stage_type": "evaluation",
+            "stage_color": "indigo",
+            "template_id": 2311,
+            "template_name": "Pitch Workshop Evaluation",
+            "total_submissions": 1,
+            "submitted_count": 0,
+            "draft_count": 1,
+            "sections": [
+                {
+                    "id": "business_model",
+                    "title": "Business Model",
+                    "questions": [
+                        {
+                            "id": "revenue_model_clear",
+                            "label": "Revenue model is clear and realistic",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": []
+                        },
+                        {
+                            "id": "pricing_viable",
+                            "label": "Pricing strategy is viable",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": []
+                        }
+                    ]
+                },
+                {
+                    "id": "readiness",
+                    "title": "Business Readiness",
+                    "questions": [
+                        {
+                            "id": "traction_present",
+                            "label": "Business shows traction",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": []
+                        },
+                        {
+                            "id": "scalable",
+                            "label": "Business is scalable",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage_key": "stage_1777885810811",
+            "stage_label": "Panel Pitch Presentation",
+            "stage_type": "review",
+            "stage_color": "red",
+            "template_id": 2312,
+            "template_name": "Panel Pitch Evaluation",
+            "total_submissions": 1,
+            "submitted_count": 1,
+            "draft_count": 0,
+            "sections": [
+                {
+                    "id": "financial_viability",
+                    "title": "Financial Viability",
+                    "questions": [
+                        {
+                            "id": "cost_structure",
+                            "label": "Cost structure is sustainable",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": []
+                        }
+                    ]
+                },
+                {
+                    "id": "risk",
+                    "title": "Risk Evaluation",
+                    "questions": [
+                        {
+                            "id": "operational_risk",
+                            "label": "Operational risk level",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": [],
+                            "options": [
+                                "Low",
+                                "Medium",
+                                "High"
+                            ]
+                        },
+                        {
+                            "id": "financial_risk",
+                            "label": "Financial risk level",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 1,
+                            "breakdown": [],
+                            "options": [
+                                "Low",
+                                "Medium",
+                                "High"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage_key": "approved",
+            "stage_label": "Approved",
+            "stage_type": "final",
+            "stage_color": "green",
+            "template_id": 2313,
+            "template_name": "Approval Summary",
+            "total_submissions": 0,
+            "submitted_count": 0,
+            "draft_count": 0,
+            "sections": [
+                {
+                    "id": "funding",
+                    "title": "Funding Details",
+                    "questions": [
+                        {
+                            "id": "disbursement_type",
+                            "label": "Disbursement type",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 0,
+                            "breakdown": [],
+                            "options": [
+                                "Once-off",
+                                "Milestone-based"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "conditions",
+                    "title": "Conditions",
+                    "questions": [
+                        {
+                            "id": "conditions_attached",
+                            "label": "Are there conditions attached?",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 0,
+                            "breakdown": []
+                        }
+                    ]
+                },
+                {
+                    "id": "monitoring",
+                    "title": "Post-Investment Monitoring",
+                    "questions": [
+                        {
+                            "id": "reporting_frequency",
+                            "label": "Reporting frequency",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 0,
+                            "breakdown": [],
+                            "options": [
+                                "Monthly",
+                                "Quarterly"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "stage_key": "declined",
+            "stage_label": "Declined",
+            "stage_type": "final",
+            "stage_color": "red",
+            "template_id": 2314,
+            "template_name": "Decline Reason",
+            "total_submissions": 0,
+            "submitted_count": 0,
+            "draft_count": 0,
+            "sections": [
+                {
+                    "id": "reason",
+                    "title": "Decline Reason",
+                    "questions": [
+                        {
+                            "id": "primary_reason",
+                            "label": "Primary reason for decline",
+                            "type": "select",
+                            "total_answered": 0,
+                            "total_possible": 0,
+                            "breakdown": [],
+                            "options": [
+                                "Non-compliant",
+                                "Low viability",
+                                "High risk",
+                                "Incomplete documentation",
+                                "Other"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "feedback",
+                    "title": "Feedback to Applicant",
+                    "questions": [
+                        {
+                            "id": "can_reapply",
+                            "label": "Can the applicant reapply?",
+                            "type": "boolean",
+                            "total_answered": 0,
+                            "total_possible": 0,
+                            "breakdown": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -206,7 +206,15 @@ export interface IFinancialRecord {
   updated_at: string; // format: YYYY-MM-DD HH:mm:ss
 }
 
-export type UserRole = 'Director' | 'Advisor' | 'Admin' | 'Staff' | string;
+export type UserRole =
+  | 'System Administrator'
+  | 'Coordinator'
+  | 'Judge'
+  | 'External Judge'
+  | 'Advisor'
+  | 'Director'
+  | 'Staff'
+  | string;
 export type Race =
   | 'Black'
   | 'Coloured'
@@ -221,30 +229,50 @@ export type UserStatus = 'active' | 'inactive' | 'invited' | string;
 export interface User {
   id: number;
 
-  idType: string; // e.g. "RSA_ID", "Passport"
-  idNumber: string;
+  id_type: string; // e.g. "RSA_ID", "Passport"
+  id_number: string;
 
-  companyId: number;
+  company_id: number;
 
-  fullName?: string | null;
+  full_name?: string | null;
   email?: string | null;
   phone?: string | null;
 
   username: string;
   role: UserRole;
 
-  race?: Race; // per your defaults/logic
+  race?: Race;
   gender?: Gender;
 
   status: UserStatus;
 
-  passwordHash?: string | null;
+  password_hash?: string | null;
 
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 
   // Optional denormalized join
   company?: ICompany;
+}
+
+export function initUser(companyId = 0): User {
+  return {
+    id: 0,
+    id_type: '',
+    id_number: '',
+    company_id: companyId,
+    full_name: null,
+    email: null,
+    phone: null,
+    username: '',
+    role: 'Director',
+    race: null,
+    gender: null,
+    status: 'active',
+    password_hash: null,
+    created_at: '',
+    updated_at: '',
+  };
 }
 
 /** =========================

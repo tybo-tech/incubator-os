@@ -5,13 +5,16 @@ include_once '../../models/Node.php';
 
 $type = $_GET['type'] ?? null;
 $parentId = $_GET['parentId'] ?? null;
+$companyId = $_GET['companyId'] ?? null;
+$submittedByName = $_GET['submittedByName'] ?? null;
+$createdBy = isset($_GET['createdBy']) ? (int)$_GET['createdBy'] : null;
 
 try {
     $database = new Database();
     $db = $database->connect();
     $node = new Node($db);
 
-    $result = $node->search($type, $parentId);
+    $result = $node->search($type, $parentId, $companyId, $submittedByName, $createdBy);
 
     echo json_encode($result);
 

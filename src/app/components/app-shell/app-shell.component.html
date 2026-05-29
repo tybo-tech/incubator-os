@@ -1,20 +1,21 @@
-<div class="flex h-screen bg-gray-100">
-  <!-- Mobile Overlay -->
+<div class="flex h-screen bg-gray-100 overflow-hidden">
+  <!-- Mobile Overlay (only below md breakpoint) -->
   <div *ngIf="isMobileMenuOpen"
-       class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+       class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
        (click)="toggleMobileMenu()"></div>
 
   <!-- Sidebar Navigation -->
+  <!-- On mobile: fixed drawer, slides in/out. On md+: relative, always in flow -->
   <app-nav
-    class="flex-shrink-0 fixed lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out z-40"
+    class="flex-shrink-0 fixed md:relative md:translate-x-0 transition-all duration-300 ease-in-out z-40"
     [class.translate-x-0]="isMobileMenuOpen"
     [class.-translate-x-full]="!isMobileMenuOpen"
     (onQuickTaskClick)="openGlobalTaskModal()" />
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-hidden relative">
-    <!-- Mobile Header Bar -->
-    <div class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+  <main class="flex-1 min-w-0 overflow-hidden relative flex flex-col">
+    <!-- Mobile Header Bar (hidden on md+ since sidebar is always visible) -->
+    <div class="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between flex-shrink-0">
       <button
         (click)="toggleMobileMenu()"
         class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -43,14 +44,14 @@
       </button>
     </div>
 
-    <!-- Main Content with Responsive Padding -->
-    <div class="h-full overflow-y-auto pt-0 lg:pt-0">
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden">
       <router-outlet />
     </div>
 
-    <!-- Desktop Floating Task Button (hidden on mobile) -->
+    <!-- Floating Task Button (md+ only) -->
     <button (click)="openGlobalTaskModal()"
-            class="hidden lg:flex fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 items-center justify-center">
+            class="hidden md:flex fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all z-40 items-center justify-center">
       <i class="fas fa-plus text-xl"></i>
       <span class="sr-only">Create Task</span>
     </button>

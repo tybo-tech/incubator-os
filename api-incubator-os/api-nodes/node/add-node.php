@@ -15,7 +15,8 @@ try {
         $data['data'],
         $data['company_id'] ?? null,
         $data['parent_id'] ?? null,
-        $data['created_by'] ?? null
+        $data['created_by'] ?? null,
+        $data['submitted_by_name'] ?? null
     );
 
     echo json_encode($result);

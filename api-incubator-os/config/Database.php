@@ -12,7 +12,7 @@ class Database
     public function __construct()
     {
         // Default to server config
-        // $this->setServer();
+        $this->setTyboServer();
 
         // Collect locally
         // Comment out before deploying
@@ -32,6 +32,13 @@ class Database
         $this->host = 'localhost';
         $this->db_name = 'rbttaces_api';
         $this->username = 'rbttaces_api';
+        $this->password = 'Harder01!';
+    }
+    public function setTyboServer()
+    {
+        $this->host = 'localhost';
+        $this->db_name = 'tybocoza_incubator_os';
+        $this->username = 'tybocoza_incubator_os';
         $this->password = 'Harder01!';
     }
 

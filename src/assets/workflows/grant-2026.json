@@ -1,0 +1,125 @@
+{
+    "id": "grant-2026",
+    "name": "Grant Funding 2026",
+    "stages": [
+        {
+            "key": "applied",
+            "label": "Applied",
+            "color": "blue",
+            "type": "entry",
+            "actions": [
+                {
+                    "key": "move_to_due_diligence",
+                    "label": "Start Due Diligence",
+                    "target": "due_diligence",
+                    "variant": "primary"
+                },
+                {
+                    "key": "decline",
+                    "label": "Decline Application",
+                    "target": "declined",
+                    "variant": "danger"
+                }
+            ]
+        },
+        {
+            "key": "due_diligence",
+            "label": "Due Diligence",
+            "color": "orange",
+            "type": "validation",
+            "requires_checklist": true,
+            "ui": {
+                "showChecklist": true,
+                "showDocuments": true
+            },
+            "actions": [
+                {
+                    "key": "pass",
+                    "label": "Pass Due Diligence",
+                    "target": "screening",
+                    "variant": "primary"
+                },
+                {
+                    "key": "decline",
+                    "label": "Decline Application",
+                    "target": "declined",
+                    "variant": "danger"
+                }
+            ]
+        },
+        {
+            "key": "screening",
+            "label": "Screening",
+            "color": "purple",
+            "type": "review",
+            "ui": {
+                "showEvaluation": true
+            },
+            "actions": [
+                {
+                    "key": "move_to_demo",
+                    "label": "Move to Demo",
+                    "target": "demo",
+                    "variant": "primary"
+                },
+                {
+                    "key": "decline",
+                    "label": "Decline Application",
+                    "target": "declined",
+                    "variant": "danger"
+                }
+            ]
+        },
+        {
+            "key": "demo",
+            "label": "Demo",
+            "color": "indigo",
+            "type": "evaluation",
+            "ui": {
+                "showEvaluation": true
+            },
+            "actions": [
+                {
+                    "key": "approve",
+                    "label": "Mark as Approved",
+                    "target": "approved",
+                    "variant": "primary"
+                },
+                {
+                    "key": "decline",
+                    "label": "Decline Application",
+                    "target": "declined",
+                    "variant": "danger"
+                }
+            ]
+        },
+        {
+            "key": "approved",
+            "label": "Approved",
+            "color": "green",
+            "type": "final",
+            "actions": [
+                {
+                    "key": "reopen",
+                    "label": "Reopen Application",
+                    "target": "previous",
+                    "variant": "secondary"
+                }
+            ]
+        },
+        {
+            "key": "declined",
+            "label": "Declined",
+            "color": "red",
+            "type": "final",
+            "actions": [
+                {
+                    "key": "reopen",
+                    "label": "Reopen Application",
+                    "target": "previous",
+                    "variant": "secondary"
+                }
+            ]
+        }
+    ]
+}

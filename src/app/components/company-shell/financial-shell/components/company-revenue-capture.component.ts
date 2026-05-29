@@ -1,11 +1,4 @@
-import {
-  Component,
-  signal,
-  computed,
-  OnInit,
-  OnDestroy,
-  inject,
-} from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { YearGroupComponent } from './year-group.component';
@@ -15,22 +8,11 @@ import { RevenueCaptureEmptyStateComponent } from './revenue-capture-empty-state
 import { RevenueCaptureLoadingComponent } from './revenue-capture-loading.component';
 import { RevenueCaptureFooterComponent } from './revenue-capture-footer.component';
 import { RevenueCaptureManagementModalComponent } from './revenue-capture-management-modal.component';
-import {
-  YearGroup,
-  AccountChangeEvent,
-  AccountRecord,
-} from '../models/revenue-capture.interface';
-import {
-  FinancialYearService,
-  FinancialYear,
-} from '../../../../../services/financial-year.service';
+import { YearGroup, AccountChangeEvent, AccountRecord } from '../models/revenue-capture.interface';
+import { FinancialYearService, FinancialYear } from '../../../../../services/financial-year.service';
 import { CompanyAccountService } from '../../../../services/company-account.service';
 import { CompanyAccount } from '../../../../services/company-account.interface';
-import {
-  CompanyFinancialYearlyStatsService,
-  CompanyFinancialYearlyStats,
-} from '../../../../../services/company-financial-yearly-stats.service';
-import { CompanyService } from '../../../../../services/company.service';
+import { CompanyFinancialYearlyStatsService, CompanyFinancialYearlyStats } from '../../../../../services/company-financial-yearly-stats.service';
 import { forkJoin, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
@@ -122,7 +104,6 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   private financialYearService = inject(FinancialYearService);
   private companyAccountService = inject(CompanyAccountService);
   private yearlyStatsService = inject(CompanyFinancialYearlyStatsService);
-  private companyService = inject(CompanyService);
   private helperService = inject(RevenueCaptureHelperService);
   private toastService = inject(ToastService);
 
@@ -144,21 +125,14 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
 
   // Computed properties
   readonly totalRevenue = computed(() =>
-    this.years().reduce(
-      (total, year) => total + this.helperService.calculateYearTotal(year),
-      0,
-    ),
+    this.years().reduce((total, year) => total + this.helperService.calculateYearTotal(year), 0)
   );
 
-  readonly activeYears = computed(
-    () => this.years().filter((year) => year.isActive).length,
-  );
+  readonly activeYears = computed(() => this.years().filter((year) => year.isActive).length);
 
   readonly availableYearsToAdd = computed(() => {
     const existingYearIds = this.years().map((year) => year.id);
-    return this.availableFinancialYears().filter(
-      (year) => !existingYearIds.includes(year.id),
-    );
+    return this.availableFinancialYears().filter((year) => !existingYearIds.includes(year.id));
   });
 
   ngOnInit() {
@@ -210,9 +184,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
 
         if (!actualId) {
           console.error('❌ No ID returned from create operation:', result);
-          this.toastService.error(
-            'Failed to create account record - no ID returned',
-          );
+          this.toastService.error('Failed to create account record - no ID returned');
           return;
         }
 
@@ -222,20 +194,11 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           accountId: null,
           accountName: '',
           months: {
-            m1: null,
-            m2: null,
-            m3: null,
-            m4: null,
-            m5: null,
-            m6: null,
-            m7: null,
-            m8: null,
-            m9: null,
-            m10: null,
-            m11: null,
-            m12: null,
+            m1: null, m2: null, m3: null, m4: null,
+            m5: null, m6: null, m7: null, m8: null,
+            m9: null, m10: null, m11: null, m12: null
           },
-          total: 0,
+          total: 0
         };
 
         // Add to UI state at the end to maintain natural data entry order (oldest first)
@@ -244,11 +207,11 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
             if (year.id === yearId) {
               return {
                 ...year,
-                accounts: [...year.accounts, newAccount], // Add at end (natural Excel-like flow)
+                accounts: [...year.accounts, newAccount] // Add at end (natural Excel-like flow)
               };
             }
             return year;
-          }),
+          })
         );
 
         console.log('✅ Empty account record created with DB ID:', actualId);
@@ -256,7 +219,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Failed to create empty account record:', error);
-      },
+      }
     });
   }
 
@@ -274,23 +237,15 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
               if (year.id === yearId) {
                 return {
                   ...year,
-                  accounts: year.accounts.filter(
-                    (acc) => acc.id !== account.id,
-                  ),
+                  accounts: year.accounts.filter((acc) => acc.id !== account.id)
                 };
               }
               return year;
-            }),
+            })
           );
 
-          this.syncTurnoverActual();
-          console.log(
-            '✅ Account record deleted successfully:',
-            result.message,
-          );
-          this.toastService.success(
-            `Account "${account.accountName || 'Unnamed'}" has been deleted successfully`,
-          );
+          console.log('✅ Account record deleted successfully:', result.message);
+          this.toastService.success(`Account "${account.accountName || 'Unnamed'}" has been deleted successfully`);
         } else {
           console.error('❌ Failed to delete account record:', result);
         }
@@ -298,7 +253,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('❌ Failed to delete account record:', error);
         this.toastService.deleteError('Account');
-      },
+      }
     });
   }
 
@@ -331,12 +286,12 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           return {
             ...year,
             accounts: year.accounts.map((acc) =>
-              acc.id === event.account!.id ? { ...event.account! } : acc,
+              acc.id === event.account!.id ? { ...event.account! } : acc
             ),
           };
         }
         return year;
-      }),
+      })
     );
 
     // Debounce the database save
@@ -348,7 +303,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
    */
   onYearChanged(updatedYear: YearGroup): void {
     this.years.update((years) =>
-      years.map((year) => (year.id === updatedYear.id ? updatedYear : year)),
+      years.map((year) => (year.id === updatedYear.id ? updatedYear : year))
     );
   }
 
@@ -363,17 +318,12 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
 
     forkJoin({
       financialYears: this.financialYearService.getAllFinancialYears(),
-      accounts: this.companyAccountService.getAccountsByCompany(
-        companyId,
-        false,
-      ),
+      accounts: this.companyAccountService.getAccountsByCompany(companyId, false),
       yearlyStats: this.yearlyStatsService.getAllCompanyStats(companyId),
     }).subscribe({
       next: (data) => {
         this.availableFinancialYears.set(data.financialYears);
-        this.availableAccounts.set(
-          data.accounts.success ? data.accounts.data : [],
-        );
+        this.availableAccounts.set(data.accounts.success ? data.accounts.data : []);
         this.allYearlyStats.set(data.yearlyStats);
 
         // Auto-select active financial year
@@ -386,7 +336,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
         const yearGroups = this.helperService.transformToYearGroups(
           data.financialYears,
           data.accounts.success ? data.accounts.data : [],
-          data.yearlyStats,
+          data.yearlyStats
         );
         this.years.set(yearGroups);
 
@@ -406,12 +356,9 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
     if (!this.selectedFinancialYearId) return;
 
     const yearId = parseInt(this.selectedFinancialYearId);
-    const selectedYear = this.availableFinancialYears().find(
-      (year) => year.id === yearId,
-    );
+    const selectedYear = this.availableFinancialYears().find((year) => year.id === yearId);
 
-    if (!selectedYear || this.years().find((year) => year.id === yearId))
-      return;
+    if (!selectedYear || this.years().find((year) => year.id === yearId)) return;
 
     // Create new empty year group using helper service
     const newYearGroup = this.helperService.createEmptyYearGroup(selectedYear);
@@ -442,15 +389,10 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
    */
   addAccountToAvailableList(newAccount: CompanyAccount): void {
     const currentAccounts = this.availableAccounts();
-    const accountExists = currentAccounts.some(
-      (acc) => acc.id === newAccount.id,
-    );
+    const accountExists = currentAccounts.some(acc => acc.id === newAccount.id);
 
     if (!accountExists) {
-      console.log(
-        '📝 Adding new account to available list for immediate UI update:',
-        newAccount.account_name,
-      );
+      console.log('📝 Adding new account to available list for immediate UI update:', newAccount.account_name);
       this.availableAccounts.set([...currentAccounts, newAccount]);
     }
   }
@@ -468,7 +410,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   private saveAccountToDatabase(
     yearId: number,
     account: any,
-    action: 'insert' | 'update' = 'update',
+    action: 'insert' | 'update' = 'update'
   ): void {
     const companyId = this.companyId();
 
@@ -477,15 +419,13 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
       console.log('🔍 Update request debug:', {
         accountId: account.id,
         accountName: account.accountName,
-        accountRecord: account,
+        accountRecord: account
       });
 
       // Validate that we have a valid account ID
       if (!account.id || account.id <= 0) {
         console.error('❌ Cannot update - invalid account ID:', account.id);
-        this.toastService.error(
-          'Cannot update record - invalid ID. Please refresh the page.',
-        );
+        this.toastService.error('Cannot update record - invalid ID. Please refresh the page.');
         return;
       }
 
@@ -506,69 +446,34 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
         m10: account.months.m10 || 0,
         m11: account.months.m11 || 0,
         m12: account.months.m12 || 0,
-        total_amount: account.total || 0,
+        total_amount: account.total || 0
       };
 
-      console.log('🔄 Direct yearly stats update:', {
-        id: account.id,
-        data: updateData,
-      });
+      console.log('🔄 Direct yearly stats update:', { id: account.id, data: updateData });
 
-      this.yearlyStatsService
-        .updateYearlyStats(account.id, updateData)
-        .subscribe({
-          next: (result) => {
-            this.syncTurnoverActual();
-            this.toastService.success(
-              `Account "${account.accountName || 'Account'}" has been updated successfully`,
-            );
-          },
-          error: (error) => {
-            console.error('Failed to update yearly stats:', error);
-            this.toastService.error(
-              'Failed to update account. Please try again.',
-            );
-          },
-        });
+      this.yearlyStatsService.updateYearlyStats(account.id, updateData).subscribe({
+        next: (result) => {
+          this.toastService.success(`Account "${account.accountName || 'Account'}" has been updated successfully`);
+        },
+        error: (error) => {
+          console.error('Failed to update yearly stats:', error);
+          this.toastService.error('Failed to update account. Please try again.');
+        }
+      });
     } else {
       // For inserts, use helper service
-      this.helperService
-        .saveAccountData(account, yearId, companyId, action)
-        .subscribe({
-          next: (result) => {
-            if (result.id) {
-              this.updateAccountIdInLocalState(yearId, account.id, result.id);
-              this.syncTurnoverActual();
-              this.toastService.success(
-                `Account "${account.accountName || 'New Account'}" has been created successfully`,
-              );
-            }
-          },
-          error: (error) => {
-            console.error(`Failed to ${action} account:`, error);
-          },
-        });
-    }
-  }
-
-  /**
-   * Sync the combined total of all captured revenue to companies.turnover_actual
-   */
-  private syncTurnoverActual(): void {
-    const companyId = this.companyId();
-    if (!companyId) return;
-
-    const total = this.totalRevenue();
-    this.companyService
-      .updateCompany(companyId, {
-        turnover_actual: total,
-        turnover_estimated: total,
-      })
-      .subscribe({
-        next: () => console.log('✅ turnover_actual synced:', total),
-        error: (err) =>
-          console.error('❌ Failed to sync turnover_actual:', err),
+      this.helperService.saveAccountData(account, yearId, companyId, action).subscribe({
+        next: (result) => {
+          if (result.id) {
+            this.updateAccountIdInLocalState(yearId, account.id, result.id);
+            this.toastService.success(`Account "${account.accountName || 'New Account'}" has been created successfully`);
+          }
+        },
+        error: (error) => {
+          console.error(`Failed to ${action} account:`, error);
+        },
       });
+    }
   }
 
   /**
@@ -577,7 +482,7 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
   private updateAccountIdInLocalState(
     yearId: number,
     oldAccountId: number,
-    newAccountId: number,
+    newAccountId: number
   ): void {
     this.years.update((years) =>
       years.map((year) => {
@@ -585,12 +490,12 @@ export class CompanyRevenueCaptureComponent implements OnInit, OnDestroy {
           return {
             ...year,
             accounts: year.accounts.map((acc) =>
-              acc.id === oldAccountId ? { ...acc, id: newAccountId } : acc,
+              acc.id === oldAccountId ? { ...acc, id: newAccountId } : acc
             ),
           };
         }
         return year;
-      }),
+      })
     );
   }
 }

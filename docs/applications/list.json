@@ -1,0 +1,2968 @@
+[
+    {
+        "id": 2014,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "city": "Mhlathuze",
+            "status": "applied",
+            "suburb": "",
+            "district": "King  Cetshwayo",
+            "province": "KwaZulu-Natal",
+            "checklist": [
+                {
+                    "id": "certified_id",
+                    "label": "Certified copy of ID for all directors",
+                    "status": "received",
+                    "checked": true
+                },
+                {
+                    "id": "cipc_documents",
+                    "label": "CIPC registration documents",
+                    "status": "received",
+                    "checked": true
+                },
+                {
+                    "id": "bank_statements",
+                    "label": "12 months bank statements",
+                    "status": "received",
+                    "checked": true
+                },
+                {
+                    "id": "proof_of_address",
+                    "label": "Proof of address (not older than 3 months)",
+                    "status": "received",
+                    "checked": true
+                },
+                {
+                    "id": "tax_clearance",
+                    "label": "SARS tax clearance certificate",
+                    "status": "received",
+                    "checked": true
+                },
+                {
+                    "id": "bbbee_certificate",
+                    "label": "B-BBEE certificate",
+                    "status": "received",
+                    "checked": true
+                }
+            ],
+            "directors": [
+                {
+                    "name": "Njabulo",
+                    "gender": "male",
+                    "surname": "Zuma",
+                    "id_number": "8601215656089"
+                },
+                {
+                    "name": "Dlazi",
+                    "gender": "male",
+                    "surname": "Richard",
+                    "id_number": "808125610082"
+                }
+            ],
+            "black_owned": true,
+            "youth_owned": true,
+            "company_name": "LA Fusion Chefs",
+            "address_line1": "Hluhluwe tourist square",
+            "address_line2": "Shop 54",
+            "status_history": [
+                {
+                    "note": "Desktop done",
+                    "status": "applied",
+                    "timestamp": "2026-04-19T14:18:36.990Z"
+                }
+            ],
+            "registration_number": "2019\/049034\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-19 15:05:43",
+        "updated_at": "2026-04-22 11:52:45"
+    },
+    {
+        "id": 2023,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "workflow_id": "grant-2026",
+            "company_name": "BCI Trading (Pty) Ltd",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T08:11:21.047Z"
+                }
+            ],
+            "registration_number": "2019\/466708\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 10:11:22",
+        "updated_at": "2026-04-22 10:16:14"
+    },
+    {
+        "id": 2024,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "city": "Kwambonambi",
+            "status": "applied",
+            "province": "KwaZulu-Natal",
+            "directors": [
+                {
+                    "name": "Nkosinomusa Michael",
+                    "email": "nkosimbuyazi506@gmail.com",
+                    "gender": "male",
+                    "surname": "Mbuyazi",
+                    "id_number": "8404095640088",
+                    "cell_phone": "0710216077",
+                    "date_of_birth": "1984-04-09"
+                },
+                {
+                    "name": "Siyanda",
+                    "gender": "male",
+                    "surname": "Ndlovu",
+                    "id_number": "0007186106089",
+                    "date_of_birth": "2000-07-18"
+                }
+            ],
+            "black_owned": true,
+            "workflow_id": "grant-2026",
+            "company_name": "Aqua Drops Engineering and Projects (Pty) Ltd",
+            "address_line1": "Thandaza Reserve",
+            "address_line2": "Ward 08 Umfolozi",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T08:18:49.796Z"
+                }
+            ],
+            "registration_number": "CK 2016\/325047\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 10:18:51",
+        "updated_at": "2026-04-22 10:29:20"
+    },
+    {
+        "id": 2025,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "workflow_id": "grant-2026",
+            "company_name": "Bhekabantu Trading and Enterprise (pty) Ltd",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T08:31:46.001Z"
+                }
+            ],
+            "registration_number": "2025\/350329\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 10:31:47",
+        "updated_at": "2026-04-22 10:31:47"
+    },
+    {
+        "id": 2026,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lindiwe Goodness",
+                    "email": "gamedemthobisi6@gmail.com",
+                    "gender": "female",
+                    "surname": "Mdluli",
+                    "id_number": "7607050469084",
+                    "cell_phone": "0648589956",
+                    "date_of_birth": "1976-07-05",
+                    "alt_cell_phone": "0673671763"
+                },
+                {
+                    "name": "Mthobisi Selby",
+                    "gender": "male",
+                    "surname": "Gamede",
+                    "id_number": "9911225888089",
+                    "date_of_birth": "1999-11-22"
+                }
+            ],
+            "black_owned": true,
+            "workflow_id": "grant-2026",
+            "company_name": "BK Mdluli Trading and Project",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T08:36:54.443Z"
+                }
+            ],
+            "black_women_owned": true,
+            "registration_number": "2020\/004570\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 10:36:55",
+        "updated_at": "2026-04-22 10:44:29"
+    },
+    {
+        "id": 2027,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "due_diligence",
+            "workflow_id": "grant-2026",
+            "company_name": "ZeeGraphix",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T08:59:15.426Z"
+                },
+                {
+                    "status": "due_diligence",
+                    "timestamp": "2026-04-22T09:51:25.068Z"
+                }
+            ],
+            "previous_status": "applied",
+            "registration_number": "2024\/287384\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 10:59:16",
+        "updated_at": "2026-04-22 11:51:26"
+    },
+    {
+        "id": 2028,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nombulelo Faith",
+                    "gender": "female",
+                    "surname": "Xulu",
+                    "id_number": "8502170983081",
+                    "date_of_birth": "1985-02-17"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ntandeloh Holdings",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:22:56.916Z"
+                }
+            ],
+            "registration_number": "2024\/670940\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:22:58",
+        "updated_at": "2026-04-22 11:25:27"
+    },
+    {
+        "id": 2029,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Pretty",
+                    "gender": "female",
+                    "surname": "Gonya",
+                    "id_number": "7701040619088",
+                    "date_of_birth": "1977-01-04"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Enkanyazini Yokusa",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:27:36.621Z"
+                }
+            ],
+            "registration_number": "2005\/09192\/23"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:27:38",
+        "updated_at": "2026-04-22 11:28:43"
+    },
+    {
+        "id": 2030,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mandlakayise ",
+                    "gender": "male",
+                    "surname": "Gabela",
+                    "id_number": "8603035951089",
+                    "cell_phone": "0616618112",
+                    "date_of_birth": "1986-03-03",
+                    "alt_cell_phone": "0733144298"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Gabsnetwork",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:29:22.193Z"
+                }
+            ],
+            "registration_number": "2021\/849628\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:29:23",
+        "updated_at": "2026-04-22 11:30:37"
+    },
+    {
+        "id": 2031,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Khangokuhle Vukile ",
+                    "gender": "male",
+                    "surname": "Mdletshe",
+                    "id_number": "9909136462085",
+                    "date_of_birth": "1999-09-13"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "The Cleanedup SA",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:31:18.403Z"
+                }
+            ],
+            "registration_number": "2019\/567206\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:31:19",
+        "updated_at": "2026-04-22 11:32:11"
+    },
+    {
+        "id": 2032,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Fikisiwe Lethiwe ",
+                    "gender": "female",
+                    "surname": "Sithole",
+                    "id_number": "9509231352080",
+                    "cell_phone": "0711581123",
+                    "date_of_birth": "1995-09-23",
+                    "alt_cell_phone": "0767404439"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Tatas Trading",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:32:53.846Z"
+                }
+            ],
+            "registration_number": "2019\/390301\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:32:54",
+        "updated_at": "2026-04-22 11:34:15"
+    },
+    {
+        "id": 2033,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thobekani ",
+                    "surname": "Buthelezi",
+                    "id_number": ""
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ngezimfihlo Catering and Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:34:51.713Z"
+                }
+            ],
+            "registration_number": "2013\/175743\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:34:53",
+        "updated_at": "2026-04-22 11:35:58"
+    },
+    {
+        "id": 2034,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sbusiso ",
+                    "gender": "male",
+                    "surname": "Ngqushwa",
+                    "id_number": "9402185384087",
+                    "cell_phone": "0745518404",
+                    "date_of_birth": "1994-02-18"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Isibusiso Unlimited Solutions",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:36:54.424Z"
+                }
+            ],
+            "registration_number": "2020\/611456\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:36:55",
+        "updated_at": "2026-04-22 11:38:57"
+    },
+    {
+        "id": 2035,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Oviweyo ",
+                    "gender": "male",
+                    "surname": "Ntlanjeni",
+                    "id_number": "9907165523082",
+                    "cell_phone": "0761397565",
+                    "date_of_birth": "1999-07-16"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Bright Light Construction",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:39:50.525Z"
+                }
+            ],
+            "registration_number": "2015\/049705\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:39:52",
+        "updated_at": "2026-04-22 11:40:56"
+    },
+    {
+        "id": 2036,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Senzo ",
+                    "gender": "male",
+                    "surname": "Ntshela",
+                    "id_number": "8306106803086",
+                    "cell_phone": "0730571983",
+                    "date_of_birth": "1983-06-10"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Senzo SA",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:41:31.432Z"
+                }
+            ],
+            "registration_number": "2021\/561239\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:41:32",
+        "updated_at": "2026-04-22 11:42:40"
+    },
+    {
+        "id": 2037,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Ntokozo Fakazi",
+                    "gender": "male",
+                    "surname": "Fakazi",
+                    "id_number": "9005285937082",
+                    "cell_phone": "0640896016",
+                    "date_of_birth": "1990-05-28",
+                    "alt_cell_phone": "0697864238"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Maphikwana Group",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:44:27.496Z"
+                }
+            ],
+            "registration_number": "2022\/262470\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:44:28",
+        "updated_at": "2026-04-22 11:45:41"
+    },
+    {
+        "id": 2038,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Damisile ",
+                    "gender": "female",
+                    "surname": "Mthethwa",
+                    "id_number": "9008170571081",
+                    "cell_phone": "0663740888",
+                    "date_of_birth": "1990-08-17"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Darncy Beauty Salon",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:46:24.965Z"
+                }
+            ],
+            "registration_number": "2020\/216571\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:46:26",
+        "updated_at": "2026-04-22 11:47:31"
+    },
+    {
+        "id": 2040,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sandiso ",
+                    "gender": "male",
+                    "surname": "Makhanya",
+                    "id_number": "0204295155087",
+                    "cell_phone": "0694461688",
+                    "date_of_birth": "2002-04-29",
+                    "alt_cell_phone": "06776994409"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Inhlanganisela Group",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:48:13.950Z"
+                }
+            ],
+            "registration_number": "2022\/229618\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:48:15",
+        "updated_at": "2026-04-22 11:50:10"
+    },
+    {
+        "id": 2041,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Kwanele Mbatha",
+                    "gender": "male",
+                    "surname": "Mbatha",
+                    "id_number": "8004135405086",
+                    "cell_phone": "0607889762",
+                    "date_of_birth": "1980-04-13"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Makhubanothuli Trading Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:54:21.711Z"
+                }
+            ],
+            "registration_number": "2015\/409302\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:54:23",
+        "updated_at": "2026-04-22 11:55:30"
+    },
+    {
+        "id": 2044,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mduduzi ",
+                    "gender": "male",
+                    "surname": "Nyawo",
+                    "id_number": "7702215321088",
+                    "cell_phone": "0832670611",
+                    "date_of_birth": "1977-02-21"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "AB Sambane",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T09:58:53.617Z"
+                }
+            ],
+            "registration_number": "2006\/148774\/23"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 11:58:54",
+        "updated_at": "2026-04-22 12:00:17"
+    },
+    {
+        "id": 2046,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thabsile ",
+                    "gender": "female",
+                    "surname": "Ndlovu",
+                    "id_number": "8401160361087",
+                    "cell_phone": "0815079976",
+                    "date_of_birth": "1984-01-16",
+                    "alt_cell_phone": "0719418302"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Phethulwazi Trading Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:00:54.466Z"
+                }
+            ],
+            "registration_number": "2011\/066737\/23"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:00:55",
+        "updated_at": "2026-04-22 12:02:45"
+    },
+    {
+        "id": 2048,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mnqobi ",
+                    "gender": "male",
+                    "surname": "Zondi",
+                    "id_number": "0309255726080",
+                    "cell_phone": "0787572258",
+                    "date_of_birth": "2003-09-25"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mzondi Intergrated Solutions",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:03:20.937Z"
+                }
+            ],
+            "registration_number": "2025\/614691\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:03:22",
+        "updated_at": "2026-04-22 12:04:19"
+    },
+    {
+        "id": 2050,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Khulekani ",
+                    "gender": "male",
+                    "surname": "Ngema",
+                    "id_number": "9204215822080",
+                    "cell_phone": "0728456507",
+                    "date_of_birth": "1992-04-21"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Kuhlekonke Trading 5",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:04:55.358Z"
+                }
+            ],
+            "registration_number": "2025\/911592\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:04:56",
+        "updated_at": "2026-04-22 12:06:12"
+    },
+    {
+        "id": 2051,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nduduzo ",
+                    "gender": "male",
+                    "surname": "Mbuyazi",
+                    "id_number": "8504246039088",
+                    "cell_phone": "066 163 1982",
+                    "date_of_birth": "1985-04-24"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "TNS Cleaning and Solutions",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:35:37.605Z"
+                }
+            ],
+            "registration_number": "2020\/618886\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:35:39",
+        "updated_at": "2026-04-22 12:37:00"
+    },
+    {
+        "id": 2052,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Zaminkosi Buthelezi",
+                    "gender": "male",
+                    "surname": "Buthelezi",
+                    "id_number": "8409206451085",
+                    "cell_phone": "0799534647",
+                    "date_of_birth": "1984-09-20"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mafohla Trading",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:37:32.789Z"
+                }
+            ],
+            "registration_number": "2024\/339019\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:37:33",
+        "updated_at": "2026-04-22 12:38:34"
+    },
+    {
+        "id": 2053,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nsindiso ",
+                    "gender": "male",
+                    "surname": "Sibema",
+                    "id_number": "0012055044080",
+                    "cell_phone": "0721465495",
+                    "date_of_birth": "2000-12-05"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Isivunosethu Distributions",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:39:07.728Z"
+                }
+            ],
+            "registration_number": "2024\/000633\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:39:08",
+        "updated_at": "2026-04-22 12:40:24"
+    },
+    {
+        "id": 2054,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nomalungelo ",
+                    "gender": "female",
+                    "surname": "Mahlangu",
+                    "id_number": "8411020571080",
+                    "cell_phone": "0768352762",
+                    "date_of_birth": "1984-11-02"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Precious Lulu Couture",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:41:02.608Z"
+                }
+            ],
+            "registration_number": "2015\/226179\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:41:03",
+        "updated_at": "2026-04-22 12:42:25"
+    },
+    {
+        "id": 2055,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sithembiso",
+                    "gender": "male",
+                    "surname": "Gwala",
+                    "id_number": "9306056015086",
+                    "cell_phone": "078 542 1743",
+                    "date_of_birth": "1993-06-05",
+                    "alt_cell_phone": "0726958470"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Eyamajiya Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:43:08.523Z"
+                }
+            ],
+            "registration_number": "2025\/610815\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:43:09",
+        "updated_at": "2026-04-22 12:44:58"
+    },
+    {
+        "id": 2056,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Njabulo Kwanele",
+                    "gender": "male",
+                    "surname": "Nkosi",
+                    "id_number": "9802055045082",
+                    "cell_phone": "0825024759",
+                    "date_of_birth": "1998-02-05"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Seven Days Projects and Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:45:35.841Z"
+                }
+            ],
+            "registration_number": "2019\/009963\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:45:36",
+        "updated_at": "2026-04-22 12:46:39"
+    },
+    {
+        "id": 2057,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nomzamo ",
+                    "surname": "Buthelezi",
+                    "id_number": "941014091087",
+                    "cell_phone": "0635760067"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Handhold projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:48:02.280Z"
+                }
+            ],
+            "registration_number": "2019\/535314\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:48:04",
+        "updated_at": "2026-04-22 12:49:16"
+    },
+    {
+        "id": 2058,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "screening",
+            "checklist": [
+                {
+                    "id": "certified_id",
+                    "label": "Certified copy of ID for all directors",
+                    "status": "received",
+                    "required": true
+                },
+                {
+                    "id": "cipc_documents",
+                    "label": "CIPC registration documents",
+                    "status": "received",
+                    "required": true
+                },
+                {
+                    "id": "bank_statements",
+                    "label": "12 months bank statements",
+                    "status": "received",
+                    "required": true
+                },
+                {
+                    "id": "proof_of_address",
+                    "label": "Proof of address (not older than 3 months)",
+                    "status": "received",
+                    "required": true
+                },
+                {
+                    "id": "tax_clearance",
+                    "label": "SARS tax clearance certificate",
+                    "status": "received",
+                    "required": true
+                },
+                {
+                    "id": "bbbee_certificate",
+                    "label": "B-BBEE certificate",
+                    "status": "received",
+                    "required": true
+                }
+            ],
+            "directors": [
+                {
+                    "name": "Sibusiso",
+                    "gender": "male",
+                    "surname": "Mhlanga",
+                    "id_number": "7412065798084",
+                    "date_of_birth": "1974-12-06"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mozane Engineering and Industrial Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T10:49:43.765Z"
+                },
+                {
+                    "status": "due_diligence",
+                    "timestamp": "2026-04-22T10:53:46.756Z"
+                },
+                {
+                    "status": "screening",
+                    "timestamp": "2026-04-22T10:54:22.843Z"
+                }
+            ],
+            "previous_status": "due_diligence",
+            "registration_number": "2018\/521498\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 12:49:44",
+        "updated_at": "2026-04-22 12:54:24"
+    },
+    {
+        "id": 2059,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Kwanda ",
+                    "gender": "male",
+                    "surname": "Mthethwa",
+                    "id_number": "0207195088084",
+                    "date_of_birth": "2002-07-19"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Siyabonga Trading Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:08:22.679Z"
+                }
+            ],
+            "registration_number": "2024\/675049\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:08:24",
+        "updated_at": "2026-04-22 13:10:00"
+    },
+    {
+        "id": 2061,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Vusumuzi ",
+                    "gender": "male",
+                    "surname": "Skosana",
+                    "id_number": "8608145410082",
+                    "date_of_birth": "1986-08-14"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Dub Nation",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:43:45.222Z"
+                }
+            ],
+            "registration_number": "2012\/143846\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:43:47",
+        "updated_at": "2026-04-22 13:45:51"
+    },
+    {
+        "id": 2062,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Cyril",
+                    "gender": "male",
+                    "surname": " Franke",
+                    "id_number": "7306225212087",
+                    "cell_phone": "0676842669",
+                    "date_of_birth": "1973-06-22"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Jamsal Car Wash and Valet",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:46:59.472Z"
+                }
+            ],
+            "registration_number": "2025\/258808\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:47:01",
+        "updated_at": "2026-04-22 13:48:25"
+    },
+    {
+        "id": 2063,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lindokuhle ",
+                    "gender": "male",
+                    "surname": "Sokhulu",
+                    "id_number": "8605045357082",
+                    "cell_phone": "075 498 5718",
+                    "date_of_birth": "1986-05-04"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Socool Deep Cleaners",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:50:26.017Z"
+                }
+            ],
+            "registration_number": "2024\/633895\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:50:27",
+        "updated_at": "2026-04-22 13:52:18"
+    },
+    {
+        "id": 2064,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sinethemba ",
+                    "gender": "female",
+                    "surname": "Zuma",
+                    "id_number": "9311210566081",
+                    "cell_phone": "0725974564",
+                    "date_of_birth": "1993-11-21"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "SNNZUMA Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:53:21.432Z"
+                }
+            ],
+            "registration_number": "2021\/704373\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:53:23",
+        "updated_at": "2026-04-22 13:54:42"
+    },
+    {
+        "id": 2065,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mduduzi ",
+                    "gender": "male",
+                    "surname": "Ntshangase",
+                    "id_number": "8904266125082",
+                    "cell_phone": "0730664618",
+                    "date_of_birth": "1989-04-26"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ekamagazi Engineering",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:55:38.096Z"
+                }
+            ],
+            "registration_number": "2024\/365063\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:55:41",
+        "updated_at": "2026-04-22 13:56:56"
+    },
+    {
+        "id": 2066,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Gugu ",
+                    "gender": "female",
+                    "surname": "Mnkonyeni",
+                    "id_number": "9808040254085",
+                    "cell_phone": "0682196595",
+                    "date_of_birth": "1998-08-04"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "E19 Nineteen",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T11:59:06.177Z"
+                }
+            ],
+            "registration_number": "2022\/612278\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 13:59:07",
+        "updated_at": "2026-04-22 14:01:03"
+    },
+    {
+        "id": 2067,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mdumiso ",
+                    "gender": "male",
+                    "surname": "Xulu",
+                    "id_number": "9102025891081",
+                    "cell_phone": "081 394 5588 ",
+                    "date_of_birth": "1991-02-02",
+                    "alt_cell_phone": "078 621 0201"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "NG Xulu Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:05:53.074Z"
+                }
+            ],
+            "registration_number": "2017\/411247\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:05:54",
+        "updated_at": "2026-04-22 14:07:49"
+    },
+    {
+        "id": 2068,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Malusi ",
+                    "gender": "male",
+                    "surname": "Mlondo",
+                    "id_number": "9302096211082",
+                    "cell_phone": "0722082652 ",
+                    "date_of_birth": "1993-02-09",
+                    "alt_cell_phone": " 0681777327"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Uzande Trading",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:11:00.287Z"
+                }
+            ],
+            "registration_number": "2025\/360508\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:11:01",
+        "updated_at": "2026-04-22 14:13:20"
+    },
+    {
+        "id": 2069,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sanelisiwe ",
+                    "gender": "female",
+                    "surname": "Zungu",
+                    "id_number": "9206021509082",
+                    "cell_phone": "0786763333",
+                    "date_of_birth": "1992-06-02"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ntombiyokusa Enterprises",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:14:04.979Z"
+                }
+            ],
+            "registration_number": "2021\/944067\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:14:06",
+        "updated_at": "2026-04-22 14:15:41"
+    },
+    {
+        "id": 2070,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sikelela",
+                    "gender": "male",
+                    "surname": " Zulu",
+                    "id_number": "8010125337080",
+                    "cell_phone": "0829980545",
+                    "date_of_birth": "1980-10-12"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Imbumbe Africa Manufacturing",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:16:29.567Z"
+                }
+            ],
+            "registration_number": "2021\/554403\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:16:31",
+        "updated_at": "2026-04-22 14:17:39"
+    },
+    {
+        "id": 2071,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Dumisani Mthokozisi ",
+                    "surname": "Massing",
+                    "cell_phone": "062 117 2152"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Dumisani Mthokozisi Massing",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:19:07.314Z"
+                }
+            ],
+            "registration_number": "Nil"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:19:09",
+        "updated_at": "2026-04-22 14:20:18"
+    },
+    {
+        "id": 2072,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Celinkosi ",
+                    "gender": "male",
+                    "surname": "Ndiyaza",
+                    "id_number": "7301235412082",
+                    "cell_phone": "081 210 8986",
+                    "date_of_birth": "1973-01-23"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Nonxie Property and Investment Solutions",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:22:12.149Z"
+                }
+            ],
+            "registration_number": "2017\/471478\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:22:13",
+        "updated_at": "2026-04-22 14:23:15"
+    },
+    {
+        "id": 2073,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Tramyne ",
+                    "gender": "female",
+                    "surname": "Nagappa",
+                    "id_number": "9301050416083",
+                    "cell_phone": "0722206154",
+                    "date_of_birth": "1993-01-05"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Lashed By Tramyne",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:23:51.778Z"
+                }
+            ],
+            "registration_number": "2025\/206071\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:23:53",
+        "updated_at": "2026-04-22 14:25:26"
+    },
+    {
+        "id": 2074,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sibani ",
+                    "surname": "Nyandeni",
+                    "id_number": "8806175475086",
+                    "cell_phone": "0671629419"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "ISIBANISAMAYANDENI Trading and Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:26:37.368Z"
+                }
+            ],
+            "registration_number": "2013\/038587\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:26:39",
+        "updated_at": "2026-04-22 14:29:06"
+    },
+    {
+        "id": 2075,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Magnoria ",
+                    "gender": "female",
+                    "surname": "Zulu",
+                    "id_number": "9202211042083",
+                    "date_of_birth": "1992-02-21"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "MG Service Trading",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:29:59.563Z"
+                }
+            ],
+            "registration_number": "2025\/786872\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:30:01",
+        "updated_at": "2026-04-22 14:31:06"
+    },
+    {
+        "id": 2076,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Xolisile ",
+                    "gender": "female",
+                    "surname": "Nhleko",
+                    "id_number": "7608300092080",
+                    "date_of_birth": "1976-08-30"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ntoliwa Bed and Breakfast",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:31:43.895Z"
+                }
+            ],
+            "registration_number": "2014\/202612\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:31:44",
+        "updated_at": "2026-04-22 14:32:35"
+    },
+    {
+        "id": 2077,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Stay Don ",
+                    "gender": "male",
+                    "surname": "Mthembu",
+                    "id_number": "9207235180082",
+                    "cell_phone": "0732619643",
+                    "date_of_birth": "1992-07-23"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Finesecure",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:33:36.993Z"
+                }
+            ],
+            "registration_number": "2023\/116203\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:33:38",
+        "updated_at": "2026-04-22 14:35:15"
+    },
+    {
+        "id": 2078,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Qiniso ",
+                    "gender": "male",
+                    "surname": "Zuma",
+                    "id_number": "9705315394085",
+                    "cell_phone": "0799430122",
+                    "date_of_birth": "1997-05-31"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ibutho Designers",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:36:02.203Z"
+                }
+            ],
+            "registration_number": "2022\/539877\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:36:03",
+        "updated_at": "2026-04-22 14:37:48"
+    },
+    {
+        "id": 2079,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Gugulethu ",
+                    "gender": "female",
+                    "surname": "ncube",
+                    "id_number": "6811240710081",
+                    "cell_phone": "072 710 0681 ",
+                    "date_of_birth": "1968-11-24",
+                    "alt_cell_phone": "073 260 4717"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Umndeni Agri Business",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:38:31.422Z"
+                }
+            ],
+            "registration_number": "2024\/588223\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:38:33",
+        "updated_at": "2026-04-22 14:40:32"
+    },
+    {
+        "id": 2080,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nondumiso ",
+                    "gender": "female",
+                    "surname": "Nkwanyana",
+                    "id_number": "9501090482082",
+                    "cell_phone": "0810224700 ",
+                    "date_of_birth": "1995-01-09",
+                    "alt_cell_phone": " 0797451578"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Nondumiso Engineering and Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:41:28.016Z"
+                }
+            ],
+            "registration_number": "2025\/796218\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:41:29",
+        "updated_at": "2026-04-22 14:43:37"
+    },
+    {
+        "id": 2081,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Samukelisiwe ",
+                    "gender": "female",
+                    "surname": "Zondi",
+                    "id_number": "7610030509086",
+                    "cell_phone": "0728266600",
+                    "date_of_birth": "1976-10-03"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Bhekabantu Trading and Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:44:13.617Z"
+                }
+            ],
+            "registration_number": "2025\/350329\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:44:15",
+        "updated_at": "2026-04-22 14:45:23"
+    },
+    {
+        "id": 2082,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nhlanhla ",
+                    "gender": "male",
+                    "surname": "Shabalala",
+                    "id_number": "9209095714083",
+                    "cell_phone": "067 887 7875",
+                    "date_of_birth": "1992-09-09"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Black VIP Protection",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:45:59.998Z"
+                }
+            ],
+            "registration_number": "2022\/671957\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:46:01",
+        "updated_at": "2026-04-22 14:47:18"
+    },
+    {
+        "id": 2083,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nonhlanhla ",
+                    "gender": "female",
+                    "surname": "Mpotshane",
+                    "id_number": "7410300289083",
+                    "cell_phone": "0728083613",
+                    "date_of_birth": "1974-10-30"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Siyandiza Tradiing",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:48:02.773Z"
+                }
+            ],
+            "registration_number": "2013\/064998\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:48:04",
+        "updated_at": "2026-04-22 14:49:10"
+    },
+    {
+        "id": 2084,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Justine ",
+                    "surname": "Ngcobo",
+                    "id_number": "9906141177084",
+                    "cell_phone": "0782938933"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Solomon's Seal",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:49:43.325Z"
+                }
+            ],
+            "registration_number": "2026\/221561\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:49:44",
+        "updated_at": "2026-04-22 14:50:50"
+    },
+    {
+        "id": 2085,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nomonde ",
+                    "gender": "female",
+                    "surname": "Sithole",
+                    "id_number": "9706170946084",
+                    "date_of_birth": "1997-06-17"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mabhunganamahle",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:51:29.067Z"
+                }
+            ],
+            "registration_number": "2024\/831982\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:51:30",
+        "updated_at": "2026-04-22 14:53:38"
+    },
+    {
+        "id": 2086,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thabani ",
+                    "gender": "male",
+                    "surname": "Msweli",
+                    "id_number": "9302166103086",
+                    "cell_phone": "081 091 4858",
+                    "date_of_birth": "1993-02-16"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Msweli Agricultural Consulting",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:54:08.996Z"
+                }
+            ],
+            "registration_number": "2022\/289992\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:54:10",
+        "updated_at": "2026-04-22 14:55:16"
+    },
+    {
+        "id": 2087,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Jabu ",
+                    "gender": "female",
+                    "surname": "Mkhize",
+                    "id_number": "7809200794086",
+                    "cell_phone": "0762819814",
+                    "date_of_birth": "1978-09-20"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mandisawengcebo Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:55:55.032Z"
+                }
+            ],
+            "registration_number": "2019\/447461\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:55:56",
+        "updated_at": "2026-04-22 14:57:00"
+    },
+    {
+        "id": 2088,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lindokuhle ",
+                    "phone": "0665132529",
+                    "gender": "male",
+                    "surname": "fakude",
+                    "id_number": "8806105638086",
+                    "cell_phone": "0834838827 ",
+                    "date_of_birth": "1988-06-10",
+                    "alt_cell_phone": "0751566284"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Fakude Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:57:32.286Z"
+                }
+            ],
+            "registration_number": "2025\/002737\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:57:33",
+        "updated_at": "2026-04-22 14:59:15"
+    },
+    {
+        "id": 2089,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thembeka ",
+                    "surname": "Mthethwa",
+                    "id_number": "03270363089",
+                    "cell_phone": "077 453 6967"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Nomaluswana Holdings",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T12:59:45.953Z"
+                }
+            ],
+            "registration_number": "2021\/138839\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 14:59:47",
+        "updated_at": "2026-04-22 15:01:31"
+    },
+    {
+        "id": 2090,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Phakamani ",
+                    "surname": "Mthethwa",
+                    "id_number": "9107286113088"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Sdingokuhle",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:02:42.967Z"
+                }
+            ],
+            "registration_number": "2021\/412855\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:02:44",
+        "updated_at": "2026-04-22 15:03:47"
+    },
+    {
+        "id": 2091,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Silindile ",
+                    "gender": "female",
+                    "surname": "Nyawo",
+                    "id_number": "9409250377086",
+                    "cell_phone": "0733716007",
+                    "date_of_birth": "1994-09-25"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Nyawo Zendalo Air",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:05:19.279Z"
+                }
+            ],
+            "registration_number": "2024\/308165\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:05:20",
+        "updated_at": "2026-04-22 15:06:54"
+    },
+    {
+        "id": 2092,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sinegugu ",
+                    "gender": "female",
+                    "surname": "Zulu",
+                    "id_number": "8810280940085",
+                    "cell_phone": "0627328617",
+                    "date_of_birth": "1988-10-28"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Khosievents",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:08:40.254Z"
+                }
+            ],
+            "registration_number": "2021\/339890\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:08:42",
+        "updated_at": "2026-04-22 15:11:17"
+    },
+    {
+        "id": 2093,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sphesihle ",
+                    "gender": "male",
+                    "surname": "Zulu",
+                    "id_number": "0101245913088",
+                    "cell_phone": "0725807541 ",
+                    "date_of_birth": "2001-01-24",
+                    "alt_cell_phone": "0728981495"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Mhlaba Wondaba Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:12:35.715Z"
+                }
+            ],
+            "registration_number": "2024\/280532\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:12:37",
+        "updated_at": "2026-04-22 15:14:25"
+    },
+    {
+        "id": 2094,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Minenhle ",
+                    "gender": "female",
+                    "surname": "Sibiya",
+                    "id_number": "9802190617084",
+                    "cell_phone": "074 266 0247 ",
+                    "date_of_birth": "1998-02-19",
+                    "alt_cell_phone": "082 731 7790"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Masbiya Budget Bites",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:15:22.082Z"
+                }
+            ],
+            "registration_number": "2025\/678768\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:15:23",
+        "updated_at": "2026-04-22 15:17:33"
+    },
+    {
+        "id": 2095,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mthobisi ",
+                    "gender": "male",
+                    "surname": "gamede",
+                    "id_number": "9911225888089",
+                    "cell_phone": "0673671763",
+                    "date_of_birth": "1999-11-22"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "BK Mdluli Trading and Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:18:13.106Z"
+                }
+            ],
+            "registration_number": "2020\/004570\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:18:14",
+        "updated_at": "2026-04-22 15:19:57"
+    },
+    {
+        "id": 2096,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Andisiwe ",
+                    "gender": "female",
+                    "surname": "Mnwango",
+                    "id_number": "0406251264080",
+                    "cell_phone": "0350010422",
+                    "date_of_birth": "2004-06-25"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ocean Solutions Group",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:21:10.653Z"
+                }
+            ],
+            "registration_number": "2020\/705460\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:21:12",
+        "updated_at": "2026-04-22 15:22:32"
+    },
+    {
+        "id": 2097,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Andile ",
+                    "gender": "male",
+                    "surname": "Mlambo",
+                    "id_number": "9608296020085",
+                    "cell_phone": "0787421404",
+                    "date_of_birth": "1996-08-29"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Gobela Season GS",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:25:12.134Z"
+                }
+            ],
+            "registration_number": "2021\/462541\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:25:14",
+        "updated_at": "2026-04-22 15:26:23"
+    },
+    {
+        "id": 2098,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Terrick ",
+                    "gender": "male",
+                    "surname": "Chetty",
+                    "id_number": "8612295162089",
+                    "cell_phone": "076 750 3521",
+                    "date_of_birth": "1986-12-29"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Limitless Automotive",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:27:44.109Z"
+                }
+            ],
+            "registration_number": "2023\/994589\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:27:45",
+        "updated_at": "2026-04-22 15:28:47"
+    },
+    {
+        "id": 2099,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Halalisani ",
+                    "gender": "male",
+                    "surname": "Sibisi",
+                    "id_number": "9503225027089",
+                    "cell_phone": "067 145 8337 ",
+                    "date_of_birth": "1995-03-22"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Inkunzi Emalunda Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:29:14.656Z"
+                }
+            ],
+            "registration_number": "2022\/471478\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:29:15",
+        "updated_at": "2026-04-22 15:30:36"
+    },
+    {
+        "id": 2100,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Ephraim ",
+                    "gender": "male",
+                    "surname": "Mayise",
+                    "id_number": "9503035987084",
+                    "cell_phone": "0813546698",
+                    "date_of_birth": "1995-03-03",
+                    "alt_cell_phone": "0747454753"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Deloice Int",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-22T13:31:11.546Z"
+                }
+            ],
+            "registration_number": "2017\/163143\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-22 15:31:12",
+        "updated_at": "2026-04-22 15:32:33"
+    },
+    {
+        "id": 2101,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Bongiwe ",
+                    "gender": "female",
+                    "surname": "Mthiyane",
+                    "id_number": "8309010313085",
+                    "cell_phone": "0834332282",
+                    "date_of_birth": "1983-09-01"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Bongiwe Sokhulu Trading",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T06:18:53.262Z"
+                }
+            ],
+            "registration_number": "2006\/098351\/23"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 08:18:54",
+        "updated_at": "2026-04-23 08:20:26"
+    },
+    {
+        "id": 2102,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thokozani ",
+                    "gender": "male",
+                    "surname": "Gumede",
+                    "id_number": "7502085364089",
+                    "cell_phone": "0837673065",
+                    "date_of_birth": "1975-02-08"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Gumelitho Trading Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T06:21:16.545Z"
+                }
+            ],
+            "registration_number": "2013\/076679\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 08:21:16",
+        "updated_at": "2026-04-23 08:26:10"
+    },
+    {
+        "id": 2103,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nonjabulo ",
+                    "gender": "female",
+                    "surname": "Ntuli",
+                    "id_number": "9306020574085",
+                    "cell_phone": "081 486 2174 ",
+                    "date_of_birth": "1993-06-02",
+                    "alt_cell_phone": "072 231 4242"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Lee N Beauty Spa",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T06:28:57.449Z"
+                }
+            ],
+            "registration_number": "2024\/394071\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 08:28:58",
+        "updated_at": "2026-04-23 08:38:40"
+    },
+    {
+        "id": 2104,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mpendulo ",
+                    "gender": "male",
+                    "surname": "Mbulawa",
+                    "id_number": "9403165192086",
+                    "cell_phone": "0730066585",
+                    "date_of_birth": "1994-03-16"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Green Chapter Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:43:50.376Z"
+                }
+            ],
+            "registration_number": "2022\/808212\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:43:50",
+        "updated_at": "2026-04-23 14:46:01"
+    },
+    {
+        "id": 2105,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lungiswa ",
+                    "gender": "male",
+                    "surname": "Zikhali",
+                    "id_number": "0312115214081",
+                    "cell_phone": "0732507759  ",
+                    "date_of_birth": "2003-12-11",
+                    "alt_cell_phone": "0685231013"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Z Tradings",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:46:33.671Z"
+                }
+            ],
+            "registration_number": "2023\/856769\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:46:32",
+        "updated_at": "2026-04-23 14:47:58"
+    },
+    {
+        "id": 2107,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thandeka ",
+                    "phone": "0634872128",
+                    "gender": "female",
+                    "surname": "Myeni",
+                    "id_number": "9903031572080",
+                    "cell_phone": "0795301267 ",
+                    "date_of_birth": "1999-03-03",
+                    "alt_cell_phone": "0844279488"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Impumelelo Insight and Advisory Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:50:43.751Z"
+                }
+            ],
+            "registration_number": "2025\/929725\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:50:43",
+        "updated_at": "2026-04-23 14:53:14"
+    },
+    {
+        "id": 2108,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Mbuso ",
+                    "gender": "male",
+                    "surname": "Nzuza",
+                    "id_number": "8101275712089",
+                    "date_of_birth": "1981-01-27"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Kelvin and Son Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:53:55.163Z"
+                }
+            ],
+            "registration_number": "2025\/664633\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:53:54",
+        "updated_at": "2026-04-23 14:54:41"
+    },
+    {
+        "id": 2109,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lindokuhle ",
+                    "surname": "Mkhize",
+                    "id_number": "870924646083",
+                    "cell_phone": "0782089559"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Firstfruit Civil Construction",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:55:47.656Z"
+                }
+            ],
+            "registration_number": "2017\/241316\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:55:47",
+        "updated_at": "2026-04-23 14:56:53"
+    },
+    {
+        "id": 2110,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Thabiso ",
+                    "gender": "male",
+                    "surname": "Thabede",
+                    "id_number": "9508275451089",
+                    "cell_phone": "0796125360",
+                    "date_of_birth": "1995-08-27"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ikasi Trading and Projects",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T12:57:39.751Z"
+                }
+            ],
+            "registration_number": "2024\/172918\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 14:57:39",
+        "updated_at": "2026-04-23 14:58:41"
+    },
+    {
+        "id": 2111,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Dumisa ",
+                    "gender": "female",
+                    "surname": "Maphanga",
+                    "id_number": "7304170483084",
+                    "cell_phone": "082 835 3099 ",
+                    "date_of_birth": "1973-04-17",
+                    "alt_cell_phone": "072 514 6323"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "DSM Electrical Contractor",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:04:15.110Z"
+                }
+            ],
+            "registration_number": "2002\/085242\/23"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:04:16",
+        "updated_at": "2026-04-23 15:06:38"
+    },
+    {
+        "id": 2112,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Lungani ",
+                    "gender": "male",
+                    "surname": "Mokoena",
+                    "id_number": "0105216224086",
+                    "cell_phone": "078 916 4808",
+                    "date_of_birth": "2001-05-21"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Lehlohnolo Buildernote",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:08:14.223Z"
+                }
+            ],
+            "registration_number": "2022\/555685\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:08:14",
+        "updated_at": "2026-04-23 15:10:30"
+    },
+    {
+        "id": 2113,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nzuzo",
+                    "gender": "male",
+                    "surname": " Langa",
+                    "id_number": "9201155430080",
+                    "cell_phone": "063 1686362",
+                    "date_of_birth": "1992-01-15"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Inzuzenhle Trading and Enterprise",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:19:57.922Z"
+                }
+            ],
+            "registration_number": "2017\/194333\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:19:58",
+        "updated_at": "2026-04-23 15:21:36"
+    },
+    {
+        "id": 2114,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Siphamadla ",
+                    "gender": "male",
+                    "surname": "Shandu",
+                    "id_number": "0003185403080",
+                    "cell_phone": "071 403 6271",
+                    "date_of_birth": "2000-03-18"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Eyamambatha Group",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:22:11.513Z"
+                }
+            ],
+            "registration_number": "2024\/398194\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:22:10",
+        "updated_at": "2026-04-23 15:23:15"
+    },
+    {
+        "id": 2115,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Nomsa ",
+                    "surname": "Cele",
+                    "id_number": "8205190986088",
+                    "cell_phone": "0694408350   ",
+                    "alt_cell_phone": "072 798 2170"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Haminah",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:23:47.748Z"
+                }
+            ],
+            "registration_number": "2020\/875885\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:23:47",
+        "updated_at": "2026-04-23 15:25:30"
+    },
+    {
+        "id": 2116,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Ndumiso ",
+                    "gender": "male",
+                    "surname": "Mthimkhulu",
+                    "id_number": "8501166066083",
+                    "cell_phone": "0787047375  ",
+                    "date_of_birth": "1985-01-16",
+                    "alt_cell_phone": "0788633135"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "TLA Project",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:27:19.452Z"
+                }
+            ],
+            "registration_number": "2019\/215213\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:27:18",
+        "updated_at": "2026-04-23 15:28:35"
+    },
+    {
+        "id": 2117,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Samukelisiwe ",
+                    "gender": "female",
+                    "surname": "Tusi",
+                    "id_number": "8703140585085",
+                    "cell_phone": "0734279456",
+                    "date_of_birth": "1987-03-14"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Inguqunguqu Women's Construction Primary Co-Op",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:29:21.318Z"
+                }
+            ],
+            "registration_number": "2007\/001319\/24"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:29:21",
+        "updated_at": "2026-04-23 15:30:17"
+    },
+    {
+        "id": 2118,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Sthabile ",
+                    "gender": "female",
+                    "surname": "Mthethwa",
+                    "id_number": "9812120846083",
+                    "cell_phone": "0749439398",
+                    "date_of_birth": "1998-12-12"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Ezibandayo Supply Services",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:30:49.687Z"
+                }
+            ],
+            "registration_number": "Nil"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:30:48",
+        "updated_at": "2026-04-23 15:32:04"
+    },
+    {
+        "id": 2119,
+        "type": "grant_application",
+        "company_id": null,
+        "data": {
+            "status": "applied",
+            "directors": [
+                {
+                    "name": "Fanelwe ",
+                    "surname": "Mnguni",
+                    "id_number": "921028534088",
+                    "cell_phone": "0792610381 ",
+                    "alt_cell_phone": "0736266146"
+                }
+            ],
+            "workflow_id": "grant-2026",
+            "company_name": "Chosen By Fitness",
+            "status_history": [
+                {
+                    "status": "applied",
+                    "timestamp": "2026-04-23T13:32:36.167Z"
+                }
+            ],
+            "registration_number": "2017\/287279\/07"
+        },
+        "parent_id": null,
+        "created_by": null,
+        "updated_by": null,
+        "created_at": "2026-04-23 15:32:35",
+        "updated_at": "2026-04-23 15:33:52"
+    }
+]

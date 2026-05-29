@@ -21,9 +21,13 @@ class User
     {
         $fields = $this->prepareFields($data);
 
-        // Minimal required: company_id + username (we’ll default username from email if missing)
-        if (!isset($fields['company_id'])) {
-            throw new InvalidArgumentException("Field 'company_id' is required");
+        // Minimal required: username (company_id is optional for staff/judges with no company)
+        if (!array_key_exists('company_id', $fields)) {
+            $fields['company_id'] = null; // default to no company
+        }
+        // Cast to int only when non-null; 0 is treated as null (no FK)
+        if (isset($fields['company_id']) && (int)$fields['company_id'] === 0) {
+            $fields['company_id'] = 0;
         }
         if (!isset($fields['username'])) {
             if (!empty($fields['email'])) {
@@ -83,8 +87,8 @@ class User
 
     public function getByUsername(string $username): ?array
     {
-        $stmt = $this->conn->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ? $this->castRow($row) : null;
     }
@@ -231,8 +235,10 @@ class User
             $fields['password_hash'] = password_hash($data['password'], PASSWORD_DEFAULT);
         }
 
-        // Casts / normalizations
-        if (isset($fields['company_id'])) $fields['company_id'] = (int)$fields['company_id'];
+        // Casts / normalizations — only cast company_id when it's actually set and non-null
+        if (array_key_exists('company_id', $fields) && $fields['company_id'] !== null) {
+            $fields['company_id'] = (int)$fields['company_id'] ?: 0; // 0 → null
+        }
 
         return $fields;
     }

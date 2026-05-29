@@ -82,7 +82,7 @@ export class FinancialShellComponent implements OnInit {
       route: 'cost-capture',
       icon: 'fas fa-file-invoice-dollar',
     },
-
+   
  {
       label: 'Cost Report',
       route: 'cost-structure',
@@ -99,7 +99,7 @@ export class FinancialShellComponent implements OnInit {
     //   icon: 'fas fa-university',
     // },
 
-
+   
     {
       label: 'Profits',
       route: 'profits',
@@ -120,11 +120,6 @@ export class FinancialShellComponent implements OnInit {
       label: 'Funds Received',
       route: 'funds-received',
       icon: 'fas fa-hand-holding-usd',
-    },
-    {
-      label: 'Grant Funding',
-      route: 'grant-funding',
-      icon: 'fas fa-gift',
     },
     {
       label: 'Employee Count',

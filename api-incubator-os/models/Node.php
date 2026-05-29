@@ -13,9 +13,9 @@ class Node
         $this->metaSync = new MetaValueSyncService($db);
     }
 
-    public function add($type, $data, $companyId = null, $parentId = null, $createdBy = null)
+    public function add($type, $data, $companyId = null, $parentId = null, $createdBy = null, $submittedByName = null)
     {
-        $query = "INSERT INTO nodes (type, company_id, data, parent_id, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO nodes (type, company_id, data, parent_id, created_by, updated_by, submitted_by_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([
             $type,
@@ -23,7 +23,8 @@ class Node
             json_encode($data),
             $parentId,
             $createdBy,
-            $createdBy
+            $createdBy,
+            $submittedByName
         ]);
 
         $id = $this->conn->lastInsertId();
@@ -105,7 +106,7 @@ class Node
         return $results;
     }
 
-    public function search($type = null, $parentId = null)
+    public function search($type = null, $parentId = null, $companyId = null, $submittedByName = null, $createdBy = null)
     {
         $query = "SELECT * FROM nodes WHERE 1=1";
         $params = [];
@@ -118,6 +119,21 @@ class Node
         if ($parentId !== null) {
             $query .= " AND parent_id = ?";
             $params[] = $parentId;
+        }
+
+        if ($companyId !== null) {
+            $query .= " AND company_id = ?";
+            $params[] = $companyId;
+        }
+
+        if ($submittedByName !== null) {
+            $query .= " AND submitted_by_name = ?";
+            $params[] = $submittedByName;
+        }
+
+        if ($createdBy !== null) {
+            $query .= " AND created_by = ?";
+            $params[] = $createdBy;
         }
 
         $stmt = $this->conn->prepare($query);
@@ -142,13 +158,40 @@ class Node
         return $stmt->rowCount() > 0;
     }
 
+    public function getBySubmittedByName($submittedByName, $type = null, $parentId = null)
+    {
+        $query = "SELECT * FROM nodes WHERE submitted_by_name = ?";
+        $params = [$submittedByName];
+
+        if ($type !== null) {
+            $query .= " AND type = ?";
+            $params[] = $type;
+        }
+
+        if ($parentId !== null) {
+            $query .= " AND parent_id = ?";
+            $params[] = $parentId;
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
+
+        $results = [];
+        while ($item = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $item['data'] = json_decode($item['data']);
+            $results[] = $item;
+        }
+
+        return $results;
+    }
+
     public function addRange($items)
     {
         $this->conn->beginTransaction();
         try {
             $results = [];
             foreach ($items as $item) {
-                $results[] = $this->add($item->type, $item->data, $item->company_id ?? null, $item->parent_id ?? null, $item->created_by ?? null);
+                $results[] = $this->add($item->type, $item->data, $item->company_id ?? null, $item->parent_id ?? null, $item->created_by ?? null, $item->submitted_by_name ?? null);
             }
             $this->conn->commit();
             return $results;

@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './auth/auth.guard';
 import { CompaniesComponent } from './components/companies/companies.component';
 import { CompanyDetailComponent } from './components/companies/company-detail/company-detail.component';
 import { DynamicCompanyDetailComponent } from './components/dynamic-company-detail/dynamic-company-detail.component';
@@ -21,7 +22,6 @@ import {
   // BalanceSheetComponent, // Temporarily disabled for pie chart testing
   RatiosComponent,
   FundsReceivedComponent,
-  GrantFundingComponent,
   EmployeeCountComponent
 } from './components/company-shell/financial-shell/components';
 import { ExecutiveReportComponent } from './components/companies/company-detail/executive-report/executive-report.component';
@@ -29,6 +29,9 @@ import { ActionPlanExportComponent } from './components/action-plan-export/actio
 import { groupingRoutes } from './admin/grouping/grouping.routes';
 import { OverviewPageComponent } from './admin/overview/overview-page.component';
 import { ClientsListComponent } from './admin/clients/clients-list.component';
+import { GrantFundingShellComponent } from './admin/grant-funding/grant-funding-shell.component';
+import { GrantFundingApplicationsComponent } from './admin/grant-funding/grant-funding-applications.component';
+import { ApplicantShellComponent } from './admin/grant-funding/applicant-shell/applicant-shell.component';
 import { ProgramsListComponent } from './admin/programs/programs-list.component';
 import { CohortsListComponent } from './admin/cohorts/cohorts-list.component';
 import { CompaniesListComponent } from './components/companies/companies-list.component';
@@ -41,16 +44,45 @@ import { CostStructureDemoComponent } from './components/company-shell/financial
 import { QuarterlyCostSummaryComponent } from './components/company-shell/financial-shell/components/quarterly-cost-summary';
 import { SwotTabComponent } from './components/companies/company-detail/swot-tab/swot-tab.component';
 import { GpsTargetsTabComponent } from './components/companies/company-detail/gps-targets-tab/gps-targets-tab.component';
+import { FormTemplatesListComponent } from './admin/form-templates/form-templates-list.component';
+import { FormTemplateBuilderComponent } from './admin/form-templates/form-template-builder.component';
+import { FormTemplateResponsesComponent } from './admin/form-templates/form-template-responses.component';
+import { FormTemplateSettingsComponent } from './admin/form-templates/form-template-settings.component';
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
 import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
-import { GrantFundingShellComponent } from './components/grant-funding/grant-funding-shell.component';
 import { DashboardRecentActivitiesComponent } from './dashboard/dashboard-recent-activities/dashboard-recent-activities.component';
+import { ProjectsListComponent } from './admin/projects/projects-list.component';
+import { ProjectDetailComponent } from './admin/projects/project-detail.component';
 
 export const routes: Routes = [
+  // ── Auth routes ───────────────────────────────────────────────────────────
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./auth/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'set-password',
+    loadComponent: () =>
+      import('./auth/set-password/set-password.component').then(m => m.SetPasswordComponent),
+  },
+
+  // ── Public routes (no AppShell / no auth) ─────────────────────────────────
+  {
+    path: 'f/:id',
+    loadComponent: () =>
+      import('./public/public-form/public-form.component').then(
+        m => m.PublicFormComponent
+      ),
+  },
+
+  // ── Authenticated shell ────────────────────────────────────────────────────
   {
     path: '',
     component: AppShellComponent,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: '',
@@ -154,33 +186,6 @@ export const routes: Routes = [
             ]
           },
           {
-            path: 'grant-funding',
-            component: GrantFundingShellComponent,
-            children: [
-              {
-                path: '',
-                redirectTo: 'overview',
-                pathMatch: 'full'
-              },
-              {
-                path: 'overview',
-                loadComponent: () => import('./components/grant-funding/grant-overview.component').then(m => m.GrantOverviewComponent),
-              },
-              {
-                path: 'applications',
-                loadComponent: () => import('./components/grant-funding/grant-applications.component').then(m => m.GrantApplicationsComponent),
-              },
-              {
-                path: 'disbursements',
-                loadComponent: () => import('./components/grant-funding/grant-disbursements.component').then(m => m.GrantDisbursementsComponent),
-              },
-              {
-                path: 'reports',
-                loadComponent: () => import('./components/grant-funding/grant-reports.component').then(m => m.GrantReportsComponent),
-              }
-            ]
-          },
-          {
             path: 'financials',
             component: FinancialShellComponent,
             children: [
@@ -229,10 +234,6 @@ export const routes: Routes = [
               {
                 path: 'funds-received',
                 component: FundsReceivedComponent,
-              },
-              {
-                path: 'grant-funding',
-                component: GrantFundingComponent,
               },
               {
                 path: 'employee-count',
@@ -296,8 +297,74 @@ export const routes: Routes = [
         component: ClientsListComponent,
       },
       {
+        path: 'admin/grant-funding',
+        component: GrantFundingShellComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'clients',
+            pathMatch: 'full'
+          },
+          {
+            path: 'clients',
+            component: ClientsListComponent,
+          },
+          {
+            path: 'applications',
+            component: GrantFundingApplicationsComponent,
+          },
+          {
+            path: 'reports',
+            loadComponent: () => import('./admin/grant-funding/grant-funding-reports.component')
+              .then(m => m.GrantFundingReportsComponent),
+          }
+        ]
+      },
+      {
+        path: 'admin/grant-funding/applications/:id',
+        component: ApplicantShellComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'overview',
+            pathMatch: 'full'
+          },
+          {
+            path: 'overview',
+            loadComponent: () => import('./admin/grant-funding/applicant-shell/pages/applicant-overview.component')
+              .then(m => m.ApplicantOverviewComponent),
+          },
+          {
+            path: 'compliance',
+            loadComponent: () => import('./admin/grant-funding/applicant-shell/pages/applicant-compliance.component')
+              .then(m => m.ApplicantComplianceComponent),
+          },
+          {
+            path: 'bank-statements',
+            loadComponent: () => import('./admin/grant-funding/applicant-shell/pages/applicant-bank-statements.component')
+              .then(m => m.ApplicantBankStatementsComponent),
+          }
+        ]
+      },
+      {
         path: 'admin/clients/:clientId/programs',
         component: ProgramsListComponent,
+      },
+      {
+        path: 'admin/form-templates',
+        component: FormTemplatesListComponent,
+      },
+      {
+        path: 'admin/form-templates/:id',
+        component: FormTemplateBuilderComponent,
+      },
+      {
+        path: 'admin/form-templates/:id/responses',
+        component: FormTemplateResponsesComponent,
+      },
+      {
+        path: 'admin/form-templates/:id/settings',
+        component: FormTemplateSettingsComponent,
       },
       {
         path: 'admin/clients/:clientId/programs/:programId/cohorts',
@@ -322,6 +389,14 @@ export const routes: Routes = [
       {
         path: 'import',
         component: ImportComponent,
+      },
+      {
+        path: 'projects',
+        component: ProjectsListComponent,
+      },
+      {
+        path: 'projects/:id',
+        component: ProjectDetailComponent,
       },
     ],
   },
