@@ -57,7 +57,7 @@ export class UploadService {
 
   uploadFile(formData: FormData): Observable<UploadResponse> {
     return this.http.post<UploadResponse>(
-      `${this.url}/upload/upload.php`,
+      `${this.url}/upload.php`,
       formData
     );
   }

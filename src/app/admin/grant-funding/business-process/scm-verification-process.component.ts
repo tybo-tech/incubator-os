@@ -101,119 +101,165 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
   template: `
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <!-- Header -->
-      <div class="px-5 py-4 border-b border-gray-100">
-        <h2 class="text-base font-semibold text-gray-900">
-          SCM Verification Process
-        </h2>
-        <p class="text-xs text-gray-500 mt-1">
-          Manage supplier quotations, verification, purchase orders and payments.
-        </p>
+      <div class="px-6 py-5 border-b border-gray-100">
+        <div class="flex items-center">
+          <i class="fas fa-file-contract text-blue-600 text-xl mr-3"></i>
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900">
+              SCM Verification Process
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Manage supplier quotations, verification, purchase orders and payments.
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Loading -->
-      <div *ngIf="isLoading()" class="flex items-center justify-center py-8">
-        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+      <div *ngIf="isLoading()" class="flex items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600">Loading SCM verification data...</span>
       </div>
 
       <!-- Content -->
-      <div *ngIf="!isLoading()" class="p-5">
+      <div *ngIf="!isLoading()" class="p-6">
         <!-- Applicant Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Company</label>
-            <p class="text-sm font-medium text-gray-900">{{ scmVerification().beneficiary_company_name || 'Not set' }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 p-5 bg-gray-50 rounded-xl">
+          <div class="flex items-center">
+            <i class="fas fa-building text-gray-400 mr-3"></i>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Company</label>
+              <p class="text-sm font-medium text-gray-900">{{ scmVerification().beneficiary_company_name || 'Not set' }}</p>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Director</label>
-            <p class="text-sm font-medium text-gray-900">{{ scmVerification().director || 'Not set' }}</p>
+          <div class="flex items-center">
+            <i class="fas fa-user-tie text-gray-400 mr-3"></i>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Director</label>
+              <p class="text-sm font-medium text-gray-900">{{ scmVerification().director || 'Not set' }}</p>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-500 mb-1">Contact Number</label>
-            <p class="text-sm font-medium text-gray-900">{{ scmVerification().contact_number || 'Not set' }}</p>
+          <div class="flex items-center">
+            <i class="fas fa-phone text-gray-400 mr-3"></i>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Contact Number</label>
+              <p class="text-sm font-medium text-gray-900">{{ scmVerification().contact_number || 'Not set' }}</p>
+            </div>
           </div>
         </div>
 
         <!-- Step 1 - Collection of Quotations -->
-        <div class="border rounded-xl p-4 mb-6">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="font-semibold">Step 1 - Collection of Quotations</h3>
-              <p class="text-xs text-gray-500">Capture quotations received from suppliers.</p>
+        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+                <span class="font-semibold">1</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Collection of Quotations</h3>
+                <p class="text-sm text-gray-500">Capture quotations received from suppliers.</p>
+              </div>
             </div>
             <button 
               (click)="addQuotation()"
-              class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-              + Add Quotation
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i>
+              Add Quotation
             </button>
           </div>
 
+          <!-- Validation Message -->
+          <div *ngIf="scmVerification().step_1.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex">
+              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+              <div>
+                <h4 class="font-medium text-yellow-800">No quotations added</h4>
+                <p class="text-sm text-yellow-700 mt-1">Add at least one quotation to proceed with verification.</p>
+              </div>
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
-            <table class="w-full text-xs">
+            <table class="w-full text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Supplier</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Date Received</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Beneficiary Signature</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Comments</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Actions</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Supplier</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Date Received</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Beneficiary Signature</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Comments</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of scmVerification().step_1.items; let i = index" class="border-t border-gray-100">
-                  <td class="px-3 py-2">
+                <tr *ngFor="let item of scmVerification().step_1.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.supplier_name" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter supplier name"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="date" 
                       [(ngModel)]="item.date_received" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <app-signature-pad-lib
                       [(ngModel)]="item.beneficiary_signature"
                       [width]="150"
                       [height]="75">
                     </app-signature-pad-lib>
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.comments" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Add comments"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <button 
                       (click)="removeQuotation(i)"
-                      class="text-red-500 hover:text-red-700 text-xs">
+                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                      <i class="fas fa-trash mr-1"></i>
                       Remove
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="scmVerification().step_1.items.length === 0">
-                  <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-400">
-                    No quotations added yet. Click "Add Quotation" to get started.
+                  <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
+                    <p>No quotations added yet. Click "Add Quotation" to get started.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Verification Footer -->
-          <div class="mt-4 pt-4 border-t">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Verification Footer - Only show if there are items -->
+          <div *ngIf="scmVerification().step_1.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+              Verification Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Verified By</label>
-                <input
-                  type="text"
-                  [(ngModel)]="scmVerification().step_1.verified_by"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    [(ngModel)]="scmVerification().step_1.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
                 <app-signature-pad-lib
                   [(ngModel)]="scmVerification().step_1.signature"
                   [width]="200"
@@ -225,99 +271,136 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
         </div>
 
         <!-- Step 2 - Supplier Verification -->
-        <div class="border rounded-xl p-4 mb-6">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="font-semibold">Step 2 - Online Supplier Verification</h3>
-              <p class="text-xs text-gray-500">Verify supplier legitimacy and credentials.</p>
+        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+                <span class="font-semibold">2</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Online Supplier Verification</h3>
+                <p class="text-sm text-gray-500">Verify supplier legitimacy and credentials.</p>
+              </div>
             </div>
             <button 
               (click)="addSupplierVerification()"
-              class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-              + Add Supplier
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i>
+              Add Supplier
             </button>
           </div>
 
+          <!-- Validation Message -->
+          <div *ngIf="scmVerification().step_2.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex">
+              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+              <div>
+                <h4 class="font-medium text-yellow-800">No suppliers added</h4>
+                <p class="text-sm text-yellow-700 mt-1">Add at least one supplier to proceed with verification.</p>
+              </div>
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
-            <table class="w-full text-xs">
+            <table class="w-full text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Supplier Name</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">CIPC Registration</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">VAT Number</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Verification Details</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Approved</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Comments</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Actions</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Supplier Name</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">CIPC Registration</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">VAT Number</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Verification Details</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Approved</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Comments</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of scmVerification().step_2.items; let i = index" class="border-t border-gray-100">
-                  <td class="px-3 py-2">
+                <tr *ngFor="let item of scmVerification().step_2.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.supplier_name" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter supplier name"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.cipc_registration" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter CIPC reg."
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.vat_number" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter VAT number"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.verification_details" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Verification details"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.approved" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.approved" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                      <label class="ml-2 text-sm text-gray-700">Approved</label>
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.comments" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Add comments"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <button 
                       (click)="removeSupplierVerification(i)"
-                      class="text-red-500 hover:text-red-700 text-xs">
+                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                      <i class="fas fa-trash mr-1"></i>
                       Remove
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="scmVerification().step_2.items.length === 0">
-                  <td colspan="7" class="px-3 py-4 text-center text-xs text-gray-400">
-                    No suppliers added yet. Click "Add Supplier" to get started.
+                  <td colspan="7" class="px-4 py-8 text-center text-gray-400">
+                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
+                    <p>No suppliers added yet. Click "Add Supplier" to get started.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Verification Footer -->
-          <div class="mt-4 pt-4 border-t">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Verification Footer - Only show if there are items -->
+          <div *ngIf="scmVerification().step_2.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+              Verification Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Verified By</label>
-                <input
-                  type="text"
-                  [(ngModel)]="scmVerification().step_2.verified_by"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    [(ngModel)]="scmVerification().step_2.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
                 <app-signature-pad-lib
                   [(ngModel)]="scmVerification().step_2.signature"
                   [width]="200"
@@ -329,113 +412,156 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
         </div>
 
         <!-- Step 3 - Processing Verified Quotations -->
-        <div class="border rounded-xl p-4 mb-6">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="font-semibold">Step 3 - Processing Verified Quotations</h3>
-              <p class="text-xs text-gray-500">Generate purchase orders and verify documentation.</p>
+        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+                <span class="font-semibold">3</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Processing Verified Quotations</h3>
+                <p class="text-sm text-gray-500">Generate purchase orders and verify documentation.</p>
+              </div>
             </div>
             <button 
               (click)="addPurchaseOrder()"
-              class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-              + Add Purchase Order
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i>
+              Add Purchase Order
             </button>
           </div>
 
+          <!-- Validation Message -->
+          <div *ngIf="scmVerification().step_3.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex">
+              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+              <div>
+                <h4 class="font-medium text-yellow-800">No purchase orders added</h4>
+                <p class="text-sm text-yellow-700 mt-1">Add at least one purchase order to proceed with verification.</p>
+              </div>
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
-            <table class="w-full text-xs">
+            <table class="w-full text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Supplier</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">PO Generated</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Tax Invoice</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">BBBEE</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Bank Confirmation</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Tax Clearance</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Approved</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Comments</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Actions</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Supplier</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">PO Generated</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Tax Invoice</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">BBBEE</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Bank Confirmation</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Tax Clearance</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Approved</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Comments</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of scmVerification().step_3.items; let i = index" class="border-t border-gray-100">
-                  <td class="px-3 py-2">
+                <tr *ngFor="let item of scmVerification().step_3.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.supplier_name" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter supplier name"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.purchase_order_generated" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.purchase_order_generated" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.tax_invoice_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.tax_invoice_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.bbbee_certificate_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.bbbee_certificate_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.bank_confirmation_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.bank_confirmation_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.tax_clearance_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.tax_clearance_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.approved" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.approved" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.comments" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Add comments"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <button 
                       (click)="removePurchaseOrder(i)"
-                      class="text-red-500 hover:text-red-700 text-xs">
+                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                      <i class="fas fa-trash mr-1"></i>
                       Remove
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="scmVerification().step_3.items.length === 0">
-                  <td colspan="9" class="px-3 py-4 text-center text-xs text-gray-400">
-                    No purchase orders added yet. Click "Add Purchase Order" to get started.
+                  <td colspan="9" class="px-4 py-8 text-center text-gray-400">
+                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
+                    <p>No purchase orders added yet. Click "Add Purchase Order" to get started.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Verification Footer -->
-          <div class="mt-4 pt-4 border-t">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Verification Footer - Only show if there are items -->
+          <div *ngIf="scmVerification().step_3.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+              Verification Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Verified By</label>
-                <input
-                  type="text"
-                  [(ngModel)]="scmVerification().step_3.verified_by"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    [(ngModel)]="scmVerification().step_3.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
                 <app-signature-pad-lib
                   [(ngModel)]="scmVerification().step_3.signature"
                   [width]="200"
@@ -447,120 +573,164 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
         </div>
 
         <!-- Step 4 - Payment Processing -->
-        <div class="border rounded-xl p-4 mb-6">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="font-semibold">Step 4 - Payment Processing</h3>
-              <p class="text-xs text-gray-500">Process payments and track delivery.</p>
+        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+                <span class="font-semibold">4</span>
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg">Payment Processing</h3>
+                <p class="text-sm text-gray-500">Process payments and track delivery.</p>
+              </div>
             </div>
             <button 
               (click)="addPayment()"
-              class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-              + Add Payment
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <i class="fas fa-plus mr-2"></i>
+              Add Payment
             </button>
           </div>
 
+          <!-- Validation Message -->
+          <div *ngIf="scmVerification().step_4.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div class="flex">
+              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+              <div>
+                <h4 class="font-medium text-yellow-800">No payments added</h4>
+                <p class="text-sm text-yellow-700 mt-1">Add at least one payment to proceed with verification.</p>
+              </div>
+            </div>
+          </div>
+
           <div class="overflow-x-auto">
-            <table class="w-full text-xs">
+            <table class="w-full text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Company</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Director</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Contact Number</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">VAT Invoice</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Bank Confirmation</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Authorisation Signed</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Payment Done</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Proof Of Payment</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Delivery Note</th>
-                  <th class="text-left px-3 py-2 font-medium text-gray-500">Actions</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Company</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Director</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Contact Number</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">VAT Invoice</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Bank Confirmation</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Authorisation Signed</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Payment Done</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Proof Of Payment</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Delivery Note</th>
+                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of scmVerification().step_4.items; let i = index" class="border-t border-gray-100">
-                  <td class="px-3 py-2">
+                <tr *ngFor="let item of scmVerification().step_4.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.company_name" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter company name"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.director" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter director name"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <input 
                       type="text" 
                       [(ngModel)]="item.contact_number" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                      placeholder="Enter contact number"
+                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.vat_invoice_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.vat_invoice_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.bank_confirmation_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.bank_confirmation_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.payment_authorisation_signed" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.payment_authorisation_signed" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.payment_done" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.payment_done" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.proof_of_payment_sent" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.proof_of_payment_sent" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
-                    <input 
-                      type="checkbox" 
-                      [(ngModel)]="item.delivery_note_received" 
-                      class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        [(ngModel)]="item.delivery_note_received" 
+                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
                   </td>
-                  <td class="px-3 py-2">
+                  <td class="px-4 py-3">
                     <button 
                       (click)="removePayment(i)"
-                      class="text-red-500 hover:text-red-700 text-xs">
+                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
+                      <i class="fas fa-trash mr-1"></i>
                       Remove
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="scmVerification().step_4.items.length === 0">
-                  <td colspan="10" class="px-3 py-4 text-center text-xs text-gray-400">
-                    No payments added yet. Click "Add Payment" to get started.
+                  <td colspan="10" class="px-4 py-8 text-center text-gray-400">
+                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
+                    <p>No payments added yet. Click "Add Payment" to get started.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Verification Footer -->
-          <div class="mt-4 pt-4 border-t">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Verification Footer - Only show if there are items -->
+          <div *ngIf="scmVerification().step_4.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
+            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
+              <i class="fas fa-check-circle text-green-500 mr-2"></i>
+              Verification Details
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Verified By</label>
-                <input
-                  type="text"
-                  [(ngModel)]="scmVerification().step_4.verified_by"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-user text-gray-400"></i>
+                  </div>
+                  <input
+                    type="text"
+                    [(ngModel)]="scmVerification().step_4.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
                 <app-signature-pad-lib
                   [(ngModel)]="scmVerification().step_4.signature"
                   [width]="200"
@@ -572,19 +742,30 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
         </div>
 
         <!-- Save Button -->
-        <div class="flex justify-end">
+        <div class="flex justify-end pt-4">
           <button
             (click)="saveScmVerification()"
             [disabled]="isSaving()"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            class="px-6 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center">
+            <i class="fas fa-save mr-2"></i>
             {{ isSaving() ? 'Saving...' : 'Save SCM Verification' }}
           </button>
         </div>
 
         <!-- Status Message -->
-        <div *ngIf="saveStatus()" class="mt-4 p-3 rounded-lg"
-             [class]="saveStatus()!.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">
-          {{ saveStatus()!.message }}
+        <div *ngIf="saveStatus()" class="mt-6 p-4 rounded-lg"
+             [class]="saveStatus()!.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'">
+          <div class="flex">
+            <i class="fas text-lg mt-0.5 mr-3"
+               [class]="saveStatus()!.type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500'"></i>
+            <div>
+              <h4 class="font-medium" 
+                  [class]="saveStatus()!.type === 'success' ? 'text-green-800' : 'text-red-800'">
+                {{ saveStatus()!.type === 'success' ? 'Success' : 'Error' }}
+              </h4>
+              <p class="mt-1">{{ saveStatus()!.message }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

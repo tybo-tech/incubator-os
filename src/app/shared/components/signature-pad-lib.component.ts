@@ -28,7 +28,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
           ✏️
         </button>
       </div>
-      
+
       <!-- Display placeholder if no signature exists -->
       <div *ngIf="!signatureImageUrl" class="signature-placeholder" (click)="openSignatureModal()">
         <div class="placeholder-content">
@@ -65,19 +65,19 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       display: inline-block;
       cursor: pointer;
     }
-    
+
     .signature-display {
       position: relative;
       display: inline-block;
     }
-    
+
     .signature-image {
       max-width: 200px;
       max-height: 100px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
-    
+
     .edit-signature-btn {
       position: absolute;
       bottom: 5px;
@@ -91,14 +91,14 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       cursor: pointer;
       display: none;
     }
-    
+
     .signature-display:hover .edit-signature-btn {
       display: block;
     }
-    
+
     .signature-placeholder {
       width: 200px;
-      height: 100px;
+      height: 37px;
       border: 2px dashed #ccc;
       border-radius: 4px;
       display: flex;
@@ -106,16 +106,16 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       justify-content: center;
       background-color: #fafafa;
     }
-    
+
     .placeholder-content {
       text-align: center;
       color: #999;
     }
-    
+
     .placeholder-text {
-      font-size: 14px;
+      font-size: 12px;
     }
-    
+
     .signature-modal {
       position: fixed;
       top: 0;
@@ -128,7 +128,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       justify-content: center;
       z-index: 1000;
     }
-    
+
     .signature-modal-content {
       background: white;
       border-radius: 8px;
@@ -137,19 +137,19 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       max-height: 90%;
       overflow: auto;
     }
-    
+
     .signature-modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
     }
-    
+
     .signature-modal-header h3 {
       margin: 0;
       font-size: 18px;
     }
-    
+
     .close-btn {
       background: none;
       border: none;
@@ -162,31 +162,31 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
       align-items: center;
       justify-content: center;
     }
-    
+
     .signature-pad-wrapper {
       border: 1px solid #ddd;
       border-radius: 4px;
       margin-bottom: 15px;
     }
-    
+
     .signature-modal-actions {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
     }
-    
+
     .clear-btn, .save-btn {
       padding: 8px 16px;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
-    
+
     .clear-btn {
       background-color: #f0f0f0;
       color: #333;
     }
-    
+
     .save-btn {
       background-color: #007bff;
       color: white;
@@ -204,9 +204,9 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
   @Input() width: number = 200;
   @Input() height: number = 100;
   @Output() onValueChanged = new EventEmitter<string>();
-  
+
   @ViewChild('signature') public signaturePad!: SignaturePadComponent;
-  
+
   signaturePadOptions: NgSignaturePadOptions = {
     minWidth: 2,
     maxWidth: 4,
@@ -215,14 +215,14 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
     backgroundColor: '#ffffff',
     penColor: '#000000',
   };
-  
+
   signatureImageUrl: string | null = null;
   showModal = false;
   private onChange = (value: string) => {};
   private onTouched = () => {};
-  
+
   constructor(private uploadService: UploadService) {}
-  
+
   ngOnInit(): void {
     // Update canvas size based on inputs
     this.signaturePadOptions = {
@@ -231,13 +231,13 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
       canvasHeight: this.height * 2
     };
   }
-  
+
   ngAfterViewInit() {
     if (this.signaturePad) {
       this.signaturePad.clear();
     }
   }
-  
+
   writeValue(value: string): void {
     if (value) {
       this.signatureImageUrl = value;
@@ -245,23 +245,23 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
       this.signatureImageUrl = null;
     }
   }
-  
+
   registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
   }
-  
+
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
-  
+
   drawComplete(event: MouseEvent | Touch) {
     // Signature is drawn, but we don't emit until save is clicked
   }
-  
+
   drawStart(event: MouseEvent | Touch) {
     // Notify that drawing has started
   }
-  
+
   openSignatureModal() {
     this.showModal = true;
     // Clear the signature pad when opening modal
@@ -271,17 +271,17 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
       }
     }, 100);
   }
-  
+
   closeModal() {
     this.showModal = false;
   }
-  
+
   clearSignature() {
     if (this.signaturePad) {
       this.signaturePad.clear();
     }
   }
-  
+
   saveSignature() {
     if (this.signaturePad && !this.signaturePad.isEmpty()) {
       const dataUrl = this.signaturePad.toDataURL();
@@ -295,17 +295,17 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
       this.closeModal();
     }
   }
-  
+
   private uploadSignature(dataUrl: string) {
     // Convert data URL to Blob
     const blob = this.dataURItoBlob(dataUrl);
     const file = new File([blob], `signature_${Date.now()}.png`, { type: 'image/png' });
-    
+
     // Create form data
     const formData = new FormData();
     formData.append('file', file);
     formData.append('name', file.name);
-    
+
     // Upload the signature
     this.uploadService.uploadFile(formData).subscribe({
       next: (response) => {
@@ -324,7 +324,7 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
       }
     });
   }
-  
+
   private dataURItoBlob(dataURI: string): Blob {
     const byteString = atob(dataURI.split(',')[1]);
     const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
