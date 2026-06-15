@@ -2,6 +2,7 @@ import { Component, Input, OnInit, signal, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
+import { SignaturePadComponent } from '../../../components/shared/signature-pad.component';
 
 interface ScmQuotation {
   id: string;
@@ -95,7 +96,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
 @Component({
   selector: 'app-scm-verification-process',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SignaturePadComponent],
   template: `
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <!-- Header -->
@@ -171,10 +172,12 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                       class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-3 py-2">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.beneficiary_signature" 
-                      class="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                    <app-signature-pad
+                      [(ngModel)]="item.beneficiary_signature"
+                      [width]="200"
+                      [height]="100"
+                      placeholder="Please sign here">
+                    </app-signature-pad>
                   </td>
                   <td class="px-3 py-2">
                     <input 
@@ -211,10 +214,12 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
-                <input
-                  type="text"
+                <app-signature-pad
                   [(ngModel)]="scmVerification().step_1.signature"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                  [width]="400"
+                  [height]="150"
+                  placeholder="Please sign here">
+                </app-signature-pad>
               </div>
             </div>
           </div>
@@ -314,10 +319,12 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
-                <input
-                  type="text"
+                <app-signature-pad
                   [(ngModel)]="scmVerification().step_2.signature"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                  [width]="400"
+                  [height]="150"
+                  placeholder="Please sign here">
+                </app-signature-pad>
               </div>
             </div>
           </div>
@@ -431,10 +438,12 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
-                <input
-                  type="text"
+                <app-signature-pad
                   [(ngModel)]="scmVerification().step_3.signature"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                  [width]="400"
+                  [height]="150"
+                  placeholder="Please sign here">
+                </app-signature-pad>
               </div>
             </div>
           </div>
@@ -555,10 +564,12 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               </div>
               <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Signature</label>
-                <input
-                  type="text"
+                <app-signature-pad
                   [(ngModel)]="scmVerification().step_4.signature"
-                  class="w-full text-sm border border-gray-300 rounded px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                  [width]="400"
+                  [height]="150"
+                  placeholder="Please sign here">
+                </app-signature-pad>
               </div>
             </div>
           </div>

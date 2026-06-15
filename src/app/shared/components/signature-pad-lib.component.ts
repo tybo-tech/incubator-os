@@ -8,12 +8,11 @@ import {
 } from '@angular/core';
 import {
   NgSignaturePadOptions,
-  AngularSignaturePadModule,
   SignaturePadComponent,
 } from '@almothafar/angular-signature-pad';
 
 @Component({
-  selector: 'app-signiture-pad',
+  selector: 'app-signature-pad-lib',
   standalone: true,
   template: `
     <signature-pad
@@ -23,17 +22,17 @@ import {
       (drawEnd)="drawComplete($any($event))"
     ></signature-pad>
   `,
-  imports: [AngularSignaturePadModule],
+  imports: [SignaturePadComponent],
 })
-export class SigniturePadComponent implements OnInit, AfterViewInit {
+export class SignaturePadLibComponent implements OnInit, AfterViewInit {
   @Output() onValueChanged = new EventEmitter<string>();
 
   constructor() {}
 
   ngOnInit(): void {}
 
-  @ViewChild(SignaturePadComponent)
-  public signaturePad?: SignaturePadComponent;
+  @ViewChild('signature')
+  public signaturePad!: SignaturePadComponent;
 
   signaturePadOptions: NgSignaturePadOptions = {
     minWidth: 5,
@@ -44,11 +43,10 @@ export class SigniturePadComponent implements OnInit, AfterViewInit {
   };
 
   ngAfterViewInit() {
-    this.signaturePad?.clear();
+    this.signaturePad.clear();
   }
 
   drawComplete(event: MouseEvent | Touch) {
-    if (!this.signaturePad) return;
     this.onValueChanged.emit(this.signaturePad.toDataURL());
   }
 
