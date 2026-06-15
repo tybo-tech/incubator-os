@@ -62,6 +62,13 @@ export class UploadService {
     );
   }
 
+  uploadFileSimple(formData: FormData): Observable<string> {
+    return this.http.post<string>(
+      `${this.url}/upload.php`,
+      formData
+    );
+  }
+
   deleteFile(fileName: string): Observable<any> {
     return this.http.get<any>(`${this.url}/upload/delete.php?file=${fileName}`);
   }

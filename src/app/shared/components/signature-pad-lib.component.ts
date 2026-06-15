@@ -307,20 +307,29 @@ export class SignaturePadLibComponent implements OnInit, AfterViewInit, ControlV
     formData.append('name', file.name);
 
     // Upload the signature
-    this.uploadService.uploadFile(formData).subscribe({
+    this.uploadService.uploadFileSimple(formData).subscribe({
       next: (response) => {
-        if (response?.success) {
-          const imageUrl = `${this.uploadService.uploadBaseUrl}/${response.url}`;
+        console.log('Signature upload response:', response);
+        if (response && typeof response === 'string') {
+          // The API returns a relative path like "uploads/1781533868signature_1781533867466.png"
+          // We need to prepend the base URL to get the full image URL
+          const baseUrl = 'https://api.rbttacesd.co.za/api/upload/';
+          const imageUrl = baseUrl + response;
+          console.log('Final signature URL:', imageUrl);
           this.signatureImageUrl = imageUrl;
           this.onChange(imageUrl);
           this.onValueChanged.emit(imageUrl);
           this.closeModal();
         } else {
           console.error('Signature upload failed:', response);
+          // Show error to user
+          alert('Failed to upload signature. Please try again.');
         }
       },
       error: (error) => {
         console.error('Signature upload error:', error);
+        // Show error to user
+        alert('Failed to upload signature. Please check your connection and try again.');
       }
     });
   }
