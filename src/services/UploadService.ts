@@ -23,11 +23,11 @@ export class UploadService {
   uploadBaseUrl: string;
 
   /** Base URL for the local API upload endpoint (PPTX / PDF / any document). */
-  private readonly localUploadBase = `${Constants.ApiBase}api-nodes/upload`;
+  private readonly localUploadBase = `https://api.rbttacesd.co.za/api/upload/`;
 
   constructor(private http: HttpClient, private toast: ToastService) {
-    this.url = `https://uploads.rbttacesd.co.za`;
-    this.uploadBaseUrl = `https://uploads.rbttacesd.co.za/upload`;
+    this.url = `https://api.rbttacesd.co.za/api/upload/`;
+    this.uploadBaseUrl = `https://api.rbttacesd.co.za/api/upload/`;
   }
 
   /**

@@ -111,7 +111,7 @@ import { AuthService } from '../auth.service';
     </div>
 
     <p class="text-center text-xs text-slate-500 mt-6">
-      incubator-os &copy; {{ currentYear }}
+      incubator-os {{ version }}
     </p>
   </div>
 </div>
@@ -125,7 +125,7 @@ export class LoginComponent {
   errorMsg  = signal<string | null>(null);
   showPassword = signal(false);
 
-  readonly currentYear = new Date().getFullYear();
+  readonly version = 'v2.0.0';
 
   constructor(private auth: AuthService, private router: Router) {}
 

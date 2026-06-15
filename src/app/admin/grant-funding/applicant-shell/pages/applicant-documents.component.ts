@@ -202,6 +202,18 @@ import { UploadService } from '../../../../../services/UploadService';
                 Uploaded {{ formatDate(item.doc.uploaded_at) }}
               </p>
               <p *ngIf="item.doc.note" class="text-xs text-gray-400 italic mt-1">"{{ item.doc.note }}"</p>
+
+              <!-- Upload error -->
+              <div *ngIf="uploadError() === item.index" class="flex items-start gap-1.5 mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+                <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div class="flex-1">
+                  <p class="text-xs font-medium text-red-800">Upload failed</p>
+                  <p class="text-xs text-red-600 mt-0.5">{{ uploadErrorMessage() }}</p>
+                </div>
+              </div>
             </div>
 
             <!-- Actions -->
@@ -222,8 +234,9 @@ import { UploadService } from '../../../../../services/UploadService';
                 View
               </a>
 
-              <!-- Upload / Replace button -->
+              <!-- Upload / Replace / Retry button -->
               <button
+                *ngIf="uploadError() !== item.index"
                 (click)="triggerUpload(item.index)"
                 [disabled]="uploading() === item.index"
                 class="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg transition-colors
@@ -239,6 +252,19 @@ import { UploadService } from '../../../../../services/UploadService';
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
                 {{ uploading() === item.index ? 'Uploading…' : (item.doc.url ? 'Replace' : 'Upload') }}
+              </button>
+
+              <!-- Retry button (when error) -->
+              <button
+                *ngIf="uploadError() === item.index"
+                (click)="retryUpload(item.index)"
+                class="flex items-center gap-1 px-2.5 py-1 text-xs text-white bg-red-600 rounded-lg
+                       hover:bg-red-700 transition-colors border border-red-700">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Retry Upload
               </button>
 
               <!-- Remove uploaded file -->
@@ -306,6 +332,8 @@ export class ApplicantDocumentsComponent implements OnInit {
 
   documents = signal<IUploadedDocument[]>([]);
   uploading = signal<number | null>(null);
+  uploadError = signal<number | null>(null);
+  uploadErrorMessage = signal<string>('');
   addingRow = signal(false);
   editingIndex = signal<number | null>(null);
   editingLabel = '';
@@ -364,8 +392,16 @@ export class ApplicantDocumentsComponent implements OnInit {
 
   triggerUpload(index: number): void {
     this.pendingUploadIndex = index;
+    this.uploadError.set(null);
+    this.uploadErrorMessage.set('');
     this.fileInputRef.nativeElement.value = '';
     this.fileInputRef.nativeElement.click();
+  }
+
+  retryUpload(index: number): void {
+    this.uploadError.set(null);
+    this.uploadErrorMessage.set('');
+    this.triggerUpload(index);
   }
 
   onFileSelected(event: Event): void {
@@ -375,24 +411,58 @@ export class ApplicantDocumentsComponent implements OnInit {
     if (!files || files.length === 0 || index < 0) return;
 
     this.uploading.set(index);
+    this.uploadError.set(null);
+    this.uploadErrorMessage.set('');
 
     // Use a proxy object so UploadService can set the url on it
     const proxy: Record<string, string> = {};
 
-    this.uploadService.onUpload(files, proxy, 'url', (url: string) => {
-      const updated = this.documents().map((doc, i) =>
-        i === index
-          ? { ...doc, url, uploaded_at: new Date().toISOString() }
-          : doc
-      );
-      this.uploading.set(null);
-      this.save(updated);
-    });
+    // Track if callback was called to detect failures
+    let callbackCalled = false;
 
-    // If onUpload returns synchronously with nothing (e.g. empty file guard),
-    // clear the uploading state after a short window.
+    try {
+      this.uploadService.onUpload(
+        files,
+        proxy,
+        'url',
+        (url: string) => {
+          // Success callback
+          callbackCalled = true;
+
+          if (url) {
+            const updated = this.documents().map((doc, i) =>
+              i === index
+                ? { ...doc, url, uploaded_at: new Date().toISOString() }
+                : doc
+            );
+            this.uploading.set(null);
+            this.uploadError.set(null);
+            this.save(updated);
+          } else {
+            // No URL returned - treat as error
+            this.uploading.set(null);
+            this.uploadError.set(index);
+            this.uploadErrorMessage.set('Upload failed - no URL returned');
+          }
+        }
+      );
+    } catch (error: any) {
+      console.error('Upload exception:', error);
+      this.uploading.set(null);
+      this.uploadError.set(index);
+      this.uploadErrorMessage.set(
+        error?.message || 'An unexpected error occurred during upload.'
+      );
+      return; // Exit early, don't set timeout
+    }
+
+    // Timeout to detect if callback never fired (upload failed)
     setTimeout(() => {
-      if (this.uploading() === index) this.uploading.set(null);
+      if (this.uploading() === index && !callbackCalled) {
+        this.uploading.set(null);
+        this.uploadError.set(index);
+        this.uploadErrorMessage.set('Upload failed or timed out. Please try again.');
+      }
     }, 30000);
   }
 
