@@ -147,11 +147,6 @@ import { ApplicantBusinessProcessComponent } from './applicant-business-process.
           </div>
         </ng-container>
 
-        <!-- ── Business Process (stage_1780029748875 stage) ────────────── -->
-        <ng-container *ngIf="selectedStage() === 'stage_1780029748875'">
-          <app-applicant-business-process></app-applicant-business-process>
-        </ng-container>
-
         <!-- ── Business Process Component (any stage with business_process component) ────────────── -->
         <ng-container *ngIf="hasStageComponent('business_process')">
           <app-applicant-business-process></app-applicant-business-process>

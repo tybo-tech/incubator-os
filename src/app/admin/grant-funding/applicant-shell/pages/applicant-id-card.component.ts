@@ -74,7 +74,7 @@ type SnapshotStatus = 'ok' | 'warning' | 'error' | 'pending';
           <span [class]="overallStatusClass()">{{ overallStatusLabel() }}</span>
           <!-- Collapse toggle -->
           <button
-            (click)="collapsed.set(!collapsed())"
+            (click)="toggleCollapse()"
             class="p-1 text-blue-400 hover:text-blue-700 transition-colors"
             [title]="collapsed() ? 'Expand' : 'Collapse'">
             <svg class="w-4 h-4 transition-transform" [class.rotate-180]="collapsed()"
@@ -370,7 +370,30 @@ export class ApplicantIdCardComponent {
   private grantService = inject(GrantApplicationService);
   private uploadService = inject(UploadService);
 
-  collapsed = signal(false);
+  collapsed = signal(this.getStoredCollapseState('applicant-id-card'));
+
+  private getStoredCollapseState(componentName: string): boolean {
+    try {
+      const stored = localStorage.getItem(`collapsed-${componentName}`);
+      return stored ? JSON.parse(stored) : false;
+    } catch {
+      return false;
+    }
+  }
+
+  private setStoredCollapseState(componentName: string, collapsed: boolean): void {
+    try {
+      localStorage.setItem(`collapsed-${componentName}`, JSON.stringify(collapsed));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  toggleCollapse(): void {
+    const newState = !this.collapsed();
+    this.collapsed.set(newState);
+    this.setStoredCollapseState('applicant-id-card', newState);
+  }
 
   // ── Uploads / presentations ───────────────────────────────────────────────
   uploadsOpen    = signal(false);

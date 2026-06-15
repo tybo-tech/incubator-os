@@ -46,7 +46,7 @@ interface SummaryRow {
             R {{ grandTotal() | number:'1.0-2' }}
           </span>
           <button
-            (click)="collapsed.set(!collapsed())"
+            (click)="toggleCollapse()"
             class="p-1 text-teal-500 hover:text-teal-700 transition-colors"
             [title]="collapsed() ? 'Expand' : 'Collapse'">
             <svg class="w-4 h-4 transition-transform" [class.rotate-180]="collapsed()"
@@ -259,8 +259,31 @@ export class ApplicantBankStatementSummaryComponent implements OnInit {
   readonly monthCols = FY_MONTH_COLUMNS;
 
   isLoading = signal(true);
-  collapsed = signal(false);
+  collapsed = signal(this.getStoredCollapseState('bank-statement-summary'));
   rows = signal<SummaryRow[]>([]);
+
+  private getStoredCollapseState(componentName: string): boolean {
+    try {
+      const stored = localStorage.getItem(`collapsed-${componentName}`);
+      return stored ? JSON.parse(stored) : false;
+    } catch {
+      return false;
+    }
+  }
+
+  private setStoredCollapseState(componentName: string, collapsed: boolean): void {
+    try {
+      localStorage.setItem(`collapsed-${componentName}`, JSON.stringify(collapsed));
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  toggleCollapse(): void {
+    const newState = !this.collapsed();
+    this.collapsed.set(newState);
+    this.setStoredCollapseState('bank-statement-summary', newState);
+  }
 
   grandTotal = computed(() => this.rows().reduce((s, r) => s + r.total, 0));
 
