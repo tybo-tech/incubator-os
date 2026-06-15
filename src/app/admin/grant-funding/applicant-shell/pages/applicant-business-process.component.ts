@@ -2,11 +2,12 @@ import { Component, Input, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BusinessProcessChecklistComponent } from '../../business-process/business-process-checklist.component';
 import { ScmVerificationProcessComponent } from '../../business-process/scm-verification-process.component';
+import { ExpenditureAuthorizationComponent } from '../../business-process/expenditure-authorization.component';
 
 @Component({
   selector: 'app-applicant-business-process',
   standalone: true,
-  imports: [CommonModule, BusinessProcessChecklistComponent, ScmVerificationProcessComponent],
+  imports: [CommonModule, BusinessProcessChecklistComponent, ScmVerificationProcessComponent, ExpenditureAuthorizationComponent],
   template: `
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <!-- Tabs Header -->
@@ -25,16 +26,10 @@ import { ScmVerificationProcessComponent } from '../../business-process/scm-veri
             SCM Verification
           </button>
           <button
-            (click)="setActiveTab('documents')"
-            [class]="tabClass('documents')"
+            (click)="setActiveTab('expenditure')"
+            [class]="tabClass('expenditure')"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            Supporting Documents
-          </button>
-          <button
-            (click)="setActiveTab('notes')"
-            [class]="tabClass('notes')"
-            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            Notes & Comments
+            Expenditure Authorization
           </button>
         </nav>
       </div>
@@ -43,24 +38,32 @@ import { ScmVerificationProcessComponent } from '../../business-process/scm-veri
       <div class="p-5">
         <!-- Checklist Tab -->
         <div *ngIf="activeTab() === 'checklist'">
-          <app-business-process-checklist 
-            [companyId]="companyId" 
+          <app-business-process-checklist
+            [companyId]="companyId"
             [applicantId]="applicantId">
           </app-business-process-checklist>
         </div>
 
         <!-- SCM Verification Tab -->
         <div *ngIf="activeTab() === 'scm'">
-          <app-scm-verification-process 
-            [companyId]="companyId" 
+          <app-scm-verification-process
+            [companyId]="companyId"
             [applicantId]="applicantId">
           </app-scm-verification-process>
+        </div>
+
+        <!-- Expenditure Authorization Tab -->
+        <div *ngIf="activeTab() === 'expenditure'">
+          <app-expenditure-authorization
+            [companyId]="companyId"
+            [applicantId]="applicantId">
+          </app-expenditure-authorization>
         </div>
 
         <!-- Documents Tab -->
         <div *ngIf="activeTab() === 'documents'" class="text-center py-8">
           <svg class="w-12 h-12 text-gray-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
           <p class="mt-4 text-sm text-gray-500">Document management for business process will be displayed here.</p>
@@ -70,7 +73,7 @@ import { ScmVerificationProcessComponent } from '../../business-process/scm-veri
         <!-- Notes Tab -->
         <div *ngIf="activeTab() === 'notes'" class="text-center py-8">
           <svg class="w-12 h-12 text-gray-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
           </svg>
           <p class="mt-4 text-sm text-gray-500">Notes and comments for business process will be displayed here.</p>
@@ -83,17 +86,17 @@ import { ScmVerificationProcessComponent } from '../../business-process/scm-veri
 export class ApplicantBusinessProcessComponent {
   @Input() companyId!: number;
   @Input() applicantId!: number;
-  
-  activeTab = signal<'checklist' | 'scm' | 'documents' | 'notes'>('checklist');
 
-  setActiveTab(tab: 'checklist' | 'scm' | 'documents' | 'notes'): void {
+  activeTab = signal<'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'>('checklist');
+
+  setActiveTab(tab: 'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'): void {
     this.activeTab.set(tab);
   }
 
-  tabClass(tab: string): string {
+  tabClass(tab: 'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'): string {
     const isActive = this.activeTab() === tab;
-    return isActive 
-      ? 'border-blue-500 text-blue-600' 
+    return isActive
+      ? 'border-blue-500 text-blue-600'
       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
   }
 }
