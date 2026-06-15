@@ -23,6 +23,7 @@ import { ApplicantStageActionsComponent } from './applicant-stage-actions.compon
 import { ApplicantBankStatementSummaryComponent } from './applicant-bank-statement-summary.component';
 import { ApplicantIdCardComponent } from './applicant-id-card.component';
 import { ApplicantEditModalComponent } from './applicant-edit-modal.component';
+import { ApplicantBusinessProcessComponent } from './applicant-business-process.component';
 
 @Component({
   selector: 'app-applicant-overview',
@@ -37,6 +38,7 @@ import { ApplicantEditModalComponent } from './applicant-edit-modal.component';
     ApplicantBankStatementSummaryComponent,
     ApplicantIdCardComponent,
     ApplicantEditModalComponent,
+    ApplicantBusinessProcessComponent,
   ],
   template: `
     <div class="p-4 sm:p-6 space-y-8">
@@ -135,7 +137,7 @@ import { ApplicantEditModalComponent } from './applicant-edit-modal.component';
         </ng-container><!-- /entry stage -->
 
         <!-- ── Documents (any stage with documents component) ──────────── -->
-        <ng-container *ngIf="hasStageComponent('documents')">
+        <ng-container *ngIf="hasStageComponent('documents') && selectedStage() !== 'stage_1780029748875'">
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden border-l-4 border-l-violet-400">
             <app-applicant-documents
               [applicantId]="applicantId"
@@ -143,6 +145,16 @@ import { ApplicantEditModalComponent } from './applicant-edit-modal.component';
               (dataUpdated)="onChecklistDataUpdated($event)">
             </app-applicant-documents>
           </div>
+        </ng-container>
+
+        <!-- ── Business Process (stage_1780029748875 stage) ────────────── -->
+        <ng-container *ngIf="selectedStage() === 'stage_1780029748875'">
+          <app-applicant-business-process></app-applicant-business-process>
+        </ng-container>
+
+        <!-- ── Business Process Component (any stage with business_process component) ────────────── -->
+        <ng-container *ngIf="hasStageComponent('business_process')">
+          <app-applicant-business-process></app-applicant-business-process>
         </ng-container>
 
         <!-- ── Compliance (any stage with compliance component) ─────────── -->

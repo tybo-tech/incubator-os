@@ -587,6 +587,7 @@ export class WorkflowSettingsComponent implements OnChanges {
     { key: 'documents',       label: 'Documents' },
     { key: 'interview',       label: 'Interview' },
     { key: 'dynamic_form',    label: 'Dynamic Form' },
+    { key: 'business_process', label: 'Business Process' },
   ];
 
   hasComponent(stage: IWorkflowStage, key: string): boolean {
