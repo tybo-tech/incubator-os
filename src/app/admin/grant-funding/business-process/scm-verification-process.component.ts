@@ -60,7 +60,7 @@ interface GrantScmVerification {
   beneficiary_company_name: string;
   director: string;
   contact_number: string;
-  
+
   step_1: ScmVerificationStep<ScmQuotation>;
   step_2: ScmVerificationStep<ScmSupplierVerification>;
   step_3: ScmVerificationStep<ScmPurchaseOrder>;
@@ -71,7 +71,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
   beneficiary_company_name: '',
   director: '',
   contact_number: '',
-  
+
   step_1: {
     items: [],
     verified_by: '',
@@ -123,30 +123,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
 
       <!-- Content -->
       <div *ngIf="!isLoading()" class="p-6">
-        <!-- Applicant Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 p-5 bg-gray-50 rounded-xl">
-          <div class="flex items-center">
-            <i class="fas fa-building text-gray-400 mr-3"></i>
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Company</label>
-              <p class="text-sm font-medium text-gray-900">{{ scmVerification().beneficiary_company_name || 'Not set' }}</p>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-user-tie text-gray-400 mr-3"></i>
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Director</label>
-              <p class="text-sm font-medium text-gray-900">{{ scmVerification().director || 'Not set' }}</p>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fas fa-phone text-gray-400 mr-3"></i>
-            <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Contact Number</label>
-              <p class="text-sm font-medium text-gray-900">{{ scmVerification().contact_number || 'Not set' }}</p>
-            </div>
-          </div>
-        </div>
+
 
         <!-- Step 1 - Collection of Quotations -->
         <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
@@ -160,7 +137,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                 <p class="text-sm text-gray-500">Capture quotations received from suppliers.</p>
               </div>
             </div>
-            <button 
+            <button
               (click)="addQuotation()"
               class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
               <i class="fas fa-plus mr-2"></i>
@@ -193,16 +170,16 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               <tbody>
                 <tr *ngFor="let item of scmVerification().step_1.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.supplier_name" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.supplier_name"
                       placeholder="Enter supplier name"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="date" 
-                      [(ngModel)]="item.date_received" 
+                    <input
+                      type="date"
+                      [(ngModel)]="item.date_received"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
@@ -213,14 +190,14 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                     </app-signature-pad-lib>
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.comments" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.comments"
                       placeholder="Add comments"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <button 
+                    <button
                       (click)="removeQuotation(i)"
                       class="text-red-500 hover:text-red-700 text-sm flex items-center">
                       <i class="fas fa-trash mr-1"></i>
@@ -282,7 +259,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                 <p class="text-sm text-gray-500">Verify supplier legitimacy and credentials.</p>
               </div>
             </div>
-            <button 
+            <button
               (click)="addSupplierVerification()"
               class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
               <i class="fas fa-plus mr-2"></i>
@@ -317,51 +294,51 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               <tbody>
                 <tr *ngFor="let item of scmVerification().step_2.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.supplier_name" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.supplier_name"
                       placeholder="Enter supplier name"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.cipc_registration" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.cipc_registration"
                       placeholder="Enter CIPC reg."
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.vat_number" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.vat_number"
                       placeholder="Enter VAT number"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.verification_details" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.verification_details"
                       placeholder="Verification details"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.approved" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.approved"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                       <label class="ml-2 text-sm text-gray-700">Approved</label>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.comments" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.comments"
                       placeholder="Add comments"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <button 
+                    <button
                       (click)="removeSupplierVerification(i)"
                       class="text-red-500 hover:text-red-700 text-sm flex items-center">
                       <i class="fas fa-trash mr-1"></i>
@@ -423,7 +400,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                 <p class="text-sm text-gray-500">Generate purchase orders and verify documentation.</p>
               </div>
             </div>
-            <button 
+            <button
               (click)="addPurchaseOrder()"
               class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
               <i class="fas fa-plus mr-2"></i>
@@ -460,69 +437,69 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               <tbody>
                 <tr *ngFor="let item of scmVerification().step_3.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.supplier_name" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.supplier_name"
                       placeholder="Enter supplier name"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.purchase_order_generated" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.purchase_order_generated"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.tax_invoice_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.tax_invoice_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.bbbee_certificate_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.bbbee_certificate_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.bank_confirmation_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.bank_confirmation_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.tax_clearance_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.tax_clearance_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.approved" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.approved"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.comments" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.comments"
                       placeholder="Add comments"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <button 
+                    <button
                       (click)="removePurchaseOrder(i)"
                       class="text-red-500 hover:text-red-700 text-sm flex items-center">
                       <i class="fas fa-trash mr-1"></i>
@@ -584,7 +561,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
                 <p class="text-sm text-gray-500">Process payments and track delivery.</p>
               </div>
             </div>
-            <button 
+            <button
               (click)="addPayment()"
               class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
               <i class="fas fa-plus mr-2"></i>
@@ -622,76 +599,76 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
               <tbody>
                 <tr *ngFor="let item of scmVerification().step_4.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.company_name" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.company_name"
                       placeholder="Enter company name"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.director" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.director"
                       placeholder="Enter director name"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
-                    <input 
-                      type="text" 
-                      [(ngModel)]="item.contact_number" 
+                    <input
+                      type="text"
+                      [(ngModel)]="item.contact_number"
                       placeholder="Enter contact number"
                       class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.vat_invoice_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.vat_invoice_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.bank_confirmation_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.bank_confirmation_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.payment_authorisation_signed" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.payment_authorisation_signed"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.payment_done" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.payment_done"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.proof_of_payment_sent" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.proof_of_payment_sent"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
-                      <input 
-                        type="checkbox" 
-                        [(ngModel)]="item.delivery_note_received" 
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="item.delivery_note_received"
                         class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <button 
+                    <button
                       (click)="removePayment(i)"
                       class="text-red-500 hover:text-red-700 text-sm flex items-center">
                       <i class="fas fa-trash mr-1"></i>
@@ -759,7 +736,7 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
             <i class="fas text-lg mt-0.5 mr-3"
                [class]="saveStatus()!.type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500'"></i>
             <div>
-              <h4 class="font-medium" 
+              <h4 class="font-medium"
                   [class]="saveStatus()!.type === 'success' ? 'text-green-800' : 'text-red-800'">
                 {{ saveStatus()!.type === 'success' ? 'Success' : 'Error' }}
               </h4>
@@ -778,7 +755,7 @@ export class ScmVerificationProcessComponent implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
   saveStatus = signal<{ message: string; type: 'success' | 'error' } | null>(null);
-  
+
   scmVerification = signal<GrantScmVerification>({ ...DEFAULT_GRANT_SCM_VERIFICATION });
   scmVerificationNode = signal<any>(null);
 
@@ -799,8 +776,8 @@ export class ScmVerificationProcessComponent implements OnInit {
         if (nodes.length > 0) {
           // Load existing SCM verification data
           const existingData = nodes[0].data as GrantScmVerification;
-          this.scmVerification.set({ 
-            ...DEFAULT_GRANT_SCM_VERIFICATION, 
+          this.scmVerification.set({
+            ...DEFAULT_GRANT_SCM_VERIFICATION,
             ...existingData,
             step_1: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_1, ...existingData.step_1 },
             step_2: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_2, ...existingData.step_2 },
@@ -820,16 +797,16 @@ export class ScmVerificationProcessComponent implements OnInit {
   saveScmVerification(): void {
     this.isSaving.set(true);
     this.saveStatus.set(null);
-    
+
     const scmData = this.scmVerification();
-    
+
     // Save or update the SCM verification node
     const nodeData: any = {
       type: 'grant_scm_verification',
       parent_id: this.companyId,
       data: scmData
     };
-    
+
     // If we have an existing node, update it, otherwise create a new one
     let saveObservable;
     if (this.scmVerificationNode()) {
@@ -838,7 +815,7 @@ export class ScmVerificationProcessComponent implements OnInit {
     } else {
       saveObservable = this.nodeService.addNode(nodeData);
     }
-    
+
     saveObservable.subscribe({
       next: (response: any) => {
         this.isSaving.set(false);
@@ -864,7 +841,7 @@ export class ScmVerificationProcessComponent implements OnInit {
       beneficiary_signature: '',
       comments: ''
     };
-    
+
     this.scmVerification.update(data => ({
       ...data,
       step_1: {
@@ -895,7 +872,7 @@ export class ScmVerificationProcessComponent implements OnInit {
       approved: false,
       comments: ''
     };
-    
+
     this.scmVerification.update(data => ({
       ...data,
       step_2: {
@@ -929,7 +906,7 @@ export class ScmVerificationProcessComponent implements OnInit {
       approved: false,
       comments: ''
     };
-    
+
     this.scmVerification.update(data => ({
       ...data,
       step_3: {
@@ -964,7 +941,7 @@ export class ScmVerificationProcessComponent implements OnInit {
       proof_of_payment_sent: false,
       delivery_note_received: false
     };
-    
+
     this.scmVerification.update(data => ({
       ...data,
       step_4: {
