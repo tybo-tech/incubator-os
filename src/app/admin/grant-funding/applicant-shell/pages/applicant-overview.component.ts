@@ -149,7 +149,10 @@ import { ApplicantBusinessProcessComponent } from './applicant-business-process.
 
         <!-- ── Business Process Component (any stage with business_process component) ────────────── -->
         <ng-container *ngIf="hasStageComponent('business_process')">
-          <app-applicant-business-process></app-applicant-business-process>
+          <app-applicant-business-process 
+            [companyId]="applicantCompanyId() || applicantId" 
+            [applicantId]="applicantId">
+          </app-applicant-business-process>
         </ng-container>
 
         <!-- ── Compliance (any stage with compliance component) ─────────── -->
