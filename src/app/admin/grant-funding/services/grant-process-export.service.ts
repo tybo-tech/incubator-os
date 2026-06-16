@@ -16,6 +16,7 @@ import {
   ScmPayment,
 } from '../business-process/scm-verification.models';
 import { Constants } from '../../../../services';
+import { DocumentGeneratorService } from '../../../../services/pdf/document-generator.service';
 
 export interface CompanyInfo {
   companyName: string;
@@ -35,7 +36,10 @@ export interface ExportOptions {
 })
 export class GrantProcessExportService {
   images = Constants.Images;
-  constructor(private pdfService: PdfService) {}
+  constructor(
+    private pdfService: PdfService,
+    private documentGenerator: DocumentGeneratorService
+  ) {}
 
   /**
    * Export Business Process Checklist to PDF
@@ -96,24 +100,14 @@ export class GrantProcessExportService {
   ): string {
     const FF = `font-family:Arial,sans-serif`;
 
-
     // Build checklist rows
     const checklistRows = GRANT_FUNDING_CHECKLIST_FIELDS.map((field) => {
       const value = data[field.key as keyof GrantFundingChecklist];
 
-      // Use a more PDF-compatible approach for checkboxes
-      const yesBox =
-        value === 'YES'
-          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
-          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
-      const noBox =
-        value === 'NO'
-          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
-          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
-      const naBox =
-        value === 'NA'
-          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
-          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      // Use image-based checkboxes
+      const yesBox = this._getYesNoNaCheckbox(value || '', 'YES');
+      const noBox = this._getYesNoNaCheckbox(value || '', 'NO');
+      const naBox = this._getYesNoNaCheckbox(value || '', 'NA');
 
       return `
         <tr>
@@ -123,10 +117,6 @@ export class GrantProcessExportService {
           <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${naBox}</td>
         </tr>`;
     }).join('');
-
-    // Add South32 logo
-    const logoUrl =
-      'https://api.rbttacesd.co.za/image-library/south32-logo.png';
 
     return `<!DOCTYPE html>
 <html>
@@ -142,58 +132,18 @@ export class GrantProcessExportService {
 </head>
 <body>
   <!-- Header -->
-  <table style="margin-bottom:10px">
-    <tr>
-      <td style="width:70%;border:1px solid #000;height:25mm;padding:8px;${FF}">
-        <!-- Logo placeholder -->
-      </td>
-      <td style="width:30%;border:1px solid #000;height:25mm;padding:8px;text-align:right;${FF}">
-        <img src="${logoUrl}" alt="South32 Logo" style="max-height:20mm;max-width:40mm;">
-      </td>
-    </tr>
-  </table>
-
-  <!-- Document Title -->
-  <table style="margin-bottom:10px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;height:10mm;padding:5px;text-align:center;font-weight:bold;font-size:12px;${FF}">
-        Grant Funding Check List – ${this._esc(companyInfo.companyName)}
-      </td>
-    </tr>
-  </table>
+  ${this._generateHeader(companyInfo, 'Grant Funding Check List')}
 
   <!-- Checklist Table -->
   <table>
-    <thead>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;width:130mm;${FF}" rowspan="2">
-          Document List
-        </td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;${FF}" colspan="3">
-          Provided?
-        </td>
-      </tr>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-          Yes
-        </td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-          No
-        </td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-          N/A
-        </td>
-      </tr>
-    </thead>
+    ${this._generateYesNoNaHeader()}
     <tbody>
       ${checklistRows}
     </tbody>
   </table>
 
   <!-- Footer -->
-  <div style="position:fixed;bottom:15mm;left:15mm;font-size:8px;color:#666;${FF}">
-    Version 01.2025
-  </div>
+  ${this._generateFooter()}
 </body>
 </html>`;
   }
@@ -733,6 +683,83 @@ export class GrantProcessExportService {
   </table>
 </body>
 </html>`;
+  }
+
+  // ── Checkbox Image Helpers ─────────────────────────────────────────────────
+
+  private _getCheckboxImage(value: string, expectedValue: string): string {
+    if (value === expectedValue) {
+      return `<img src="${this.images.Yes}" alt="Yes" style="width:10px;height:10px;">`;
+    }
+    return `<img src="${this.images.No}" alt="No" style="width:10px;height:10px;">`;
+  }
+
+  private _getYesNoNaCheckbox(value: string, option: 'YES' | 'NO' | 'NA'): string {
+    if (value === option) {
+      return `<img src="${this.images.Yes}" alt="${option}" style="width:10px;height:10px;">`;
+    }
+    return `<img src="${this.images.No}" alt="${option}" style="width:10px;height:10px;">`;
+  }
+
+  // ── Reusable HTML Components ───────────────────────────────────────────────
+
+  private _generateHeader(companyInfo: CompanyInfo, title: string): string {
+    const FF = `font-family:Arial,sans-serif`;
+    const logoUrl = this.images.South32Logo;
+
+    return `
+      <table style="margin-bottom:10px">
+        <tr>
+          <td style="width:70%;border:1px solid #000;height:25mm;padding:8px;${FF}">
+            <!-- Logo placeholder -->
+          </td>
+          <td style="width:30%;border:1px solid #000;height:25mm;padding:8px;text-align:right;${FF}">
+            <img src="${logoUrl}" alt="South32 Logo" style="max-height:20mm;max-width:40mm;">
+          </td>
+        </tr>
+      </table>
+
+      <table style="margin-bottom:10px">
+        <tr>
+          <td style="background:#e0e0e0;border:1px solid #000;height:10mm;padding:5px;text-align:center;font-weight:bold;font-size:12px;${FF}">
+            ${title} – ${this._esc(companyInfo.companyName)}
+          </td>
+        </tr>
+      </table>`;
+  }
+
+  private _generateYesNoNaHeader(): string {
+    const FF = `font-family:Arial,sans-serif`;
+    return `
+      <thead>
+        <tr>
+          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;width:130mm;${FF}" rowspan="2">
+            Document List
+          </td>
+          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;${FF}" colspan="3">
+            Provided?
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
+            Yes
+          </td>
+          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
+            No
+          </td>
+          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
+            N/A
+          </td>
+        </tr>
+      </thead>`;
+  }
+
+  private _generateFooter(): string {
+    const FF = `font-family:Arial,sans-serif`;
+    return `
+      <div style="position:fixed;bottom:15mm;left:15mm;font-size:8px;color:#666;${FF}">
+        Version 01.2025
+      </div>`;
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
