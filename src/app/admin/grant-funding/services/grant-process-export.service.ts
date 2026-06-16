@@ -214,9 +214,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
     data: GrantExpenditureAuthorization,
     companyInfo: CompanyInfo,
   ): string {
-    const invoiceRows = this._renderBlankRows(
+    const invoiceRows = this._renderRows(
       data.invoices,
-      7,
       (invoice) => {
         const preferredSupplierBox = this._getCheckboxImage(
           invoice.preferred_supplier ? 'YES' : 'NO',
@@ -238,7 +237,6 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
     return this._buildDocument(
       `
-      <!-- Title & Process Tracking -->
       <table class="mb-8">
         <tr>
           <td class="center" style="${this._fontStyle()}">
@@ -342,9 +340,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
     data: GrantScmVerification,
     companyInfo: CompanyInfo,
   ): string {
-    const quotationRows = this._renderBlankRows(
+    const quotationRows = this._renderRows(
       data.step_1.items,
-      4,
       (item, i) => `
         <tr>
           <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
@@ -355,9 +352,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
         </tr>`,
     );
 
-    const supplierRows = this._renderBlankRows(
+    const supplierRows = this._renderRows(
       data.step_2.items,
-      4,
       (item, i) => {
         const approvedBox = this._getCheckboxImage(
           item.approved ? 'YES' : 'NO',
@@ -378,10 +374,9 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       },
     );
 
-    const purchaseOrderRows = this._renderBlankRows(
+    const purchaseOrderRows = this._renderRows(
       data.step_3.items,
-      4,
-      (item) => {
+      (item, i) => {
         const poGeneratedBox = this._getCheckboxImage(
           item.purchase_order_generated ? 'YES' : 'NO',
           'YES',
@@ -409,7 +404,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
         return `
           <tr>
-            <td class="cell text-7 h-7 p-4 center" style="width:10mm;">1</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
             <td class="cell text-7 h-7 p-4" style="width:40mm;">${this._esc(item.supplier_name || '')}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${poGeneratedBox}</td>
             <td class="cell text-7 h-7 p-4" style="width:22mm;"></td>
@@ -423,9 +418,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       },
     );
 
-    const paymentRows = this._renderBlankRows(
+    const paymentRows = this._renderRows(
       data.step_4.items,
-      4,
       (item, i) => {
         const vatInvoiceBox = this._getCheckboxImage(
           item.vat_invoice_received ? 'YES' : 'NO',
@@ -778,14 +772,15 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       </table>`;
   }
 
-  private _renderBlankRows<T>(
+  /**
+   * Render a dynamic list of rows from the provided items array.
+   * No blank padding rows are emitted.
+   */
+  private _renderRows<T>(
     rows: T[],
-    count: number,
     renderer: (row: T, index: number) => string,
   ): string {
-    return Array.from({ length: count }, (_, i) =>
-      renderer(rows[i] || ({} as T), i),
-    ).join('');
+    return rows.map((row, index) => renderer(row, index)).join('');
   }
 
   private _fontStyle(): string {
