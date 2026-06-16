@@ -56,6 +56,9 @@ export class GrantProcessExportService {
     textColor: '#000',
   };
 
+  /** Default height for rendered signature images inside PDF tables */
+  private readonly SIGNATURE_IMAGE_HEIGHT = '15mm';
+
   constructor(private pdfService: PdfService) {}
 
   /**
@@ -306,27 +309,27 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       <!-- Beneficiary Authorization Table -->
       ${this._signatureSection([
         { header: 'Beneficiary', value: data.beneficiary_authorization.name || '', width: '95mm' },
-        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.beneficiary_authorization.signature), width: '70mm' },
         { header: 'Date', value: data.beneficiary_authorization.date || '', width: '60mm' },
       ])}
 
       ${this._signatureSection([
         { header: `Authorized By: Business Advisor 1 – ${data.business_advisor_authorization.name || 'Marius Wilken'}`, value: data.business_advisor_authorization.name || '', width: '95mm' },
-        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.business_advisor_authorization.signature), width: '70mm' },
         { header: 'Date', value: data.business_advisor_authorization.date || '', width: '60mm' },
       ])}
 
       <!-- Approval Section -->
       ${this._approvalSection([
-        { title: 'ESD Centre Coordinator', name: data.coordinator_authorization.name || '', optional: true },
-        { title: 'South32 SPA', name: data.south32_spa_authorization.name || '' },
-        { title: 'ESD Centre Manager', name: data.manager_authorization.name || '' },
+        { title: 'ESD Centre Coordinator', name: data.coordinator_authorization.name || '', signature: data.coordinator_authorization.signature, optional: true },
+        { title: 'South32 SPA', name: data.south32_spa_authorization.name || '', signature: data.south32_spa_authorization.signature },
+        { title: 'ESD Centre Manager', name: data.manager_authorization.name || '', signature: data.manager_authorization.signature },
       ])}
 
       <!-- Payment Release Section -->
       ${this._signatureSection([
         { header: 'Payment Released By', value: data.payment_release.released_by || 'Krian Naidoo', width: '95mm' },
-        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.payment_release.signature), width: '70mm' },
         { header: 'Payment Release Date', value: data.payment_release.release_date || '', width: '60mm' },
       ], '')}`,
       { pageMargin: '10mm', fontSize: '9px', lineHeight: '1.3' },
@@ -347,8 +350,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
           <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
           <td class="cell text-7 h-7 p-4" style="width:80mm;">${this._esc(item.supplier_name || '')}</td>
           <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.date_received || '')}</td>
-          <td class="cell text-7 h-7 p-4" style="width:55mm;"></td>
-          <td class="cell text-7 h-7 p-4" style="width:70mm;"></td>
+          <td class="cell text-7 h-7 p-4" style="width:55mm;">${this._renderSignatureImage(item.beneficiary_signature)}</td>
+          <td class="cell text-7 h-7 p-4" style="width:70mm;">${this._esc(item.comments || '')}</td>
         </tr>`,
     );
 
@@ -510,7 +513,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
       ${this._signatureSection([
         { header: 'Verified By', value: data.step_1.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.step_1.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 2 -->
@@ -534,7 +537,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
       ${this._signatureSection([
         { header: 'Verified By', value: data.step_2.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.step_2.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 3 -->
@@ -560,7 +563,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
       ${this._signatureSection([
         { header: 'Verified By', value: data.step_3.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.step_3.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 4 -->
@@ -587,7 +590,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
       ${this._signatureSection([
         { header: 'Verified By', value: data.step_4.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.step_4.signature), width: '120mm' },
       ], '')}`,
       { pageMargin: '8mm', fontSize: '8px', lineHeight: '1.2' },
     );
@@ -610,6 +613,17 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       return `<img src="${this.images.Yes}" alt="${option}" style="width:10px;height:10px;">`;
     }
     return `<img src="${this.images.No}" alt="${option}" style="width:10px;height:10px;">`;
+  }
+
+  /**
+   * Render a signature image if a URL is provided, otherwise leave an empty line.
+   * The returned HTML is already escaped appropriately; callers should pass the raw URL.
+   */
+  private _renderSignatureImage(signatureUrl: string | undefined): string {
+    if (!signatureUrl || signatureUrl.trim() === '') {
+      return '';
+    }
+    return `<img src="${this._esc(signatureUrl)}" alt="Signature" style="max-height:${this.SIGNATURE_IMAGE_HEIGHT};width:auto;display:block;margin:0 auto;">`;
   }
 
   // ── Reusable HTML Components ───────────────────────────────────────────────
@@ -702,7 +716,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       )
       .join('');
     const values = columns
-      .map(() => `<td class="cell text-8 h-8"></td>`)
+      .map((column) => `<td class="cell text-8 h-8">${column.value}</td>`)
       .join('');
 
     return `
@@ -713,17 +727,22 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
   }
 
   private _approvalSection(
-    authors: { title: string; name: string; optional?: boolean }[],
+    authors: { title: string; name: string; signature?: string; optional?: boolean }[],
   ): string {
     const cells = authors
       .map(
-        (author) => `
+        (author) => {
+          const signatureHtml = this._renderSignatureImage(author.signature);
+          return `
           <td class="cell p-5 h-20" style="width:33.33%;">
             <div class="bold text-9 mb-3">${this._esc(author.title)}</div>
             ${author.optional ? '<div class="text-8 mb-3">(optional)</div>' : ''}
             <div class="text-8 mb-3">Name: ${this._esc(author.name || '')}</div>
-            <div class="text-8">Signature: _______________________</div>
-          </td>`,
+            <div class="text-8">
+              ${signatureHtml ? signatureHtml : 'Signature: _______________________'}
+            </div>
+          </td>`;
+        },
       )
       .join('');
 
