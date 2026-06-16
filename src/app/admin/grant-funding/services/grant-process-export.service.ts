@@ -31,11 +31,31 @@ export interface ExportOptions {
   orientation?: 'portrait' | 'landscape';
 }
 
+interface DocumentOptions {
+  pageMargin?: string;
+  fontSize?: string;
+  lineHeight?: string;
+}
+
+interface TableColumn {
+  label: string;
+  width?: string;
+  classes?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class GrantProcessExportService {
   images = Constants.Images;
+
+  private readonly theme = {
+    fontFamily: 'Arial, sans-serif',
+    borderColor: '#000',
+    headerBackground: '#e0e0e0',
+    textColor: '#000',
+  };
+
   constructor(private pdfService: PdfService) {}
 
   /**
@@ -89,62 +109,100 @@ export class GrantProcessExportService {
     this.pdfService.downloadPdf(html, filename, paperSize, orientation);
   }
 
+  // ── Document Shell & Styles ────────────────────────────────────────────────
+
+  private _buildDocument(
+    content: string,
+    options: DocumentOptions = {},
+  ): string {
+    const {
+      pageMargin = '15mm',
+      fontSize = '10px',
+      lineHeight = '1.4',
+    } = options;
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+${this._globalStyles({ pageMargin, fontSize, lineHeight })}
+</head>
+<body>
+  ${content}
+  ${this._generateFooter()}
+</body>
+</html>`;
+  }
+
+  private _globalStyles(options: Required<DocumentOptions>): string {
+    const { pageMargin, fontSize, lineHeight } = options;
+
+    return `<style>
+  @page { margin: ${pageMargin}; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: ${this.theme.fontFamily}; font-size: ${fontSize}; line-height: ${lineHeight}; color: ${this.theme.textColor}; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { vertical-align: top; }
+  .cell { border: 1px solid ${this.theme.borderColor}; padding: 4px; }
+  .header { border: 1px solid ${this.theme.borderColor}; padding: 4px; background: ${this.theme.headerBackground}; font-weight: bold; }
+  .center { text-align: center; }
+  .right { text-align: right; }
+  .uppercase { text-transform: uppercase; }
+  .bold { font-weight: bold; }
+  .p-3 { padding: 3px; }
+  .p-4 { padding: 4px; }
+  .p-5 { padding: 5px; }
+  .p-8 { padding: 8px; }
+  .h-7 { height: 7mm; }
+  .h-8 { height: 8mm; }
+  .h-10 { height: 10mm; }
+  .h-12 { height: 12mm; }
+  .h-15 { height: 15mm; }
+  .h-20 { height: 20mm; }
+  .h-25 { height: 25mm; }
+  .text-7 { font-size: 7px; }
+  .text-8 { font-size: 8px; }
+  .text-9 { font-size: 9px; }
+  .text-10 { font-size: 10px; }
+  .text-11 { font-size: 11px; }
+  .text-12 { font-size: 12px; }
+  .mb-3 { margin-bottom: 3px; }
+  .mb-5 { margin-bottom: 5px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-10 { margin-bottom: 10px; }
+</style>`;
+  }
+
   // ── Business Process Checklist HTML Builder ────────────────────────────────
 
   private _buildChecklistHtml(
     data: GrantFundingChecklist,
     companyInfo: CompanyInfo,
   ): string {
-    const FF = `font-family:Arial,sans-serif`;
-    const checklistCellStyle = `padding:8px;border:1px solid #000;font-size:10px;${FF}`;
-    const checklistHeaderCellStyle = `background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;${FF}`;
-
-    // Build checklist rows
     const checklistRows = GRANT_FUNDING_CHECKLIST_FIELDS.map((field) => {
       const value = data[field.key as keyof GrantFundingChecklist];
 
-      // Use image-based checkboxes
-      const yesBox = this._getYesNoNaCheckbox(value || '', 'YES');
-      const noBox = this._getYesNoNaCheckbox(value || '', 'NO');
-      const naBox = this._getYesNoNaCheckbox(value || '', 'NA');
-
       return `
         <tr>
-          <td style="${checklistCellStyle}">${this._esc(field.label)}</td>
-          <td style="${checklistCellStyle}text-align:center;">${yesBox}</td>
-          <td style="${checklistCellStyle}text-align:center;">${noBox}</td>
-          <td style="${checklistCellStyle}text-align:center;">${naBox}</td>
+          <td class="cell text-10 p-8">${this._esc(field.label)}</td>
+          <td class="cell text-10 p-8 center">${this._getYesNoNaCheckbox(value || '', 'YES')}</td>
+          <td class="cell text-10 p-8 center">${this._getYesNoNaCheckbox(value || '', 'NO')}</td>
+          <td class="cell text-10 p-8 center">${this._getYesNoNaCheckbox(value || '', 'NA')}</td>
         </tr>`;
     }).join('');
 
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  @page { margin: 15mm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 10px; line-height: 1.4; color: #000; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { vertical-align: top; }
-</style>
-</head>
-<body>
-  <!-- Header -->
-  ${this._generateHeader(companyInfo, 'Grant Funding Check List')}
+    return this._buildDocument(
+      `
+      ${this._generateHeader(companyInfo, 'Grant Funding Check List')}
 
-  <!-- Checklist Table -->
-  <table>
-    ${this._generateYesNoNaHeader()}
-    <tbody>
-      ${checklistRows}
-    </tbody>
-  </table>
-
-  <!-- Footer -->
-  ${this._generateFooter()}
-</body>
-</html>`;
+      <table>
+        ${this._generateYesNoNaHeader()}
+        <tbody>
+          ${checklistRows}
+        </tbody>
+      </table>`,
+      { pageMargin: '15mm', fontSize: '10px', lineHeight: '1.4' },
+    );
   }
 
   // ── Expenditure Authorization HTML Builder ─────────────────────────────────
@@ -153,203 +211,126 @@ export class GrantProcessExportService {
     data: GrantExpenditureAuthorization,
     companyInfo: CompanyInfo,
   ): string {
-    const FF = `font-family:Arial,sans-serif`;
-    const invoiceCellStyle = `padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}`;
-    const invoiceHeaderCellStyle = `background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;${FF}`;
+    const invoiceRows = this._renderBlankRows(
+      data.invoices,
+      7,
+      (invoice) => {
+        const preferredSupplierBox = this._getCheckboxImage(
+          invoice.preferred_supplier ? 'YES' : 'NO',
+          'YES',
+        );
 
-    // Build invoice rows (7 rows total)
-    const invoiceRows = Array.from({ length: 7 }, (_, i) => {
-      const invoice = data.invoices[i] || ({} as ExpenditureInvoice);
-      // Use image-based checkboxes
-      const preferredSupplierBox = this._getCheckboxImage(
-        invoice.preferred_supplier ? 'YES' : 'NO',
-        'YES',
-      );
+        return `
+          <tr>
+            <td class="cell text-8 h-10 p-5" style="width:50mm;">${this._esc(invoice.invoice_number || '')}</td>
+            <td class="cell text-8 h-10 p-5" style="width:70mm;">${this._esc(invoice.description || '')}</td>
+            <td class="cell text-8 h-10 p-5" style="width:43mm;">${this._esc(invoice.supplier_name || '')}</td>
+            <td class="cell text-8 h-10 p-5 right" style="width:28mm;">${invoice.amount_excl_vat || ''}</td>
+            <td class="cell text-8 h-10 p-5 right" style="width:25mm;">${invoice.vat_amount || ''}</td>
+            <td class="cell text-8 h-10 p-5 right" style="width:25mm;">${invoice.total_amount || ''}</td>
+            <td class="cell text-8 h-10 p-5 center" style="width:23mm;">${preferredSupplierBox}</td>
+          </tr>`;
+      },
+    );
 
-      return `
+    return this._buildDocument(
+      `
+      <!-- Title & Process Tracking -->
+      <table class="mb-8">
         <tr>
-          <td style="${invoiceCellStyle}">${this._esc(invoice.invoice_number || '')}</td>
-          <td style="${invoiceCellStyle}">${this._esc(invoice.description || '')}</td>
-          <td style="${invoiceCellStyle}">${this._esc(invoice.supplier_name || '')}</td>
-          <td style="${invoiceCellStyle}text-align:right;">${invoice.amount_excl_vat || ''}</td>
-          <td style="${invoiceCellStyle}text-align:right;">${invoice.vat_amount || ''}</td>
-          <td style="${invoiceCellStyle}text-align:right;">${invoice.total_amount || ''}</td>
-          <td style="${invoiceCellStyle}text-align:center;">
-            ${preferredSupplierBox}
+          <td class="center" style="${this._fontStyle()}">
+            <div class="bold text-12 mb-3" style="${this._fontStyle()}">South32 ESD Centre Grant Funding Process Sheet</div>
+            <div class="text-11" style="${this._fontStyle()}">Expenditure Authorization Form</div>
           </td>
-        </tr>`;
-    }).join('');
+          <td style="width:70mm;${this._fontStyle()}">
+            ${this._processTrackingTable()}
+          </td>
+        </tr>
+      </table>
 
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  @page { margin: 10mm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 9px; line-height: 1.3; color: #000; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { vertical-align: top; }
-</style>
-</head>
-<body>
-  <!-- Header -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="text-align:center;${FF}">
-        <div style="font-size:12px;font-weight:bold;${FF}">South32 ESD Centre Grant Funding Process Sheet</div>
-        <div style="font-size:11px;${FF}">Expenditure Authorization Form</div>
-      </td>
-      <td style="width:70mm;${FF}">
-        <!-- Process Tracking Table -->
-        <table style="float:right">
-          <tr>
-            <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:40mm;${FF}">Process Owner</td>
-            <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:30mm;${FF}">Checked (✓ / ✗)</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Step 1</td>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">NB</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Step 2</td>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">CB</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Step 3</td>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">LN</td>
-          </tr>
-          <tr>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Step 4</td>
-            <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Beneficiary Signature</td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+      <!-- Logo -->
+      <table class="mb-8">
+        <tr>
+          <td class="right p-4" style="${this._fontStyle()}">
+            <img src="${this.images.South32Logo}" alt="South32 Logo" style="max-height:15mm;max-width:50mm;">
+          </td>
+        </tr>
+      </table>
 
-  <!-- Logo -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="text-align:right;${FF}">
-        <img src="${this.images.South32Logo}" alt="South32 Logo" style="max-height:15mm;max-width:50mm;">
-      </td>
-    </tr>
-  </table>
+      <!-- Company Information -->
+      <table class="mb-8">
+        ${this._fieldRow([
+          { label: 'Name of Company', value: companyInfo.companyName, labelWidth: '35mm', valueWidth: '90mm' },
+          { label: 'Contact No', value: companyInfo.contactNumber, labelWidth: '35mm', valueWidth: '55mm' },
+        ])}
+        ${this._fieldRow([
+          { label: 'Name of Director', value: companyInfo.directorName, labelWidth: '35mm', valueWidth: '90mm' },
+          { label: 'Company Reg No', value: companyInfo.registrationNumber, labelWidth: '35mm', valueWidth: '55mm' },
+        ])}
+      </table>
 
-  <!-- Company Information -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:35mm;${FF}">Name of Company</td>
-      <td style="border:1px solid #000;padding:4px;font-size:9px;width:90mm;${FF}">${this._esc(companyInfo.companyName)}</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:35mm;${FF}">Contact No</td>
-      <td style="border:1px solid #000;padding:4px;font-size:9px;width:55mm;${FF}">${this._esc(companyInfo.contactNumber)}</td>
-    </tr>
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;${FF}">Name of Director</td>
-      <td style="border:1px solid #000;padding:4px;font-size:9px;${FF}">${this._esc(companyInfo.directorName)}</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;${FF}">Company Reg No</td>
-      <td style="border:1px solid #000;padding:4px;font-size:9px;${FF}">${this._esc(companyInfo.registrationNumber)}</td>
-    </tr>
-  </table>
+      <!-- Invoice Authorization Table -->
+      <table class="mb-8">
+        ${this._tableHeader([
+          { label: 'Invoice Number', width: '50mm', classes: 'text-8 p-4 center' },
+          { label: 'Description of Goods/Services', width: '70mm', classes: 'text-8 p-4' },
+          { label: 'Supplier Name', width: '43mm', classes: 'text-8 p-4' },
+          { label: 'Amount Excl VAT', width: '28mm', classes: 'text-8 p-4 center' },
+          { label: 'VAT Amount', width: '25mm', classes: 'text-8 p-4 center' },
+          { label: 'Total Amount Including VAT', width: '25mm', classes: 'text-8 p-4 center' },
+          { label: 'Preferred Supplier Yes/No', width: '23mm', classes: 'text-8 p-4 center' },
+        ])}
+        <tbody>
+          ${invoiceRows}
+        </tbody>
+      </table>
 
-  <!-- Invoice Authorization Table -->
-  <table style="margin-bottom:8px">
-    <thead>
-      <tr>
-        <td style="${invoiceHeaderCellStyle}width:50mm;">Invoice Number</td>
-        <td style="${invoiceHeaderCellStyle}width:70mm;">Description of Goods/Services</td>
-        <td style="${invoiceHeaderCellStyle}width:43mm;">Supplier Name</td>
-        <td style="${invoiceHeaderCellStyle}width:28mm;">Amount Excl VAT</td>
-        <td style="${invoiceHeaderCellStyle}width:25mm;">VAT Amount</td>
-        <td style="${invoiceHeaderCellStyle}width:25mm;">Total Amount Including VAT</td>
-        <td style="${invoiceHeaderCellStyle}width:23mm;">Preferred Supplier Yes/No</td>
-      </tr>
-    </thead>
-    <tbody>
-      ${invoiceRows}
-    </tbody>
-  </table>
+      <!-- Authorization Notice -->
+      <table class="mb-8">
+        <tr>
+          <td class="cell text-9 h-10 p-5" style="${this._fontStyle()}">
+            Please sign the payment authorization form so that payments can be processed.
+          </td>
+        </tr>
+      </table>
 
-  <!-- Authorization Notice -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="border:1px solid #000;padding:5px;height:10mm;font-size:9px;${FF}">
-        Please sign the payment authorization form so that payments can be processed.
-      </td>
-    </tr>
-  </table>
+      <!-- Beneficiary Declaration -->
+      <table class="mb-8">
+        <tr>
+          <td class="cell text-9 h-15 p-5" style="${this._fontStyle()}">
+            I __________________ acknowledge that the supplier information provided is correct, as the director of ${this._esc(companyInfo.companyName)} I hereby authorize payment.
+          </td>
+        </tr>
+      </table>
 
-  <!-- Beneficiary Declaration -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="border:1px solid #000;padding:5px;height:15mm;font-size:9px;${FF}">
-        I __________________ acknowledge that the supplier information provided is correct, as the director of ${this._esc(companyInfo.companyName)} I hereby authorize payment.
-      </td>
-    </tr>
-  </table>
+      <!-- Beneficiary Authorization Table -->
+      ${this._signatureSection([
+        { header: 'Beneficiary', value: data.beneficiary_authorization.name || '', width: '95mm' },
+        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Date', value: data.beneficiary_authorization.date || '', width: '60mm' },
+      ])}
 
-  <!-- Beneficiary Authorization Table -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:95mm;${FF}">Beneficiary</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:70mm;${FF}">Signature</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:60mm;${FF}">Date</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.beneficiary_authorization.name || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}"></td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.beneficiary_authorization.date || '')}</td>
-    </tr>
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">Authorized By: Business Advisor 1 – ${this._esc(data.business_advisor_authorization.name || 'Marius Wilken')}</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">Signature</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">Date</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.business_advisor_authorization.name || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}"></td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.business_advisor_authorization.date || '')}</td>
-    </tr>
-  </table>
+      ${this._signatureSection([
+        { header: `Authorized By: Business Advisor 1 – ${data.business_advisor_authorization.name || 'Marius Wilken'}`, value: data.business_advisor_authorization.name || '', width: '95mm' },
+        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Date', value: data.business_advisor_authorization.date || '', width: '60mm' },
+      ])}
 
-  <!-- Approval Section -->
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="border:1px solid #000;padding:5px;height:20mm;width:33.33%;${FF}">
-        <div style="font-weight:bold;margin-bottom:3px;${FF}">ESD Centre Coordinator</div>
-        <div style="font-size:8px;margin-bottom:3px;${FF}">(optional)</div>
-        <div style="font-size:8px;${FF}">Name: ${this._esc(data.coordinator_authorization.name || '')}</div>
-        <div style="font-size:8px;${FF}">Signature: _______________________</div>
-      </td>
-      <td style="border:1px solid #000;padding:5px;height:20mm;width:33.33%;${FF}">
-        <div style="font-weight:bold;margin-bottom:3px;${FF}">South32 SPA</div>
-        <div style="font-size:8px;margin-bottom:3px;${FF}">Name: ${this._esc(data.south32_spa_authorization.name || '')}</div>
-        <div style="font-size:8px;${FF}">Signature: _______________________</div>
-      </td>
-      <td style="border:1px solid #000;padding:5px;height:20mm;width:33.33%;${FF}">
-        <div style="font-weight:bold;margin-bottom:3px;${FF}">ESD Centre Manager</div>
-        <div style="font-size:8px;margin-bottom:3px;${FF}">Name: ${this._esc(data.manager_authorization.name || '')}</div>
-        <div style="font-size:8px;${FF}">Signature: _______________________</div>
-      </td>
-    </tr>
-  </table>
+      <!-- Approval Section -->
+      ${this._approvalSection([
+        { title: 'ESD Centre Coordinator', name: data.coordinator_authorization.name || '', optional: true },
+        { title: 'South32 SPA', name: data.south32_spa_authorization.name || '' },
+        { title: 'ESD Centre Manager', name: data.manager_authorization.name || '' },
+      ])}
 
-  <!-- Payment Release Section -->
-  <table>
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:95mm;${FF}">Payment Released By</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:70mm;${FF}">Signature</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;width:60mm;${FF}">Payment Release Date</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.payment_release.released_by || 'Krian Naidoo')}</td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}"></td>
-      <td style="border:1px solid #000;padding:4px;height:10mm;font-size:8px;${FF}">${this._esc(data.payment_release.release_date || '')}</td>
-    </tr>
-  </table>
-</body>
-</html>`;
+      <!-- Payment Release Section -->
+      ${this._signatureSection([
+        { header: 'Payment Released By', value: data.payment_release.released_by || 'Krian Naidoo', width: '95mm' },
+        { header: 'Signature', value: '', width: '70mm' },
+        { header: 'Payment Release Date', value: data.payment_release.release_date || '', width: '60mm' },
+      ], '')}`,
+      { pageMargin: '10mm', fontSize: '9px', lineHeight: '1.3' },
+    );
   }
 
   // ── SCM Verification HTML Builder ──────────────────────────────────────────
@@ -358,329 +339,258 @@ export class GrantProcessExportService {
     data: GrantScmVerification,
     companyInfo: CompanyInfo,
   ): string {
-    const FF = `font-family:Arial,sans-serif`;
-    const scmCellStyle = `padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}`;
-
-    // Build quotation rows (4 rows)
-    const quotationRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_1.items[i] || ({} as ScmQuotation);
-      return `
+    const quotationRows = this._renderBlankRows(
+      data.step_1.items,
+      4,
+      (item, i) => `
         <tr>
-          <td style="${scmCellStyle}">${i + 1}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.date_received || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-        </tr>`;
-    }).join('');
+          <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
+          <td class="cell text-7 h-7 p-4" style="width:80mm;">${this._esc(item.supplier_name || '')}</td>
+          <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.date_received || '')}</td>
+          <td class="cell text-7 h-7 p-4" style="width:55mm;"></td>
+          <td class="cell text-7 h-7 p-4" style="width:70mm;"></td>
+        </tr>`,
+    );
 
-    // Build supplier verification rows (4 rows)
-    const supplierRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_2.items[i] || ({} as ScmSupplierVerification);
-      // Use image-based checkboxes
-      const approvedBox = this._getCheckboxImage(
-        item.approved ? 'YES' : 'NO',
-        'YES',
-      );
+    const supplierRows = this._renderBlankRows(
+      data.step_2.items,
+      4,
+      (item, i) => {
+        const approvedBox = this._getCheckboxImage(
+          item.approved ? 'YES' : 'NO',
+          'YES',
+        );
 
-      return `
+        return `
+          <tr>
+            <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
+            <td class="cell text-7 h-7 p-4" style="width:45mm;">${this._esc(item.supplier_name || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(item.cipc_registration || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.vat_number || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:40mm;">${this._esc(item.verification_details || '')}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${approvedBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:20mm;"></td>
+            <td class="cell text-7 h-7 p-4" style="width:60mm;"></td>
+          </tr>`;
+      },
+    );
+
+    const purchaseOrderRows = this._renderBlankRows(
+      data.step_3.items,
+      4,
+      (item) => {
+        const poGeneratedBox = this._getCheckboxImage(
+          item.purchase_order_generated ? 'YES' : 'NO',
+          'YES',
+        );
+        const taxInvoiceBox = this._getCheckboxImage(
+          item.tax_invoice_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const bbbeeBox = this._getCheckboxImage(
+          item.bbbee_certificate_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const bankConfirmationBox = this._getCheckboxImage(
+          item.bank_confirmation_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const taxClearanceBox = this._getCheckboxImage(
+          item.tax_clearance_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const approvedBox = this._getCheckboxImage(
+          item.approved ? 'YES' : 'NO',
+          'YES',
+        );
+
+        return `
+          <tr>
+            <td class="cell text-7 h-7 p-4 center" style="width:10mm;">1</td>
+            <td class="cell text-7 h-7 p-4" style="width:40mm;">${this._esc(item.supplier_name || '')}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${poGeneratedBox}</td>
+            <td class="cell text-7 h-7 p-4" style="width:22mm;"></td>
+            <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${taxInvoiceBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${bbbeeBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:25mm;">${bankConfirmationBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:25mm;">${taxClearanceBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${approvedBox}</td>
+            <td class="cell text-7 h-7 p-4" style="width:44mm;"></td>
+          </tr>`;
+      },
+    );
+
+    const paymentRows = this._renderBlankRows(
+      data.step_4.items,
+      4,
+      (item, i) => {
+        const vatInvoiceBox = this._getCheckboxImage(
+          item.vat_invoice_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const bankConfirmationBox = this._getCheckboxImage(
+          item.bank_confirmation_received ? 'YES' : 'NO',
+          'YES',
+        );
+        const paymentAuthBox = this._getCheckboxImage(
+          item.payment_authorisation_signed ? 'YES' : 'NO',
+          'YES',
+        );
+        const paymentDoneBox = this._getCheckboxImage(
+          item.payment_done ? 'YES' : 'NO',
+          'YES',
+        );
+        const proofOfPaymentBox = this._getCheckboxImage(
+          item.proof_of_payment_sent ? 'YES' : 'NO',
+          'YES',
+        );
+        const deliveryNoteBox = this._getCheckboxImage(
+          item.delivery_note_received ? 'YES' : 'NO',
+          'YES',
+        );
+
+        return `
+          <tr>
+            <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
+            <td class="cell text-7 h-7 p-4" style="width:35mm;">${this._esc(item.company_name || companyInfo.companyName)}</td>
+            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.director || companyInfo.directorName)}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(item.contact_number || companyInfo.contactNumber)}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${vatInvoiceBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:22mm;">${bankConfirmationBox}</td>
+            <td class="cell text-7 h-7 p-4" style="width:28mm;">${paymentAuthBox}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;"></td>
+            <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${paymentDoneBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:30mm;">${proofOfPaymentBox}</td>
+            <td class="cell text-7 h-7 p-4 center" style="width:35mm;">${deliveryNoteBox}</td>
+          </tr>`;
+      },
+    );
+
+    return this._buildDocument(
+      `
+      <!-- Header Section -->
+      <table class="mb-5">
         <tr>
-          <td style="${scmCellStyle}">${i + 1}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.cipc_registration || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.vat_number || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.verification_details || '')}</td>
-          <td style="${scmCellStyle}">${approvedBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-        </tr>`;
-    }).join('');
+          <td class="bold text-10 uppercase p-4 h-12" style="${this._fontStyle()}">
+            ESD INTERNAL GRANT SCM VERIFICATION PROCESS CHECKLIST
+          </td>
+          <td class="right p-4 h-12" style="${this._fontStyle()}">
+            <img src="${this.images.South32Logo}" alt="South32 Logo" style="max-height:10mm;max-width:40mm;">
+          </td>
+        </tr>
+      </table>
 
-    // Build purchase order rows (4 rows)
-    const purchaseOrderRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_3.items[i] || ({} as ScmPurchaseOrder);
-      // Use image-based checkboxes
-      const poGeneratedBox = this._getCheckboxImage(
-        item.purchase_order_generated ? 'YES' : 'NO',
-        'YES',
-      );
-      const taxInvoiceBox = this._getCheckboxImage(
-        item.tax_invoice_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const bbbeeBox = this._getCheckboxImage(
-        item.bbbee_certificate_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const bankConfirmationBox = this._getCheckboxImage(
-        item.bank_confirmation_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const taxClearanceBox = this._getCheckboxImage(
-        item.tax_clearance_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const approvedBox = this._getCheckboxImage(
-        item.approved ? 'YES' : 'NO',
-        'YES',
-      );
+      <!-- Beneficiary Information -->
+      <table class="mb-5">
+        ${this._fieldRow([
+          { label: 'Name of Beneficiary Company', value: companyInfo.companyName, labelWidth: '40mm', valueWidth: '65mm' },
+          { label: 'Director', value: companyInfo.directorName, labelWidth: '25mm', valueWidth: '55mm' },
+        ])}
+        ${this._fieldRow([
+          { label: 'Contact No', value: companyInfo.contactNumber, labelWidth: '40mm', valueWidth: '65mm' },
+          { label: '', value: '', labelWidth: '25mm', valueWidth: '55mm' },
+        ])}
+      </table>
 
-      return `
-        <tr>
-          <td style="${scmCellStyle}">${i + 1}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
-          <td style="${scmCellStyle}">${poGeneratedBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="${scmCellStyle}">${taxInvoiceBox}</td>
-          <td style="${scmCellStyle}">${bbbeeBox}</td>
-          <td style="${scmCellStyle}">${bankConfirmationBox}</td>
-          <td style="${scmCellStyle}">${taxClearanceBox}</td>
-          <td style="${scmCellStyle}">${approvedBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-        </tr>`;
-    }).join('');
+      <!-- SECTION 1 -->
+      ${this._sectionTitle('Process – Step 1 – (Collection of Quotations)')}
 
-    // Build payment rows (4 rows)
-    const paymentRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_4.items[i] || ({} as ScmPayment);
-      // Use image-based checkboxes
-      const vatInvoiceBox = this._getCheckboxImage(
-        item.vat_invoice_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const bankConfirmationBox = this._getCheckboxImage(
-        item.bank_confirmation_received ? 'YES' : 'NO',
-        'YES',
-      );
-      const paymentAuthBox = this._getCheckboxImage(
-        item.payment_authorisation_signed ? 'YES' : 'NO',
-        'YES',
-      );
-      const paymentDoneBox = this._getCheckboxImage(
-        item.payment_done ? 'YES' : 'NO',
-        'YES',
-      );
-      const proofOfPaymentBox = this._getCheckboxImage(
-        item.proof_of_payment_sent ? 'YES' : 'NO',
-        'YES',
-      );
-      const deliveryNoteBox = this._getCheckboxImage(
-        item.delivery_note_received ? 'YES' : 'NO',
-        'YES',
-      );
+      <table class="mb-5">
+        ${this._tableHeader([
+          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
+          { label: 'Quotation Received / Supplier', width: '80mm', classes: 'text-8 p-3' },
+          { label: 'Date Received', width: '25mm', classes: 'text-8 p-3' },
+          { label: 'Beneficiary Signature', width: '55mm', classes: 'text-8 p-3' },
+          { label: 'Comments / Next Steps', width: '70mm', classes: 'text-8 p-3' },
+        ])}
+        <tbody>
+          ${quotationRows}
+        </tbody>
+      </table>
 
-      return `
-        <tr>
-          <td style="${scmCellStyle}">${i + 1}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.company_name || companyInfo.companyName)}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.director || companyInfo.directorName)}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.contact_number || companyInfo.contactNumber)}</td>
-          <td style="${scmCellStyle}">${vatInvoiceBox}</td>
-          <td style="${scmCellStyle}">${bankConfirmationBox}</td>
-          <td style="${scmCellStyle}">${paymentAuthBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="${scmCellStyle}">${paymentDoneBox}</td>
-          <td style="${scmCellStyle}">${proofOfPaymentBox}</td>
-          <td style="${scmCellStyle}">${deliveryNoteBox}</td>
-        </tr>`;
-    }).join('');
+      ${this._signatureSection([
+        { header: 'Verified By', value: data.step_1.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: '', width: '120mm' },
+      ])}
 
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  @page { margin: 8mm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 8px; line-height: 1.2; color: #000; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { vertical-align: top; }
-</style>
-</head>
-<body>
-  <!-- Header Section -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="padding:4px;height:12mm;font-weight:bold;font-size:10px;text-transform:uppercase;${FF}">
-        ESD INTERNAL GRANT SCM VERIFICATION PROCESS CHECKLIST
-      </td>
-      <td style="padding:4px;height:12mm;text-align:right;${FF}">
-        <img src="${this.images.South32Logo}" alt="South32 Logo" style="max-height:10mm;max-width:40mm;">
-      </td>
-    </tr>
-  </table>
+      <!-- SECTION 2 -->
+      ${this._sectionTitle('Process – Step 2 – (Online Verification of Suppliers)')}
 
-  <!-- Beneficiary Information -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:40mm;${FF}">Name of Beneficiary Company</td>
-      <td style="border:1px solid #000;padding:3px;font-size:8px;width:65mm;${FF}">${this._esc(companyInfo.companyName)}</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:25mm;${FF}">Director</td>
-      <td style="border:1px solid #000;padding:3px;font-size:8px;width:55mm;${FF}">${this._esc(companyInfo.directorName)}</td>
-    </tr>
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;${FF}">Contact No</td>
-      <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">${this._esc(companyInfo.contactNumber)}</td>
-      <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}"></td>
-      <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}"></td>
-    </tr>
-  </table>
+      <table class="mb-5">
+        ${this._tableHeader([
+          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
+          { label: 'Name of Supplier', width: '45mm', classes: 'text-8 p-3' },
+          { label: 'CIPC Registration', width: '20mm', classes: 'text-8 p-3' },
+          { label: 'Confirmation VAT No', width: '25mm', classes: 'text-8 p-3' },
+          { label: 'Verification Contact Details / Email Address', width: '40mm', classes: 'text-8 p-3' },
+          { label: 'Approved', width: '20mm', classes: 'text-8 p-3 center' },
+          { label: 'Not Approved', width: '20mm', classes: 'text-8 p-3 center' },
+          { label: 'Comments / Next Steps', width: '60mm', classes: 'text-8 p-3' },
+        ])}
+        <tbody>
+          ${supplierRows}
+        </tbody>
+      </table>
 
-  <!-- SECTION 1: Process Step 1 -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">
-        Process – Step 1 – (Collection of Quotations)
-      </td>
-    </tr>
-  </table>
+      ${this._signatureSection([
+        { header: 'Verified By', value: data.step_2.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: '', width: '120mm' },
+      ])}
 
-  <table style="margin-bottom:5px">
-    <thead>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:10mm;${FF}">No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:80mm;${FF}">Quotation Received / Supplier</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:25mm;${FF}">Date Received</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:55mm;${FF}">Beneficiary Signature</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:70mm;${FF}">Comments / Next Steps</td>
-      </tr>
-    </thead>
-    <tbody>
-      ${quotationRows}
-    </tbody>
-  </table>
+      <!-- SECTION 3 -->
+      ${this._sectionTitle('Process – Step 3 – (Processing of Verified Quotations (Generate PO))')}
 
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Verified By</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Signature</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}">${this._esc(data.step_1.verified_by || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}"></td>
-    </tr>
-  </table>
+      <table class="mb-5">
+        ${this._tableHeader([
+          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
+          { label: 'Supplier Company Name', width: '40mm', classes: 'text-8 p-3' },
+          { label: 'Generate Purchase Order', width: '20mm', classes: 'text-8 p-3 center' },
+          { label: 'Emailed to Supplier Date', width: '22mm', classes: 'text-8 p-3' },
+          { label: 'Tax Invoice Received', width: '18mm', classes: 'text-8 p-3 center' },
+          { label: 'BBBEE Certificate', width: '18mm', classes: 'text-8 p-3 center' },
+          { label: 'Bank Confirmation Letter', width: '25mm', classes: 'text-8 p-3 center' },
+          { label: 'Tax Clearance Certificate', width: '25mm', classes: 'text-8 p-3 center' },
+          { label: 'Approved (Yes/No)', width: '18mm', classes: 'text-8 p-3 center' },
+          { label: 'Comments / Next Steps', width: '44mm', classes: 'text-8 p-3' },
+        ])}
+        <tbody>
+          ${purchaseOrderRows}
+        </tbody>
+      </table>
 
-  <!-- SECTION 2: Process Step 2 -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">
-        Process – Step 2 – (Online Verification of Suppliers)
-      </td>
-    </tr>
-  </table>
+      ${this._signatureSection([
+        { header: 'Verified By', value: data.step_3.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: '', width: '120mm' },
+      ])}
 
-  <table style="margin-bottom:5px">
-    <thead>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:10mm;${FF}">No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:45mm;${FF}">Name of Supplier</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:20mm;${FF}">CIPC Registration</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:25mm;${FF}">Confirmation VAT No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:40mm;${FF}">Verification Contact Details / Email Address</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:20mm;${FF}">Approved</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:20mm;${FF}">Not Approved</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:60mm;${FF}">Comments / Next Steps</td>
-      </tr>
-    </thead>
-    <tbody>
-      ${supplierRows}
-    </tbody>
-  </table>
+      <!-- SECTION 4 -->
+      ${this._sectionTitle('Process – Step 4 – (Processing of Payment Authorization / Payment)')}
 
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Verified By</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Signature</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}">${this._esc(data.step_2.verified_by || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}"></td>
-    </tr>
-  </table>
+      <table class="mb-5">
+        ${this._tableHeader([
+          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
+          { label: 'Company Name', width: '35mm', classes: 'text-8 p-3' },
+          { label: 'Director', width: '25mm', classes: 'text-8 p-3' },
+          { label: 'Contact No', width: '20mm', classes: 'text-8 p-3' },
+          { label: 'VAT Invoice Received', width: '20mm', classes: 'text-8 p-3 center' },
+          { label: 'Bank Confirmation Letter', width: '22mm', classes: 'text-8 p-3 center' },
+          { label: 'Payment Authorization Form Signed', width: '28mm', classes: 'text-8 p-3' },
+          { label: 'Payment Request Date', width: '20mm', classes: 'text-8 p-3' },
+          { label: 'Payment Done', width: '18mm', classes: 'text-8 p-3 center' },
+          { label: 'Proof of Payment Sent to Supplier', width: '30mm', classes: 'text-8 p-3' },
+          { label: 'Delivery Note and Photos Received', width: '35mm', classes: 'text-8 p-3' },
+        ])}
+        <tbody>
+          ${paymentRows}
+        </tbody>
+      </table>
 
-  <!-- SECTION 3: Process Step 3 -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">
-        Process – Step 3 – (Processing of Verified Quotations (Generate PO))
-      </td>
-    </tr>
-  </table>
-
-  <table style="margin-bottom:5px">
-    <thead>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:10mm;${FF}">No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:40mm;${FF}">Supplier Company Name</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:20mm;${FF}">Generate Purchase Order</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:22mm;${FF}">Emailed to Supplier Date</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:18mm;${FF}">Tax Invoice Received</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:18mm;${FF}">BBBEE Certificate</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:25mm;${FF}">Bank Confirmation Letter</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:25mm;${FF}">Tax Clearance Certificate</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:18mm;${FF}">Approved (Yes/No)</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:44mm;${FF}">Comments / Next Steps</td>
-      </tr>
-    </thead>
-    <tbody>
-      ${purchaseOrderRows}
-    </tbody>
-  </table>
-
-  <table style="margin-bottom:8px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Verified By</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Signature</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}">${this._esc(data.step_3.verified_by || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}"></td>
-    </tr>
-  </table>
-
-  <!-- SECTION 4: Process Step 4 -->
-  <table style="margin-bottom:5px">
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:9px;${FF}">
-        Process – Step 4 – (Processing of Payment Authorization / Payment)
-      </td>
-    </tr>
-  </table>
-
-  <table style="margin-bottom:5px">
-    <thead>
-      <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:10mm;${FF}">No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:35mm;${FF}">Company Name</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:25mm;${FF}">Director</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:20mm;${FF}">Contact No</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:20mm;${FF}">VAT Invoice Received</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:22mm;${FF}">Bank Confirmation Letter</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:28mm;${FF}">Payment Authorization Form Signed</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:20mm;${FF}">Payment Request Date</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;text-align:center;width:18mm;${FF}">Payment Done</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:30mm;${FF}">Proof of Payment Sent to Supplier</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:3px;font-weight:bold;font-size:8px;width:35mm;${FF}">Delivery Note and Photos Received</td>
-      </tr>
-    </thead>
-    <tbody>
-      ${paymentRows}
-    </tbody>
-  </table>
-
-  <table>
-    <tr>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Verified By</td>
-      <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;width:120mm;${FF}">Signature</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}">${this._esc(data.step_4.verified_by || '')}</td>
-      <td style="border:1px solid #000;padding:4px;height:8mm;font-size:8px;${FF}"></td>
-    </tr>
-  </table>
-</body>
-</html>`;
+      ${this._signatureSection([
+        { header: 'Verified By', value: data.step_4.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: '', width: '120mm' },
+      ], '')}`,
+      { pageMargin: '8mm', fontSize: '8px', lineHeight: '1.2' },
+    );
   }
 
   // ── Checkbox Image Helpers ─────────────────────────────────────────────────
@@ -705,24 +615,19 @@ export class GrantProcessExportService {
   // ── Reusable HTML Components ───────────────────────────────────────────────
 
   private _generateHeader(companyInfo: CompanyInfo, title: string): string {
-    const FF = `font-family:Arial,sans-serif`;
-    const logoUrl = this.images.South32Logo;
-
     return `
-      <table style="margin-bottom:10px">
+      <table class="mb-10">
         <tr>
-          <td style="width:70%;height:25mm;padding:8px;${FF}">
-            <!-- Logo placeholder -->
-          </td>
-          <td style="width:30%;height:25mm;padding:8px;text-align:right;${FF}">
-            <img src="${logoUrl}" alt="South32 Logo" style="max-height:20mm;max-width:40mm;">
+          <td class="p-8" style="width:70%;height:25mm;"></td>
+          <td class="p-8 right" style="width:30%;height:25mm;">
+            <img src="${this.images.South32Logo}" alt="South32 Logo" style="max-height:20mm;max-width:40mm;">
           </td>
         </tr>
       </table>
 
-      <table style="margin-bottom:10px">
+      <table class="mb-10">
         <tr>
-          <td style="background:#e0e0e0;border:1px solid #000;height:10mm;padding:5px;text-align:center;font-weight:bold;font-size:12px;${FF}">
+          <td class="header text-12 p-5 center" style="height:10mm;">
             ${title} – ${this._esc(companyInfo.companyName)}
           </td>
         </tr>
@@ -730,37 +635,142 @@ export class GrantProcessExportService {
   }
 
   private _generateYesNoNaHeader(): string {
-    const FF = `font-family:Arial,sans-serif`;
     return `
       <thead>
         <tr>
-          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;width:130mm;${FF}" rowspan="2">
-            Document List
-          </td>
-          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;${FF}" colspan="3">
-            Provided?
-          </td>
+          <td class="header text-10 p-5" style="width:130mm;" rowspan="2">Document List</td>
+          <td class="header text-10 p-5 center" colspan="3">Provided?</td>
         </tr>
         <tr>
-          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-            Yes
-          </td>
-          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-            No
-          </td>
-          <td style="background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;text-align:center;width:15mm;${FF}">
-            N/A
-          </td>
+          <td class="header text-10 p-5 center" style="width:15mm;">Yes</td>
+          <td class="header text-10 p-5 center" style="width:15mm;">No</td>
+          <td class="header text-10 p-5 center" style="width:15mm;">N/A</td>
         </tr>
       </thead>`;
   }
 
   private _generateFooter(): string {
-    const FF = `font-family:Arial,sans-serif`;
     return `
-      <div style="position:fixed;bottom:15mm;left:15mm;font-size:8px;color:#666;${FF}">
+      <div style="position:fixed;bottom:15mm;left:15mm;font-size:8px;color:#666;font-family:${this.theme.fontFamily};">
         Version 01.2025
       </div>`;
+  }
+
+  private _sectionTitle(title: string): string {
+    return `
+      <table class="mb-5">
+        <tr>
+          <td class="header text-9 p-4">${this._esc(title)}</td>
+        </tr>
+      </table>`;
+  }
+
+  private _tableHeader(columns: TableColumn[]): string {
+    const cells = columns
+      .map((column) => {
+        const widthAttr = column.width ? ` style="width:${column.width};"` : '';
+        const classes = column.classes ? ` ${column.classes}` : '';
+        return `<td class="header${classes}"${widthAttr}>${this._esc(column.label)}</td>`;
+      })
+      .join('');
+
+    return `<thead><tr>${cells}</tr></thead>`;
+  }
+
+  private _fieldRow(
+    fields: { label: string; value: string; labelWidth: string; valueWidth: string }[],
+  ): string {
+    const cells = fields
+      .map(
+        (field) => `
+          <td class="header text-8 p-4" style="width:${field.labelWidth};">${this._esc(field.label)}</td>
+          <td class="cell text-8 p-4" style="width:${field.valueWidth};">${this._esc(field.value)}</td>`,
+      )
+      .join('');
+
+    return `<tr>${cells}</tr>`;
+  }
+
+  private _signatureSection(
+    columns: { header: string; value: string; width: string }[],
+    marginClass = 'mb-8',
+  ): string {
+    const headers = columns
+      .map(
+        (column) =>
+          `<td class="header text-9 p-4" style="width:${column.width};">${this._esc(column.header)}</td>`,
+      )
+      .join('');
+    const values = columns
+      .map(() => `<td class="cell text-8 h-8"></td>`)
+      .join('');
+
+    return `
+      <table class="${marginClass}">
+        <tr>${headers}</tr>
+        <tr>${values}</tr>
+      </table>`;
+  }
+
+  private _approvalSection(
+    authors: { title: string; name: string; optional?: boolean }[],
+  ): string {
+    const cells = authors
+      .map(
+        (author) => `
+          <td class="cell p-5 h-20" style="width:33.33%;">
+            <div class="bold text-9 mb-3">${this._esc(author.title)}</div>
+            ${author.optional ? '<div class="text-8 mb-3">(optional)</div>' : ''}
+            <div class="text-8 mb-3">Name: ${this._esc(author.name || '')}</div>
+            <div class="text-8">Signature: _______________________</div>
+          </td>`,
+      )
+      .join('');
+
+    return `
+      <table class="mb-8">
+        <tr>${cells}</tr>
+      </table>`;
+  }
+
+  private _processTrackingTable(): string {
+    return `
+      <table style="float:right">
+        <tr>
+          <td class="header text-8 p-3" style="width:40mm;">Process Owner</td>
+          <td class="header text-8 p-3" style="width:30mm;">Checked (✓ / ✗)</td>
+        </tr>
+        <tr>
+          <td class="cell text-8 p-3">Step 1</td>
+          <td class="cell text-8 p-3">NB</td>
+        </tr>
+        <tr>
+          <td class="cell text-8 p-3">Step 2</td>
+          <td class="cell text-8 p-3">CB</td>
+        </tr>
+        <tr>
+          <td class="cell text-8 p-3">Step 3</td>
+          <td class="cell text-8 p-3">LN</td>
+        </tr>
+        <tr>
+          <td class="cell text-8 p-3">Step 4</td>
+          <td class="cell text-8 p-3">Beneficiary Signature</td>
+        </tr>
+      </table>`;
+  }
+
+  private _renderBlankRows<T>(
+    rows: T[],
+    count: number,
+    renderer: (row: T, index: number) => string,
+  ): string {
+    return Array.from({ length: count }, (_, i) =>
+      renderer(rows[i] || ({} as T), i),
+    ).join('');
+  }
+
+  private _fontStyle(): string {
+    return `font-family:${this.theme.fontFamily};`;
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
