@@ -11,5 +11,7 @@ export const Constants = {
 
   Images: {
     South32Logo: 'https://api.rbttacesd.co.za/image-library/south32-logo.png',
+    Yes: 'https://api.rbttacesd.co.za/image-library/yes.png',
+    No: 'https://api.rbttacesd.co.za/image-library/no.png',
   },
 };

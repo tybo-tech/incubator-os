@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
 import { PdfService } from '../../../../services/pdf/pdf.service';
-import { 
+import {
   GrantFundingChecklist,
-  GRANT_FUNDING_CHECKLIST_FIELDS
+  GRANT_FUNDING_CHECKLIST_FIELDS,
 } from '../business-process/checklist.models';
-import { 
+import {
   GrantExpenditureAuthorization,
-  ExpenditureInvoice
+  ExpenditureInvoice,
 } from '../business-process/expenditure-authorization.models';
-import { 
+import {
   GrantScmVerification,
   ScmQuotation,
   ScmSupplierVerification,
   ScmPurchaseOrder,
-  ScmPayment
+  ScmPayment,
 } from '../business-process/scm-verification.models';
+import { Constants } from '../../../../services';
 
 export interface CompanyInfo {
   companyName: string;
@@ -30,10 +31,10 @@ export interface ExportOptions {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GrantProcessExportService {
-
+  images = Constants.Images;
   constructor(private pdfService: PdfService) {}
 
   /**
@@ -42,13 +43,14 @@ export class GrantProcessExportService {
   exportBusinessProcessChecklist(
     data: GrantFundingChecklist,
     companyInfo: CompanyInfo,
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): void {
     const html = this._buildChecklistHtml(data, companyInfo);
-    const filename = options.filename || `Grant_Funding_Checklist_${this._dateStamp()}.pdf`;
+    const filename =
+      options.filename || `Grant_Funding_Checklist_${this._dateStamp()}.pdf`;
     const paperSize = options.paperSize || 'A4';
     const orientation = options.orientation || 'portrait';
-    
+
     this.pdfService.downloadPdf(html, filename, paperSize, orientation);
   }
 
@@ -58,13 +60,14 @@ export class GrantProcessExportService {
   exportExpenditureAuthorization(
     data: GrantExpenditureAuthorization,
     companyInfo: CompanyInfo,
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): void {
     const html = this._buildExpenditureAuthorizationHtml(data, companyInfo);
-    const filename = options.filename || `Expenditure_Authorization_${this._dateStamp()}.pdf`;
+    const filename =
+      options.filename || `Expenditure_Authorization_${this._dateStamp()}.pdf`;
     const paperSize = options.paperSize || 'A4';
     const orientation = options.orientation || 'landscape';
-    
+
     this.pdfService.downloadPdf(html, filename, paperSize, orientation);
   }
 
@@ -74,37 +77,56 @@ export class GrantProcessExportService {
   exportScmVerification(
     data: GrantScmVerification,
     companyInfo: CompanyInfo,
-    options: ExportOptions = {}
+    options: ExportOptions = {},
   ): void {
     const html = this._buildScmVerificationHtml(data, companyInfo);
-    const filename = options.filename || `SCM_Verification_${this._dateStamp()}.pdf`;
+    const filename =
+      options.filename || `SCM_Verification_${this._dateStamp()}.pdf`;
     const paperSize = options.paperSize || 'A4';
     const orientation = options.orientation || 'landscape';
-    
+
     this.pdfService.downloadPdf(html, filename, paperSize, orientation);
   }
 
   // ── Business Process Checklist HTML Builder ────────────────────────────────
 
-  private _buildChecklistHtml(data: GrantFundingChecklist, companyInfo: CompanyInfo): string {
+  private _buildChecklistHtml(
+    data: GrantFundingChecklist,
+    companyInfo: CompanyInfo,
+  ): string {
     const FF = `font-family:Arial,sans-serif`;
-    const date = new Date().toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
-    
+
+
     // Build checklist rows
-    const checklistRows = GRANT_FUNDING_CHECKLIST_FIELDS.map(field => {
+    const checklistRows = GRANT_FUNDING_CHECKLIST_FIELDS.map((field) => {
       const value = data[field.key as keyof GrantFundingChecklist];
-      const yesChecked = value === 'YES' ? '✓' : '';
-      const noChecked = value === 'NO' ? '✓' : '';
-      const naChecked = value === 'NA' ? '✓' : '';
-      
+
+      // Use a more PDF-compatible approach for checkboxes
+      const yesBox =
+        value === 'YES'
+          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const noBox =
+        value === 'NO'
+          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const naBox =
+        value === 'NA'
+          ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+          : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+
       return `
         <tr>
           <td style="padding:8px;border:1px solid #000;font-size:10px;${FF}">${this._esc(field.label)}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${yesChecked}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${noChecked}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${naChecked}</td>
+          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${yesBox}</td>
+          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${noBox}</td>
+          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${naBox}</td>
         </tr>`;
     }).join('');
+
+    // Add South32 logo
+    const logoUrl =
+      'https://api.rbttacesd.co.za/image-library/south32-logo.png';
 
     return `<!DOCTYPE html>
 <html>
@@ -126,7 +148,7 @@ export class GrantProcessExportService {
         <!-- Logo placeholder -->
       </td>
       <td style="width:30%;border:1px solid #000;height:25mm;padding:8px;text-align:right;${FF}">
-        <!-- South32 Logo -->
+        <img src="${logoUrl}" alt="South32 Logo" style="max-height:20mm;max-width:40mm;">
       </td>
     </tr>
   </table>
@@ -178,13 +200,29 @@ export class GrantProcessExportService {
 
   // ── Expenditure Authorization HTML Builder ─────────────────────────────────
 
-  private _buildExpenditureAuthorizationHtml(data: GrantExpenditureAuthorization, companyInfo: CompanyInfo): string {
+  private _buildExpenditureAuthorizationHtml(
+    data: GrantExpenditureAuthorization,
+    companyInfo: CompanyInfo,
+  ): string {
     const FF = `font-family:Arial,sans-serif`;
-    const date = new Date().toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
-    
+    const date = new Date().toLocaleDateString('en-ZA', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    // Add South32 logo
+    const logoUrl =
+      'https://api.rbttacesd.co.za/image-library/south32-logo.png';
+
     // Build invoice rows (7 rows total)
     const invoiceRows = Array.from({ length: 7 }, (_, i) => {
-      const invoice = data.invoices[i] || {} as ExpenditureInvoice;
+      const invoice = data.invoices[i] || ({} as ExpenditureInvoice);
+      // Use a more PDF-compatible approach for checkboxes
+      const preferredSupplierBox = invoice.preferred_supplier
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+
       return `
         <tr>
           <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}">${this._esc(invoice.invoice_number || '')}</td>
@@ -194,7 +232,7 @@ export class GrantProcessExportService {
           <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:right;${FF}">${invoice.vat_amount || ''}</td>
           <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:right;${FF}">${invoice.total_amount || ''}</td>
           <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:center;${FF}">
-            ${invoice.preferred_supplier ? '✓' : ''}
+            ${preferredSupplierBox}
           </td>
         </tr>`;
     }).join('');
@@ -243,6 +281,15 @@ export class GrantProcessExportService {
             <td style="border:1px solid #000;padding:3px;font-size:8px;${FF}">Beneficiary Signature</td>
           </tr>
         </table>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Logo -->
+  <table style="margin-bottom:8px">
+    <tr>
+      <td style="text-align:right;${FF}">
+        <img src="${logoUrl}" alt="South32 Logo" style="max-height:15mm;max-width:50mm;">
       </td>
     </tr>
   </table>
@@ -364,13 +411,24 @@ export class GrantProcessExportService {
 
   // ── SCM Verification HTML Builder ──────────────────────────────────────────
 
-  private _buildScmVerificationHtml(data: GrantScmVerification, companyInfo: CompanyInfo): string {
+  private _buildScmVerificationHtml(
+    data: GrantScmVerification,
+    companyInfo: CompanyInfo,
+  ): string {
     const FF = `font-family:Arial,sans-serif`;
-    const date = new Date().toLocaleDateString('en-ZA', { day: '2-digit', month: 'long', year: 'numeric' });
-    
+    const date = new Date().toLocaleDateString('en-ZA', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    // Add South32 logo
+    const logoUrl =
+      'https://api.rbttacesd.co.za/image-library/south32-logo.png';
+
     // Build quotation rows (4 rows)
     const quotationRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_1.items[i] || {} as ScmQuotation;
+      const item = data.step_1.items[i] || ({} as ScmQuotation);
       return `
         <tr>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
@@ -383,7 +441,12 @@ export class GrantProcessExportService {
 
     // Build supplier verification rows (4 rows)
     const supplierRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_2.items[i] || {} as ScmSupplierVerification;
+      const item = data.step_2.items[i] || ({} as ScmSupplierVerification);
+      // Use a more PDF-compatible approach for checkboxes
+      const approvedBox = item.approved
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+
       return `
         <tr>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
@@ -391,7 +454,7 @@ export class GrantProcessExportService {
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.cipc_registration || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.vat_number || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.verification_details || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${approvedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
         </tr>`;
@@ -399,38 +462,78 @@ export class GrantProcessExportService {
 
     // Build purchase order rows (4 rows)
     const purchaseOrderRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_3.items[i] || {} as ScmPurchaseOrder;
+      const item = data.step_3.items[i] || ({} as ScmPurchaseOrder);
+      // Use a more PDF-compatible approach for checkboxes
+      const poGeneratedBox = item.purchase_order_generated
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const taxInvoiceBox = item.tax_invoice_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const bbbeeBox = item.bbbee_certificate_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const bankConfirmationBox = item.bank_confirmation_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const taxClearanceBox = item.tax_clearance_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const approvedBox = item.approved
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+
       return `
         <tr>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${poGeneratedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${taxInvoiceBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bbbeeBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bankConfirmationBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${taxClearanceBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${approvedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
         </tr>`;
     }).join('');
 
     // Build payment rows (4 rows)
     const paymentRows = Array.from({ length: 4 }, (_, i) => {
-      const item = data.step_4.items[i] || {} as ScmPayment;
+      const item = data.step_4.items[i] || ({} as ScmPayment);
+      // Use a more PDF-compatible approach for checkboxes
+      const vatInvoiceBox = item.vat_invoice_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const bankConfirmationBox = item.bank_confirmation_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const paymentAuthBox = item.payment_authorisation_signed
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const paymentDoneBox = item.payment_done
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const proofOfPaymentBox = item.proof_of_payment_sent
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+      const deliveryNoteBox = item.delivery_note_received
+        ? '<div style="width:10px;height:10px;border:1px solid #000;text-align:center;line-height:10px;font-size:8px;">&#10003;</div>'
+        : '<div style="width:10px;height:10px;border:1px solid #000;"></div>';
+
       return `
         <tr>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.company_name || companyInfo.companyName)}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.director || companyInfo.directorName)}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.contact_number || companyInfo.contactNumber)}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${vatInvoiceBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bankConfirmationBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${paymentAuthBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${paymentDoneBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${proofOfPaymentBox}</td>
+          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${deliveryNoteBox}</td>
         </tr>`;
     }).join('');
 
@@ -454,7 +557,7 @@ export class GrantProcessExportService {
         ESD INTERNAL GRANT SCM VERIFICATION PROCESS CHECKLIST
       </td>
       <td style="border:1px solid #000;padding:4px;height:12mm;text-align:right;${FF}">
-        <!-- South32 Logo Placeholder -->
+        <img src="${logoUrl}" alt="South32 Logo" style="max-height:10mm;max-width:40mm;">
       </td>
     </tr>
   </table>
@@ -635,7 +738,10 @@ export class GrantProcessExportService {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   private _esc(s: string): string {
-    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return (s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   private _dateStamp(): string {
