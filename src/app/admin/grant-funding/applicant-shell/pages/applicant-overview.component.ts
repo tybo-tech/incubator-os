@@ -151,7 +151,8 @@ import { ApplicantBusinessProcessComponent } from './applicant-business-process.
         <ng-container *ngIf="hasStageComponent('business_process')">
           <app-applicant-business-process 
             [companyId]="applicantCompanyId() || applicantId" 
-            [applicantId]="applicantId">
+            [applicantId]="applicantId"
+            [applicantData]="data()">
           </app-applicant-business-process>
         </ng-container>
 

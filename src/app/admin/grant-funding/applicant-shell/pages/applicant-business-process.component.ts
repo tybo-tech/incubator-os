@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BusinessProcessChecklistComponent } from '../../business-process/business-process-checklist.component';
 import { ScmVerificationProcessComponent } from '../../business-process/scm-verification-process.component';
 import { ExpenditureAuthorizationComponent } from '../../business-process/expenditure-authorization.component';
+import { IGrantApplicationData } from '../../interfaces/grant-application.interfaces';
 
 @Component({
   selector: 'app-applicant-business-process',
@@ -40,7 +41,8 @@ import { ExpenditureAuthorizationComponent } from '../../business-process/expend
         <div *ngIf="activeTab() === 'checklist'">
           <app-business-process-checklist
             [companyId]="companyId"
-            [applicantId]="applicantId">
+            [applicantId]="applicantId"
+            [applicantData]="applicantData">
           </app-business-process-checklist>
         </div>
 
@@ -48,7 +50,8 @@ import { ExpenditureAuthorizationComponent } from '../../business-process/expend
         <div *ngIf="activeTab() === 'scm'">
           <app-scm-verification-process
             [companyId]="companyId"
-            [applicantId]="applicantId">
+            [applicantId]="applicantId"
+            [applicantData]="applicantData">
           </app-scm-verification-process>
         </div>
 
@@ -56,7 +59,8 @@ import { ExpenditureAuthorizationComponent } from '../../business-process/expend
         <div *ngIf="activeTab() === 'expenditure'">
           <app-expenditure-authorization
             [companyId]="companyId"
-            [applicantId]="applicantId">
+            [applicantId]="applicantId"
+            [applicantData]="applicantData">
           </app-expenditure-authorization>
         </div>
 
@@ -86,6 +90,7 @@ import { ExpenditureAuthorizationComponent } from '../../business-process/expend
 export class ApplicantBusinessProcessComponent {
   @Input() companyId!: number;
   @Input() applicantId!: number;
+  @Input() applicantData!: IGrantApplicationData;
 
   activeTab = signal<'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'>('checklist');
 

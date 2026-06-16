@@ -11,6 +11,7 @@ import {
 import { NodeService } from '../../../../services/node.service';
 import { SignaturePadLibComponent } from '../../../shared/components/signature-pad-lib.component';
 import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
+import { IGrantApplicationData } from '../interfaces/grant-application.interfaces';
 
 @Component({
   selector: 'app-expenditure-authorization',
@@ -483,6 +484,7 @@ import { GrantProcessExportService, CompanyInfo } from '../services/grant-proces
 export class ExpenditureAuthorizationComponent implements OnInit {
   @Input() companyId!: number;
   @Input() applicantId!: number;
+  @Input() applicantData!: IGrantApplicationData;
 
   isLoading = signal(true);
   isSaving = signal(false);
@@ -501,6 +503,8 @@ export class ExpenditureAuthorizationComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExpenditureAuthorization();
+    // Pre-populate company information
+    this.prepopulateCompanyInfo();
   }
 
   loadExpenditureAuthorization(): void {
@@ -592,12 +596,45 @@ export class ExpenditureAuthorizationComponent implements OnInit {
     invoice.total_amount = (invoice.amount_excl_vat || 0) + (invoice.vat_amount || 0);
   }
 
+  prepopulateCompanyInfo(): void {
+    // Get primary director information
+    const primaryDirector = this.applicantData.directors?.[0];
+    const directorName = primaryDirector 
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+      : '';
+    
+    // Get contact number (cell phone or phone)
+    const contactNumber = primaryDirector 
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+      : '';
+
+    // Update the expenditure authorization data with company information
+    this.expenditureAuthorization.update(data => ({
+      ...data,
+      company_name: this.applicantData.company_name || '',
+      director_name: directorName,
+      contact_number: contactNumber,
+      registration_number: this.applicantData.registration_number || ''
+    }));
+  }
+
   exportToPdf(): void {
+    // Get primary director information
+    const primaryDirector = this.applicantData.directors?.[0];
+    const directorName = primaryDirector 
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+      : '';
+    
+    // Get contact number (cell phone or phone)
+    const contactNumber = primaryDirector 
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+      : '';
+
     const companyInfo: CompanyInfo = {
-      companyName: this.expenditureAuthorization().company_name,
-      directorName: this.expenditureAuthorization().director_name,
-      contactNumber: this.expenditureAuthorization().contact_number,
-      registrationNumber: this.expenditureAuthorization().registration_number
+      companyName: this.applicantData.company_name || '',
+      directorName: directorName,
+      contactNumber: contactNumber,
+      registrationNumber: this.applicantData.registration_number || ''
     };
 
     this.exportService.exportExpenditureAuthorization(

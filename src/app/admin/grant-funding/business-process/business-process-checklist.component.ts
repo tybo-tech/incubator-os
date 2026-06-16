@@ -9,6 +9,7 @@ import {
 } from './checklist.models';
 import { NodeService } from '../../../../services';
 import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
+import { IGrantApplicationData } from '../interfaces/grant-application.interfaces';
 
 @Component({
   selector: 'app-business-process-checklist',
@@ -96,6 +97,7 @@ import { GrantProcessExportService, CompanyInfo } from '../services/grant-proces
 export class BusinessProcessChecklistComponent implements OnInit {
   @Input() companyId!: number;
   @Input() applicantId!: number;
+  @Input() applicantData!: IGrantApplicationData;
 
   isLoading = signal(true);
   isSaving = signal(false);
@@ -174,11 +176,22 @@ export class BusinessProcessChecklistComponent implements OnInit {
   }
 
   exportToPdf(): void {
+    // Get primary director information
+    const primaryDirector = this.applicantData.directors?.[0];
+    const directorName = primaryDirector 
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+      : '';
+    
+    // Get contact number (cell phone or phone)
+    const contactNumber = primaryDirector 
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+      : '';
+
     const companyInfo: CompanyInfo = {
-      companyName: 'Company Name', // This would need to be fetched or passed in
-      directorName: 'Director Name', // This would need to be fetched or passed in
-      contactNumber: 'Contact Number', // This would need to be fetched or passed in
-      registrationNumber: 'Registration Number' // This would need to be fetched or passed in
+      companyName: this.applicantData.company_name || '',
+      directorName: directorName,
+      contactNumber: contactNumber,
+      registrationNumber: this.applicantData.registration_number || ''
     };
 
     this.exportService.exportBusinessProcessChecklist(

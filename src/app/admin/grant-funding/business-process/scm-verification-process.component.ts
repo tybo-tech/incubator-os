@@ -14,6 +14,7 @@ import {
   DEFAULT_GRANT_SCM_VERIFICATION
 } from './scm-verification.models';
 import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
+import { IGrantApplicationData } from '../interfaces/grant-application.interfaces';
 
 @Component({
   selector: 'app-scm-verification-process',
@@ -678,6 +679,7 @@ import { GrantProcessExportService, CompanyInfo } from '../services/grant-proces
 export class ScmVerificationProcessComponent implements OnInit {
   @Input() companyId!: number;
   @Input() applicantId!: number;
+  @Input() applicantData!: IGrantApplicationData;
 
   isLoading = signal(true);
   isSaving = signal(false);
@@ -694,6 +696,8 @@ export class ScmVerificationProcessComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadScmVerification();
+    // Pre-populate company information
+    this.prepopulateCompanyInfo();
   }
 
   loadScmVerification(): void {
@@ -889,12 +893,44 @@ export class ScmVerificationProcessComponent implements OnInit {
     }));
   }
 
+  prepopulateCompanyInfo(): void {
+    // Get primary director information
+    const primaryDirector = this.applicantData.directors?.[0];
+    const directorName = primaryDirector 
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+      : '';
+    
+    // Get contact number (cell phone or phone)
+    const contactNumber = primaryDirector 
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+      : '';
+
+    // Update the SCM verification data with company information
+    this.scmVerification.update(data => ({
+      ...data,
+      beneficiary_company_name: this.applicantData.company_name || '',
+      director: directorName,
+      contact_number: contactNumber
+    }));
+  }
+
   exportToPdf(): void {
+    // Get primary director information
+    const primaryDirector = this.applicantData.directors?.[0];
+    const directorName = primaryDirector 
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+      : '';
+    
+    // Get contact number (cell phone or phone)
+    const contactNumber = primaryDirector 
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+      : '';
+
     const companyInfo: CompanyInfo = {
-      companyName: this.scmVerification().beneficiary_company_name,
-      directorName: this.scmVerification().director,
-      contactNumber: this.scmVerification().contact_number,
-      registrationNumber: '' // Registration number not available in this component
+      companyName: this.applicantData.company_name || '',
+      directorName: directorName,
+      contactNumber: contactNumber,
+      registrationNumber: this.applicantData.registration_number || ''
     };
 
     this.exportService.exportScmVerification(
