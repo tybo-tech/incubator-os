@@ -36,10 +36,7 @@ export interface ExportOptions {
 })
 export class GrantProcessExportService {
   images = Constants.Images;
-  constructor(
-    private pdfService: PdfService,
-    private documentGenerator: DocumentGeneratorService
-  ) {}
+  constructor(private pdfService: PdfService) {}
 
   /**
    * Export Business Process Checklist to PDF
@@ -99,6 +96,8 @@ export class GrantProcessExportService {
     companyInfo: CompanyInfo,
   ): string {
     const FF = `font-family:Arial,sans-serif`;
+    const checklistCellStyle = `padding:8px;border:1px solid #000;font-size:10px;${FF}`;
+    const checklistHeaderCellStyle = `background:#e0e0e0;border:1px solid #000;padding:5px;font-weight:bold;font-size:10px;${FF}`;
 
     // Build checklist rows
     const checklistRows = GRANT_FUNDING_CHECKLIST_FIELDS.map((field) => {
@@ -111,10 +110,10 @@ export class GrantProcessExportService {
 
       return `
         <tr>
-          <td style="padding:8px;border:1px solid #000;font-size:10px;${FF}">${this._esc(field.label)}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${yesBox}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${noBox}</td>
-          <td style="padding:8px;border:1px solid #000;text-align:center;font-size:10px;${FF}">${naBox}</td>
+          <td style="${checklistCellStyle}">${this._esc(field.label)}</td>
+          <td style="${checklistCellStyle}text-align:center;">${yesBox}</td>
+          <td style="${checklistCellStyle}text-align:center;">${noBox}</td>
+          <td style="${checklistCellStyle}text-align:center;">${naBox}</td>
         </tr>`;
     }).join('');
 
@@ -155,22 +154,27 @@ export class GrantProcessExportService {
     companyInfo: CompanyInfo,
   ): string {
     const FF = `font-family:Arial,sans-serif`;
+    const invoiceCellStyle = `padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}`;
+    const invoiceHeaderCellStyle = `background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;${FF}`;
 
     // Build invoice rows (7 rows total)
     const invoiceRows = Array.from({ length: 7 }, (_, i) => {
       const invoice = data.invoices[i] || ({} as ExpenditureInvoice);
       // Use image-based checkboxes
-      const preferredSupplierBox = this._getCheckboxImage(invoice.preferred_supplier ? 'YES' : 'NO', 'YES');
+      const preferredSupplierBox = this._getCheckboxImage(
+        invoice.preferred_supplier ? 'YES' : 'NO',
+        'YES',
+      );
 
       return `
         <tr>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}">${this._esc(invoice.invoice_number || '')}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}">${this._esc(invoice.description || '')}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;${FF}">${this._esc(invoice.supplier_name || '')}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:right;${FF}">${invoice.amount_excl_vat || ''}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:right;${FF}">${invoice.vat_amount || ''}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:right;${FF}">${invoice.total_amount || ''}</td>
-          <td style="padding:5px;border:1px solid #000;height:10mm;font-size:8px;text-align:center;${FF}">
+          <td style="${invoiceCellStyle}">${this._esc(invoice.invoice_number || '')}</td>
+          <td style="${invoiceCellStyle}">${this._esc(invoice.description || '')}</td>
+          <td style="${invoiceCellStyle}">${this._esc(invoice.supplier_name || '')}</td>
+          <td style="${invoiceCellStyle}text-align:right;">${invoice.amount_excl_vat || ''}</td>
+          <td style="${invoiceCellStyle}text-align:right;">${invoice.vat_amount || ''}</td>
+          <td style="${invoiceCellStyle}text-align:right;">${invoice.total_amount || ''}</td>
+          <td style="${invoiceCellStyle}text-align:center;">
             ${preferredSupplierBox}
           </td>
         </tr>`;
@@ -253,13 +257,13 @@ export class GrantProcessExportService {
   <table style="margin-bottom:8px">
     <thead>
       <tr>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:50mm;${FF}">Invoice Number</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:70mm;${FF}">Description of Goods/Services</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:43mm;${FF}">Supplier Name</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:28mm;${FF}">Amount Excl VAT</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:25mm;${FF}">VAT Amount</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:25mm;${FF}">Total Amount Including VAT</td>
-        <td style="background:#e0e0e0;border:1px solid #000;padding:4px;font-weight:bold;font-size:8px;text-align:center;width:23mm;${FF}">Preferred Supplier Yes/No</td>
+        <td style="${invoiceHeaderCellStyle}width:50mm;">Invoice Number</td>
+        <td style="${invoiceHeaderCellStyle}width:70mm;">Description of Goods/Services</td>
+        <td style="${invoiceHeaderCellStyle}width:43mm;">Supplier Name</td>
+        <td style="${invoiceHeaderCellStyle}width:28mm;">Amount Excl VAT</td>
+        <td style="${invoiceHeaderCellStyle}width:25mm;">VAT Amount</td>
+        <td style="${invoiceHeaderCellStyle}width:25mm;">Total Amount Including VAT</td>
+        <td style="${invoiceHeaderCellStyle}width:23mm;">Preferred Supplier Yes/No</td>
       </tr>
     </thead>
     <tbody>
@@ -355,13 +359,14 @@ export class GrantProcessExportService {
     companyInfo: CompanyInfo,
   ): string {
     const FF = `font-family:Arial,sans-serif`;
+    const scmCellStyle = `padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}`;
 
     // Build quotation rows (4 rows)
     const quotationRows = Array.from({ length: 4 }, (_, i) => {
       const item = data.step_1.items[i] || ({} as ScmQuotation);
       return `
         <tr>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
+          <td style="${scmCellStyle}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.date_received || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
@@ -373,16 +378,19 @@ export class GrantProcessExportService {
     const supplierRows = Array.from({ length: 4 }, (_, i) => {
       const item = data.step_2.items[i] || ({} as ScmSupplierVerification);
       // Use image-based checkboxes
-      const approvedBox = this._getCheckboxImage(item.approved ? 'YES' : 'NO', 'YES');
+      const approvedBox = this._getCheckboxImage(
+        item.approved ? 'YES' : 'NO',
+        'YES',
+      );
 
       return `
         <tr>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
+          <td style="${scmCellStyle}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.cipc_registration || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.vat_number || '')}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.verification_details || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${approvedBox}</td>
+          <td style="${scmCellStyle}">${approvedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
         </tr>`;
@@ -392,24 +400,42 @@ export class GrantProcessExportService {
     const purchaseOrderRows = Array.from({ length: 4 }, (_, i) => {
       const item = data.step_3.items[i] || ({} as ScmPurchaseOrder);
       // Use image-based checkboxes
-      const poGeneratedBox = this._getCheckboxImage(item.purchase_order_generated ? 'YES' : 'NO', 'YES');
-      const taxInvoiceBox = this._getCheckboxImage(item.tax_invoice_received ? 'YES' : 'NO', 'YES');
-      const bbbeeBox = this._getCheckboxImage(item.bbbee_certificate_received ? 'YES' : 'NO', 'YES');
-      const bankConfirmationBox = this._getCheckboxImage(item.bank_confirmation_received ? 'YES' : 'NO', 'YES');
-      const taxClearanceBox = this._getCheckboxImage(item.tax_clearance_received ? 'YES' : 'NO', 'YES');
-      const approvedBox = this._getCheckboxImage(item.approved ? 'YES' : 'NO', 'YES');
+      const poGeneratedBox = this._getCheckboxImage(
+        item.purchase_order_generated ? 'YES' : 'NO',
+        'YES',
+      );
+      const taxInvoiceBox = this._getCheckboxImage(
+        item.tax_invoice_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const bbbeeBox = this._getCheckboxImage(
+        item.bbbee_certificate_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const bankConfirmationBox = this._getCheckboxImage(
+        item.bank_confirmation_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const taxClearanceBox = this._getCheckboxImage(
+        item.tax_clearance_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const approvedBox = this._getCheckboxImage(
+        item.approved ? 'YES' : 'NO',
+        'YES',
+      );
 
       return `
         <tr>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
+          <td style="${scmCellStyle}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.supplier_name || '')}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${poGeneratedBox}</td>
+          <td style="${scmCellStyle}">${poGeneratedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${taxInvoiceBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bbbeeBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bankConfirmationBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${taxClearanceBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${approvedBox}</td>
+          <td style="${scmCellStyle}">${taxInvoiceBox}</td>
+          <td style="${scmCellStyle}">${bbbeeBox}</td>
+          <td style="${scmCellStyle}">${bankConfirmationBox}</td>
+          <td style="${scmCellStyle}">${taxClearanceBox}</td>
+          <td style="${scmCellStyle}">${approvedBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
         </tr>`;
     }).join('');
@@ -418,26 +444,44 @@ export class GrantProcessExportService {
     const paymentRows = Array.from({ length: 4 }, (_, i) => {
       const item = data.step_4.items[i] || ({} as ScmPayment);
       // Use image-based checkboxes
-      const vatInvoiceBox = this._getCheckboxImage(item.vat_invoice_received ? 'YES' : 'NO', 'YES');
-      const bankConfirmationBox = this._getCheckboxImage(item.bank_confirmation_received ? 'YES' : 'NO', 'YES');
-      const paymentAuthBox = this._getCheckboxImage(item.payment_authorisation_signed ? 'YES' : 'NO', 'YES');
-      const paymentDoneBox = this._getCheckboxImage(item.payment_done ? 'YES' : 'NO', 'YES');
-      const proofOfPaymentBox = this._getCheckboxImage(item.proof_of_payment_sent ? 'YES' : 'NO', 'YES');
-      const deliveryNoteBox = this._getCheckboxImage(item.delivery_note_received ? 'YES' : 'NO', 'YES');
+      const vatInvoiceBox = this._getCheckboxImage(
+        item.vat_invoice_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const bankConfirmationBox = this._getCheckboxImage(
+        item.bank_confirmation_received ? 'YES' : 'NO',
+        'YES',
+      );
+      const paymentAuthBox = this._getCheckboxImage(
+        item.payment_authorisation_signed ? 'YES' : 'NO',
+        'YES',
+      );
+      const paymentDoneBox = this._getCheckboxImage(
+        item.payment_done ? 'YES' : 'NO',
+        'YES',
+      );
+      const proofOfPaymentBox = this._getCheckboxImage(
+        item.proof_of_payment_sent ? 'YES' : 'NO',
+        'YES',
+      );
+      const deliveryNoteBox = this._getCheckboxImage(
+        item.delivery_note_received ? 'YES' : 'NO',
+        'YES',
+      );
 
       return `
         <tr>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${i + 1}</td>
+          <td style="${scmCellStyle}">${i + 1}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.company_name || companyInfo.companyName)}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.director || companyInfo.directorName)}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}">${this._esc(item.contact_number || companyInfo.contactNumber)}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${vatInvoiceBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${bankConfirmationBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${paymentAuthBox}</td>
+          <td style="${scmCellStyle}">${vatInvoiceBox}</td>
+          <td style="${scmCellStyle}">${bankConfirmationBox}</td>
+          <td style="${scmCellStyle}">${paymentAuthBox}</td>
           <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;${FF}"></td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${paymentDoneBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${proofOfPaymentBox}</td>
-          <td style="padding:4px;border:1px solid #000;height:7mm;font-size:7px;text-align:center;${FF}">${deliveryNoteBox}</td>
+          <td style="${scmCellStyle}">${paymentDoneBox}</td>
+          <td style="${scmCellStyle}">${proofOfPaymentBox}</td>
+          <td style="${scmCellStyle}">${deliveryNoteBox}</td>
         </tr>`;
     }).join('');
 
@@ -648,7 +692,10 @@ export class GrantProcessExportService {
     return `<img src="${this.images.No}" alt="No" style="width:10px;height:10px;">`;
   }
 
-  private _getYesNoNaCheckbox(value: string, option: 'YES' | 'NO' | 'NA'): string {
+  private _getYesNoNaCheckbox(
+    value: string,
+    option: 'YES' | 'NO' | 'NA',
+  ): string {
     if (value === option) {
       return `<img src="${this.images.Yes}" alt="${option}" style="width:10px;height:10px;">`;
     }
