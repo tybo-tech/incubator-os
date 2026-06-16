@@ -4,95 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
 import { SignaturePadLibComponent } from '../../../shared/components/signature-pad-lib.component';
 import { UploadService } from '../../../../services/UploadService';
-
-interface ScmQuotation {
-  id: string;
-  supplier_name: string;
-  date_received?: string;
-  beneficiary_signature?: string;
-  comments?: string;
-}
-
-interface ScmSupplierVerification {
-  id: string;
-  supplier_name: string;
-  cipc_registration?: string;
-  vat_number?: string;
-  verification_details?: string;
-  approved?: boolean;
-  comments?: string;
-}
-
-interface ScmPurchaseOrder {
-  id: string;
-  supplier_name: string;
-  purchase_order_generated: boolean;
-  emailed_to_supplier_date?: string;
-  tax_invoice_received: boolean;
-  bbbee_certificate_received: boolean;
-  bank_confirmation_received: boolean;
-  tax_clearance_received: boolean;
-  approved: boolean;
-  comments?: string;
-}
-
-interface ScmPayment {
-  id: string;
-  company_name: string;
-  director: string;
-  contact_number: string;
-  vat_invoice_received: boolean;
-  bank_confirmation_received: boolean;
-  payment_authorisation_signed: boolean;
-  payment_request_date?: string;
-  payment_done: boolean;
-  proof_of_payment_sent: boolean;
-  delivery_note_received: boolean;
-}
-
-interface ScmVerificationStep<T> {
-  items: T[];
-  verified_by?: string;
-  signature?: string;
-}
-
-interface GrantScmVerification {
-  beneficiary_company_name: string;
-  director: string;
-  contact_number: string;
-
-  step_1: ScmVerificationStep<ScmQuotation>;
-  step_2: ScmVerificationStep<ScmSupplierVerification>;
-  step_3: ScmVerificationStep<ScmPurchaseOrder>;
-  step_4: ScmVerificationStep<ScmPayment>;
-}
-
-const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
-  beneficiary_company_name: '',
-  director: '',
-  contact_number: '',
-
-  step_1: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_2: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_3: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_4: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  }
-};
+import { 
+  ScmQuotation,
+  ScmSupplierVerification,
+  ScmPurchaseOrder,
+  ScmPayment,
+  ScmVerificationStep,
+  GrantScmVerification,
+  DEFAULT_GRANT_SCM_VERIFICATION
+} from './scm-verification.models';
+import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
 
 @Component({
   selector: 'app-scm-verification-process',
@@ -719,7 +640,13 @@ const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
         </div>
 
         <!-- Save Button -->
-        <div class="flex justify-end pt-4">
+        <div class="flex justify-end space-x-3 pt-4">
+          <button
+            (click)="exportToPdf()"
+            class="px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+            <i class="fas fa-file-pdf mr-2"></i>
+            Export to PDF
+          </button>
           <button
             (click)="saveScmVerification()"
             [disabled]="isSaving()"
@@ -761,7 +688,8 @@ export class ScmVerificationProcessComponent implements OnInit {
 
   constructor(
   @Inject(NodeService) private nodeService: NodeService,
-  @Inject(UploadService) private uploadService: UploadService
+  @Inject(UploadService) private uploadService: UploadService,
+  @Inject(GrantProcessExportService) private exportService: GrantProcessExportService
 ) {}
 
   ngOnInit(): void {
@@ -959,5 +887,19 @@ export class ScmVerificationProcessComponent implements OnInit {
         items: data.step_4.items.filter((_, i) => i !== index)
       }
     }));
+  }
+
+  exportToPdf(): void {
+    const companyInfo: CompanyInfo = {
+      companyName: this.scmVerification().beneficiary_company_name,
+      directorName: this.scmVerification().director,
+      contactNumber: this.scmVerification().contact_number,
+      registrationNumber: '' // Registration number not available in this component
+    };
+
+    this.exportService.exportScmVerification(
+      this.scmVerification(),
+      companyInfo
+    );
   }
 }

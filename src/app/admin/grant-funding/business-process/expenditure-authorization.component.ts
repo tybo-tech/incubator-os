@@ -1,8 +1,8 @@
 import { Component, Input, OnInit, signal, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  GrantExpenditureAuthorization,
+import { 
+  GrantExpenditureAuthorization, 
   DEFAULT_GRANT_EXPENDITURE_AUTHORIZATION,
   ExpenditureInvoice,
   AuthorizationSignature,
@@ -10,6 +10,7 @@ import {
 } from './expenditure-authorization.models';
 import { NodeService } from '../../../../services/node.service';
 import { SignaturePadLibComponent } from '../../../shared/components/signature-pad-lib.component';
+import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
 
 @Component({
   selector: 'app-expenditure-authorization',
@@ -444,7 +445,13 @@ import { SignaturePadLibComponent } from '../../../shared/components/signature-p
         </div>
 
         <!-- Save Button -->
-        <div class="flex justify-end pt-4">
+        <div class="flex justify-end space-x-3 pt-4">
+          <button
+            (click)="exportToPdf()"
+            class="px-6 py-3 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center">
+            <i class="fas fa-file-pdf mr-2"></i>
+            Export to PDF
+          </button>
           <button
             (click)="saveExpenditureAuthorization()"
             [disabled]="isSaving()"
@@ -480,14 +487,16 @@ export class ExpenditureAuthorizationComponent implements OnInit {
   isLoading = signal(true);
   isSaving = signal(false);
   saveStatus = signal<{ message: string; type: 'success' | 'error' } | null>(null);
-
+  
   expenditureAuthorization = signal<GrantExpenditureAuthorization>({ ...DEFAULT_GRANT_EXPENDITURE_AUTHORIZATION });
   expenditureAuthorizationNode = signal<any>(null);
 
   private nodeService: NodeService;
+  private exportService: GrantProcessExportService;
 
-  constructor(nodeService: NodeService) {
+  constructor(nodeService: NodeService, exportService: GrantProcessExportService) {
     this.nodeService = nodeService;
+    this.exportService = exportService;
   }
 
   ngOnInit(): void {
@@ -581,5 +590,19 @@ export class ExpenditureAuthorizationComponent implements OnInit {
 
   calculateTotalAmount(invoice: ExpenditureInvoice): void {
     invoice.total_amount = (invoice.amount_excl_vat || 0) + (invoice.vat_amount || 0);
+  }
+
+  exportToPdf(): void {
+    const companyInfo: CompanyInfo = {
+      companyName: this.expenditureAuthorization().company_name,
+      directorName: this.expenditureAuthorization().director_name,
+      contactNumber: this.expenditureAuthorization().contact_number,
+      registrationNumber: this.expenditureAuthorization().registration_number
+    };
+
+    this.exportService.exportExpenditureAuthorization(
+      this.expenditureAuthorization(),
+      companyInfo
+    );
   }
 }

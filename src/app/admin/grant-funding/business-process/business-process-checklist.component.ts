@@ -8,6 +8,7 @@ import {
   ChecklistResponse
 } from './checklist.models';
 import { NodeService } from '../../../../services';
+import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
 
 @Component({
   selector: 'app-business-process-checklist',
@@ -69,7 +70,12 @@ import { NodeService } from '../../../../services';
         </div>
 
         <!-- Save Button -->
-        <div class="mt-6 flex justify-end">
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            (click)="exportToPdf()"
+            class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
+            Export to PDF
+          </button>
           <button
             (click)="saveChecklist()"
             [disabled]="isSaving()"
@@ -99,7 +105,7 @@ export class BusinessProcessChecklistComponent implements OnInit {
   checklistFields = GRANT_FUNDING_CHECKLIST_FIELDS;
   checklistNode = signal<any>(null);
 
-  constructor(@Inject(NodeService) private nodeService: NodeService) {}
+  constructor(@Inject(NodeService) private nodeService: NodeService, @Inject(GrantProcessExportService) private exportService: GrantProcessExportService) {}
 
   ngOnInit(): void {
     this.loadChecklist();
@@ -165,5 +171,19 @@ export class BusinessProcessChecklistComponent implements OnInit {
         console.error('Error saving checklist:', error);
       }
     });
+  }
+
+  exportToPdf(): void {
+    const companyInfo: CompanyInfo = {
+      companyName: 'Company Name', // This would need to be fetched or passed in
+      directorName: 'Director Name', // This would need to be fetched or passed in
+      contactNumber: 'Contact Number', // This would need to be fetched or passed in
+      registrationNumber: 'Registration Number' // This would need to be fetched or passed in
+    };
+
+    this.exportService.exportBusinessProcessChecklist(
+      this.checklist(),
+      companyInfo
+    );
   }
 }
