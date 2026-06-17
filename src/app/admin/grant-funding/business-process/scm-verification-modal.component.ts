@@ -392,6 +392,7 @@ export class ScmVerificationModalComponent {
   onSaveAndClose = output<void>();
   onNext = output<void>();
   onPrevious = output<void>();
+  onComplete = output<void>();
 
   constructor(private scmVerificationService: ScmVerificationService) {}
 
@@ -403,5 +404,10 @@ export class ScmVerificationModalComponent {
 
   getStepName(step: number): string {
     return this.scmVerificationService.getStepName(step);
+  }
+
+  markAsComplete(): void {
+    // Emit the complete event which will be handled in the parent component
+    this.onComplete.emit();
   }
 }

@@ -43,6 +43,7 @@ export interface ScmQuotation {
   date_received?: string;
   beneficiary_signature?: string;
   comments?: string;
+  status?: 'pending' | 'in-progress' | 'completed';
   // Step 2: Online Verification of Suppliers
   online_verification?: ScmOnlineVerification;
   // Step 3: Processing of Verified Quotations (Generate PO)

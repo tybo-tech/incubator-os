@@ -35,11 +35,13 @@ import { ScmVerificationService } from './scm-verification.service';
               </td>
               <td class="px-3 py-2">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                  {{ getQuotationStep(item) === 1 ? 'bg-green-100 text-green-800' : 
+                  {{ item.status === 'completed' ? 'bg-green-100 text-green-800' :
+                     getQuotationStep(item) === 1 ? 'bg-green-100 text-green-800' : 
                      getQuotationStep(item) === 2 ? 'bg-yellow-100 text-yellow-800' : 
                      getQuotationStep(item) === 3 ? 'bg-orange-100 text-orange-800' : 
                      'bg-purple-100 text-purple-800' }}">
-                  {{ getQuotationStep(item) === 1 ? 'Collected' : 
+                  {{ item.status === 'completed' ? 'Completed' :
+                     getQuotationStep(item) === 1 ? 'Collected' : 
                      getQuotationStep(item) === 2 ? 'In Progress' : 
                      getQuotationStep(item) === 3 ? 'Pending' : 
                      'Pending' }}

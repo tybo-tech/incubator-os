@@ -74,7 +74,8 @@ export class ScmVerificationService {
       supplier_name: '',
       date_received: '',
       beneficiary_signature: '',
-      comments: ''
+      comments: '',
+      status: 'pending'
     };
 
     return {

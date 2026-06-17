@@ -286,6 +286,21 @@ export class ScmVerificationProcessComponent implements OnInit {
     if (step < 4) {
       this.stateService.nextStep();
     }
+    
+    // Save the updated data
+    this.saveScmVerification();
+  }
+
+  processPreviousStep(): void {
+    // Reset data when moving to a previous step to ensure proper data loading
+    const index = this.stateService.currentQuotationIndex();
+    if (index === null) return;
+    
+    // Move to previous step
+    this.stateService.previousStep();
+    
+    // Reload data to ensure consistency
+    this.loadScmVerification();
   }
 
   saveAndCloseQuotation(): void {
@@ -293,6 +308,29 @@ export class ScmVerificationProcessComponent implements OnInit {
     this.saveScmVerification();
     // Close the modal
     this.closeQuotationModal();
+  }
+
+  markQuotationAsComplete(): void {
+    const index = this.stateService.currentQuotationIndex();
+    if (index === null) return;
+    
+    // Update the quotation status to complete
+    const updatedData = { ...this.stateService.scmVerification() };
+    const quotations = [...updatedData.quotations.items];
+    
+    // Mark the quotation as complete
+    if (quotations[index]) {
+      quotations[index] = { 
+        ...quotations[index], 
+        status: 'completed' 
+      };
+    }
+    
+    updatedData.quotations.items = quotations;
+    this.stateService.updateScmVerification(updatedData);
+    
+    // Save and close
+    this.saveAndCloseQuotation();
   }
 
   exportToPdf(): void {
