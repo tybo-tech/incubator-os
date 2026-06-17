@@ -131,7 +131,9 @@ export class GrantProcessExportService {
 ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 </head>
 <body>
-  ${content}
+  <div class="content-wrapper">
+    ${content}
+  </div>
   ${this._generateFooter()}
 </body>
 </html>`;
@@ -144,6 +146,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
   @page { margin: ${pageMargin}; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: ${this.theme.fontFamily}; font-size: ${fontSize}; line-height: ${lineHeight}; color: ${this.theme.textColor}; }
+  .content-wrapper { padding: 5mm; }
   table { border-collapse: collapse; width: 100%; }
   td, th { vertical-align: top; }
   .cell { border: 1px solid ${this.theme.borderColor}; padding: 4px; }
