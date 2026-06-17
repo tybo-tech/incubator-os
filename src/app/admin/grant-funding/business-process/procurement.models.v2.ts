@@ -21,13 +21,8 @@
  * Procurement workflow status.
  */
 export enum ProcurementStatus {
-  QUOTATION = 'QUOTATION',
-  VERIFICATION = 'VERIFICATION',
-  APPROVAL = 'APPROVAL',
-  PO = 'PO',
-  INVOICE = 'INVOICE',
-  PAYMENT = 'PAYMENT',
-  FULFILLMENT = 'FULFILLMENT',
+  DRAFT = 'DRAFT',
+  IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
@@ -92,7 +87,21 @@ export enum DocumentType {
   PO = 'PO',
   PAYMENT = 'PAYMENT',
   FULFILLMENT = 'FULFILLMENT',
+  COMPLIANCE = 'COMPLIANCE',
   OTHER = 'OTHER',
+}
+
+/**
+ * Grant compliance document types.
+ */
+export enum ComplianceDocumentType {
+  BUSINESS_SUPPORT_ACKNOWLEDGEMENT = 'BUSINESS_SUPPORT_ACKNOWLEDGEMENT',
+  ESD_ED_AGREEMENT = 'ESD_ED_AGREEMENT',
+  TERMS_AND_CONDITIONS = 'TERMS_AND_CONDITIONS',
+  DIRECTOR_IDS = 'DIRECTOR_IDS',
+  COMPANY_REGISTRATION = 'COMPANY_REGISTRATION',
+  TAX_PIN = 'TAX_PIN',
+  BBBEE_CERTIFICATE = 'BBBEE_CERTIFICATE',
 }
 
 /**
@@ -226,6 +235,34 @@ export interface ProcurementChecklistProjection {
   acknowledgementOfDelivery: boolean;
 }
 
+/**
+ * Compliance document for grant compliance.
+ */
+export interface ComplianceDocument {
+  id: string;
+  type: ComplianceDocumentType;
+  document: DocumentReference;
+}
+
+/**
+ * Fulfillment confirmation received item.
+ */
+export interface FulfillmentItem {
+  lineNumber: number;
+  description: string;
+  quantityReceived: number;
+  quantityAccepted: number;
+}
+
+/**
+ * Fulfillment confirmation acceptance decision.
+ */
+export interface FulfillmentAcceptance {
+  decision: AcceptanceDecision;
+  signedBy: string;
+  signedAt: Date;
+}
+
 // ===========================================================================
 // ENTITIES
 // ===========================================================================
@@ -333,19 +370,10 @@ export interface FulfillmentConfirmation {
   confirmationId: string;
   confirmationDate: Date;
   confirmedBy: string;
-  receivedItems: {
-    lineNumber: number;
-    description: string;
-    quantityReceived: number;
-    quantityAccepted: number;
-  }[];
+  receivedItems: FulfillmentItem[];
   deliveryNotes: DocumentReference[];
   status: FulfillmentStatus;
-  acceptanceDecision: {
-    decision: AcceptanceDecision;
-    signedBy: string;
-    signedAt: Date;
-  };
+  acceptanceDecision: FulfillmentAcceptance;
   completionCertificates: DocumentReference[];
 }
 
@@ -365,9 +393,11 @@ export interface Procurement {
   suppliers: Supplier[];
   quotations: Quotation[];
   selectedQuotationId?: string;
+  selectedSupplierId?: string;
   supplierVerification?: SupplierVerification;
   approvalWorkflow: ApprovalWorkflow;
   purchaseOrder?: PurchaseOrder;
+  complianceDocuments: ComplianceDocument[];
   events: ProcurementEvent[];
   createdAt: Date;
   createdById: string;
@@ -382,7 +412,7 @@ export interface Procurement {
 export function createDefaultProcurement(): Procurement {
   return {
     procurementId: '',
-    status: ProcurementStatus.QUOTATION,
+    status: ProcurementStatus.DRAFT,
     beneficiaryCompany: {
       companyName: '',
       registrationNumber: '',
@@ -391,6 +421,7 @@ export function createDefaultProcurement(): Procurement {
     suppliers: [],
     quotations: [],
     approvalWorkflow: { workflowId: '', approvalRecords: [] },
+    complianceDocuments: [],
     events: [],
     createdAt: new Date(),
     createdById: '',
@@ -478,5 +509,13 @@ export function createDefaultFulfillmentConfirmation(): FulfillmentConfirmation 
     status: FulfillmentStatus.PENDING,
     acceptanceDecision: { decision: AcceptanceDecision.ACCEPTED, signedBy: '', signedAt: new Date() },
     completionCertificates: [],
+  };
+}
+
+export function createDefaultComplianceDocument(): ComplianceDocument {
+  return {
+    id: '',
+    type: ComplianceDocumentType.BUSINESS_SUPPORT_ACKNOWLEDGEMENT,
+    document: { documentId: '', type: DocumentType.COMPLIANCE, location: '' },
   };
 }
