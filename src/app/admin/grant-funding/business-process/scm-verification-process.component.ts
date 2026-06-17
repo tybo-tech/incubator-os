@@ -57,24 +57,28 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
                 1
               </div>
               <p class="text-xs text-gray-600">Collection</p>
+              <p class="text-xs font-semibold">{{ getStep1Count() }}</p>
             </div>
             <div class="text-center p-2">
               <div class="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-100 text-yellow-600 text-xs font-semibold mx-auto mb-1">
                 2
               </div>
               <p class="text-xs text-gray-600">Verification</p>
+              <p class="text-xs font-semibold">{{ getStep2Count() }}</p>
             </div>
             <div class="text-center p-2">
               <div class="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-semibold mx-auto mb-1">
                 3
               </div>
               <p class="text-xs text-gray-600">Processing</p>
+              <p class="text-xs font-semibold">{{ getStep3Count() }}</p>
             </div>
             <div class="text-center p-2">
               <div class="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-600 text-xs font-semibold mx-auto mb-1">
                 4
               </div>
               <p class="text-xs text-gray-600">Payment</p>
+              <p class="text-xs font-semibold">{{ getStep4Count() }}</p>
             </div>
           </div>
         </div>
@@ -149,6 +153,32 @@ export class ScmVerificationProcessComponent implements OnInit {
     this.loadScmVerification();
     // Pre-populate company information
     this.prepopulateCompanyInfo();
+  }
+
+  // Statistics methods
+  getStep1Count(): number {
+    const quotations = this.stateService.scmVerification().quotations.items;
+    return quotations.filter(q => this.scmVerificationService.getQuotationStep(q) === 1).length;
+  }
+
+  getStep2Count(): number {
+    const quotations = this.stateService.scmVerification().quotations.items;
+    return quotations.filter(q => this.scmVerificationService.getQuotationStep(q) === 2).length;
+  }
+
+  getStep3Count(): number {
+    const quotations = this.stateService.scmVerification().quotations.items;
+    return quotations.filter(q => this.scmVerificationService.getQuotationStep(q) === 3).length;
+  }
+
+  getStep4Count(): number {
+    const quotations = this.stateService.scmVerification().quotations.items;
+    return quotations.filter(q => this.scmVerificationService.getQuotationStep(q) === 4).length;
+  }
+
+  getCompletedCount(): number {
+    const quotations = this.stateService.scmVerification().quotations.items;
+    return quotations.filter(q => q.status === 'completed').length;
   }
 
   loadScmVerification(): void {

@@ -13,6 +13,7 @@
 9. **Date fields not auto-populating**: Implemented auto-population of date fields with today's date.
 10. **Add Quotation button behavior**: Modified the Add Quotation button to immediately open the modal for the new quotation.
 11. **Missing remove functionality**: Added ability to remove quotations from the table.
+12. **Missing statistics**: Added statistics display to show the count of quotations in each step.
 
 ## Changes Made
 
@@ -40,6 +41,8 @@
 - Modified `addQuotation()` method to immediately open the modal for the new quotation
 - Added `(onRemoveQuotation)="removeQuotation($event)` to the status table component usage
 - Added proper handling for the Complete button in the modal
+- Added statistics calculation methods to count quotations in each step
+- Updated the workflow overview section to display statistics for each step
 
 ### 6. Service Updates (`scm-verification.service.ts`)
 - Updated `loadScmVerification()` method to ensure all quotations have a status field
@@ -68,9 +71,11 @@ To test these changes:
 13. Verify that all data is properly saved to the server
 14. Verify that signature fields are present in all steps
 15. Verify that date fields are auto-populated with today's date
+16. Verify that the workflow overview section displays correct statistics for each step
 
 ## Future Improvements
 
 1. Add unit tests for the new functionality
 2. Consider adding a visual indicator for completed quotations in the status table
 3. Implement a bulk completion feature for multiple quotations
+4. Add more detailed statistics such as completion percentages
