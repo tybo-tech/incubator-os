@@ -207,6 +207,15 @@ export interface VerificationCheck {
 }
 
 /**
+ * Procurement metadata.
+ */
+export interface ProcurementMetadata {
+  createdAt: Date;
+  createdById: string;
+  lastModifiedAt?: Date;
+}
+
+/**
  * Procurement audit event.
  */
 export interface ProcurementEvent {
@@ -323,6 +332,7 @@ export interface ApprovalRecord {
 export interface ApprovalWorkflow {
   workflowId: string;
   approvalRecords: ApprovalRecord[];
+  currentApprovalRole?: ApprovalRole;
 }
 
 /**
@@ -399,9 +409,7 @@ export interface Procurement {
   purchaseOrder?: PurchaseOrder;
   complianceDocuments: ComplianceDocument[];
   events: ProcurementEvent[];
-  createdAt: Date;
-  createdById: string;
-  lastModifiedAt?: Date;
+  metadata: ProcurementMetadata;
   tags?: string[];
 }
 
@@ -423,8 +431,10 @@ export function createDefaultProcurement(): Procurement {
     approvalWorkflow: { workflowId: '', approvalRecords: [] },
     complianceDocuments: [],
     events: [],
-    createdAt: new Date(),
-    createdById: '',
+    metadata: {
+      createdAt: new Date(),
+      createdById: '',
+    },
   };
 }
 
