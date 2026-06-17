@@ -48,11 +48,18 @@ import { ScmVerificationService } from './scm-verification.service';
                 </span>
               </td>
               <td class="px-3 py-2">
-                <button
-                  (click)="onProcessQuotation.emit(i)"
-                  class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors">
-                  Process
-                </button>
+                <div class="flex space-x-1">
+                  <button
+                    (click)="onProcessQuotation.emit(i)"
+                    class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors">
+                    Process
+                  </button>
+                  <button
+                    (click)="onRemoveQuotation.emit(i)"
+                    class="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors">
+                    Remove
+                  </button>
+                </div>
               </td>
             </tr>
             <tr *ngIf="scmVerification().quotations.items.length === 0">
@@ -71,6 +78,7 @@ export class ScmVerificationStatusTableComponent {
   scmVerification = input.required<GrantScmVerification>();
   
   onProcessQuotation = output<number>();
+  onRemoveQuotation = output<number>();
 
   constructor(private scmVerificationService: ScmVerificationService) {}
 

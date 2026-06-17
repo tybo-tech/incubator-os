@@ -82,7 +82,8 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
         <!-- Status Table Component -->
         <app-scm-verification-status-table
           [scmVerification]="stateService.scmVerification()"
-          (onProcessQuotation)="openQuotationModal($event)">
+          (onProcessQuotation)="openQuotationModal($event)"
+          (onRemoveQuotation)="removeQuotation($event)">
         </app-scm-verification-status-table>
 
         <!-- Save Button -->
@@ -213,6 +214,12 @@ export class ScmVerificationProcessComponent implements OnInit {
       this.stateService.scmVerification()
     );
     this.stateService.updateScmVerification(updatedData);
+    
+    // Get the index of the newly added quotation (it will be the last one)
+    const newIndex = updatedData.quotations.items.length - 1;
+    
+    // Open the modal immediately for the new quotation
+    this.openQuotationModal(newIndex);
   }
 
   removeQuotation(index: number): void {
