@@ -501,11 +501,18 @@ import { Observable, of } from 'rxjs';
 
           <!-- Modal Actions -->
           <div class="flex justify-between pt-3">
-            <button
-              (click)="closeQuotationModal()"
-              class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-              Cancel
-            </button>
+            <div class="space-x-2">
+              <button
+                (click)="saveAndCloseQuotation()"
+                class="px-3 py-1.5 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 transition-colors">
+                Save and Close
+              </button>
+              <button
+                (click)="closeQuotationModal()"
+                class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+                Cancel
+              </button>
+            </div>
             <div class="space-x-2">
               <button
                 *ngIf="currentStep() > 1"
@@ -521,7 +528,7 @@ import { Observable, of } from 'rxjs';
               </button>
               <button
                 *ngIf="currentStep() === 4"
-                (click)="closeQuotationModal()"
+                (click)="saveAndCloseQuotation()"
                 class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
                 Complete
               </button>
@@ -861,6 +868,14 @@ export class ScmVerificationProcessComponent implements OnInit {
     this.showModal.set(false);
     this.currentQuotationIndex.set(null);
     this.currentStep.set(1);
+  }
+
+  // Save and close quotation modal
+  saveAndCloseQuotation(): void {
+    // Save the current SCM verification data
+    this.saveScmVerification();
+    // Close the modal
+    this.closeQuotationModal();
   }
 
   // Process next step for a quotation
