@@ -573,7 +573,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
               </button>
               <button
                 *ngIf="currentStep() < 4"
-                (click)="currentStep.set(currentStep() + 1)"
+                (click)="processNextStep()"
                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                 Next
               </button>
@@ -878,12 +878,15 @@ export class ScmVerificationProcessComponent implements OnInit {
     
     switch (step) {
       case 1:
+        // Initialize online verification when moving from step 1 to step 2
         this.initializeOnlineVerification(index);
         break;
       case 2:
+        // Initialize purchase order processing when moving from step 2 to step 3
         this.initializePurchaseOrderProcessing(index);
         break;
       case 3:
+        // Initialize payment processing when moving from step 3 to step 4
         this.initializePaymentProcessing(index);
         break;
       case 4:
