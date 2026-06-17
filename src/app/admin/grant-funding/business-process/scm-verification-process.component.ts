@@ -27,8 +27,8 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
   selector: 'app-scm-verification-process',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     SignaturePadLibComponent,
     ScmVerificationHeaderComponent,
     ScmVerificationStatusTableComponent,
@@ -37,7 +37,7 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
   template: `
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <!-- Header Component -->
-      <app-scm-verification-header 
+      <app-scm-verification-header
         (onAddQuotation)="addQuotation()">
       </app-scm-verification-header>
 
@@ -80,7 +80,7 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
         </div>
 
         <!-- Status Table Component -->
-        <app-scm-verification-status-table 
+        <app-scm-verification-status-table
           [scmVerification]="stateService.scmVerification()"
           (onProcessQuotation)="openQuotationModal($event)">
         </app-scm-verification-status-table>
@@ -117,7 +117,7 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
     </div>
 
     <!-- Modal Component -->
-    <app-scm-verification-modal 
+    <app-scm-verification-modal
       [show]="stateService.showModal()"
       [scmVerification]="stateService.scmVerification()"
       [currentQuotationIndex]="stateService.currentQuotationIndex()"
@@ -168,30 +168,30 @@ export class ScmVerificationProcessComponent implements OnInit {
     this.stateService.setSaveStatus(null);
 
     this.scmVerificationService.saveScmVerification(
-      this.companyId, 
+      this.companyId,
       this.stateService.scmVerification()
     ).subscribe({
       next: (response: any) => {
         this.stateService.updateScmVerificationNode(response);
         // Sync suppliers after saving SCM verification
         this.scmVerificationService.syncSuppliers(
-          this.companyId, 
+          this.companyId,
           this.stateService.scmVerification()
         ).subscribe({
           next: () => {
             this.stateService.setSaving(false);
-            this.stateService.setSaveStatus({ 
-              message: 'SCM Verification and suppliers saved successfully!', 
-              type: 'success' 
+            this.stateService.setSaveStatus({
+              message: 'SCM Verification and suppliers saved successfully!',
+              type: 'success'
             });
             // Clear status message after 3 seconds
             setTimeout(() => this.stateService.setSaveStatus(null), 3000);
           },
           error: (error: any) => {
             this.stateService.setSaving(false);
-            this.stateService.setSaveStatus({ 
-              message: 'SCM Verification saved but failed to sync suppliers.', 
-              type: 'error' 
+            this.stateService.setSaveStatus({
+              message: 'SCM Verification saved but failed to sync suppliers.',
+              type: 'error'
             });
             console.error('Error syncing suppliers:', error);
           }
@@ -199,9 +199,9 @@ export class ScmVerificationProcessComponent implements OnInit {
       },
       error: (error: any) => {
         this.stateService.setSaving(false);
-        this.stateService.setSaveStatus({ 
-          message: 'Failed to save SCM Verification. Please try again.', 
-          type: 'error' 
+        this.stateService.setSaveStatus({
+          message: 'Failed to save SCM Verification. Please try again.',
+          type: 'error'
         });
         console.error('Error saving SCM Verification:', error);
       }
@@ -226,13 +226,13 @@ export class ScmVerificationProcessComponent implements OnInit {
   prepopulateCompanyInfo(): void {
     // Get primary director information
     const primaryDirector = this.applicantData.directors?.[0];
-    const directorName = primaryDirector 
-      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+    const directorName = primaryDirector
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ')
       : '';
-    
+
     // Get contact number (cell phone or phone)
-    const contactNumber = primaryDirector 
-      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+    const contactNumber = primaryDirector
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '')
       : '';
 
     // Update the SCM verification data with company information
@@ -247,7 +247,7 @@ export class ScmVerificationProcessComponent implements OnInit {
   openQuotationModal(index: number): void {
     const quotation = this.stateService.scmVerification().quotations.items[index];
     const step = this.scmVerificationService.getQuotationStep(quotation);
-    
+
     this.stateService.openModal(index, step);
   }
 
@@ -258,10 +258,10 @@ export class ScmVerificationProcessComponent implements OnInit {
   processNextStep(): void {
     const index = this.stateService.currentQuotationIndex();
     if (index === null) return;
-    
+
     const step = this.stateService.currentStep();
     let updatedData = this.stateService.scmVerification();
-    
+
     switch (step) {
       case 1:
         // Initialize online verification when moving from step 1 to step 2
@@ -279,29 +279,22 @@ export class ScmVerificationProcessComponent implements OnInit {
         // Payment processing is the final step
         break;
     }
-    
+
     // Update the state with the modified data
     this.stateService.updateScmVerification(updatedData);
-    
+
     // Move to next step
     if (step < 4) {
       this.stateService.nextStep();
     }
-    
+
     // Save the updated data
     this.saveScmVerification();
   }
 
   processPreviousStep(): void {
-    // Reset data when moving to a previous step to ensure proper data loading
-    const index = this.stateService.currentQuotationIndex();
-    if (index === null) return;
-    
-    // Move to previous step
+    // Move to previous step without reloading data
     this.stateService.previousStep();
-    
-    // Reload data to ensure consistency
-    this.loadScmVerification();
   }
 
   saveAndCloseQuotation(): void {
@@ -314,22 +307,22 @@ export class ScmVerificationProcessComponent implements OnInit {
   markQuotationAsComplete(): void {
     const index = this.stateService.currentQuotationIndex();
     if (index === null) return;
-    
+
     // Update the quotation status to complete
     const updatedData = { ...this.stateService.scmVerification() };
     const quotations = [...updatedData.quotations.items];
-    
+
     // Mark the quotation as complete
     if (quotations[index]) {
-      quotations[index] = { 
-        ...quotations[index], 
-        status: 'completed' 
+      quotations[index] = {
+        ...quotations[index],
+        status: 'completed'
       };
     }
-    
+
     updatedData.quotations.items = quotations;
     this.stateService.updateScmVerification(updatedData);
-    
+
     // Save and close
     this.saveAndCloseQuotation();
   }
@@ -337,13 +330,13 @@ export class ScmVerificationProcessComponent implements OnInit {
   exportToPdf(): void {
     // Get primary director information
     const primaryDirector = this.applicantData.directors?.[0];
-    const directorName = primaryDirector 
-      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ') 
+    const directorName = primaryDirector
+      ? [primaryDirector.name, primaryDirector.surname].filter(Boolean).join(' ')
       : '';
-    
+
     // Get contact number (cell phone or phone)
-    const contactNumber = primaryDirector 
-      ? (primaryDirector.cell_phone || primaryDirector.phone || '') 
+    const contactNumber = primaryDirector
+      ? (primaryDirector.cell_phone || primaryDirector.phone || '')
       : '';
 
     const companyInfo: CompanyInfo = {

@@ -7,6 +7,8 @@
 3. **Status not reflected in UI**: Updated the status table to display the actual completion status of quotations.
 4. **Complete button not working properly**: Fixed the Complete button to properly emit the onComplete event.
 5. **Status not persisted after page refresh**: Ensured that quotation status is properly saved and loaded.
+6. **Data being reset when navigating between steps**: Fixed the initialization methods to preserve existing data when navigating between steps.
+7. **Data not being saved to the server**: Fixed the save method to properly subscribe to the observable chain.
 
 ## Changes Made
 
@@ -25,13 +27,15 @@
   - Set the quotation status to 'completed'
   - Save and close the modal
 - Enhanced `processNextStep()` to automatically save data when moving to the next step
-- Implemented `processPreviousStep()` to reload data when moving to a previous step
+- Implemented `processPreviousStep()` to navigate to the previous step without reloading data
 - Added proper handling for the Complete button in the modal
 
 ### 4. Service Updates (`scm-verification.service.ts`)
 - Updated `loadScmVerification()` method to ensure all quotations have a status field
 - Updated `getQuotationStep()` method to respect the quotation status field
 - Updated `getStepStatus()` method to properly return 'Completed' for completed quotations
+- Updated initialization methods (`initializeOnlineVerification`, `initializePurchaseOrderProcessing`, `initializePaymentProcessing`) to preserve existing data when navigating between steps
+- Fixed `saveScmVerification()` method to properly subscribe to the observable chain using `switchMap`
 
 ### 5. Status Table Updates (`scm-verification-status-table.component.ts`)
 - Updated the status display to show "Completed" when a quotation's status is 'completed'
@@ -44,10 +48,12 @@ To test these changes:
 1. Open an SCM verification process
 2. Add a new quotation
 3. Process through the steps (Collection → Verification → Processing → Payment)
-4. Click the "Complete" button in the final step
-5. Verify that the quotation now shows as "Completed" in the status table
-6. Navigate between steps and verify that data is properly loaded/reset
-7. Verify that completed quotations remain marked as complete even after page refresh
+4. Fill in data at each step
+5. Navigate back and forth between steps and verify that data is preserved
+6. Click the "Complete" button in the final step
+7. Verify that the quotation now shows as "Completed" in the status table
+8. Verify that completed quotations remain marked as complete even after page refresh
+9. Verify that all data is properly saved to the server
 
 ## Future Improvements
 

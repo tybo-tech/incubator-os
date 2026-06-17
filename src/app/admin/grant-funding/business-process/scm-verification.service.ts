@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@angular/core';
 import { NodeService } from '../../../../services/node.service';
 import { SupplierService } from './supplier.service';
-import { 
-  GrantScmVerification, 
+import {
+  GrantScmVerification,
   DEFAULT_GRANT_SCM_VERIFICATION,
   ScmQuotation,
   ScmOnlineVerification,
@@ -11,7 +11,7 @@ import {
   ScmSupplierContactDetails
 } from './scm-verification.models';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -29,18 +29,18 @@ export class ScmVerificationService {
         if (nodes.length > 0) {
           // Load existing SCM verification data
           const existingData = nodes[0].data as GrantScmVerification;
-          
+
           // Ensure each quotation has a status field
           const quotationsWithStatus = existingData.quotations.items.map(quotation => ({
             ...quotation,
             status: quotation.status || 'pending'
           }));
-          
+
           return {
             ...DEFAULT_GRANT_SCM_VERIFICATION,
             ...existingData,
-            quotations: { 
-              ...DEFAULT_GRANT_SCM_VERIFICATION.quotations, 
+            quotations: {
+              ...DEFAULT_GRANT_SCM_VERIFICATION.quotations,
               ...existingData.quotations,
               items: quotationsWithStatus
             }
@@ -62,7 +62,7 @@ export class ScmVerificationService {
 
     // Check if we have an existing node
     return this.nodeService.getNodes('grant_scm_verification', companyId).pipe(
-      map((nodes: any[]) => {
+      switchMap((nodes: any[]) => {
         if (nodes.length > 0) {
           // Update existing node
           nodeData.id = nodes[0].id;
@@ -73,8 +73,6 @@ export class ScmVerificationService {
         }
       }),
       catchError(() => this.nodeService.addNode(nodeData))
-    ).pipe(
-      map((response: any) => response)
     );
   }
 
@@ -111,6 +109,13 @@ export class ScmVerificationService {
 
   // Initialize online verification for a quotation
   initializeOnlineVerification(scmData: GrantScmVerification, index: number): GrantScmVerification {
+    // Check if online verification data already exists
+    const existingQuotation = scmData.quotations.items[index];
+    if (existingQuotation && existingQuotation.online_verification) {
+      // Data already exists, no need to initialize
+      return scmData;
+    }
+
     const items = [...scmData.quotations.items];
     items[index] = {
       ...items[index],
@@ -129,7 +134,7 @@ export class ScmVerificationService {
         comments: ''
       }
     };
-    
+
     return {
       ...scmData,
       quotations: {
@@ -141,6 +146,13 @@ export class ScmVerificationService {
 
   // Initialize purchase order processing for a quotation
   initializePurchaseOrderProcessing(scmData: GrantScmVerification, index: number): GrantScmVerification {
+    // Check if purchase order processing data already exists
+    const existingQuotation = scmData.quotations.items[index];
+    if (existingQuotation && existingQuotation.purchase_order_processing) {
+      // Data already exists, no need to initialize
+      return scmData;
+    }
+
     const items = [...scmData.quotations.items];
     items[index] = {
       ...items[index],
@@ -155,7 +167,7 @@ export class ScmVerificationService {
         comments: ''
       }
     };
-    
+
     return {
       ...scmData,
       quotations: {
@@ -167,6 +179,13 @@ export class ScmVerificationService {
 
   // Initialize payment processing for a quotation
   initializePaymentProcessing(scmData: GrantScmVerification, index: number): GrantScmVerification {
+    // Check if payment processing data already exists
+    const existingQuotation = scmData.quotations.items[index];
+    if (existingQuotation && existingQuotation.payment_processing) {
+      // Data already exists, no need to initialize
+      return scmData;
+    }
+
     const items = [...scmData.quotations.items];
     items[index] = {
       ...items[index],
@@ -181,7 +200,7 @@ export class ScmVerificationService {
         comments: ''
       }
     };
-    
+
     return {
       ...scmData,
       quotations: {
@@ -197,7 +216,7 @@ export class ScmVerificationService {
     if (quotation.status === 'completed') {
       return 4;
     }
-    
+
     if (!quotation.online_verification) {
       return 1; // Collection of Quotations
     }
@@ -227,7 +246,7 @@ export class ScmVerificationService {
     if (quotation.status === 'completed') {
       return 'Completed';
     }
-    
+
     const step = this.getQuotationStep(quotation);
     switch (step) {
       case 1: return 'Collected';
@@ -271,7 +290,7 @@ export class ScmVerificationService {
     }
 
     // Add or update each supplier
-    const syncObservables = suppliersToSync.map(supplier => 
+    const syncObservables = suppliersToSync.map(supplier =>
       this.supplierService.addOrUpdateSupplier(companyId, supplier)
     );
 
