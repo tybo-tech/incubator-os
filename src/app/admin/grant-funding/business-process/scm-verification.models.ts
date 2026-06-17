@@ -13,6 +13,8 @@ export interface ScmOnlineVerification {
   contact_details: ScmSupplierContactDetails;
   approved?: boolean;
   comments?: string;
+  verified_by?: string;
+  signature?: string;
 }
 
 export interface ScmPurchaseOrderProcessing {
@@ -24,6 +26,8 @@ export interface ScmPurchaseOrderProcessing {
   tax_clearance_received?: boolean;
   approved?: boolean;
   comments?: string;
+  verified_by?: string;
+  signature?: string;
 }
 
 export interface ScmPaymentProcessing {
@@ -35,6 +39,8 @@ export interface ScmPaymentProcessing {
   proof_of_payment_sent?: boolean;
   delivery_note_received?: boolean;
   comments?: string;
+  verified_by?: string;
+  signature?: string;
 }
 
 export interface ScmQuotation {

@@ -78,10 +78,13 @@ export class ScmVerificationService {
 
   // Add a new quotation
   addQuotation(scmData: GrantScmVerification): GrantScmVerification {
+    // Get today's date for default date fields
+    const today = new Date().toISOString().split('T')[0];
+    
     const newQuotation: ScmQuotation = {
       id: `q_${Date.now()}`,
       supplier_name: '',
-      date_received: '',
+      date_received: today,
       beneficiary_signature: '',
       comments: '',
       status: 'pending'
@@ -131,7 +134,9 @@ export class ScmVerificationService {
           verified: false
         },
         approved: false,
-        comments: ''
+        comments: '',
+        verified_by: '',
+        signature: ''
       }
     };
 
@@ -152,19 +157,24 @@ export class ScmVerificationService {
       // Data already exists, no need to initialize
       return scmData;
     }
+    
+    // Get today's date for default date fields
+    const today = new Date().toISOString().split('T')[0];
 
     const items = [...scmData.quotations.items];
     items[index] = {
       ...items[index],
       purchase_order_processing: {
         purchase_order_generated: false,
-        emailed_to_supplier_date: '',
+        emailed_to_supplier_date: today,
         tax_invoice_received: false,
         bbbee_certificate_received: false,
         bank_confirmation_received: false,
         tax_clearance_received: false,
         approved: false,
-        comments: ''
+        comments: '',
+        verified_by: '',
+        signature: ''
       }
     };
 
@@ -185,6 +195,9 @@ export class ScmVerificationService {
       // Data already exists, no need to initialize
       return scmData;
     }
+    
+    // Get today's date for default date fields
+    const today = new Date().toISOString().split('T')[0];
 
     const items = [...scmData.quotations.items];
     items[index] = {
@@ -193,11 +206,13 @@ export class ScmVerificationService {
         vat_invoice_received: false,
         bank_confirmation_received: false,
         payment_authorisation_signed: false,
-        payment_request_date: '',
+        payment_request_date: today,
         payment_done: false,
         proof_of_payment_sent: false,
         delivery_note_received: false,
-        comments: ''
+        comments: '',
+        verified_by: '',
+        signature: ''
       }
     };
 

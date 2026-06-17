@@ -167,6 +167,26 @@ import { ScmVerificationService } from './scm-verification.service';
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   rows="2"></textarea>
               </div>
+              
+              <!-- Verified By and Signature -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Verified By</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="currentQuotation()!.online_verification!.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Signature</label>
+                  <app-signature-pad-lib
+                    [(ngModel)]="currentQuotation()!.online_verification!.signature"
+                    [width]="250"
+                    [height]="100">
+                  </app-signature-pad-lib>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -252,6 +272,26 @@ import { ScmVerificationService } from './scm-verification.service';
                   placeholder="Enter comments or next steps"
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   rows="2"></textarea>
+              </div>
+              
+              <!-- Verified By and Signature -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Verified By</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="currentQuotation()!.purchase_order_processing!.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Signature</label>
+                  <app-signature-pad-lib
+                    [(ngModel)]="currentQuotation()!.purchase_order_processing!.signature"
+                    [width]="250"
+                    [height]="100">
+                  </app-signature-pad-lib>
+                </div>
               </div>
             </div>
           </div>
@@ -339,6 +379,26 @@ import { ScmVerificationService } from './scm-verification.service';
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                   rows="2"></textarea>
               </div>
+              
+              <!-- Verified By and Signature -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Verified By</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="currentQuotation()!.payment_processing!.verified_by"
+                    placeholder="Enter verifier name"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Signature</label>
+                  <app-signature-pad-lib
+                    [(ngModel)]="currentQuotation()!.payment_processing!.signature"
+                    [width]="250"
+                    [height]="100">
+                  </app-signature-pad-lib>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -409,5 +469,37 @@ export class ScmVerificationModalComponent {
   markAsComplete(): void {
     // Emit the complete event which will be handled in the parent component
     this.onComplete.emit();
+  }
+
+  // Get today's date in YYYY-MM-DD format for date inputs
+  getTodayDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Initialize date fields with today's date if they are empty
+  initializeDates(): void {
+    const quotation = this.currentQuotation();
+    if (!quotation) return;
+
+    const today = this.getTodayDate();
+
+    // Initialize date received for step 1 if empty
+    if (!quotation.date_received) {
+      quotation.date_received = today;
+    }
+
+    // Initialize emailed to supplier date for step 3 if empty
+    if (quotation.purchase_order_processing && !quotation.purchase_order_processing.emailed_to_supplier_date) {
+      quotation.purchase_order_processing.emailed_to_supplier_date = today;
+    }
+
+    // Initialize payment request date for step 4 if empty
+    if (quotation.payment_processing && !quotation.payment_processing.payment_request_date) {
+      quotation.payment_processing.payment_request_date = today;
+    }
   }
 }
