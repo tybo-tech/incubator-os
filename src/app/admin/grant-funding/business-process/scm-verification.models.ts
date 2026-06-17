@@ -8,7 +8,6 @@ export interface ScmSupplierContactDetails {
 export interface ScmOnlineVerification {
   cipc_registration?: string;
   cipc_verified?: boolean;
-  cipc_confirmation_number?: string;
   vat_number?: string;
   vat_verified?: boolean;
   contact_details: ScmSupplierContactDetails;

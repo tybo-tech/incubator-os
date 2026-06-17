@@ -12,6 +12,7 @@ import {
   GrantScmVerification,
   ScmQuotation,
 } from '../business-process/scm-verification.models';
+import { Supplier } from '../business-process/supplier.models';
 import { Constants } from '../../../../services';
 import { DocumentGeneratorService } from '../../../../services/pdf/document-generator.service';
 
@@ -804,5 +805,64 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
   private _dateStamp(): string {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  /**
+   * Export Suppliers to PDF
+   */
+  exportSuppliers(
+    suppliers: Supplier[],
+    companyInfo: CompanyInfo,
+    options: ExportOptions = {},
+  ): void {
+    const html = this._buildSuppliersHtml(suppliers, companyInfo);
+    const filename =
+      options.filename || `Suppliers_${this._dateStamp()}.pdf`;
+    const paperSize = options.paperSize || 'A4';
+    const orientation = options.orientation || 'portrait';
+
+    this.pdfService.downloadPdf(html, filename, paperSize, orientation);
+  }
+
+  private _buildSuppliersHtml(
+    suppliers: Supplier[],
+    companyInfo: CompanyInfo,
+  ): string {
+    const supplierRows = this._renderRows(
+      suppliers,
+      (supplier, i) => `
+        <tr>
+          <td class="cell text-8 h-8 p-4 center" style="width:10mm;">${i + 1}</td>
+          <td class="cell text-8 h-8 p-4" style="width:40mm;">${this._esc(supplier.name || '')}</td>
+          <td class="cell text-8 h-8 p-4" style="width:25mm;">${this._esc(supplier.cipc_registration || '')}</td>
+          <td class="cell text-8 h-8 p-4" style="width:25mm;">${this._esc(supplier.vat_number || '')}</td>
+          <td class="cell text-8 h-8 p-4" style="width:40mm;">Phone: ${this._esc(supplier.contact_details?.phone || '')}, Email: ${this._esc(supplier.contact_details?.email || '')}</td>
+          <td class="cell text-8 h-8 p-4 center" style="width:15mm;">${this._getCheckboxImage(supplier.cipc_verified ? 'YES' : 'NO', 'YES')}</td>
+          <td class="cell text-8 h-8 p-4 center" style="width:15mm;">${this._getCheckboxImage(supplier.vat_verified ? 'YES' : 'NO', 'YES')}</td>
+          <td class="cell text-8 h-8 p-4 center" style="width:15mm;">${this._getCheckboxImage(supplier.approved ? 'YES' : 'NO', 'YES')}</td>
+        </tr>`,
+    );
+
+    return this._buildDocument(
+      `
+      ${this._generateHeader(companyInfo, 'Suppliers List')}
+
+      <table class="mb-5">
+        ${this._tableHeader([
+          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
+          { label: 'Supplier Name', width: '40mm', classes: 'text-8 p-3' },
+          { label: 'CIPC Registration', width: '25mm', classes: 'text-8 p-3' },
+          { label: 'VAT Number', width: '25mm', classes: 'text-8 p-3' },
+          { label: 'Contact Details', width: '40mm', classes: 'text-8 p-3' },
+          { label: 'CIPC Verified', width: '15mm', classes: 'text-8 p-3 center' },
+          { label: 'VAT Verified', width: '15mm', classes: 'text-8 p-3 center' },
+          { label: 'Approved', width: '15mm', classes: 'text-8 p-3 center' },
+        ])}
+        <tbody>
+          ${supplierRows}
+        </tbody>
+      </table>`,
+      { pageMargin: '15mm', fontSize: '9px', lineHeight: '1.3' },
+    );
   }
 }
