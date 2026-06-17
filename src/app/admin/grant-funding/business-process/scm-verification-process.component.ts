@@ -125,7 +125,8 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
       (onClose)="closeQuotationModal()"
       (onSaveAndClose)="saveAndCloseQuotation()"
       (onNext)="processNextStep()"
-      (onPrevious)="stateService.previousStep()">
+      (onPrevious)="processPreviousStep()"
+      (onComplete)="markQuotationAsComplete()">
     </app-scm-verification-modal>
   `
 })

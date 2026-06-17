@@ -5,6 +5,8 @@
 1. **Concessions never marked as complete**: Added functionality to properly mark quotations as "completed" when the user clicks the Complete button.
 2. **Data not properly loaded when moving between steps**: Enhanced data handling to ensure information is properly loaded and reset when navigating between steps.
 3. **Status not reflected in UI**: Updated the status table to display the actual completion status of quotations.
+4. **Complete button not working properly**: Fixed the Complete button to properly emit the onComplete event.
+5. **Status not persisted after page refresh**: Ensured that quotation status is properly saved and loaded.
 
 ## Changes Made
 
@@ -13,8 +15,9 @@
 - Added default status 'pending' to new quotations
 
 ### 2. Modal Component Updates (`scm-verification-modal.component.ts`)
-- Added "Complete" button that calls a new `markAsComplete()` method
+- Fixed the Complete button to call `markAsComplete()` method instead of `onSaveAndClose.emit()`
 - Added `onComplete` output event to emit when the complete button is clicked
+- Implemented `markAsComplete()` method to emit the onComplete event
 
 ### 3. Main Component Updates (`scm-verification-process.component.ts`)
 - Added `(onComplete)="markQuotationAsComplete()"` to the modal component in the template
@@ -25,7 +28,12 @@
 - Implemented `processPreviousStep()` to reload data when moving to a previous step
 - Added proper handling for the Complete button in the modal
 
-### 4. Status Table Updates (`scm-verification-status-table.component.ts`)
+### 4. Service Updates (`scm-verification.service.ts`)
+- Updated `loadScmVerification()` method to ensure all quotations have a status field
+- Updated `getQuotationStep()` method to respect the quotation status field
+- Updated `getStepStatus()` method to properly return 'Completed' for completed quotations
+
+### 5. Status Table Updates (`scm-verification-status-table.component.ts`)
 - Updated the status display to show "Completed" when a quotation's status is 'completed'
 - Maintained existing step-based status colors for quotations that are not yet completed
 

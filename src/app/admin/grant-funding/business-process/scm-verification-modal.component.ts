@@ -371,7 +371,7 @@ import { ScmVerificationService } from './scm-verification.service';
               </button>
               <button
                 *ngIf="currentStep() === 4"
-                (click)="onSaveAndClose.emit()"
+                (click)="markAsComplete()"
                 class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">
                 Complete
               </button>

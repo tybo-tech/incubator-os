@@ -29,10 +29,21 @@ export class ScmVerificationService {
         if (nodes.length > 0) {
           // Load existing SCM verification data
           const existingData = nodes[0].data as GrantScmVerification;
+          
+          // Ensure each quotation has a status field
+          const quotationsWithStatus = existingData.quotations.items.map(quotation => ({
+            ...quotation,
+            status: quotation.status || 'pending'
+          }));
+          
           return {
             ...DEFAULT_GRANT_SCM_VERIFICATION,
             ...existingData,
-            quotations: { ...DEFAULT_GRANT_SCM_VERIFICATION.quotations, ...existingData.quotations }
+            quotations: { 
+              ...DEFAULT_GRANT_SCM_VERIFICATION.quotations, 
+              ...existingData.quotations,
+              items: quotationsWithStatus
+            }
           };
         }
         return { ...DEFAULT_GRANT_SCM_VERIFICATION };
@@ -182,6 +193,11 @@ export class ScmVerificationService {
 
   // Determine the current workflow step for a quotation
   getQuotationStep(quotation: ScmQuotation): number {
+    // If the quotation is marked as completed, return step 4
+    if (quotation.status === 'completed') {
+      return 4;
+    }
+    
     if (!quotation.online_verification) {
       return 1; // Collection of Quotations
     }
@@ -206,7 +222,13 @@ export class ScmVerificationService {
   }
 
   // Get step status for display
-  getStepStatus(step: number): string {
+  getStepStatus(quotation: ScmQuotation): string {
+    // If the quotation is marked as completed, return 'Completed'
+    if (quotation.status === 'completed') {
+      return 'Completed';
+    }
+    
+    const step = this.getQuotationStep(quotation);
     switch (step) {
       case 1: return 'Collected';
       case 2: return 'In Progress';
