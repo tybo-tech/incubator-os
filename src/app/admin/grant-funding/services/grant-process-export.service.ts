@@ -11,9 +11,6 @@ import {
 import {
   GrantScmVerification,
   ScmQuotation,
-  ScmSupplierVerification,
-  ScmPurchaseOrder,
-  ScmPayment,
 } from '../business-process/scm-verification.models';
 import { Constants } from '../../../../services';
 import { DocumentGeneratorService } from '../../../../services/pdf/document-generator.service';
@@ -344,7 +341,7 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
     companyInfo: CompanyInfo,
   ): string {
     const quotationRows = this._renderRows(
-      data.step_1.items,
+      data.quotations.items,
       (item, i) => `
         <tr>
           <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
@@ -355,11 +352,13 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
         </tr>`,
     );
 
+    // Generate supplier verification rows from quotations
     const supplierRows = this._renderRows(
-      data.step_2.items,
+      data.quotations.items.filter(item => item.online_verification),
       (item, i) => {
+        const onlineVerification = item.online_verification!;
         const approvedBox = this._getCheckboxImage(
-          item.approved ? 'YES' : 'NO',
+          onlineVerification.approved ? 'YES' : 'NO',
           'YES',
         );
 
@@ -367,41 +366,43 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
           <tr>
             <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
             <td class="cell text-7 h-7 p-4" style="width:45mm;">${this._esc(item.supplier_name || '')}</td>
-            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(item.cipc_registration || '')}</td>
-            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.vat_number || '')}</td>
-            <td class="cell text-7 h-7 p-4" style="width:40mm;">${this._esc(item.verification_details || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(onlineVerification.cipc_registration || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(onlineVerification.vat_number || '')}</td>
+            <td class="cell text-7 h-7 p-4" style="width:40mm;">Phone: ${this._esc(onlineVerification.contact_details?.phone || '')}, Email: ${this._esc(onlineVerification.contact_details?.email || '')}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${approvedBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:20mm;"></td>
-            <td class="cell text-7 h-7 p-4" style="width:60mm;"></td>
+            <td class="cell text-7 h-7 p-4" style="width:60mm;">${this._esc(onlineVerification.comments || '')}</td>
           </tr>`;
       },
     );
 
+    // Generate purchase order rows from quotations
     const purchaseOrderRows = this._renderRows(
-      data.step_3.items,
+      data.quotations.items.filter(item => item.purchase_order_processing),
       (item, i) => {
+        const poProcessing = item.purchase_order_processing!;
         const poGeneratedBox = this._getCheckboxImage(
-          item.purchase_order_generated ? 'YES' : 'NO',
+          poProcessing.purchase_order_generated ? 'YES' : 'NO',
           'YES',
         );
         const taxInvoiceBox = this._getCheckboxImage(
-          item.tax_invoice_received ? 'YES' : 'NO',
+          poProcessing.tax_invoice_received ? 'YES' : 'NO',
           'YES',
         );
         const bbbeeBox = this._getCheckboxImage(
-          item.bbbee_certificate_received ? 'YES' : 'NO',
+          poProcessing.bbbee_certificate_received ? 'YES' : 'NO',
           'YES',
         );
         const bankConfirmationBox = this._getCheckboxImage(
-          item.bank_confirmation_received ? 'YES' : 'NO',
+          poProcessing.bank_confirmation_received ? 'YES' : 'NO',
           'YES',
         );
         const taxClearanceBox = this._getCheckboxImage(
-          item.tax_clearance_received ? 'YES' : 'NO',
+          poProcessing.tax_clearance_received ? 'YES' : 'NO',
           'YES',
         );
         const approvedBox = this._getCheckboxImage(
-          item.approved ? 'YES' : 'NO',
+          poProcessing.approved ? 'YES' : 'NO',
           'YES',
         );
 
@@ -410,55 +411,57 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
             <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
             <td class="cell text-7 h-7 p-4" style="width:40mm;">${this._esc(item.supplier_name || '')}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${poGeneratedBox}</td>
-            <td class="cell text-7 h-7 p-4" style="width:22mm;"></td>
+            <td class="cell text-7 h-7 p-4" style="width:22mm;">${this._esc(poProcessing.emailed_to_supplier_date || '')}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${taxInvoiceBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${bbbeeBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:25mm;">${bankConfirmationBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:25mm;">${taxClearanceBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${approvedBox}</td>
-            <td class="cell text-7 h-7 p-4" style="width:44mm;"></td>
+            <td class="cell text-7 h-7 p-4" style="width:44mm;">${this._esc(poProcessing.comments || '')}</td>
           </tr>`;
       },
     );
 
+    // Generate payment rows from quotations
     const paymentRows = this._renderRows(
-      data.step_4.items,
+      data.quotations.items.filter(item => item.payment_processing),
       (item, i) => {
+        const paymentProcessing = item.payment_processing!;
         const vatInvoiceBox = this._getCheckboxImage(
-          item.vat_invoice_received ? 'YES' : 'NO',
+          paymentProcessing.vat_invoice_received ? 'YES' : 'NO',
           'YES',
         );
         const bankConfirmationBox = this._getCheckboxImage(
-          item.bank_confirmation_received ? 'YES' : 'NO',
+          paymentProcessing.bank_confirmation_received ? 'YES' : 'NO',
           'YES',
         );
         const paymentAuthBox = this._getCheckboxImage(
-          item.payment_authorisation_signed ? 'YES' : 'NO',
+          paymentProcessing.payment_authorisation_signed ? 'YES' : 'NO',
           'YES',
         );
         const paymentDoneBox = this._getCheckboxImage(
-          item.payment_done ? 'YES' : 'NO',
+          paymentProcessing.payment_done ? 'YES' : 'NO',
           'YES',
         );
         const proofOfPaymentBox = this._getCheckboxImage(
-          item.proof_of_payment_sent ? 'YES' : 'NO',
+          paymentProcessing.proof_of_payment_sent ? 'YES' : 'NO',
           'YES',
         );
         const deliveryNoteBox = this._getCheckboxImage(
-          item.delivery_note_received ? 'YES' : 'NO',
+          paymentProcessing.delivery_note_received ? 'YES' : 'NO',
           'YES',
         );
 
         return `
           <tr>
             <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
-            <td class="cell text-7 h-7 p-4" style="width:35mm;">${this._esc(item.company_name || companyInfo.companyName)}</td>
-            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.director || companyInfo.directorName)}</td>
-            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(item.contact_number || companyInfo.contactNumber)}</td>
+            <td class="cell text-7 h-7 p-4" style="width:35mm;">${this._esc(item.supplier_name || companyInfo.companyName)}</td>
+            <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(companyInfo.directorName)}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(companyInfo.contactNumber)}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:20mm;">${vatInvoiceBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:22mm;">${bankConfirmationBox}</td>
-            <td class="cell text-7 h-7 p-4" style="width:28mm;">${paymentAuthBox}</td>
-            <td class="cell text-7 h-7 p-4" style="width:20mm;"></td>
+            <td class="cell text-7 h-7 p-4 center" style="width:28mm;">${paymentAuthBox}</td>
+            <td class="cell text-7 h-7 p-4" style="width:20mm;">${this._esc(paymentProcessing.payment_request_date || '')}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:18mm;">${paymentDoneBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:30mm;">${proofOfPaymentBox}</td>
             <td class="cell text-7 h-7 p-4 center" style="width:35mm;">${deliveryNoteBox}</td>
@@ -509,8 +512,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       </table>
 
       ${this._signatureSection([
-        { header: 'Verified By', value: data.step_1.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: this._renderSignatureImage(data.step_1.signature), width: '120mm' },
+        { header: 'Verified By', value: data.quotations.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.quotations.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 2 -->
@@ -533,8 +536,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       </table>
 
       ${this._signatureSection([
-        { header: 'Verified By', value: data.step_2.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: this._renderSignatureImage(data.step_2.signature), width: '120mm' },
+        { header: 'Verified By', value: data.quotations.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.quotations.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 3 -->
@@ -559,8 +562,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       </table>
 
       ${this._signatureSection([
-        { header: 'Verified By', value: data.step_3.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: this._renderSignatureImage(data.step_3.signature), width: '120mm' },
+        { header: 'Verified By', value: data.quotations.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.quotations.signature), width: '120mm' },
       ])}
 
       <!-- SECTION 4 -->
@@ -574,11 +577,11 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
           { label: 'Contact No', width: '20mm', classes: 'text-8 p-3' },
           { label: 'VAT Invoice Received', width: '20mm', classes: 'text-8 p-3 center' },
           { label: 'Bank Confirmation Letter', width: '22mm', classes: 'text-8 p-3 center' },
-          { label: 'Payment Authorization Form Signed', width: '28mm', classes: 'text-8 p-3' },
+          { label: 'Payment Authorization Form Signed', width: '28mm', classes: 'text-8 p-3 center' },
           { label: 'Payment Request Date', width: '20mm', classes: 'text-8 p-3' },
           { label: 'Payment Done', width: '18mm', classes: 'text-8 p-3 center' },
-          { label: 'Proof of Payment Sent to Supplier', width: '30mm', classes: 'text-8 p-3' },
-          { label: 'Delivery Note and Photos Received', width: '35mm', classes: 'text-8 p-3' },
+          { label: 'Proof of Payment Sent to Supplier', width: '30mm', classes: 'text-8 p-3 center' },
+          { label: 'Delivery Note and Photos Received', width: '35mm', classes: 'text-8 p-3 center' },
         ])}
         <tbody>
           ${paymentRows}
@@ -586,8 +589,8 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       </table>
 
       ${this._signatureSection([
-        { header: 'Verified By', value: data.step_4.verified_by || '', width: '120mm' },
-        { header: 'Signature', value: this._renderSignatureImage(data.step_4.signature), width: '120mm' },
+        { header: 'Verified By', value: data.quotations.verified_by || '', width: '120mm' },
+        { header: 'Signature', value: this._renderSignatureImage(data.quotations.signature), width: '120mm' },
       ], '')}`,
       { pageMargin: '8mm', fontSize: '8px', lineHeight: '1.2' },
     );

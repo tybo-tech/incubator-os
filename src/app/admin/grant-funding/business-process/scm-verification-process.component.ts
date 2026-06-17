@@ -6,12 +6,13 @@ import { SignaturePadLibComponent } from '../../../shared/components/signature-p
 import { UploadService } from '../../../../services/UploadService';
 import { 
   ScmQuotation,
-  ScmSupplierVerification,
-  ScmPurchaseOrder,
-  ScmPayment,
   ScmVerificationStep,
   GrantScmVerification,
-  DEFAULT_GRANT_SCM_VERIFICATION
+  DEFAULT_GRANT_SCM_VERIFICATION,
+  ScmOnlineVerification,
+  ScmSupplierContactDetails,
+  ScmPurchaseOrderProcessing,
+  ScmPaymentProcessing
 } from './scm-verification.models';
 import { GrantProcessExportService, CompanyInfo } from '../services/grant-process-export.service';
 import { IGrantApplicationData } from '../interfaces/grant-application.interfaces';
@@ -45,9 +46,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
 
       <!-- Content -->
       <div *ngIf="!isLoading()" class="p-6">
-
-
-        <!-- Step 1 - Collection of Quotations -->
+        <!-- Collection of Quotations -->
         <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
           <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
             <div class="flex items-center">
@@ -68,7 +67,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
           </div>
 
           <!-- Validation Message -->
-          <div *ngIf="scmVerification().step_1.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div *ngIf="scmVerification().quotations.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
             <div class="flex">
               <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
               <div>
@@ -78,6 +77,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
             </div>
           </div>
 
+          <!-- Quotations Table -->
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -90,7 +90,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of scmVerification().step_1.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
+                <tr *ngFor="let item of scmVerification().quotations.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
                   <td class="px-4 py-3">
                     <input
                       type="text"
@@ -127,7 +127,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
                     </button>
                   </td>
                 </tr>
-                <tr *ngIf="scmVerification().step_1.items.length === 0">
+                <tr *ngIf="scmVerification().quotations.items.length === 0">
                   <td colspan="5" class="px-4 py-8 text-center text-gray-400">
                     <i class="fas fa-file-alt text-2xl mb-2 block"></i>
                     <p>No quotations added yet. Click "Add Quotation" to get started.</p>
@@ -138,7 +138,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
           </div>
 
           <!-- Verification Footer - Only show if there are items -->
-          <div *ngIf="scmVerification().step_1.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
+          <div *ngIf="scmVerification().quotations.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
             <h4 class="font-medium text-gray-900 mb-4 flex items-center">
               <i class="fas fa-check-circle text-green-500 mr-2"></i>
               Verification Details
@@ -152,7 +152,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
                   </div>
                   <input
                     type="text"
-                    [(ngModel)]="scmVerification().step_1.verified_by"
+                    [(ngModel)]="scmVerification().quotations.verified_by"
                     placeholder="Enter verifier name"
                     class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
@@ -160,7 +160,7 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
                 <app-signature-pad-lib
-                  [(ngModel)]="scmVerification().step_1.signature"
+                  [(ngModel)]="scmVerification().quotations.signature"
                   [width]="200"
                   [height]="100">
                 </app-signature-pad-lib>
@@ -169,473 +169,345 @@ import { IGrantApplicationData } from '../interfaces/grant-application.interface
           </div>
         </div>
 
-        <!-- Step 2 - Supplier Verification -->
-        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
-          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-            <div class="flex items-center">
-              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
-                <span class="font-semibold">2</span>
-              </div>
-              <div>
-                <h3 class="font-semibold text-lg">Online Supplier Verification</h3>
-                <p class="text-sm text-gray-500">Verify supplier legitimacy and credentials.</p>
-              </div>
+        <!-- Online Supplier Verification for each quotation -->
+        <div *ngFor="let quotation of scmVerification().quotations.items; let qIndex = index" class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+              <span class="font-semibold">2</span>
             </div>
+            <div>
+              <h3 class="font-semibold text-lg">Online Supplier Verification - {{ quotation.supplier_name }}</h3>
+              <p class="text-sm text-gray-500">Verify supplier legitimacy and credentials.</p>
+            </div>
+          </div>
+
+          <!-- Initialize online verification if not exists -->
+          <div *ngIf="!quotation.online_verification" class="mb-4">
             <button
-              (click)="addSupplierVerification()"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-              <i class="fas fa-plus mr-2"></i>
-              Add Supplier
+              (click)="initializeOnlineVerification(qIndex)"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+              Initialize Verification
             </button>
           </div>
 
-          <!-- Validation Message -->
-          <div *ngIf="scmVerification().step_2.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div class="flex">
-              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+          <!-- Online Verification Form -->
+          <div *ngIf="quotation.online_verification">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <div>
-                <h4 class="font-medium text-yellow-800">No suppliers added</h4>
-                <p class="text-sm text-yellow-700 mt-1">Add at least one supplier to proceed with verification.</p>
+                <label class="block text-sm font-medium text-gray-700 mb-2">CIPC Registration</label>
+                <input
+                  type="text"
+                  [(ngModel)]="quotation.online_verification.cipc_registration"
+                  placeholder="Enter CIPC registration"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Supplier Name</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">CIPC Registration</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">VAT Number</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Verification Details</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Approved</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Comments</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of scmVerification().step_2.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.supplier_name"
-                      placeholder="Enter supplier name"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.cipc_registration"
-                      placeholder="Enter CIPC reg."
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.vat_number"
-                      placeholder="Enter VAT number"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.verification_details"
-                      placeholder="Verification details"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.approved"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                      <label class="ml-2 text-sm text-gray-700">Approved</label>
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.comments"
-                      placeholder="Add comments"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <button
-                      (click)="removeSupplierVerification(i)"
-                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
-                      <i class="fas fa-trash mr-1"></i>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-                <tr *ngIf="scmVerification().step_2.items.length === 0">
-                  <td colspan="7" class="px-4 py-8 text-center text-gray-400">
-                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
-                    <p>No suppliers added yet. Click "Add Supplier" to get started.</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Verification Footer - Only show if there are items -->
-          <div *ngIf="scmVerification().step_2.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
-            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-2"></i>
-              Verification Details
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-user text-gray-400"></i>
-                  </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">CIPC Verified</label>
+                <div class="flex items-center">
                   <input
-                    type="text"
-                    [(ngModel)]="scmVerification().step_2.verified_by"
-                    placeholder="Enter verifier name"
-                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    type="checkbox"
+                    [(ngModel)]="quotation.online_verification.cipc_verified"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Verified</label>
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
-                <app-signature-pad-lib
-                  [(ngModel)]="scmVerification().step_2.signature"
-                  [width]="200"
-                  [height]="100">
-                </app-signature-pad-lib>
+                <label class="block text-sm font-medium text-gray-700 mb-2">CIPC Confirmation Number</label>
+                <input
+                  type="text"
+                  [(ngModel)]="quotation.online_verification.cipc_confirmation_number"
+                  placeholder="Enter confirmation number"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">VAT Number</label>
+                <input
+                  type="text"
+                  [(ngModel)]="quotation.online_verification.vat_number"
+                  placeholder="Enter VAT number"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">VAT Verified</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.online_verification.vat_verified"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Verified</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Approved</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.online_verification.approved"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Approved</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Details -->
+            <div class="border rounded-lg p-4 mb-5">
+              <h4 class="font-medium text-gray-900 mb-3">Contact Details</h4>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="quotation.online_verification.contact_details.phone"
+                    placeholder="Enter phone number"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    [(ngModel)]="quotation.online_verification.contact_details.email"
+                    placeholder="Enter email address"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="quotation.online_verification.contact_details.address"
+                    placeholder="Enter address"
+                    class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+              </div>
+              <div class="mt-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Details Verified</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.online_verification.contact_details.verified"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Verified</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Comments/Next Steps</label>
+              <textarea
+                [(ngModel)]="quotation.online_verification.comments"
+                placeholder="Enter comments or next steps"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="3"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Step 3 - Processing Verified Quotations -->
-        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
-          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-            <div class="flex items-center">
-              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
-                <span class="font-semibold">3</span>
-              </div>
-              <div>
-                <h3 class="font-semibold text-lg">Processing Verified Quotations</h3>
-                <p class="text-sm text-gray-500">Generate purchase orders and verify documentation.</p>
-              </div>
+        <!-- Processing Verified Quotations (Generate PO) for each quotation -->
+        <div *ngFor="let quotation of scmVerification().quotations.items; let qIndex = index" class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+              <span class="font-semibold">3</span>
             </div>
+            <div>
+              <h3 class="font-semibold text-lg">Processing Verified Quotations - {{ quotation.supplier_name }}</h3>
+              <p class="text-sm text-gray-500">Generate purchase orders and verify documentation.</p>
+            </div>
+          </div>
+
+          <!-- Initialize purchase order processing if not exists -->
+          <div *ngIf="!quotation.purchase_order_processing" class="mb-4">
             <button
-              (click)="addPurchaseOrder()"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-              <i class="fas fa-plus mr-2"></i>
-              Add Purchase Order
+              (click)="initializePurchaseOrderProcessing(qIndex)"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+              Initialize Processing
             </button>
           </div>
 
-          <!-- Validation Message -->
-          <div *ngIf="scmVerification().step_3.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div class="flex">
-              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+          <!-- Purchase Order Processing Form -->
+          <div *ngIf="quotation.purchase_order_processing">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <div>
-                <h4 class="font-medium text-yellow-800">No purchase orders added</h4>
-                <p class="text-sm text-yellow-700 mt-1">Add at least one purchase order to proceed with verification.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Supplier</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">PO Generated</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Tax Invoice</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">BBBEE</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Bank Confirmation</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Tax Clearance</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Approved</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Comments</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of scmVerification().step_3.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.supplier_name"
-                      placeholder="Enter supplier name"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.purchase_order_generated"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.tax_invoice_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.bbbee_certificate_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.bank_confirmation_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.tax_clearance_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.approved"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.comments"
-                      placeholder="Add comments"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <button
-                      (click)="removePurchaseOrder(i)"
-                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
-                      <i class="fas fa-trash mr-1"></i>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-                <tr *ngIf="scmVerification().step_3.items.length === 0">
-                  <td colspan="9" class="px-4 py-8 text-center text-gray-400">
-                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
-                    <p>No purchase orders added yet. Click "Add Purchase Order" to get started.</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Verification Footer - Only show if there are items -->
-          <div *ngIf="scmVerification().step_3.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
-            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-2"></i>
-              Verification Details
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-user text-gray-400"></i>
-                  </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Order Generated</label>
+                <div class="flex items-center">
                   <input
-                    type="text"
-                    [(ngModel)]="scmVerification().step_3.verified_by"
-                    placeholder="Enter verifier name"
-                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.purchase_order_generated"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Generated</label>
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
-                <app-signature-pad-lib
-                  [(ngModel)]="scmVerification().step_3.signature"
-                  [width]="200"
-                  [height]="100">
-                </app-signature-pad-lib>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Emailed to Supplier Date</label>
+                <input
+                  type="date"
+                  [(ngModel)]="quotation.purchase_order_processing.emailed_to_supplier_date"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tax Invoice Received</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.tax_invoice_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">BBBEE Certificate Received</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.bbbee_certificate_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bank Confirmation Received</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.bank_confirmation_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tax Clearance Certificate</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.tax_clearance_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Approved</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.purchase_order_processing.approved"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Approved</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Comments/Next Steps</label>
+              <textarea
+                [(ngModel)]="quotation.purchase_order_processing.comments"
+                placeholder="Enter comments or next steps"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="3"></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Step 4 - Payment Processing -->
-        <div class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
-          <div class="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-            <div class="flex items-center">
-              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
-                <span class="font-semibold">4</span>
-              </div>
-              <div>
-                <h3 class="font-semibold text-lg">Payment Processing</h3>
-                <p class="text-sm text-gray-500">Process payments and track delivery.</p>
-              </div>
+        <!-- Payment Processing for each quotation -->
+        <div *ngFor="let quotation of scmVerification().quotations.items; let qIndex = index" class="border rounded-xl p-5 mb-7 bg-white shadow-sm">
+          <div class="flex items-center mb-5 pb-3 border-b border-gray-100">
+            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3">
+              <span class="font-semibold">4</span>
             </div>
+            <div>
+              <h3 class="font-semibold text-lg">Payment Processing - {{ quotation.supplier_name }}</h3>
+              <p class="text-sm text-gray-500">Process payments and track delivery.</p>
+            </div>
+          </div>
+
+          <!-- Initialize payment processing if not exists -->
+          <div *ngIf="!quotation.payment_processing" class="mb-4">
             <button
-              (click)="addPayment()"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-              <i class="fas fa-plus mr-2"></i>
-              Add Payment
+              (click)="initializePaymentProcessing(qIndex)"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+              Initialize Payment Processing
             </button>
           </div>
 
-          <!-- Validation Message -->
-          <div *ngIf="scmVerification().step_4.items.length === 0" class="mb-5 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-            <div class="flex">
-              <i class="fas fa-exclamation-circle text-yellow-500 text-lg mt-0.5 mr-3"></i>
+          <!-- Payment Processing Form -->
+          <div *ngIf="quotation.payment_processing">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
               <div>
-                <h4 class="font-medium text-yellow-800">No payments added</h4>
-                <p class="text-sm text-yellow-700 mt-1">Add at least one payment to proceed with verification.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Company</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Director</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Contact Number</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">VAT Invoice</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Bank Confirmation</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Authorisation Signed</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Payment Done</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Proof Of Payment</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Delivery Note</th>
-                  <th class="text-left px-4 py-3 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of scmVerification().step_4.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.company_name"
-                      placeholder="Enter company name"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.director"
-                      placeholder="Enter director name"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      type="text"
-                      [(ngModel)]="item.contact_number"
-                      placeholder="Enter contact number"
-                      class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.vat_invoice_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.bank_confirmation_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.payment_authorisation_signed"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.payment_done"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.proof_of_payment_sent"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex items-center">
-                      <input
-                        type="checkbox"
-                        [(ngModel)]="item.delivery_note_received"
-                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    </div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <button
-                      (click)="removePayment(i)"
-                      class="text-red-500 hover:text-red-700 text-sm flex items-center">
-                      <i class="fas fa-trash mr-1"></i>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-                <tr *ngIf="scmVerification().step_4.items.length === 0">
-                  <td colspan="10" class="px-4 py-8 text-center text-gray-400">
-                    <i class="fas fa-file-alt text-2xl mb-2 block"></i>
-                    <p>No payments added yet. Click "Add Payment" to get started.</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Verification Footer - Only show if there are items -->
-          <div *ngIf="scmVerification().step_4.items.length > 0" class="mt-6 pt-6 border-t border-gray-200">
-            <h4 class="font-medium text-gray-900 mb-4 flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-2"></i>
-              Verification Details
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Verified By</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-user text-gray-400"></i>
-                  </div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">VAT Invoice Received</label>
+                <div class="flex items-center">
                   <input
-                    type="text"
-                    [(ngModel)]="scmVerification().step_4.verified_by"
-                    placeholder="Enter verifier name"
-                    class="w-full text-sm border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.vat_invoice_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Signature</label>
-                <app-signature-pad-lib
-                  [(ngModel)]="scmVerification().step_4.signature"
-                  [width]="200"
-                  [height]="100">
-                </app-signature-pad-lib>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bank Confirmation Received</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.bank_confirmation_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Authorization Signed</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.payment_authorisation_signed"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Signed</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Request Date</label>
+                <input
+                  type="date"
+                  [(ngModel)]="quotation.payment_processing.payment_request_date"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Done</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.payment_done"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Completed</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Proof of Payment Sent</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.proof_of_payment_sent"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Sent</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Note Received</label>
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="quotation.payment_processing.delivery_note_received"
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                  <label class="ml-2 text-sm text-gray-700">Received</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Comments/Next Steps</label>
+              <textarea
+                [(ngModel)]="quotation.payment_processing.comments"
+                placeholder="Enter comments or next steps"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="3"></textarea>
             </div>
           </div>
         </div>
@@ -711,10 +583,7 @@ export class ScmVerificationProcessComponent implements OnInit {
           this.scmVerification.set({
             ...DEFAULT_GRANT_SCM_VERIFICATION,
             ...existingData,
-            step_1: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_1, ...existingData.step_1 },
-            step_2: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_2, ...existingData.step_2 },
-            step_3: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_3, ...existingData.step_3 },
-            step_4: { ...DEFAULT_GRANT_SCM_VERIFICATION.step_4, ...existingData.step_4 }
+            quotations: { ...DEFAULT_GRANT_SCM_VERIFICATION.quotations, ...existingData.quotations }
           });
           this.scmVerificationNode.set(nodes[0]);
         }
@@ -764,7 +633,7 @@ export class ScmVerificationProcessComponent implements OnInit {
     });
   }
 
-  // Step 1 - Quotations
+  // Add Quotation
   addQuotation(): void {
     const newQuotation: ScmQuotation = {
       id: `q_${Date.now()}`,
@@ -776,9 +645,9 @@ export class ScmVerificationProcessComponent implements OnInit {
 
     this.scmVerification.update(data => ({
       ...data,
-      step_1: {
-        ...data.step_1,
-        items: [...data.step_1.items, newQuotation]
+      quotations: {
+        ...data.quotations,
+        items: [...data.quotations.items, newQuotation]
       }
     }));
   }
@@ -786,111 +655,97 @@ export class ScmVerificationProcessComponent implements OnInit {
   removeQuotation(index: number): void {
     this.scmVerification.update(data => ({
       ...data,
-      step_1: {
-        ...data.step_1,
-        items: data.step_1.items.filter((_, i) => i !== index)
+      quotations: {
+        ...data.quotations,
+        items: data.quotations.items.filter((_, i) => i !== index)
       }
     }));
   }
 
-  // Step 2 - Supplier Verification
-  addSupplierVerification(): void {
-    const newVerification: ScmSupplierVerification = {
-      id: `sv_${Date.now()}`,
-      supplier_name: '',
-      cipc_registration: '',
-      vat_number: '',
-      verification_details: '',
-      approved: false,
-      comments: ''
-    };
-
-    this.scmVerification.update(data => ({
-      ...data,
-      step_2: {
-        ...data.step_2,
-        items: [...data.step_2.items, newVerification]
-      }
-    }));
+  // Initialize online verification for a quotation
+  initializeOnlineVerification(index: number): void {
+    this.scmVerification.update(data => {
+      const items = [...data.quotations.items];
+      items[index] = {
+        ...items[index],
+        online_verification: {
+          cipc_registration: '',
+          cipc_verified: false,
+          cipc_confirmation_number: '',
+          vat_number: '',
+          vat_verified: false,
+          contact_details: {
+            phone: '',
+            email: '',
+            address: '',
+            verified: false
+          },
+          approved: false,
+          comments: ''
+        }
+      };
+      return {
+        ...data,
+        quotations: {
+          ...data.quotations,
+          items
+        }
+      };
+    });
   }
 
-  removeSupplierVerification(index: number): void {
-    this.scmVerification.update(data => ({
-      ...data,
-      step_2: {
-        ...data.step_2,
-        items: data.step_2.items.filter((_, i) => i !== index)
-      }
-    }));
+  // Initialize purchase order processing for a quotation
+  initializePurchaseOrderProcessing(index: number): void {
+    this.scmVerification.update(data => {
+      const items = [...data.quotations.items];
+      items[index] = {
+        ...items[index],
+        purchase_order_processing: {
+          purchase_order_generated: false,
+          emailed_to_supplier_date: '',
+          tax_invoice_received: false,
+          bbbee_certificate_received: false,
+          bank_confirmation_received: false,
+          tax_clearance_received: false,
+          approved: false,
+          comments: ''
+        }
+      };
+      return {
+        ...data,
+        quotations: {
+          ...data.quotations,
+          items
+        }
+      };
+    });
   }
 
-  // Step 3 - Purchase Orders
-  addPurchaseOrder(): void {
-    const newPurchaseOrder: ScmPurchaseOrder = {
-      id: `po_${Date.now()}`,
-      supplier_name: '',
-      purchase_order_generated: false,
-      emailed_to_supplier_date: '',
-      tax_invoice_received: false,
-      bbbee_certificate_received: false,
-      bank_confirmation_received: false,
-      tax_clearance_received: false,
-      approved: false,
-      comments: ''
-    };
-
-    this.scmVerification.update(data => ({
-      ...data,
-      step_3: {
-        ...data.step_3,
-        items: [...data.step_3.items, newPurchaseOrder]
-      }
-    }));
-  }
-
-  removePurchaseOrder(index: number): void {
-    this.scmVerification.update(data => ({
-      ...data,
-      step_3: {
-        ...data.step_3,
-        items: data.step_3.items.filter((_, i) => i !== index)
-      }
-    }));
-  }
-
-  // Step 4 - Payments
-  addPayment(): void {
-    const newPayment: ScmPayment = {
-      id: `p_${Date.now()}`,
-      company_name: '',
-      director: '',
-      contact_number: '',
-      vat_invoice_received: false,
-      bank_confirmation_received: false,
-      payment_authorisation_signed: false,
-      payment_request_date: '',
-      payment_done: false,
-      proof_of_payment_sent: false,
-      delivery_note_received: false
-    };
-
-    this.scmVerification.update(data => ({
-      ...data,
-      step_4: {
-        ...data.step_4,
-        items: [...data.step_4.items, newPayment]
-      }
-    }));
-  }
-
-  removePayment(index: number): void {
-    this.scmVerification.update(data => ({
-      ...data,
-      step_4: {
-        ...data.step_4,
-        items: data.step_4.items.filter((_, i) => i !== index)
-      }
-    }));
+  // Initialize payment processing for a quotation
+  initializePaymentProcessing(index: number): void {
+    this.scmVerification.update(data => {
+      const items = [...data.quotations.items];
+      items[index] = {
+        ...items[index],
+        payment_processing: {
+          vat_invoice_received: false,
+          bank_confirmation_received: false,
+          payment_authorisation_signed: false,
+          payment_request_date: '',
+          payment_done: false,
+          proof_of_payment_sent: false,
+          delivery_note_received: false,
+          comments: ''
+        }
+      };
+      return {
+        ...data,
+        quotations: {
+          ...data.quotations,
+          items
+        }
+      };
+    });
   }
 
   prepopulateCompanyInfo(): void {

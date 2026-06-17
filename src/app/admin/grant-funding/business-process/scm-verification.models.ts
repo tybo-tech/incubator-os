@@ -1,46 +1,55 @@
+export interface ScmSupplierContactDetails {
+  phone?: string;
+  email?: string;
+  address?: string;
+  verified?: boolean;
+}
+
+export interface ScmOnlineVerification {
+  cipc_registration?: string;
+  cipc_verified?: boolean;
+  cipc_confirmation_number?: string;
+  vat_number?: string;
+  vat_verified?: boolean;
+  contact_details: ScmSupplierContactDetails;
+  approved?: boolean;
+  comments?: string;
+}
+
+export interface ScmPurchaseOrderProcessing {
+  purchase_order_generated?: boolean;
+  emailed_to_supplier_date?: string;
+  tax_invoice_received?: boolean;
+  bbbee_certificate_received?: boolean;
+  bank_confirmation_received?: boolean;
+  tax_clearance_received?: boolean;
+  approved?: boolean;
+  comments?: string;
+}
+
+export interface ScmPaymentProcessing {
+  vat_invoice_received?: boolean;
+  bank_confirmation_received?: boolean;
+  payment_authorisation_signed?: boolean;
+  payment_request_date?: string;
+  payment_done?: boolean;
+  proof_of_payment_sent?: boolean;
+  delivery_note_received?: boolean;
+  comments?: string;
+}
+
 export interface ScmQuotation {
   id: string;
   supplier_name: string;
   date_received?: string;
   beneficiary_signature?: string;
   comments?: string;
-}
-
-export interface ScmSupplierVerification {
-  id: string;
-  supplier_name: string;
-  cipc_registration?: string;
-  vat_number?: string;
-  verification_details?: string;
-  approved?: boolean;
-  comments?: string;
-}
-
-export interface ScmPurchaseOrder {
-  id: string;
-  supplier_name: string;
-  purchase_order_generated: boolean;
-  emailed_to_supplier_date?: string;
-  tax_invoice_received: boolean;
-  bbbee_certificate_received: boolean;
-  bank_confirmation_received: boolean;
-  tax_clearance_received: boolean;
-  approved: boolean;
-  comments?: string;
-}
-
-export interface ScmPayment {
-  id: string;
-  company_name: string;
-  director: string;
-  contact_number: string;
-  vat_invoice_received: boolean;
-  bank_confirmation_received: boolean;
-  payment_authorisation_signed: boolean;
-  payment_request_date?: string;
-  payment_done: boolean;
-  proof_of_payment_sent: boolean;
-  delivery_note_received: boolean;
+  // Step 2: Online Verification of Suppliers
+  online_verification?: ScmOnlineVerification;
+  // Step 3: Processing of Verified Quotations (Generate PO)
+  purchase_order_processing?: ScmPurchaseOrderProcessing;
+  // Step 4: Processing of Payment Authorization/Payment
+  payment_processing?: ScmPaymentProcessing;
 }
 
 export interface ScmVerificationStep<T> {
@@ -54,10 +63,8 @@ export interface GrantScmVerification {
   director: string;
   contact_number: string;
   
-  step_1: ScmVerificationStep<ScmQuotation>;
-  step_2: ScmVerificationStep<ScmSupplierVerification>;
-  step_3: ScmVerificationStep<ScmPurchaseOrder>;
-  step_4: ScmVerificationStep<ScmPayment>;
+  // Only one step now as all other information is contained within quotations
+  quotations: ScmVerificationStep<ScmQuotation>;
 }
 
 export const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
@@ -65,22 +72,7 @@ export const DEFAULT_GRANT_SCM_VERIFICATION: GrantScmVerification = {
   director: '',
   contact_number: '',
   
-  step_1: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_2: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_3: {
-    items: [],
-    verified_by: '',
-    signature: ''
-  },
-  step_4: {
+  quotations: {
     items: [],
     verified_by: '',
     signature: ''
