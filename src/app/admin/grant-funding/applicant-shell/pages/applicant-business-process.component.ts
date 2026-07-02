@@ -1,25 +1,18 @@
 import { Component, Input, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BusinessProcessChecklistComponent } from '../../business-process/business-process-checklist.component';
+import { ProcessExportComponent } from '../../business-process/process-export.component';
 import { ScmVerificationProcessComponent } from '../../business-process/scm-verification-process.component';
-import { ExpenditureAuthorizationComponent } from '../../business-process/expenditure-authorization.component';
 import { IGrantApplicationData } from '../../interfaces/grant-application.interfaces';
 
 @Component({
   selector: 'app-applicant-business-process',
   standalone: true,
-  imports: [CommonModule, BusinessProcessChecklistComponent, ScmVerificationProcessComponent, ExpenditureAuthorizationComponent],
+  imports: [CommonModule, ProcessExportComponent, ScmVerificationProcessComponent],
   template: `
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <!-- Tabs Header -->
       <div class="border-b border-gray-200">
         <nav class="flex space-x-8 px-5" aria-label="Tabs">
-          <button
-            (click)="setActiveTab('checklist')"
-            [class]="tabClass('checklist')"
-            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            Business Process Checklist
-          </button>
           <button
             (click)="setActiveTab('scm')"
             [class]="tabClass('scm')"
@@ -27,25 +20,16 @@ import { IGrantApplicationData } from '../../interfaces/grant-application.interf
             SCM Verification
           </button>
           <button
-            (click)="setActiveTab('expenditure')"
-            [class]="tabClass('expenditure')"
+            (click)="setActiveTab('exports')"
+            [class]="tabClass('exports')"
             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-            Expenditure Authorization
+            Process Exports
           </button>
         </nav>
       </div>
 
       <!-- Tab Content -->
       <div class="p-5">
-        <!-- Checklist Tab -->
-        <div *ngIf="activeTab() === 'checklist'">
-          <app-business-process-checklist
-            [companyId]="companyId"
-            [applicantId]="applicantId"
-            [applicantData]="applicantData">
-          </app-business-process-checklist>
-        </div>
-
         <!-- SCM Verification Tab -->
         <div *ngIf="activeTab() === 'scm'">
           <app-scm-verification-process
@@ -55,13 +39,13 @@ import { IGrantApplicationData } from '../../interfaces/grant-application.interf
           </app-scm-verification-process>
         </div>
 
-        <!-- Expenditure Authorization Tab -->
-        <div *ngIf="activeTab() === 'expenditure'">
-          <app-expenditure-authorization
+        <!-- Process Exports Tab -->
+        <div *ngIf="activeTab() === 'exports'">
+          <app-process-export
             [companyId]="companyId"
             [applicantId]="applicantId"
             [applicantData]="applicantData">
-          </app-expenditure-authorization>
+          </app-process-export>
         </div>
 
         <!-- Documents Tab -->
@@ -92,13 +76,13 @@ export class ApplicantBusinessProcessComponent {
   @Input() applicantId!: number;
   @Input() applicantData!: IGrantApplicationData;
 
-  activeTab = signal<'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'>('checklist');
+  activeTab = signal<'scm' | 'exports' | 'documents' | 'notes'>('scm');
 
-  setActiveTab(tab: 'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'): void {
+  setActiveTab(tab: 'scm' | 'exports' | 'documents' | 'notes'): void {
     this.activeTab.set(tab);
   }
 
-  tabClass(tab: 'checklist' | 'scm' | 'expenditure' | 'documents' | 'notes'): string {
+  tabClass(tab: 'scm' | 'exports' | 'documents' | 'notes'): string {
     const isActive = this.activeTab() === tab;
     return isActive
       ? 'border-blue-500 text-blue-600'

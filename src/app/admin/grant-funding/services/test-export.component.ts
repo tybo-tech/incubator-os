@@ -129,22 +129,7 @@ export class TestExportComponent {
       beneficiary_company_name: 'Test Company',
       director: 'Test Director',
       contact_number: '123-456-7890',
-      step_1: {
-        items: [],
-        verified_by: 'Test Verifier',
-        signature: ''
-      },
-      step_2: {
-        items: [],
-        verified_by: 'Test Verifier',
-        signature: ''
-      },
-      step_3: {
-        items: [],
-        verified_by: 'Test Verifier',
-        signature: ''
-      },
-      step_4: {
+      quotations: {
         items: [],
         verified_by: 'Test Verifier',
         signature: ''

@@ -7,3 +7,5 @@ export * from './presentation-schedule.service';
 export * from './presentation-shortlist-export.service';
 export * from './applicant-export.service';
 export * from './workflow.service';
+export * from './checklist-generation.service';
+export * from './expenditure-generation.service';
