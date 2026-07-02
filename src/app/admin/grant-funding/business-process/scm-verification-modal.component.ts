@@ -45,6 +45,24 @@ import { ScmVerificationService } from './scm-verification.service';
                   [(ngModel)]="currentQuotation()!.date_received"
                   class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
               </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Item Purchased</label>
+                <input
+                  type="text"
+                  [(ngModel)]="currentQuotation()!.item_purchased"
+                  placeholder="Enter item description"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Purchase Value (R)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="currentQuotation()!.purchase_value"
+                  placeholder="0.00"
+                  class="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+              </div>
               <div class="md:col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">Comments</label>
                 <textarea

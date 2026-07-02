@@ -85,6 +85,8 @@ export class ScmVerificationService {
       id: `q_${Date.now()}`,
       supplier_name: '',
       date_received: today,
+      item_purchased: '',
+      purchase_value: undefined,
       beneficiary_signature: '',
       comments: '',
       status: 'pending'

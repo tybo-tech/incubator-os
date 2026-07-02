@@ -345,11 +345,13 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
       data.quotations.items,
       (item, i) => `
         <tr>
-          <td class="cell text-7 h-7 p-4 center" style="width:10mm;">${i + 1}</td>
-          <td class="cell text-7 h-7 p-4" style="width:80mm;">${this._esc(item.supplier_name || '')}</td>
-          <td class="cell text-7 h-7 p-4" style="width:25mm;">${this._esc(item.date_received || '')}</td>
-          <td class="cell text-7 h-7 p-4" style="width:55mm;">${this._renderSignatureImage(item.beneficiary_signature)}</td>
-          <td class="cell text-7 h-7 p-4" style="width:70mm;">${this._esc(item.comments || '')}</td>
+          <td class="cell text-7 h-7 p-4 center" style="width:8mm;">${i + 1}</td>
+          <td class="cell text-7 h-7 p-4" style="width:50mm;">${this._esc(item.supplier_name || '')}</td>
+          <td class="cell text-7 h-7 p-4" style="width:50mm;">${this._esc(item.item_purchased || '')}</td>
+          <td class="cell text-7 h-7 p-4 right" style="width:20mm;">${item.purchase_value ? 'R ' + this._esc(String(item.purchase_value.toFixed(2))) : ''}</td>
+          <td class="cell text-7 h-7 p-4" style="width:22mm;">${this._esc(item.date_received || '')}</td>
+          <td class="cell text-7 h-7 p-4" style="width:45mm;">${this._renderSignatureImage(item.beneficiary_signature)}</td>
+          <td class="cell text-7 h-7 p-4" style="width:45mm;">${this._esc(item.comments || '')}</td>
         </tr>`,
     );
 
@@ -501,11 +503,13 @@ ${this._globalStyles({ pageMargin, fontSize, lineHeight })}
 
       <table class="mb-5">
         ${this._tableHeader([
-          { label: 'No', width: '10mm', classes: 'text-8 p-3 center' },
-          { label: 'Quotation Received / Supplier', width: '80mm', classes: 'text-8 p-3' },
-          { label: 'Date Received', width: '25mm', classes: 'text-8 p-3' },
-          { label: 'Beneficiary Signature', width: '55mm', classes: 'text-8 p-3' },
-          { label: 'Comments / Next Steps', width: '70mm', classes: 'text-8 p-3' },
+          { label: 'No', width: '8mm', classes: 'text-8 p-3 center' },
+          { label: 'Quotation Received / Supplier', width: '50mm', classes: 'text-8 p-3' },
+          { label: 'Item Purchased', width: '50mm', classes: 'text-8 p-3' },
+          { label: 'Purchase Value', width: '20mm', classes: 'text-8 p-3 center' },
+          { label: 'Date Received', width: '22mm', classes: 'text-8 p-3' },
+          { label: 'Beneficiary Signature', width: '45mm', classes: 'text-8 p-3' },
+          { label: 'Comments / Next Steps', width: '45mm', classes: 'text-8 p-3' },
         ])}
         <tbody>
           ${quotationRows}

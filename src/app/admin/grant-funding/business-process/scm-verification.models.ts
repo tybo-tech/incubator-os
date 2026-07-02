@@ -47,6 +47,8 @@ export interface ScmQuotation {
   id: string;
   supplier_name: string;
   date_received?: string;
+  item_purchased?: string;
+  purchase_value?: number;
   beneficiary_signature?: string;
   comments?: string;
   status?: 'pending' | 'in-progress' | 'completed';

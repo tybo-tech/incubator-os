@@ -18,6 +18,8 @@ import { ScmVerificationService } from './scm-verification.service';
           <thead>
             <tr class="bg-gray-50">
               <th class="text-left px-3 py-2 font-medium text-gray-700">Supplier</th>
+              <th class="text-left px-3 py-2 font-medium text-gray-700">Item</th>
+              <th class="text-right px-3 py-2 font-medium text-gray-700">Value (R)</th>
               <th class="text-left px-3 py-2 font-medium text-gray-700">Current Step</th>
               <th class="text-left px-3 py-2 font-medium text-gray-700">Status</th>
               <th class="text-left px-3 py-2 font-medium text-gray-700">Actions</th>
@@ -27,6 +29,12 @@ import { ScmVerificationService } from './scm-verification.service';
             <tr *ngFor="let item of scmVerification().quotations.items; let i = index" class="border-t border-gray-100 hover:bg-gray-50">
               <td class="px-3 py-2 font-medium text-gray-900">
                 {{ item.supplier_name || 'Unnamed Supplier' }}
+              </td>
+              <td class="px-3 py-2 text-gray-600 text-xs max-w-[160px] truncate">
+                {{ item.item_purchased || '-' }}
+              </td>
+              <td class="px-3 py-2 text-right text-gray-900 text-sm font-medium">
+                {{ item.purchase_value ? ('R ' + (item.purchase_value | number:'1.2-2')) : '-' }}
               </td>
               <td class="px-3 py-2">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -63,7 +71,7 @@ import { ScmVerificationService } from './scm-verification.service';
               </td>
             </tr>
             <tr *ngIf="scmVerification().quotations.items.length === 0">
-              <td colspan="4" class="px-3 py-4 text-center text-gray-400 text-sm">
+              <td colspan="6" class="px-3 py-4 text-center text-gray-400 text-sm">
                 <i class="fas fa-file-alt text-lg mb-1 block"></i>
                 <p>No quotations added yet. Click "Add Quotation" to get started.</p>
               </td>
