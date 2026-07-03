@@ -26,6 +26,27 @@ import { ScmVerificationService } from './scm-verification.service';
         </div>
 
         <div class="p-5">
+          <!-- Quotation Summary Bar (visible on every step) -->
+          <div *ngIf="currentQuotation()" class="flex items-center gap-4 px-4 py-2 mb-4 bg-gray-50 rounded-lg border border-gray-200 text-sm">
+            <div class="flex items-center gap-1.5">
+              <i class="fas fa-box text-gray-400 text-xs"></i>
+              <span class="text-gray-500">Item:</span>
+              <span class="font-medium text-gray-900">{{ currentQuotation()!.item_purchased || '-' }}</span>
+            </div>
+            <div class="w-px h-4 bg-gray-300"></div>
+            <div class="flex items-center gap-1.5">
+              <i class="fas fa-tag text-gray-400 text-xs"></i>
+              <span class="text-gray-500">Value:</span>
+              <span class="font-semibold text-gray-900">{{ currentQuotation()!.purchase_value ? ('R ' + (currentQuotation()!.purchase_value | number:'1.2-2')) : '-' }}</span>
+            </div>
+            <div class="w-px h-4 bg-gray-300"></div>
+            <div class="flex items-center gap-1.5">
+              <i class="fas fa-building text-gray-400 text-xs"></i>
+              <span class="text-gray-500">Supplier:</span>
+              <span class="font-medium text-gray-900">{{ currentQuotation()!.supplier_name || '-' }}</span>
+            </div>
+          </div>
+
           <!-- Step 1: Collection of Quotations -->
           <div *ngIf="currentStep() === 1 && currentQuotation()">
             <h4 class="font-medium text-gray-900 mb-3 text-sm">Collection of Quotations</h4>
