@@ -1,9 +1,8 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Constants } from '../../services/service';
 import { User } from '../../models/simple.schema';
-import { ActivityLogService } from '../services/activity-log.service';
 
 export interface LoginResponse {
   success: boolean;
@@ -26,8 +25,6 @@ export class AuthService {
   readonly currentUser = this._currentUser.asReadonly();
   readonly isLoggedIn = computed(() => this._currentUser() !== null);
 
-  private logSvc = inject(ActivityLogService);
-
   constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<LoginResponse> {
@@ -42,7 +39,6 @@ export class AuthService {
   }
 
   logout(): void {
-    const user = this._currentUser();
     this.http.post<{ success: boolean }>(`${this.apiUrl}/logout.php`, {}, { withCredentials: true }).subscribe({
       error: () => {
         // Ignore logout API errors; local logout still proceeds.
@@ -50,9 +46,6 @@ export class AuthService {
     });
     this._currentUser.set(null);
     localStorage.removeItem(this.storageKey);
-    if (user) {
-      this.logSvc.log({ action: 'logout', user_id: user.id, user_name: user.full_name || user.username }).subscribe();
-    }
   }
 
   validateSession(): Observable<SessionValidationResponse> {

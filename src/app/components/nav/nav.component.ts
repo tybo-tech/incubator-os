@@ -1,7 +1,8 @@
-import { Component, Output, EventEmitter, OnInit, HostListener } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { ActivityLogService } from '../../services/activity-log.service';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed';
 
@@ -22,6 +23,8 @@ export class NavComponent implements OnInit {
   @Output() onQuickTaskClick = new EventEmitter<void>();
 
   isCollapsed = false;
+
+  private logSvc = inject(ActivityLogService);
 
   constructor(public auth: AuthService, private router: Router) {}
 
@@ -67,8 +70,12 @@ export class NavComponent implements OnInit {
         this.onQuickTaskClick.emit();
         break;
       case 'logout':
+        const user = this.auth.getUser();
         this.auth.logout();
         this.router.navigate(['/login']);
+        if (user) {
+          this.logSvc.log({ action: 'logout', user_id: user.id, user_name: user.full_name || user.username }).subscribe();
+        }
         break;
     }
   }

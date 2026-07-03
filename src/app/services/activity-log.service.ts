@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector } from '@angular/core';
 import { Observable } from 'rxjs';
 import { NodeService } from '../../services/node.service';
 import { AuthService } from '../auth/auth.service';
@@ -11,10 +11,11 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ActivityLogService {
   private nodeService = inject(NodeService);
-  private auth = inject(AuthService);
+  private injector = inject(Injector);
 
   log(data: IActivityLogData): Observable<ActivityLog> {
-    const user = this.auth.getUser();
+    const auth = this.injector.get(AuthService);
+    const user = auth.getUser();
     const enriched: IActivityLogData = {
       ...data,
       user_id: user?.id,
