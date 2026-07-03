@@ -37,6 +37,7 @@ export class NavComponent implements OnInit {
     { icon: 'fa-users', label: 'Users', route: '/users' },
     { icon: 'fa-file-invoice', label: 'Form Templates', route: '/admin/form-templates' },
     { icon: 'fa-diagram-project', label: 'Project Management', route: '/projects' },
+    { icon: 'fa-clock-rotate-left', label: 'Activity Log', route: '/activity-log' },
     { icon: 'fa-code', label: 'Developer', route: '/import' },
   ];
 

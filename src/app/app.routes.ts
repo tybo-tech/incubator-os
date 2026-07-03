@@ -387,6 +387,11 @@ export const routes: Routes = [
         component: DashboardRecentActivitiesComponent,
       },
       {
+        path: 'activity-log',
+        loadComponent: () =>
+          import('./admin/activity-log/activity-log-viewer.component').then(m => m.ActivityLogViewerComponent),
+      },
+      {
         path: 'import',
         component: ImportComponent,
       },
