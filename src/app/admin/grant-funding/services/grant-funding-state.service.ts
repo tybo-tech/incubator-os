@@ -5,6 +5,18 @@ import { WorkflowService } from './workflow.service';
 import { GrantApplication } from '../interfaces/grant-application.interfaces';
 import { ToastService } from '../../../services/toast.service';
 
+const STORAGE_KEY = 'grant-funding-filters';
+
+interface FilterState {
+  activeStatusFilter: string;
+  hasTurnoverFilter: boolean;
+  has12MonthsFilter: boolean;
+  under1MFilter: boolean;
+  sortField: 'name' | 'turnover';
+  sortDir: 'asc' | 'desc';
+  searchQuery: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class GrantFundingStateService {
   readonly WORKFLOW_ID = 'grant-2026';
@@ -47,7 +59,42 @@ export class GrantFundingStateService {
     private workflowSvc: WorkflowService,
   ) {}
 
+  private restoreFilters(): void {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved: Partial<FilterState> = JSON.parse(raw);
+      if (typeof saved.activeStatusFilter === 'string') this.activeStatusFilter.set(saved.activeStatusFilter);
+      if (typeof saved.hasTurnoverFilter === 'boolean') this.hasTurnoverFilter.set(saved.hasTurnoverFilter);
+      if (typeof saved.has12MonthsFilter === 'boolean') this.has12MonthsFilter.set(saved.has12MonthsFilter);
+      if (typeof saved.under1MFilter === 'boolean') this.under1MFilter.set(saved.under1MFilter);
+      if (saved.sortField === 'name' || saved.sortField === 'turnover') this.sortField = saved.sortField;
+      if (saved.sortDir === 'asc' || saved.sortDir === 'desc') this.sortDir = saved.sortDir;
+      if (typeof saved.searchQuery === 'string') this.searchQuery = saved.searchQuery;
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  private persistFilters(): void {
+    try {
+      const state: FilterState = {
+        activeStatusFilter: this.activeStatusFilter(),
+        hasTurnoverFilter: this.hasTurnoverFilter(),
+        has12MonthsFilter: this.has12MonthsFilter(),
+        under1MFilter: this.under1MFilter(),
+        sortField: this.sortField,
+        sortDir: this.sortDir,
+        searchQuery: this.searchQuery,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // localStorage full or unavailable — silently ignore
+    }
+  }
+
   init(): void {
+    this.restoreFilters();
     this.workflowSvc.loadWorkflowFromDB(this.WORKFLOW_ID).subscribe(() => {
       this.loadApplications();
     });
@@ -71,6 +118,8 @@ export class GrantFundingStateService {
   }
 
   applyFilter(): void {
+    this.persistFilters();
+
     let list = this.applications();
 
     if (this.searchQuery.trim()) {
