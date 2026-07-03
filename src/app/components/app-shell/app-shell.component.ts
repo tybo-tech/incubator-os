@@ -1,11 +1,13 @@
-import { Component, OnInit, HostListener } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs';
 import { NavComponent } from "../nav/nav.component";
 import { GlobalTaskModalComponent } from '../tasks/global-task-modal.component';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { AuthService } from '../../auth/auth.service';
+import { ActivityLogService } from '../../services/activity-log.service';
 
 @Component({
   selector: 'app-app-shell',
@@ -16,6 +18,8 @@ import { AuthService } from '../../auth/auth.service';
 export class AppShellComponent implements OnInit {
   showGlobalTaskModal = false;
   isMobileMenuOpen = false;
+
+  private logSvc = inject(ActivityLogService);
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -31,6 +35,12 @@ export class AppShellComponent implements OnInit {
         this.auth.logout();
         this.router.navigate(['/login']);
       },
+    });
+
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+    ).subscribe((e) => {
+      this.logSvc.log({ action: 'page_view', url: e.urlAfterRedirects }).subscribe();
     });
   }
 

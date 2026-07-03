@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { ActivityLogService } from '../../services/activity-log.service';
 
 @Component({
   selector: 'app-login',
@@ -127,6 +128,8 @@ export class LoginComponent {
 
   readonly version = 'v2.0.0';
 
+  private logSvc = inject(ActivityLogService);
+
   constructor(private auth: AuthService, private router: Router) {}
 
   submit(): void {
@@ -138,6 +141,7 @@ export class LoginComponent {
     this.auth.login(this.username.trim(), this.password).subscribe({
       next: () => {
         this.isLoading.set(false);
+        this.logSvc.log({ action: 'login', details: `User ${this.username.trim()} logged in` }).subscribe();
         this.router.navigate(['/']);
       },
       error: (err) => {
