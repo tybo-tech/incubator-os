@@ -7,7 +7,7 @@ import { GlobalTaskModalComponent } from '../tasks/global-task-modal.component';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { AuthService } from '../../auth/auth.service';
-import { ActivityLogService } from '../../services/activity-log.service';
+import { ActivityLogStateService } from '../../services/activity-log-state.service';
 
 @Component({
   selector: 'app-app-shell',
@@ -19,7 +19,7 @@ export class AppShellComponent implements OnInit {
   showGlobalTaskModal = false;
   isMobileMenuOpen = false;
 
-  private logSvc = inject(ActivityLogService);
+  private logSvc = inject(ActivityLogStateService);
 
   constructor(private auth: AuthService, private router: Router) {}
 

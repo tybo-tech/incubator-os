@@ -11,6 +11,8 @@ class Database
 
     public function __construct()
     {
+        date_default_timezone_set('Africa/Johannesburg');
+
         // Default to server config
         $this->setTyboServer();
 
@@ -50,6 +52,7 @@ class Database
             $dsn = "mysql:host={$this->host};dbname={$this->db_name}";
             $this->conn = new PDO($dsn, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn->exec("SET time_zone = '+02:00'");
         } catch (PDOException $e) {
             echo json_encode(["error" => $e->getMessage(), "loaction" => "Database.php: connect"]);
         }

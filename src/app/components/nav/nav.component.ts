@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter, OnInit, HostListener, inject } from '@
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
-import { ActivityLogService } from '../../services/activity-log.service';
+import { ActivityLogStateService } from '../../services/activity-log-state.service';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed';
 
@@ -24,7 +24,7 @@ export class NavComponent implements OnInit {
 
   isCollapsed = false;
 
-  private logSvc = inject(ActivityLogService);
+  private logSvc = inject(ActivityLogStateService);
 
   constructor(public auth: AuthService, private router: Router) {}
 
