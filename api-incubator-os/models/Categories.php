@@ -276,12 +276,12 @@ final class Categories
 
     public function deleteCategory(int $id): bool
     {
-        // Since you dropped FKs, manually clean up children & items if desired:
-        // 1) Reparent or delete children
+        // 1) Recursively delete children (programs under client, cohorts under program)
         $this->deleteChildrenCascade($id);
 
-        // 2) Delete memberships
-        $stmt = $this->conn->prepare("DELETE FROM categories_item WHERE category_id = ?");
+        // 2) Delete memberships in categories_item using cohort_id
+        //    (the table uses cohort_id, not category_id)
+        $stmt = $this->conn->prepare("DELETE FROM categories_item WHERE cohort_id = ?");
         $stmt->execute([$id]);
 
         // 3) Delete node

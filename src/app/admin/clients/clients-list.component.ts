@@ -281,18 +281,18 @@ export class ClientsListComponent implements OnInit {
 
   deleteClient(client: Client): void {
     if (confirm(`Are you sure you want to delete "${client.name}"? This action cannot be undone.`)) {
-      // TODO: Implement delete functionality
       this.isLoading.set(true);
 
       this.categoryService.deleteCategory(client.id).pipe(
         catchError(error => {
           console.error('Failed to delete client:', error);
-          this.toastService.info('Failed to delete client. Please try again.');
+          this.toastService.show('Failed to delete client. Please try again.', 'error');
           this.isLoading.set(false);
           return EMPTY;
         })
       ).subscribe(() => {
-        this.loadClients(); // Refresh the list
+        this.toastService.show(`"${client.name}" deleted successfully.`, 'success');
+        this.loadClients();
       });
     }
   }

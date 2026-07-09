@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CategoryService } from '../../../services/category.service';
+import { ToastService } from '../../services/toast.service';
 import { OverviewGridComponent } from '../overview/components/overview-grid.component';
 import {
   OverviewHeaderComponent,
@@ -249,28 +250,32 @@ interface BreadcrumbInfo {
           >
             <div
               *ngFor="let cohort of filteredCohorts()"
-              class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
-              (click)="selectCohort(cohort)"
+              class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
             >
               <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-semibold text-gray-900">
+                <div class="flex items-start justify-between mb-4">
+                  <h3 class="text-lg font-semibold text-gray-900 flex-1 pr-3">
                     {{ cohort.name }}
                   </h3>
-                  <div class="text-blue-600">
-                    <svg
-                      class="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5l7 7-7 7"
-                      ></path>
-                    </svg>
+
+                  <!-- Action Buttons -->
+                  <div class="flex space-x-1 flex-shrink-0">
+                    <button
+                      (click)="$event.stopPropagation(); editCohort(cohort)"
+                      class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit Cohort">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      (click)="$event.stopPropagation(); deleteCohort(cohort)"
+                      class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete Cohort">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
@@ -305,6 +310,15 @@ interface BreadcrumbInfo {
                   </div>
                 </div>
               </div>
+              <!-- View Companies Button -->
+              <button
+                (click)="selectCohort(cohort)"
+                class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                View Companies
+              </button>
             </div>
           </div>
         </div>
@@ -584,7 +598,8 @@ export class CohortsListComponent implements OnInit {
   constructor(
     private categoryService: CategoryService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {}
 
   // Getters for template access
@@ -881,7 +896,28 @@ export class CohortsListComponent implements OnInit {
       .subscribe(() => {
         this.isCreating.set(false);
         this.closeCreateModal();
-        this.refreshCohorts(); // Refresh the list
+        this.refreshCohorts();
       });
+  }
+
+  editCohort(cohort: Cohort): void {
+    this.toastService.info(`Edit functionality for "${cohort.name}" will be implemented soon!`);
+  }
+
+  deleteCohort(cohort: Cohort): void {
+    if (confirm(`Are you sure you want to delete "${cohort.name}" and all its company assignments? This action cannot be undone.`)) {
+      this.isLoading.set(true);
+      this.categoryService.deleteCategory(cohort.id).pipe(
+        catchError(error => {
+          console.error('Failed to delete cohort:', error);
+          this.toastService.show('Failed to delete cohort. Please try again.', 'error');
+          this.isLoading.set(false);
+          return EMPTY;
+        })
+      ).subscribe(() => {
+        this.toastService.show(`"${cohort.name}" deleted successfully.`, 'success');
+        this.refreshCohorts();
+      });
+    }
   }
 }
