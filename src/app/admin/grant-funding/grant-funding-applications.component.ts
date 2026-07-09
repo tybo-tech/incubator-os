@@ -6,6 +6,7 @@ import { GrantFundingHeaderComponent } from './grant-funding-header.component';
 import { GrantFundingFiltersComponent } from './grant-funding-filters.component';
 import { GrantFundingTableComponent } from './grant-funding-table.component';
 import { GrantFundingBulkModalComponent } from './grant-funding-bulk-modal.component';
+import { PromoteToCohortModalComponent } from './promote-to-cohort-modal.component';
 
 @Component({
   selector: 'app-grant-funding-applications',
@@ -17,6 +18,7 @@ import { GrantFundingBulkModalComponent } from './grant-funding-bulk-modal.compo
     GrantFundingFiltersComponent,
     GrantFundingTableComponent,
     GrantFundingBulkModalComponent,
+    PromoteToCohortModalComponent,
   ],
   template: `
     <div class="p-4 sm:p-6">
@@ -27,6 +29,8 @@ import { GrantFundingBulkModalComponent } from './grant-funding-bulk-modal.compo
       <app-grant-funding-table></app-grant-funding-table>
 
       <app-grant-funding-bulk-modal></app-grant-funding-bulk-modal>
+
+      <app-promote-to-cohort-modal></app-promote-to-cohort-modal>
 
       <app-workflow-settings
         workflowId="grant-2026"

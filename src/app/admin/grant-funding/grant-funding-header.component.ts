@@ -17,6 +17,26 @@ import { CreateModalComponent, CreateModalConfig } from '../../shared/components
       </div>
       <div class="flex items-center gap-2 w-full sm:w-auto">
         <button
+          (click)="state.openPromoteModal('import')"
+          class="px-3.5 py-2 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-50
+                 hover:border-teal-400 transition-colors flex items-center justify-center
+                 text-sm gap-2 flex-shrink-0"
+          title="Promote applicants to a cohort"
+        >
+          <i class="fas fa-arrow-up text-teal-600 text-xs"></i>
+          <span class="hidden sm:inline">Promote</span>
+        </button>
+        <button
+          (click)="state.openPromoteModal('undo')"
+          class="px-3.5 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50
+                 hover:border-red-400 transition-colors flex items-center justify-center
+                 text-sm gap-2 flex-shrink-0"
+          title="Undo last import from a cohort"
+        >
+          <i class="fas fa-rotate-left text-red-600 text-xs"></i>
+          <span class="hidden sm:inline">Undo</span>
+        </button>
+        <button
           (click)="state.showWorkflowSettings.set(true)"
           class="px-3.5 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50
                  hover:border-gray-400 transition-colors flex items-center justify-center

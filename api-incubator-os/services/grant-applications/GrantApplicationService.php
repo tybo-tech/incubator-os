@@ -54,11 +54,12 @@ class GrantApplicationService
     }
 
     /**
-     * Dry-run import: map all grant applications to company format and
+     * Dry-run import: map grant applications to company format and
      * cross-check against existing companies by registration_no OR name.
+     * Optionally filter by status (workflow stage key).
      * Returns a summary without writing anything.
      */
-    public function dryRunImportToCompanies(): array
+    public function dryRunImportToCompanies(?string $statusFilter = null): array
     {
         $applications = $this->node->getByType('grant_application');
         $company = $this->getCompany();
@@ -67,6 +68,13 @@ class GrantApplicationService
         $stats = ['total' => 0, 'match_by_reg' => 0, 'match_by_name' => 0, 'no_match' => 0, 'skipped' => 0];
 
         foreach ($applications as $app) {
+            $data = $this->toArray($app['data']);
+
+            // Apply status filter
+            if ($statusFilter && ($data['status'] ?? null) !== $statusFilter) {
+                continue;
+            }
+
             $stats['total']++;
             $data = $this->toArray($app['data']);
             $regNo = $data['registration_number'] ?? null;
@@ -135,11 +143,11 @@ class GrantApplicationService
 
     /**
      * Execute the import: create/update companies, set company_id on nodes,
-     * and optionally attach to a cohort.
+     * and optionally attach to a cohort. Optionally filter by status.
      */
-    public function executeImportToCompanies(?int $cohortId = null): array
+    public function executeImportToCompanies(?int $cohortId = null, ?string $statusFilter = null): array
     {
-        $dryRun = $this->dryRunImportToCompanies();
+        $dryRun = $this->dryRunImportToCompanies($statusFilter);
         $company = $this->getCompany();
 
         $inserted = 0;
@@ -168,9 +176,11 @@ class GrantApplicationService
                 // Always set company_id on the node so undo can find it
                 $this->node->updateCompanyId((int)$item['node_id'], $companyId);
 
-                // Mark the node with a flag so undo knows whether to delete the company
+                // Mark the node — undo knows not to delete if is_existing_company is true
                 $this->node->patchNodeData((int)$item['node_id'], [
                     'is_existing_company' => $isExisting,
+                    'last_action' => 'imported',
+                    'last_action_at' => date('c'),
                 ]);
 
                 // Attach to cohort if specified and company was processed
@@ -243,6 +253,14 @@ class GrantApplicationService
                 // Clear company_id on all grant_application nodes referencing this company
                 $this->node->clearCompanyId($companyId);
                 $cleared++;
+
+                // Mark nodes as undone
+                foreach ($applications as $app) {
+                    $this->node->patchNodeData((int)$app['id'], [
+                        'last_action' => 'undone',
+                        'last_action_at' => date('c'),
+                    ]);
+                }
 
                 // Delete only companies that were created by this import
                 if (!$isExisting) {

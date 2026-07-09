@@ -42,6 +42,11 @@ export class GrantFundingStateService {
   bulkTargetStage = '';
   bulkNote = '';
 
+  showPromoteModal = signal(false);
+  promoteMode = signal<'import' | 'undo'>('import');
+
+  selectedIdsArray = computed(() => Array.from(this.selectedIds()));
+
   allSelected = computed(() => {
     const ids = this.selectedIds();
     return this.filtered().length > 0 && this.filtered().every((app) => app.id && ids.has(app.id));
@@ -335,6 +340,15 @@ export class GrantFundingStateService {
 
   closeBulkModal(): void {
     this.showBulkModal.set(false);
+  }
+
+  openPromoteModal(mode: 'import' | 'undo'): void {
+    this.promoteMode.set(mode);
+    this.showPromoteModal.set(true);
+  }
+
+  closePromoteModal(): void {
+    this.showPromoteModal.set(false);
   }
 
   executeBulkStageChange(): void {
