@@ -6,6 +6,7 @@ class GrantApplicationService
     private Node $node;
     private ?Company $company = null;
     private ?CategoryItem $categoryItem = null;
+    private ?CompanyFinancialYearlyStats $yearlyStats = null;
 
     public function __construct(Node $node)
     {
@@ -26,6 +27,14 @@ class GrantApplicationService
             $this->categoryItem = new CategoryItem($this->node->getConnection());
         }
         return $this->categoryItem;
+    }
+
+    private function getYearlyStats(): CompanyFinancialYearlyStats
+    {
+        if (!$this->yearlyStats) {
+            $this->yearlyStats = new CompanyFinancialYearlyStats($this->node->getConnection());
+        }
+        return $this->yearlyStats;
     }
 
     public function getOverview(int $applicantId): array
@@ -194,6 +203,30 @@ class GrantApplicationService
                             throw $t;
                         }
                     }
+                }
+
+                // Migrate bank statements to company_financial_yearly_stats
+                $statements = $this->getBankStatements((int)$item['node_id']);
+                foreach ($statements as $stmt) {
+                    $bsData = $this->toArray($stmt['data']);
+                    $this->getYearlyStats()->upsert([
+                        'company_id'        => $companyId,
+                        'financial_year_id' => $bsData['financial_year_id'],
+                        'account_id'        => null,
+                        'm1'                => $bsData['m1'] ?? 0,
+                        'm2'                => $bsData['m2'] ?? 0,
+                        'm3'                => $bsData['m3'] ?? 0,
+                        'm4'                => $bsData['m4'] ?? 0,
+                        'm5'                => $bsData['m5'] ?? 0,
+                        'm6'                => $bsData['m6'] ?? 0,
+                        'm7'                => $bsData['m7'] ?? 0,
+                        'm8'                => $bsData['m8'] ?? 0,
+                        'm9'                => $bsData['m9'] ?? 0,
+                        'm10'               => $bsData['m10'] ?? 0,
+                        'm11'               => $bsData['m11'] ?? 0,
+                        'm12'               => $bsData['m12'] ?? 0,
+                        'notes'             => $bsData['notes'] ?? null,
+                    ]);
                 }
             } catch (Throwable $t) {
                 $errors[] = [
