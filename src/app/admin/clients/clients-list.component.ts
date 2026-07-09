@@ -149,13 +149,13 @@ interface Client {
           </div>
         </div>
 
-        <!-- Create Client Modal -->
+        <!-- Create / Edit Client Modal -->
         <app-create-modal
-          [show]="showCreateModal()"
-          [config]="createModalConfig"
+          [show]="showCreateModal() || showEditModal()"
+          [config]="showEditModal() ? editModalConfig() : createModalConfig"
           [isSubmitting]="isCreating"
-          (cancel)="closeCreateModal()"
-          (submit)="onCreateSubmit($event)">
+          (cancel)="closeEditModal()"
+          (submit)="showEditModal() ? onEditSubmit($event) : onCreateSubmit($event)">
         </app-create-modal>
       </div>
     </div>
@@ -169,6 +169,8 @@ export class ClientsListComponent implements OnInit {
 
   // Modal state
   showCreateModal = signal(false);
+  showEditModal = signal(false);
+  editingClient = signal<Client | null>(null);
   isCreating = signal(false);
 
   // Modal configuration
@@ -192,6 +194,31 @@ export class ClientsListComponent implements OnInit {
       }
     ]
   };
+
+  editModalConfig = computed<CreateModalConfig>(() => ({
+    title: `Edit Client`,
+    submitLabel: 'Save Changes',
+    fields: [
+      {
+        key: 'name',
+        label: 'Client Name',
+        type: 'text',
+        placeholder: 'Enter client name',
+        required: true
+      },
+      {
+        key: 'description',
+        label: 'Description (Optional)',
+        type: 'textarea',
+        placeholder: 'Enter client description',
+        rows: 3
+      }
+    ],
+    initialData: {
+      name: this.editingClient()?.name ?? '',
+      description: this.editingClient()?.description ?? '',
+    }
+  }));
 
   // Computed
   filteredClients = computed(() => {
@@ -272,11 +299,38 @@ export class ClientsListComponent implements OnInit {
   }
 
   editClient(client: Client): void {
-    // TODO: Implement edit functionality
-    // This could open an edit modal or navigate to an edit form
-    console.log('Edit client:', client);
+    this.editingClient.set(client);
+    this.showEditModal.set(true);
+  }
 
-    this.toastService.info(`Edit functionality for "${client.name}" will be implemented soon!`);
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.showCreateModal.set(false);
+    this.editingClient.set(null);
+    this.isCreating.set(false);
+  }
+
+  onEditSubmit(formData: any): void {
+    const client = this.editingClient();
+    if (!client) return;
+    this.isCreating.set(true);
+
+    this.categoryService.updateCategory(client.id, {
+      name: formData.name,
+      description: formData.description || undefined,
+    }).pipe(
+      catchError(error => {
+        console.error('Failed to update client:', error);
+        this.toastService.show('Failed to update client. Please try again.', 'error');
+        this.isCreating.set(false);
+        return EMPTY;
+      })
+    ).subscribe(() => {
+      this.isCreating.set(false);
+      this.closeEditModal();
+      this.toastService.show(`"${formData.name}" updated successfully.`, 'success');
+      this.loadClients();
+    });
   }
 
   deleteClient(client: Client): void {

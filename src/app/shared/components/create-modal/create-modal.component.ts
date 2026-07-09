@@ -17,6 +17,8 @@ export interface CreateModalConfig {
   fields: CreateModalField[];
   submitLabel?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Pre-fill the form with initial data for editing. */
+  initialData?: { [key: string]: any };
 }
 
 @Component({
@@ -111,7 +113,11 @@ export class CreateModalComponent {
   resetForm(): void {
     this.formData = {};
     this.config?.fields?.forEach(field => {
-      this.formData[field.key] = '';
+      if (this.config.initialData && this.config.initialData[field.key] !== undefined) {
+        this.formData[field.key] = this.config.initialData[field.key];
+      } else {
+        this.formData[field.key] = '';
+      }
     });
   }
 
