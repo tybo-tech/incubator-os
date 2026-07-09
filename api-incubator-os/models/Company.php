@@ -154,6 +154,14 @@ class Company
         return $row ? $this->castRow($row) : null;
     }
 
+    public function getByName(string $name): ?array
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM companies WHERE name = ?");
+        $stmt->execute([$name]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $this->castRow($row) : null;
+    }
+
     /** Lightweight search with common filters + pagination */
     public function search(array $filters = [], int $limit = 50, int $offset = 0): array
     {

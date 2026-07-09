@@ -4,10 +4,28 @@ declare(strict_types=1);
 class GrantApplicationService
 {
     private Node $node;
+    private ?Company $company = null;
+    private ?CategoryItem $categoryItem = null;
 
     public function __construct(Node $node)
     {
         $this->node = $node;
+    }
+
+    private function getCompany(): Company
+    {
+        if (!$this->company) {
+            $this->company = new Company($this->node->getConnection());
+        }
+        return $this->company;
+    }
+
+    private function getCategoryItem(): CategoryItem
+    {
+        if (!$this->categoryItem) {
+            $this->categoryItem = new CategoryItem($this->node->getConnection());
+        }
+        return $this->categoryItem;
     }
 
     public function getOverview(int $applicantId): array
@@ -33,6 +51,242 @@ class GrantApplicationService
         }
         $merged = array_merge($this->toArray($existing['data']), $patch);
         return $this->node->update($applicantId, $merged);
+    }
+
+    /**
+     * Dry-run import: map all grant applications to company format and
+     * cross-check against existing companies by registration_no OR name.
+     * Returns a summary without writing anything.
+     */
+    public function dryRunImportToCompanies(): array
+    {
+        $applications = $this->node->getByType('grant_application');
+        $company = $this->getCompany();
+
+        $results = [];
+        $stats = ['total' => 0, 'match_by_reg' => 0, 'match_by_name' => 0, 'no_match' => 0, 'skipped' => 0];
+
+        foreach ($applications as $app) {
+            $stats['total']++;
+            $data = $this->toArray($app['data']);
+            $regNo = $data['registration_number'] ?? null;
+            $name = $data['company_name'] ?? '';
+
+            if (empty($name)) {
+                $stats['skipped']++;
+                $results[] = [
+                    'node_id' => $app['id'],
+                    'company_name' => '',
+                    'registration_no' => $regNo,
+                    'status' => 'skipped',
+                    'reason' => 'No company name',
+                    'existing_company' => null,
+                    'mapped_data' => null,
+                ];
+                continue;
+            }
+
+            // Cross-check by registration number first
+            $existing = null;
+            $matchType = null;
+            if ($regNo && $regNo !== 'Nil' && $regNo !== '') {
+                $existing = $company->getByRegistrationNo($regNo);
+                if ($existing) {
+                    $matchType = 'by_registration_no';
+                    $stats['match_by_reg']++;
+                }
+            }
+
+            // Fallback: check by name
+            if (!$existing) {
+                $existing = $company->getByName($name);
+                if ($existing) {
+                    $matchType = 'by_name';
+                    $stats['match_by_name']++;
+                }
+            }
+
+            if (!$existing) {
+                $stats['no_match']++;
+            }
+
+            $mapped = $this->mapApplicationToCompany($data);
+
+            $results[] = [
+                'node_id' => $app['id'],
+                'company_name' => $name,
+                'registration_no' => $regNo,
+                'status' => $existing ? 'exists' : 'new',
+                'match_type' => $matchType,
+                'existing_company' => $existing ? [
+                    'id' => $existing['id'],
+                    'name' => $existing['name'],
+                    'registration_no' => $existing['registration_no'],
+                ] : null,
+                'mapped_data' => $mapped,
+            ];
+        }
+
+        return [
+            'summary' => $stats,
+            'results' => $results,
+        ];
+    }
+
+    /**
+     * Execute the import: create/update companies, set company_id on nodes,
+     * and optionally attach to a cohort.
+     */
+    public function executeImportToCompanies(?int $cohortId = null): array
+    {
+        $dryRun = $this->dryRunImportToCompanies();
+        $company = $this->getCompany();
+
+        $inserted = 0;
+        $updated = 0;
+        $attached = 0;
+        $errors = [];
+
+        foreach ($dryRun['results'] as $item) {
+            if ($item['status'] === 'skipped' || !$item['mapped_data']) {
+                continue;
+            }
+
+            try {
+                $companyId = null;
+                $isExisting = $item['status'] === 'exists';
+                if ($isExisting) {
+                    $companyId = (int)$item['existing_company']['id'];
+                    $company->update($companyId, $item['mapped_data']);
+                    $updated++;
+                } else {
+                    $created = $company->add($item['mapped_data']);
+                    $companyId = (int)$created['id'];
+                    $inserted++;
+                }
+
+                // Always set company_id on the node so undo can find it
+                $this->node->updateCompanyId((int)$item['node_id'], $companyId);
+
+                // Mark the node with a flag so undo knows whether to delete the company
+                $this->node->patchNodeData((int)$item['node_id'], [
+                    'is_existing_company' => $isExisting,
+                ]);
+
+                // Attach to cohort if specified and company was processed
+                if ($cohortId && $companyId) {
+                    try {
+                        $this->getCategoryItem()->attachCompany($cohortId, $companyId);
+                        $attached++;
+                    } catch (Throwable $t) {
+                        // Skip if already assigned — not a real error
+                        if (!str_contains($t->getMessage(), 'already assigned')) {
+                            throw $t;
+                        }
+                    }
+                }
+            } catch (Throwable $t) {
+                $errors[] = [
+                    'node_id' => $item['node_id'],
+                    'company_name' => $item['company_name'],
+                    'message' => $t->getMessage(),
+                ];
+            }
+        }
+
+        return [
+            'summary' => [
+                'total' => $dryRun['summary']['total'],
+                'inserted' => $inserted,
+                'updated' => $updated,
+                'attached_to_cohort' => $attached,
+                'errors' => count($errors),
+            ],
+            'error_details' => $errors,
+        ];
+    }
+
+    /**
+     * Undo the import: remove cohort assignments, clear company_id on nodes,
+     * and delete companies that were created by the import (not flagged as pre-existing).
+     */
+    public function undoImportToCompanies(int $cohortId): array
+    {
+        $categoryItem = $this->getCategoryItem();
+        $company = $this->getCompany();
+
+        $companies = $categoryItem->getCompaniesInCohort($cohortId);
+        $detached = 0;
+        $deleted = 0;
+        $cleared = 0;
+        $errors = [];
+
+        foreach ($companies as $entry) {
+            $companyId = (int)$entry['id'];
+
+            try {
+                // Check the flag on grant_application nodes BEFORE clearing company_id
+                $applications = $this->node->search('grant_application', null, $companyId);
+                $isExisting = false;
+                foreach ($applications as $app) {
+                    $appData = $this->toArray($app['data']);
+                    if (!empty($appData['is_existing_company'])) {
+                        $isExisting = true;
+                        break;
+                    }
+                }
+
+                // Remove from cohort
+                $categoryItem->detachCompany($cohortId, $companyId);
+                $detached++;
+
+                // Clear company_id on all grant_application nodes referencing this company
+                $this->node->clearCompanyId($companyId);
+                $cleared++;
+
+                // Delete only companies that were created by this import
+                if (!$isExisting) {
+                    $company->delete($companyId);
+                    $deleted++;
+                }
+            } catch (Throwable $t) {
+                $errors[] = [
+                    'company_id' => $companyId,
+                    'company_name' => $entry['name'] ?? '',
+                    'message' => $t->getMessage(),
+                ];
+            }
+        }
+
+        return [
+            'summary' => [
+                'total_in_cohort' => count($companies),
+                'detached_from_cohort' => $detached,
+                'company_id_cleared' => $cleared,
+                'companies_deleted' => $deleted,
+                'errors' => count($errors),
+            ],
+            'error_details' => $errors,
+        ];
+    }
+
+    private function mapApplicationToCompany(array $data): array
+    {
+        $address = trim(($data['address_line1'] ?? '') . ' ' . ($data['address_line2'] ?? ''));
+
+        return [
+            'name' => $data['company_name'] ?? '',
+            'registration_no' => $data['registration_number'] ?? null,
+            'trading_name' => $data['trade_name'] ?? null,
+            'address' => $address ?: null,
+            'suburb' => $data['suburb'] ?? null,
+            'city' => $data['city'] ?? null,
+            'business_location' => $data['province'] ?? null,
+            'youth_owned' => !empty($data['youth_owned']),
+            'black_ownership' => !empty($data['black_owned']),
+            'black_women_ownership' => !empty($data['black_women_owned']),
+            'turnover_actual' => $data['bank_statement_grand_total'] ?? null,
+        ];
     }
 
     private function getApplication(int $id): array

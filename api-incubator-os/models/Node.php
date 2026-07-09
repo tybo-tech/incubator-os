@@ -13,6 +13,34 @@ class Node
         $this->metaSync = new MetaValueSyncService($db);
     }
 
+    public function getConnection()
+    {
+        return $this->conn;
+    }
+
+    public function updateCompanyId(int $id, int $companyId): void
+    {
+        $stmt = $this->conn->prepare("UPDATE nodes SET company_id = ? WHERE id = ?");
+        $stmt->execute([$companyId, $id]);
+    }
+
+    public function clearCompanyId(int $companyId): void
+    {
+        $stmt = $this->conn->prepare("UPDATE nodes SET company_id = NULL WHERE company_id = ?");
+        $stmt->execute([$companyId]);
+    }
+
+    public function patchNodeData(int $id, array $patch): void
+    {
+        $node = $this->getById($id);
+        if (!$node) return;
+        $data = json_decode(json_encode($node['data']), true) ?? [];
+        foreach ($patch as $key => $value) {
+            $data[$key] = $value;
+        }
+        $this->update($id, $data);
+    }
+
     public function add($type, $data, $companyId = null, $parentId = null, $createdBy = null, $submittedByName = null)
     {
         $query = "INSERT INTO nodes (type, company_id, data, parent_id, created_by, updated_by, submitted_by_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
