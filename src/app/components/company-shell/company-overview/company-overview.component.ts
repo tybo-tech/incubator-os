@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MetricsOverviewComponent, MetricCard } from '../../shared/metrics-overview/metrics-overview.component';
 import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } from '../../../../services/company-capability.service';
+import { CompanyProfileEditorComponent } from './company-profile-editor.component';
+import { CompanyDirectorListComponent } from './company-director-list.component';
 
 @Component({
   selector: 'app-company-overview',
   standalone: true,
-  imports: [CommonModule, MetricsOverviewComponent],
+  imports: [CommonModule, MetricsOverviewComponent, CompanyProfileEditorComponent, CompanyDirectorListComponent],
   template: `
     <div class="p-4 lg:p-8">
       <div class="max-w-7xl mx-auto">
@@ -38,70 +40,13 @@ import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } fr
 
         <!-- Main Content Grid -->
         <div *ngIf="!loading() && !error() && overview()" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Company Information -->
+          <!-- Company Information (editable) -->
           <div class="lg:col-span-2">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Company Information</h3>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Company Name</label>
-                  <p class="text-gray-900">{{ company()?.name || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Registration Number</label>
-                  <p class="text-gray-900">{{ company()?.registration_no || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Contact Person</label>
-                  <p class="text-gray-900">{{ company()?.contact_person || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">CIPC Status</label>
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': company()?.cipc_status === 'IN BUSINESS',
-                    'bg-red-100 text-red-800': company()?.cipc_status !== 'IN BUSINESS',
-                    'bg-gray-100 text-gray-800': !company()?.cipc_status
-                  }" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium">
-                    {{ company()?.cipc_status || 'Unknown' }}
-                  </span>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Business Location</label>
-                  <p class="text-gray-900">{{ company()?.business_location || company()?.city || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Service Offering</label>
-                  <p class="text-gray-900">{{ company()?.service_offering || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">B-BBEE Level</label>
-                  <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {{ company()?.bbbee_level || 'N/A' }}
-                  </span>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Contact Number</label>
-                  <p class="text-gray-900">{{ company()?.contact_number || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Email Address</label>
-                  <p class="text-gray-900">{{ company()?.email_address || 'N/A' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Trading Name</label>
-                  <p class="text-gray-900">{{ company()?.trading_name || 'Nil' }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Total Employees</label>
-                  <p class="text-gray-900">{{ (company()?.permanent_employees || 0) + (company()?.temporary_employees || 0) }}</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-500 mb-1">Estimated Turnover</label>
-                  <p class="text-gray-900">{{ company()?.turnover_estimated ? 'R ' + company()?.turnover_estimated.toLocaleString() : 'N/A' }}</p>
-                </div>
-              </div>
-            </div>
+            <app-company-profile-editor
+              [companyId]="companyIdNumber()"
+              [data]="company()"
+              (saved)="loadOverview()">
+            </app-company-profile-editor>
           </div>
 
           <!-- Right Column -->
@@ -172,30 +117,12 @@ import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } fr
               </div>
             </div>
 
-            <!-- Directors Section -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                Directors
-                <span class="text-sm font-normal text-gray-500 ml-2">({{ directors().length }})</span>
-              </h3>
-
-              <div *ngIf="directors().length === 0" class="text-center py-6 text-gray-400">
-                <p class="text-sm">No directors registered</p>
-              </div>
-
-              <div *ngFor="let dir of directors(); let i = index" class="py-3" [class.border-b]="i < directors().length - 1" [class.border-gray-100]="i < directors().length - 1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="font-medium text-gray-900">{{ dir.fullName }}</span>
-                  <span class="text-xs text-gray-500">{{ dir.role }}</span>
-                </div>
-                <div class="text-sm text-gray-500 space-y-0.5">
-                  <p *ngIf="dir.phone">{{ dir.phone }}</p>
-                  <p *ngIf="dir.email">{{ dir.email }}</p>
-                  <p *ngIf="dir.gender" class="text-xs text-gray-400">Gender: {{ dir.gender }}</p>
-                  <p *ngIf="dir.idNumber" class="text-xs text-gray-400">ID: {{ dir.idNumber }}</p>
-                </div>
-              </div>
-            </div>
+            <!-- Directors (add, list, remove) -->
+            <app-company-director-list
+              [companyId]="companyIdNumber()"
+              [directors]="directors()"
+              (directorsChanged)="loadOverview()">
+            </app-company-director-list>
           </div>
         </div>
       </div>
@@ -226,6 +153,7 @@ export class CompanyOverviewComponent implements OnInit {
 
   company = computed(() => this.overview()?.company || null);
   directors = computed<DirectorSummary[]>(() => this.overview()?.directors || []);
+  companyIdNumber = computed(() => this.companyId ? parseInt(this.companyId, 10) : 0);
 
   loadOverview(): void {
     if (!this.companyId) return;
