@@ -8,19 +8,18 @@ final class FinancialIndicatorLinkRepository
     public function createRequest(int $companyId, int $financialYear, int $month, string $token, string $expiresAt): array
     {
         $stmt = $this->conn->prepare("
-            INSERT INTO nodes (type, company_id, data, created_by)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO nodes (type, token, company_id, data, created_by)
+            VALUES (?, ?, ?, ?, ?)
         ");
         $data = json_encode([
             'type' => 'financial_indicator_request',
             'company_id' => $companyId,
             'financial_year' => $financialYear,
             'month' => $month,
-            'token' => $token,
             'expires_at' => $expiresAt,
             'status' => 'pending',
         ]);
-        $stmt->execute(['financial_indicator_request', $companyId, $data, null]);
+        $stmt->execute(['financial_indicator_request', $token, $companyId, $data, null]);
         return $this->getByToken($token);
     }
 
@@ -28,8 +27,7 @@ final class FinancialIndicatorLinkRepository
     {
         $stmt = $this->conn->prepare("
             SELECT * FROM nodes
-            WHERE type = 'financial_indicator_request'
-            AND JSON_EXTRACT(data, '$.token') = ?
+            WHERE token = ?
         ");
         $stmt->execute([$token]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);

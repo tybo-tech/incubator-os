@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FinancialIndicatorsFacade } from '../services/financial-indicators.facade';
 import { FinancialIndicatorSummary, FinancialIndicatorResponse, FinancialIndicatorData, FinancialIndicatorSummaryResponse, AnnualReportResponse } from '../../../../../services/financial-indicator.service';
+import { FinancialIndicatorExportService } from '../../../../../services/financial-indicator-export.service';
 import { FinancialSummaryCardsComponent } from '../components/financial-summary/financial-summary-cards.component';
 import { FinancialListComponent } from '../components/financial-list/financial-list.component';
 import { FinancialFormComponent } from '../components/financial-form/financial-form.component';
 import { AnnualReportComponent } from '../components/annual-report/annual-report.component';
 import { RequestDialogComponent } from '../components/request-dialog/request-dialog.component';
 import { ViewDialogComponent } from '../components/view-dialog/view-dialog.component';
+import { ImportDialogComponent } from '../components/import-dialog/import-dialog.component';
 
 @Component({
   selector: 'app-financial-indicators-page',
@@ -21,6 +23,7 @@ import { ViewDialogComponent } from '../components/view-dialog/view-dialog.compo
     AnnualReportComponent,
     RequestDialogComponent,
     ViewDialogComponent,
+    ImportDialogComponent,
   ],
   providers: [FinancialIndicatorsFacade],
   template: `
@@ -51,6 +54,14 @@ import { ViewDialogComponent } from '../components/view-dialog/view-dialog.compo
           <button (click)="loadAll()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Refresh
+          </button>
+          <button (click)="openImport()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+            Import
+          </button>
+          <button (click)="exportData()" class="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Export
           </button>
         </div>
 
@@ -107,15 +118,24 @@ import { ViewDialogComponent } from '../components/view-dialog/view-dialog.compo
       *ngIf="showRequest()"
       [companyId]="companyId()"
       (close)="closeRequest()" />
+
+    <!-- Import Dialog -->
+    <app-import-dialog
+      *ngIf="showImport()"
+      [companyId]="companyId()"
+      (close)="closeImport()"
+      (imported)="loadAll()" />
   `
 })
 export class FinancialIndicatorsPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private facade: FinancialIndicatorsFacade,
+    private exportService: FinancialIndicatorExportService,
   ) {}
 
   companyId = signal<number>(0);
+  companyName = signal<string>('');
   loading = signal(false);
   saving = signal(false);
   error = signal<string | null>(null);
@@ -133,6 +153,7 @@ export class FinancialIndicatorsPageComponent implements OnInit {
   viewingRecord = signal<FinancialIndicatorResponse | null>(null);
 
   showRequest = signal(false);
+  showImport = signal(false);
 
   ngOnInit(): void {
     this.route.parent?.params.subscribe(params => {
@@ -169,6 +190,22 @@ export class FinancialIndicatorsPageComponent implements OnInit {
     });
 
     this.loading.set(false);
+  }
+
+  openImport(): void {
+    this.showImport.set(true);
+  }
+
+  closeImport(): void {
+    this.showImport.set(false);
+  }
+
+  async exportData(): Promise<void> {
+    const cid = this.companyId();
+    if (!cid) return;
+    const year = new Date().getFullYear();
+    const name = this.companyName() || `Company_${cid}`;
+    await this.exportService.exportAnnualReport(cid, year, name);
   }
 
   openCreate(): void {

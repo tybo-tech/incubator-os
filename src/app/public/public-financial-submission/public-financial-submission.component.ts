@@ -18,7 +18,6 @@ interface LiveCalc {
   imports: [CommonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
-      <!-- Header -->
       <div class="bg-white border-b border-gray-200">
         <div class="max-w-2xl mx-auto px-4 py-6">
           <h1 class="text-xl font-bold text-gray-900">Financial Indicators</h1>
@@ -29,24 +28,41 @@ interface LiveCalc {
       <div class="flex-1 px-4 py-8">
         <div class="max-w-2xl mx-auto">
 
-          <!-- Loading -->
           <div *ngIf="state() === 'loading'" class="text-center py-16">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-3"></div>
-            <p class="text-sm text-gray-500">Loading...</p>
+            <p class="text-sm text-gray-500">Validating your link...</p>
           </div>
 
-          <!-- Invalid / Expired -->
           <div *ngIf="state() === 'invalid'" class="text-center py-16">
             <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
-            <h2 class="text-base font-semibold text-gray-900 mb-1">Invalid or expired link</h2>
-            <p class="text-sm text-gray-500">This submission link is no longer valid. Please contact your advisor for a new link.</p>
+            <h2 class="text-base font-semibold text-gray-900 mb-1">Invalid link</h2>
+            <p class="text-sm text-gray-500">This submission link is not valid. Please contact your advisor for a new link.</p>
           </div>
 
-          <!-- Already submitted -->
+          <div *ngIf="state() === 'expired'" class="text-center py-16">
+            <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h2 class="text-base font-semibold text-gray-900 mb-1">Link expired</h2>
+            <p class="text-sm text-gray-500">This submission link has expired. Please ask your advisor to send a new one.</p>
+          </div>
+
+          <div *ngIf="state() === 'used'" class="text-center py-16">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h2 class="text-base font-semibold text-gray-900 mb-1">Already submitted</h2>
+            <p class="text-sm text-gray-500">This link has already been used. Contact your advisor if you need to resubmit.</p>
+          </div>
+
           <div *ngIf="state() === 'submitted'" class="text-center py-16">
             <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
               <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +73,6 @@ interface LiveCalc {
             <p class="text-sm text-gray-600">Your financial data has been submitted successfully.</p>
           </div>
 
-          <!-- Form -->
           <div *ngIf="state() === 'form'" class="bg-white rounded-xl shadow-sm border border-gray-200">
             <div class="px-6 py-5 border-b border-gray-200">
               <h2 class="text-lg font-semibold text-gray-900">Monthly Management Accounts</h2>
@@ -65,22 +80,17 @@ interface LiveCalc {
             </div>
 
             <div class="p-6 space-y-6">
-              <!-- Meta -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Financial Year</label>
-                  <input type="number" [(ngModel)]="financialYear" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                  <input type="number" [ngModel]="financialYear" disabled class="w-full border border-gray-200 bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-500" />
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
-                  <select [(ngModel)]="month" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option [value]="0">Select month</option>
-                    <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
-                  </select>
+                  <input type="text" [ngModel]="monthLabel" disabled class="w-full border border-gray-200 bg-gray-50 rounded-md px-3 py-2 text-sm text-gray-500" />
                 </div>
               </div>
 
-              <!-- Income Statement -->
               <div>
                 <h3 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">Income Statement</h3>
                 <div class="grid grid-cols-3 gap-4">
@@ -99,7 +109,6 @@ interface LiveCalc {
                 </div>
               </div>
 
-              <!-- Live Calculations -->
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p class="text-sm font-medium text-blue-800 mb-2">Calculated Values</p>
                 <div class="grid grid-cols-4 gap-4 text-sm">
@@ -110,7 +119,6 @@ interface LiveCalc {
                 </div>
               </div>
 
-              <!-- Balance Sheet -->
               <div>
                 <h3 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">Balance Sheet</h3>
                 <div class="grid grid-cols-3 gap-4">
@@ -126,13 +134,11 @@ interface LiveCalc {
                 </div>
               </div>
 
-              <!-- Error -->
               <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">{{ error() }}</div>
             </div>
 
-            <!-- Footer -->
             <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200">
-              <button (click)="submit()" [disabled]="submitting() || !month || !financialYear"
+              <button (click)="submit()" [disabled]="submitting()"
                 class="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                 {{ submitting() ? 'Submitting...' : 'Submit' }}
               </button>
@@ -145,13 +151,14 @@ interface LiveCalc {
   `
 })
 export class PublicFinancialSubmissionComponent implements OnInit {
-  state = signal<'loading' | 'invalid' | 'form' | 'submitted'>('loading');
+  state = signal<'loading' | 'invalid' | 'expired' | 'used' | 'form' | 'submitted'>('loading');
   submitting = signal(false);
   error = signal<string | null>(null);
 
   token = '';
-  financialYear = new Date().getFullYear();
+  financialYear = 0;
   month = 0;
+  monthLabel = '';
 
   sales = 0;
   costOfSales = 0;
@@ -167,12 +174,10 @@ export class PublicFinancialSubmissionComponent implements OnInit {
   totalLiabilities = 0;
   totalEquity = 0;
 
-  protected months = [
-    { value: 1, label: 'January' }, { value: 2, label: 'February' }, { value: 3, label: 'March' },
-    { value: 4, label: 'April' }, { value: 5, label: 'May' }, { value: 6, label: 'June' },
-    { value: 7, label: 'July' }, { value: 8, label: 'August' }, { value: 9, label: 'September' },
-    { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' },
-  ];
+  private monthNames: Record<number, string> = {
+    1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June',
+    7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December',
+  };
 
   protected liveCalc = computed<LiveCalc>(() => {
     const s = this.sales;
@@ -199,14 +204,36 @@ export class PublicFinancialSubmissionComponent implements OnInit {
       this.state.set('invalid');
       return;
     }
-    this.state.set('form');
+    this.validateToken();
+  }
+
+  private validateToken(): void {
+    this.http.get<any>(`${Constants.ApiBase}api/financial-indicators/public/validate.php/${this.token}`).subscribe({
+      next: (result) => {
+        if (!result.valid) {
+          if (result.error?.toLowerCase().includes('expired')) {
+            this.state.set('expired');
+          } else if (result.error?.toLowerCase().includes('already been used')) {
+            this.state.set('used');
+          } else {
+            this.state.set('invalid');
+          }
+          return;
+        }
+        this.financialYear = result.financialYear;
+        this.month = result.month;
+        this.monthLabel = this.monthNames[result.month] || `Month ${result.month}`;
+        this.state.set('form');
+      },
+      error: () => {
+        this.state.set('invalid');
+      },
+    });
   }
 
   protected recalc(): void {}
 
   submit(): void {
-    if (!this.month || !this.financialYear) return;
-
     this.submitting.set(true);
     this.error.set(null);
 
