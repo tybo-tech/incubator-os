@@ -59,3 +59,105 @@ api-incubator-os/  PHP 8.1 backend (custom MVC, Docker-based)
 - **2-space indentation**
 - **snake_case** for DB columns, **camelCase** for TS/PHP methods, **PascalCase** for PHP models
 - No ESLint, Prettier, or CI/CD config present
+
+---
+
+# AI Development Workflow
+
+## Startup Sequence (every session)
+
+1. **Load the Angular Developer skill** — run the `skill` tool with name `angular-developer`
+2. **Load the PHP Developer skill** — run the `skill` tool with name `php-developer`
+3. **Read the current Sprint** — open `.ai/sprints/Sprint-NN.md`
+4. **Read the latest Session** — open the most recent file in `.ai/sessions/`
+5. **Understand the current task** — from the sprint and session context
+6. **Work** — implement the task
+7. **Update Session** — create a new file in `.ai/sessions/` with the session template
+8. **Update Sprint** — mark tasks as completed in the sprint file
+
+## Session Template
+
+Every session file must follow this exact structure. Create a new file named `NNN-YYYY-MM-DD.md` (sequence number + date):
+
+```markdown
+# Session NNN
+
+Date:
+YYYY-MM-DD
+
+## Goal
+
+What was the objective?
+
+---
+
+## Completed
+
+- Itemized list of what was done
+
+---
+
+## Frontend
+
+Files modified
+
+Components
+
+Services
+
+Issues
+
+---
+
+## Backend
+
+Files modified
+
+Controllers
+
+Services
+
+Database
+
+---
+
+## Decisions
+
+Important architectural decisions made today.
+
+---
+
+## Outstanding
+
+Things still incomplete.
+
+---
+
+## Next Session
+
+The very next task that should be done.
+```
+
+## Rule of Three
+
+Every completed task must update exactly three things:
+
+1. **Code** — the implementation
+2. **Session** — record what was done
+3. **Sprint** — mark progress
+
+## Skills
+
+Skills are in `.opencode/skills/`. Load them at the start of every session:
+
+- **`angular-developer`** — Angular 19, components, signals, services, Tailwind, API patterns
+- **`php-developer`** — PHP 8.1, business capabilities, Node repository, import/undo pattern, category hierarchy
+
+## .ai/ Directory
+
+```
+.ai/
+├── sessions/     Working memory — what happened each session
+├── sprints/      Planning board — what should happen
+└── standards/    Shared conventions
+```

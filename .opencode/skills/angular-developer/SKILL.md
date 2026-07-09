@@ -4,12 +4,11 @@
 
 - Angular 19
 - TypeScript
-- Components
-- Signals
-- Services
-- Routing
-- Forms
-- Tailwind CSS
+- Components (standalone, signals)
+- Services (API layer, state management)
+- Routing (lazy-loaded children)
+- Forms (template-driven)
+- Tailwind CSS v4
 - Project conventions
 - Read latest session
 - Update latest session
@@ -17,15 +16,173 @@
 ## Golden Rules
 
 - Never duplicate logic from backend
-- UI owns presentation
+- UI owns presentation only
 - Respect project conventions
+- Every completed task updates: Code → Session → Sprint
 - Update session before finishing
+
+## Architecture
+
+```
+src/app/admin/grant-funding/
+├── services/
+│   ├── grant-application-api.service.ts   ← NEW: calls business capability endpoints
+│   ├── grant-application.service.ts        ← LEGACY: calls api-nodes CRUD
+│   ├── grant-funding-state.service.ts     ← State management (signals)
+│   └── workflow.service.ts                ← Workflow cache
+├── interfaces/
+│   ├── grant-application.interfaces.ts    ← Domain types
+│   └── applicant-overview.interface.ts    ← Read model contract
+├── pages/                                 ← Route-level components
+├── grant-funding-applications.component.ts
+├── grant-funding-header.component.ts
+├── grant-funding-filters.component.ts
+├── grant-funding-table.component.ts
+├── grant-funding-bulk-modal.component.ts
+├── promote-to-cohort-modal.component.ts
+└── workflow-settings.component.ts
+```
+
+## API Service Pattern
+
+Always create a dedicated API service for business capability endpoints:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class GrantApplicationApiService {
+  private baseUrl = `${Constants.ApiBase}/api/grant-applications`;
+
+  constructor(private http: HttpClient) {}
+
+  getOverview(applicantId: number): Observable<ApplicantOverview> {
+    return this.http.get<ApplicantOverview>(
+      `${this.baseUrl}/queries/get-overview.php?applicantId=${applicantId}`
+    );
+  }
+
+  updateApplication(applicantId: number, data: Record<string, any>): Observable<any> {
+    return this.http.put(
+      `${this.baseUrl}/commands/update-application.php`,
+      { applicantId, data }
+    );
+  }
+}
+```
+
+## State Management Pattern
+
+Use a central state service with signals:
+
+```typescript
+export class GrantFundingStateService {
+  applications = signal<GrantApplication[]>([]);
+  filtered = signal<GrantApplication[]>([]);
+  isLoading = signal(false);
+  selectedIds = signal<Set<number>>(new Set());
+  showPromoteModal = signal(false);
+  promoteMode = signal<'import' | 'undo'>('import');
+  selectedIdsArray = computed(() => Array.from(this.selectedIds()));
+}
+```
+
+## Modal Pattern
+
+Standalone component, controlled by state service signal:
+
+```typescript
+@Component({ standalone: true, ... })
+export class PromoteToCohortModalComponent implements OnInit {
+  state = inject(GrantFundingStateService);
+  private api = inject(GrantApplicationApiService);
+  private toast = inject(ToastService);
+}
+```
+
+## Hierarchy Selector Pattern
+
+Cascading 3-level selects (Client → Program → Cohort):
+
+```typescript
+onClientChange(): void {
+  this.selectedProgramId = 0;
+  this.selectedCohortId = 0;
+  this.programs.set([]);
+  this.cohorts.set([]);
+  if (this.selectedClientId) {
+    this.categorySvc.listProgramsForClient(this.selectedClientId).subscribe(...)
+  }
+}
+```
+
+## Session Template
+
+Every session file must follow this exact structure:
+
+```markdown
+# Session NNN
+
+Date:
+YYYY-MM-DD
+
+## Goal
+
+What was the objective?
+
+---
+
+## Completed
+
+- Itemized list of what was done
+
+---
+
+## Frontend
+
+Files modified
+
+Components
+
+Services
+
+Issues
+
+---
+
+## Backend
+
+Files modified
+
+Controllers
+
+Services
+
+Database
+
+---
+
+## Decisions
+
+Important architectural decisions made today.
+
+---
+
+## Outstanding
+
+Things still incomplete.
+
+---
+
+## Next Session
+
+The very next task that should be done.
+```
 
 ## Startup Sequence
 
-1. Read Sprint
-2. Read Latest Session
-3. Understand current task
-4. Work
-5. Update Session
-6. Update Sprint if necessary
+1. Read Sprint (`.ai/sprints/Sprint-NN.md`)
+2. Read Latest Session (`.ai/sessions/NNN-YYYY-MM-DD.md`)
+3. Read Session Template (above)
+4. Understand current task
+5. Work
+6. Update Session (create new file in `.ai/sessions/`)
+7. Update Sprint if necessary

@@ -5,7 +5,7 @@
 - PHP 8.1
 - Business capabilities (services)
 - API endpoints (queries + commands)
-- Database (Node repository)
+- Database (Node repository, Company, CategoryItem)
 - Validation
 - Business rules
 - API contracts
@@ -19,6 +19,7 @@
 - Keep APIs consistent
 - Every new endpoint must represent a business capability, not a database operation
 - Frontend sends patches, not merged objects — backend owns the merge
+- Every completed task updates: Code → Session → Sprint
 - Update session before finishing
 
 ## Architecture
@@ -29,8 +30,15 @@ api-incubator-os/
 │   └── {capability}/
 │       ├── queries/              ← Read operations (never modify data)
 │       └── commands/             ← Write operations (always modify data)
-├── api-nodes/node/               ← LEGACY: generic CRUD, untouched
-├── models/Node.php               ← REPOSITORY: generic CRUD, stays as-is
+├── api-nodes/                    ← LEGACY: generic CRUD, untouched
+│   ├── node/                     ← Node CRUD endpoints
+│   ├── company/                  ← Company CRUD endpoints
+│   └── category/                 ← Category/cohort endpoints
+├── models/                       ← REPOSITORIES: generic CRUD, stays as-is
+│   ├── Node.php                  ← Generic JSON node storage
+│   ├── Company.php               ← Companies table (WRITABLE pattern)
+│   ├── Categories.php           ← Category hierarchy (client/program/cohort)
+│   └── CategoryItem.php         ← Company-cohort assignments
 └── services/
     └── {capability}/
         ├── {Capability}Service.php
@@ -49,7 +57,30 @@ declare(strict_types=1);
 
 class {Capability}Service
 {
-    public function __construct(private Node $node) {}
+    private Node $node;
+    private ?Company $company = null;
+    private ?CategoryItem $categoryItem = null;
+
+    public function __construct(Node $node)
+    {
+        $this->node = $node;
+    }
+
+    private function getCompany(): Company
+    {
+        if (!$this->company) {
+            $this->company = new Company($this->node->getConnection());
+        }
+        return $this->company;
+    }
+
+    private function getCategoryItem(): CategoryItem
+    {
+        if (!$this->categoryItem) {
+            $this->categoryItem = new CategoryItem($this->node->getConnection());
+        }
+        return $this->categoryItem;
+    }
 
     // Public methods = business operations
     public function getOverview(int $id): array
@@ -149,21 +180,146 @@ try {
 }
 ```
 
-## Reference Implementation: GrantApplicationService
+## Import/Undo Pattern
 
-See `services/grant-applications/GrantApplicationService.php` for the complete reference.
+For operations that create companies from nodes and need reversibility:
 
-Key patterns established:
-- `getOverview()` — assembles a read model from 5-6 internal Node calls, returns one response
-- `updateApplication()` — reads current state, merges patch, validates, saves, returns updated
-- Private helpers (`getApplication()`, `getWorkflow()`, `getBankStatements()`, etc.) wrap Node calls so public methods read as business intent
-- `toArray()` helper converts stdClass from Node's json_decode to associative arrays
+```php
+// Import: create/update companies, set company_id, attach to cohort
+public function executeImportToCompanies(?int $cohortId = null, ?string $statusFilter = null): array
+{
+    $dryRun = $this->dryRunImportToCompanies($statusFilter);
+    foreach ($dryRun['results'] as $item) {
+        $isExisting = $item['status'] === 'exists';
+        if ($isExisting) {
+            $company->update($companyId, $item['mapped_data']);
+        } else {
+            $created = $company->add($item['mapped_data']);
+            $this->node->updateCompanyId((int)$item['node_id'], $companyId);
+        }
+        // Store flag on node for undo
+        $this->node->patchNodeData((int)$item['node_id'], [
+            'is_existing_company' => $isExisting,
+            'last_action' => 'imported',
+            'last_action_at' => date('c'),
+        ]);
+        // Attach to cohort
+        $this->getCategoryItem()->attachCompany($cohortId, $companyId);
+    }
+}
+
+// Undo: detach from cohort, clear company_id, delete only new companies
+public function undoImportToCompanies(int $cohortId): array
+{
+    $companies = $this->getCategoryItem()->getCompaniesInCohort($cohortId);
+    foreach ($companies as $entry) {
+        // Check is_existing_company flag BEFORE clearing
+        $applications = $this->node->search('grant_application', null, $companyId);
+        $isExisting = check flag in app data;
+        $this->getCategoryItem()->detachCompany($cohortId, $companyId);
+        $this->node->clearCompanyId($companyId);
+        if (!$isExisting) {
+            $company->delete($companyId);
+        }
+    }
+}
+```
+
+## Category Hierarchy
+
+```
+categories table: id, name, type, parent_id, depth
+  type: 'client' (depth 1) → 'program' (depth 2) → 'cohort' (depth 3)
+
+categories_item table: links companies to cohorts
+  cohort_id, program_id, client_id, company_id, status, joined_at
+```
+
+Key methods in `CategoryItem`:
+- `attachCompany(cohortId, companyId)` — adds company to cohort (prevents duplicates)
+- `detachCompany(cohortId, companyId)` — removes from cohort
+- `getCompaniesInCohort(cohortId)` — list companies with assignment details
+- `getCompanyParticipation(companyId)` — all cohorts for a company
+
+## Node Model Extensions
+
+```php
+// Added to Node.php for import/undo support:
+public function getConnection()          // Expose PDO for other models
+public function updateCompanyId(id, companyId)  // Set company_id on node
+public function clearCompanyId(companyId)       // Nullify company_id on all nodes
+public function patchNodeData(id, patch)        // Merge data into node's JSON
+```
+
+## Session Template
+
+Every session file must follow this exact structure:
+
+```markdown
+# Session NNN
+
+Date:
+YYYY-MM-DD
+
+## Goal
+
+What was the objective?
+
+---
+
+## Completed
+
+- Itemized list of what was done
+
+---
+
+## Frontend
+
+Files modified
+
+Components
+
+Services
+
+Issues
+
+---
+
+## Backend
+
+Files modified
+
+Controllers
+
+Services
+
+Database
+
+---
+
+## Decisions
+
+Important architectural decisions made today.
+
+---
+
+## Outstanding
+
+Things still incomplete.
+
+---
+
+## Next Session
+
+The very next task that should be done.
+```
 
 ## Startup Sequence
 
-1. Read Sprint
-2. Read Latest Session
-3. Understand current task
-4. Work
-5. Update Session
-6. Update Sprint if necessary
+1. Read Sprint (`.ai/sprints/Sprint-NN.md`)
+2. Read Latest Session (`.ai/sessions/NNN-YYYY-MM-DD.md`)
+3. Read Session Template (above)
+4. Understand current task
+5. Work
+6. Update Session (create new file in `.ai/sessions/`)
+7. Update Sprint if necessary
