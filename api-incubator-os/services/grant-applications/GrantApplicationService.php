@@ -7,6 +7,7 @@ class GrantApplicationService
     private ?Company $company = null;
     private ?CategoryItem $categoryItem = null;
     private ?CompanyFinancialYearlyStats $yearlyStats = null;
+    private ?User $userModel = null;
 
     public function __construct(Node $node)
     {
@@ -35,6 +36,14 @@ class GrantApplicationService
             $this->yearlyStats = new CompanyFinancialYearlyStats($this->node->getConnection());
         }
         return $this->yearlyStats;
+    }
+
+    private function getUserModel(): User
+    {
+        if (!$this->userModel) {
+            $this->userModel = new User($this->node->getConnection());
+        }
+        return $this->userModel;
     }
 
     public function getOverview(int $applicantId): array
@@ -206,7 +215,6 @@ class GrantApplicationService
                 }
 
                 // Migrate bank statements to company_financial_yearly_stats
-                // Only proceed if the company record actually exists
                 if ($companyId && $this->getCompany()->getById($companyId)) {
                     $statements = $this->getBankStatements((int)$item['node_id']);
                     foreach ($statements as $stmt) {
@@ -230,6 +238,53 @@ class GrantApplicationService
                             'notes'             => $bsData['notes'] ?? null,
                         ]);
                     }
+                }
+
+                // Import directors as users
+                $nodeData = $this->toArray($this->node->getById((int)$item['node_id'])['data'] ?? []);
+                $directors = $nodeData['directors'] ?? [];
+                $createdUserIds = [];
+                foreach ($directors as $dir) {
+                    $fullName = trim(($dir['name'] ?? '') . ' ' . ($dir['surname'] ?? ''));
+                    if (empty($fullName)) continue;
+
+                    $email = $dir['email'] ?? null;
+                    $phone = $dir['cell_phone'] ?? $dir['phone'] ?? null;
+
+                    // Build a unique username: prefer email, fall back to fullName + random suffix
+                    $username = $email;
+                    if ($username && $this->getUserModel()->getByUsername($username)) {
+                        $username = null; // email taken, fall through to name-based
+                    }
+                    if (!$username) {
+                        $base = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($fullName));
+                        $username = $base;
+                        for ($i = 0; $i < 10; $i++) {
+                            if (!$this->getUserModel()->getByUsername($username)) break;
+                            $username = $base . '_' . bin2hex(random_bytes(2));
+                        }
+                    }
+
+                    $user = $this->getUserModel()->add([
+                        'company_id' => $companyId,
+                        'full_name'  => $fullName,
+                        'email'      => $email,
+                        'phone'      => $phone,
+                        'username'   => $username,
+                        'role'       => 'Director',
+                        'race'       => $dir['race'] ?? null,
+                        'gender'     => $dir['gender'] ?? null,
+                        'id_number'  => $dir['id_number'] ?? null,
+                        'status'     => 'active',
+                    ]);
+                    $createdUserIds[] = (int)$user['id'];
+                }
+
+                // Track created user IDs on the node for undo
+                if (!empty($createdUserIds)) {
+                    $this->node->patchNodeData((int)$item['node_id'], [
+                        'imported_user_ids' => $createdUserIds,
+                    ]);
                 }
             } catch (Throwable $t) {
                 $errors[] = [
@@ -296,6 +351,16 @@ class GrantApplicationService
                         'last_action' => 'undone',
                         'last_action_at' => date('c'),
                     ]);
+                }
+
+                // Delete all users linked to this company (created by import or otherwise)
+                $companyUsers = $this->getUserModel()->listByCompany($companyId);
+                foreach ($companyUsers as $u) {
+                    try {
+                        $this->getUserModel()->delete((int)$u['id']);
+                    } catch (Throwable $t) {
+                        // skip
+                    }
                 }
 
                 // Delete only companies that were created by this import

@@ -40,6 +40,7 @@ class User
         // Defaults aligned with schema
         $fields['role']   = $fields['role']   ?? 'Director';
         $fields['status'] = $fields['status'] ?? 'active';
+        $fields['id_type'] = $fields['id_type'] ?? 'RSA_ID';
 
         $sql = "INSERT INTO users (" . implode(',', array_keys($fields)) . ")
                 VALUES (" . implode(',', array_fill(0, count($fields), '?')) . ")";
