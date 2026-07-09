@@ -128,6 +128,11 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-dollar-sign'
     },
     {
+      label: 'Financial Indicators',
+      route: 'financial-indicators',
+      icon: 'fas fa-chart-bar'
+    },
+    {
       label: 'Compliance',
       route: 'compliance',
       icon: 'fas fa-shield-alt'

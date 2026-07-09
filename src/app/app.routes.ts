@@ -51,6 +51,7 @@ import { FormTemplateSettingsComponent } from './admin/form-templates/form-templ
 import { AssessmentTabComponent } from './components/companies/company-detail/assessment-tab/assessment-tab.component';
 import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
+import { FinancialIndicatorsPageComponent } from './components/company-shell/financial-indicators/pages/financial-indicators-page.component';
 import { DashboardRecentActivitiesComponent } from './dashboard/dashboard-recent-activities/dashboard-recent-activities.component';
 import { ProjectsListComponent } from './admin/projects/projects-list.component';
 import { ProjectDetailComponent } from './admin/projects/project-detail.component';
@@ -220,12 +221,11 @@ export const routes: Routes = [
               },
               {
                 path: 'cost-structure',
-                // component: CostStructureComponent,
-                component: QuarterlyCostSummaryComponent ,
+                component: QuarterlyCostSummaryComponent,
               },
               {
                 path: 'balance-sheet',
-                component: BalanceSheetComponent, // Temporarily disabled for pie chart testing
+                component: BalanceSheetComponent,
               },
               {
                 path: 'ratios',
@@ -239,7 +239,6 @@ export const routes: Routes = [
                 path: 'employee-count',
                 component: EmployeeCountComponent,
               },
-              // Legacy route redirects for compatibility
               {
                 path: 'statement',
                 redirectTo: 'bank-statements',
@@ -256,7 +255,11 @@ export const routes: Routes = [
                 pathMatch: 'full'
               }
             ]
-          }
+          },
+          {
+            path: 'financial-indicators',
+            component: FinancialIndicatorsPageComponent,
+          },
         ]
       },
       {
