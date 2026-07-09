@@ -105,8 +105,8 @@ import { ViewDialogComponent } from '../components/view-dialog/view-dialog.compo
     <!-- Request Dialog -->
     <app-request-dialog
       *ngIf="showRequest()"
-      (close)="closeRequest()"
-      (generateLink)="generateLink($event)" />
+      [companyId]="companyId()"
+      (close)="closeRequest()" />
   `
 })
 export class FinancialIndicatorsPageComponent implements OnInit {
@@ -151,6 +151,8 @@ export class FinancialIndicatorsPageComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
+    const year = new Date().getFullYear();
+
     this.facade.getSummary(cid).subscribe({
       next: (s) => { this.summary.set(s); },
       error: () => {}
@@ -161,7 +163,6 @@ export class FinancialIndicatorsPageComponent implements OnInit {
       error: () => {}
     });
 
-    const year = new Date().getFullYear();
     this.facade.getAnnual(cid, year).subscribe({
       next: (a) => { this.annualReport.set(a); },
       error: () => {}
@@ -266,24 +267,6 @@ export class FinancialIndicatorsPageComponent implements OnInit {
 
   closeRequest(): void {
     this.showRequest.set(false);
-  }
-
-  generateLink(data: { financialYear: number; month: number }): void {
-    const cid = this.companyId();
-    if (!cid) return;
-
-    this.facade.requestLink(cid, data.financialYear, data.month).subscribe({
-      next: (result) => {
-        if (result.success) {
-          this.error.set(null);
-        } else {
-          this.error.set(result.message);
-        }
-      },
-      error: (err) => {
-        this.error.set(err.error?.error || 'Failed to generate link');
-      }
-    });
   }
 
   scrollToAnnual(): void {

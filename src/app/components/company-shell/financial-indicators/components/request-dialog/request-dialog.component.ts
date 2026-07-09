@@ -1,11 +1,13 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { FinancialIndicatorsFacade } from '../../services/financial-indicators.facade';
 
 @Component({
   selector: 'app-request-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [FinancialIndicatorsFacade],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="close.emit()">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4" (click)="$event.stopPropagation()">
@@ -38,6 +40,8 @@ import { FormsModule } from '@angular/forms';
               <button (click)="copyLink()" class="px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Copy</button>
             </div>
           </div>
+
+          <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">{{ error() }}</div>
         </div>
 
         <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200">
@@ -51,10 +55,11 @@ import { FormsModule } from '@angular/forms';
   `
 })
 export class RequestDialogComponent {
+  companyId = input.required<number>();
   close = output<void>();
-  generateLink = output<{ financialYear: number; month: number }>();
   generatedUrl = signal<string | null>(null);
   generating = signal(false);
+  error = signal<string | null>(null);
 
   protected financialYear = new Date().getFullYear();
   protected month = 0;
@@ -65,15 +70,38 @@ export class RequestDialogComponent {
     { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' },
   ];
 
+  constructor(private facade: FinancialIndicatorsFacade) {}
+
   generate(): void {
     if (!this.financialYear || !this.month) return;
-    this.generateLink.emit({ financialYear: this.financialYear, month: this.month });
+    this.generating.set(true);
+    this.error.set(null);
+    this.generatedUrl.set(null);
+
+    this.facade.requestLink(this.companyId(), this.financialYear, this.month).subscribe({
+      next: (result) => {
+        this.generating.set(false);
+        if (result.success) {
+          this.generatedUrl.set(result.data.publicUrl);
+        } else {
+          this.error.set(result.message);
+        }
+      },
+      error: (err) => {
+        this.generating.set(false);
+        this.error.set(err.error?.error || 'Failed to generate link');
+      }
+    });
   }
 
   copyLink(): void {
     const url = this.generatedUrl();
     if (url) {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.activeElement as HTMLElement;
+        if (btn) btn.innerText = 'Copied!';
+        setTimeout(() => { if (btn) btn.innerText = 'Copy'; }, 2000);
+      });
     }
   }
 }
