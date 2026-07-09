@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { MetricsOverviewComponent, MetricCard } from '../../shared/metrics-overview/metrics-overview.component';
@@ -185,14 +185,14 @@ import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } fr
 
               <div *ngFor="let dir of directors(); let i = index" class="py-3" [class.border-b]="i < directors().length - 1" [class.border-gray-100]="i < directors().length - 1">
                 <div class="flex items-center justify-between mb-1">
-                  <span class="font-medium text-gray-900">{{ dir.full_name }}</span>
+                  <span class="font-medium text-gray-900">{{ dir.fullName }}</span>
                   <span class="text-xs text-gray-500">{{ dir.role }}</span>
                 </div>
                 <div class="text-sm text-gray-500 space-y-0.5">
                   <p *ngIf="dir.phone">{{ dir.phone }}</p>
                   <p *ngIf="dir.email">{{ dir.email }}</p>
                   <p *ngIf="dir.gender" class="text-xs text-gray-400">Gender: {{ dir.gender }}</p>
-                  <p *ngIf="dir.id_number" class="text-xs text-gray-400">ID: {{ dir.id_number }}</p>
+                  <p *ngIf="dir.idNumber" class="text-xs text-gray-400">ID: {{ dir.idNumber }}</p>
                 </div>
               </div>
             </div>
@@ -224,13 +224,8 @@ export class CompanyOverviewComponent implements OnInit {
     });
   }
 
-  get company(): any {
-    return this.overview()?.company || null;
-  }
-
-  get directors(): DirectorSummary[] {
-    return this.overview()?.directors || [];
-  }
+  company = computed(() => this.overview()?.company || null);
+  directors = computed<DirectorSummary[]>(() => this.overview()?.directors || []);
 
   loadOverview(): void {
     if (!this.companyId) return;
@@ -260,7 +255,7 @@ export class CompanyOverviewComponent implements OnInit {
 
   private updateCompanyMetrics(data: CompanyOverviewResponse): void {
     const c = data.company;
-    const fs = data.financial_summary;
+    const fs = data.financialSummary;
 
     const complianceFactors = [
       c.has_valid_bbbbee,
@@ -277,7 +272,7 @@ export class CompanyOverviewComponent implements OnInit {
           ? `R ${c.turnover_estimated.toLocaleString()}`
           : 'N/A',
         change: fs
-          ? `Actual: R ${fs.total_revenue.toLocaleString()}`
+          ? `Actual: R ${fs.totalRevenue.toLocaleString()}`
           : 'Estimated value',
         changeType: 'neutral',
         icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1',

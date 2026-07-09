@@ -6,25 +6,25 @@ import { Constants } from './service';
 export interface CompanyOverviewResponse {
   company: any;
   directors: DirectorSummary[];
-  financial_summary?: FinancialSummary;
+  financialSummary?: FinancialSummary;
 }
 
 export interface DirectorSummary {
   directorId: number;
-  full_name: string;
+  fullName: string;
   email: string | null;
   phone: string | null;
   role: string;
   gender: string | null;
-  id_number: string | null;
+  idNumber: string | null;
 }
 
 export interface FinancialSummary {
-  total_revenue: number;
-  fy_count: number;
-  latest_fy: string | null;
-  active_months: number;
-  captured_months: number;
+  totalRevenue: number;
+  fyCount: number;
+  latestFy: string | null;
+  activeMonths: number;
+  capturedMonths: number;
 }
 
 export interface CommandResult {
