@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IGrantApplicationData } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import { IndustryPickerComponent, IndustrySelection } from './industry-picker.component';
 
 @Component({
@@ -103,7 +103,7 @@ export class ApplicantCompanyInfoComponent {
   isSaving = signal(false);
   draft: Partial<IGrantApplicationData> = {};
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   startEdit(): void {
     this.draft = {
@@ -126,7 +126,7 @@ export class ApplicantCompanyInfoComponent {
   save(): void {
     if (!this.draft.company_name?.trim()) return;
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, {
+    this.api.updateApplication(this.applicantId, {
       company_name: this.draft.company_name,
       trade_name: this.draft.trade_name,
       registration_number: this.draft.registration_number,

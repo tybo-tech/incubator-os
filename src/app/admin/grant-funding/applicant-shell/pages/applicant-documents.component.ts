@@ -9,7 +9,7 @@ import {
   IUploadedDocument,
   DEFAULT_UPLOAD_REQUIREMENTS,
 } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import { UploadService } from '../../../../../services/UploadService';
 
 @Component({
@@ -365,7 +365,7 @@ export class ApplicantDocumentsComponent implements OnInit {
   });
 
   constructor(
-    private grantService: GrantApplicationService,
+    private api: GrantApplicationApiService,
     private uploadService: UploadService,
   ) {}
 
@@ -557,7 +557,7 @@ export class ApplicantDocumentsComponent implements OnInit {
 
   private save(docs: IUploadedDocument[]): void {
     this.documents.set(docs);
-    this.grantService.updateApplication(this.applicantId, { documents: docs }).subscribe({
+    this.api.updateApplication(this.applicantId, { documents: docs }).subscribe({
       next: node => this.dataUpdated.emit(node.data),
     });
   }

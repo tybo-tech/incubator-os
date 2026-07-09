@@ -10,7 +10,7 @@ import {
   RESIDENTIAL_AREAS,
   NOK_RELATIONSHIP_OPTIONS,
 } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import { IndustryPickerComponent, IndustrySelection } from './industry-picker.component';
 
 type ModalTab = 'company' | 'address' | 'ownership' | 'directors';
@@ -471,7 +471,7 @@ export class ApplicantEditModalComponent implements OnInit {
     },
   ];
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   ngOnInit(): void {
     this.draft = { ...this.data };
@@ -604,7 +604,7 @@ export class ApplicantEditModalComponent implements OnInit {
       black_women_owned: this.draft.black_women_owned,
       directors: this.directors(),
     };
-    this.grantService.updateApplication(this.applicantId, patch).subscribe({
+    this.api.updateApplication(this.applicantId, patch).subscribe({
       next: node => {
         this.isSaving.set(false);
         this.saved.emit(node.data);

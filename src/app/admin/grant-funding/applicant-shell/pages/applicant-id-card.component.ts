@@ -6,7 +6,7 @@ import {
   IUploadedDocument,
   SA_RACES,
 } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import { UploadService } from '../../../../../services/UploadService';
 
 type SnapshotStatus = 'ok' | 'warning' | 'error' | 'pending';
@@ -367,7 +367,7 @@ export class ApplicantIdCardComponent {
   protected readonly _ddAnswers = signal<Record<string, any> | null>(null);
   @Input() set ddAnswers(v: Record<string, any> | null) { this._ddAnswers.set(v ?? null); }
 
-  private grantService = inject(GrantApplicationService);
+  private api = inject(GrantApplicationApiService);
   private uploadService = inject(UploadService);
 
   collapsed = signal(this.getStoredCollapseState('applicant-id-card'));
@@ -428,7 +428,7 @@ export class ApplicantIdCardComponent {
         this.documentsChanged.emit(docs);
       };
       if (this.applicantId) {
-        this.grantService.updateApplication(this.applicantId, { documents: docs }).subscribe({
+        this.api.updateApplication(this.applicantId, { documents: docs }).subscribe({
           next: finish,
           error: () => {
             this.uploadError.set('Failed to save. Please try again.');

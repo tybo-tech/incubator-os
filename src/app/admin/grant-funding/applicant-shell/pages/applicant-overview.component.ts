@@ -2,14 +2,14 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import {
   IGrantApplicationData,
   IUploadedDocument,
   IWorkflowStage,
+  IWorkflow,
 } from '../../interfaces/grant-application.interfaces';
 import { WorkflowService } from '../../services/workflow.service';
-import { FormTemplateService } from '../../../form-templates/services/form-template.service';
 import { ApplicantChecklistComponent } from './applicant-checklist.component';
 import { ApplicantBankStatementsComponent } from './applicant-bank-statements.component';
 import { ApplicantComplianceComponent } from './applicant-compliance.component';
@@ -101,7 +101,8 @@ import { ApplicantBusinessProcessComponent } from './applicant-business-process.
         <!-- ── Bank Statement Summary (always visible on every stage) ── -->
         <app-applicant-bank-statement-summary
           [applicantId]="applicantId"
-          [companyName]="data().company_name">
+          [companyName]="data().company_name"
+          [bankStatements]="overview()?.bank_statements">
         </app-applicant-bank-statement-summary>
 
         <!-- ── Status & Checklist (always visible) ────────────────────── -->
@@ -261,60 +262,55 @@ export class ApplicantOverviewComponent implements OnInit {
   showEditModal = signal(false);
   /** Due diligence form submission answers — loaded after application data is fetched. */
   ddAnswers = signal<Record<string, any> | null>(null);
+  /** Full overview response from the backend, passed to child components. */
+  overview = signal<any>(null);
 
   selectedStage = signal('');
 
-  currentStageKey = computed(() => this.data()?.status ?? this.workflowSvc.getWorkflow(this.WORKFLOW_ID).stages[0]?.key ?? 'applied');
+  currentStageKey = computed(() => this.data()?.status ?? this.getWorkflow()?.stages[0]?.key ?? 'applied');
 
   selectedStageConfig = computed<IWorkflowStage | null>(() => {
     const key = this.selectedStage();
-    return this.workflowSvc.getWorkflow(this.WORKFLOW_ID).stages.find(s => s.key === key) ?? null;
+    return this.getWorkflow()?.stages.find(s => s.key === key) ?? null;
   });
 
-  workflow = computed(() => this.workflowSvc.getWorkflow(this.WORKFLOW_ID));
+  workflow = computed(() => this.getWorkflow() ?? { id: '', name: '', stages: [] });
+
+  private getWorkflow(): IWorkflow | null {
+    const wfNodes = this.overview()?.workflow;
+    if (wfNodes?.length) {
+      return wfNodes[0].data;
+    }
+    return this.workflowSvc.getWorkflow(this.WORKFLOW_ID);
+  }
 
   toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
 
   constructor(
     private route: ActivatedRoute,
-    private grantService: GrantApplicationService,
+    private api: GrantApplicationApiService,
     private workflowSvc: WorkflowService,
-    private formTemplateSvc: FormTemplateService,
   ) { }
 
   ngOnInit(): void {
     this.route.parent!.params.subscribe(params => {
       this.applicantId = +params['id'];
-      this.workflowSvc.loadWorkflow(this.WORKFLOW_ID).subscribe(() => this.loadData());
+      this.loadData();
     });
   }
 
   loadData(): void {
     this.isLoading.set(true);
-    this.grantService.getApplicationById(this.applicantId).subscribe({
-      next: node => {
-        this.data.set(node.data);
-        this.applicantCompanyId.set(node.company_id ?? null);
-        this.selectedStage.set(node.data.status ?? this.currentStageKey());
+    this.api.getOverview(this.applicantId).subscribe({
+      next: overview => {
+        this.overview.set(overview);
+        this.data.set(overview.application.data);
+        this.applicantCompanyId.set(overview.application.company_id ?? null);
+        this.selectedStage.set(overview.application.data.status ?? this.currentStageKey());
+        this.ddAnswers.set(overview.dd_answers);
         this.isLoading.set(false);
-        this.loadDueDiligenceAnswers();
       },
       error: () => this.isLoading.set(false)
-    });
-  }
-
-  /** Load the due diligence form submission answers so the ID card can show live compliance status. */
-  private loadDueDiligenceAnswers(): void {
-    const ddStage = this.workflow().stages.find(s => s.key === 'due_diligence');
-    const templateId = ddStage?.form_template_id;
-    if (!templateId) return;
-    const companyId = this.applicantCompanyId() ?? this.applicantId;
-    this.formTemplateSvc.getSubmissionsByTemplate(companyId, templateId).subscribe({
-      next: subs => {
-        const latest = subs.find(s => (s.data as any)?.status === 'submitted') ?? subs[subs.length - 1] ?? null;
-        this.ddAnswers.set((latest?.data as any)?.answers ?? null);
-      },
-      error: () => {}
     });
   }
 
@@ -382,7 +378,7 @@ export class ApplicantOverviewComponent implements OnInit {
   // ── Shared save ─────────────────────────────────────────────────────────────
   private save(patch: Partial<IGrantApplicationData>, onSuccess?: () => void): void {
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, patch).subscribe({
+    this.api.updateApplication(this.applicantId, patch).subscribe({
       next: node => {
         this.data.set(node.data);
         this.isSaving.set(false);

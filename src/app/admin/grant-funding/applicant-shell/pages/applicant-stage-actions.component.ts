@@ -8,7 +8,7 @@ import {
   IWorkflowStage,
   IWorkflowAction,
 } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import { WorkflowService } from '../../services/workflow.service';
 
 @Component({
@@ -216,7 +216,7 @@ export class ApplicantStageActionsComponent {
   });
 
   constructor(
-    private grantService: GrantApplicationService,
+    private api: GrantApplicationApiService,
     public workflowSvc: WorkflowService,
   ) {}
 
@@ -282,7 +282,7 @@ export class ApplicantStageActionsComponent {
 
   private save(patch: Partial<IGrantApplicationData>, onSuccess?: () => void): void {
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, patch).subscribe({
+    this.api.updateApplication(this.applicantId, patch).subscribe({
       next: node => {
         this.isSaving.set(false);
         this.dataUpdated.emit(node.data);

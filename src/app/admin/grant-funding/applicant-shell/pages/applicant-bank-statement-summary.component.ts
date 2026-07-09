@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 import {
   GrantBankStatement,
   FY_MONTH_COLUMNS,
@@ -255,6 +255,12 @@ interface SummaryRow {
 export class ApplicantBankStatementSummaryComponent implements OnInit {
   @Input() applicantId = 0;
   @Input() companyName = '';
+  /** Pre-loaded bank statement nodes from the parent overview. When provided, skips the API call. */
+  @Input() set bankStatements(val: any[] | null | undefined) {
+    if (val) {
+      this.buildRows(val);
+    }
+  }
 
   readonly monthCols = FY_MONTH_COLUMNS;
 
@@ -314,45 +320,51 @@ export class ApplicantBankStatementSummaryComponent implements OnInit {
     return `${c} of 12 statements submitted`;
   });
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   ngOnInit(): void {
-    this.load();
+    if (!this.rows().length) {
+      this.load();
+    }
   }
 
   load(): void {
     this.isLoading.set(true);
-    this.grantService.getBankStatements(this.applicantId).subscribe({
+    this.api.getBankStatements(this.applicantId).subscribe({
       next: (statements: GrantBankStatement[]) => {
-        const built: SummaryRow[] = statements.map(node => {
-          const d = node.data;
-          const months: (number | undefined)[] = [
-            d.m1, d.m2, d.m3, d.m4, d.m5, d.m6,
-            d.m7, d.m8, d.m9, d.m10, d.m11, d.m12,
-          ];
-          const capturedMonths = months.filter(v => v != null).length;
-          const activeMonths = months.filter(v => v != null && v > 0).length;
-          const total = d.total_amount ?? 0;
-          return {
-            financial_year_id: d.financial_year_id,
-            financial_year_name: d.financial_year_name,
-            months,
-            total,
-            capturedMonths,
-            activeMonths,
-            avgActive: activeMonths > 0 ? total / activeMonths : 0,
-          };
-        });
-        built.sort((a, b) => {
-          const aFy = FINANCIAL_YEARS.find(f => f.id === a.financial_year_id)?.fy_start_year ?? 0;
-          const bFy = FINANCIAL_YEARS.find(f => f.id === b.financial_year_id)?.fy_start_year ?? 0;
-          return aFy - bFy;
-        });
-        this.rows.set(built);
-        this.isLoading.set(false);
+        this.buildRows(statements);
       },
       error: () => this.isLoading.set(false),
     });
+  }
+
+  private buildRows(statements: any[]): void {
+    const built: SummaryRow[] = statements.map((node: any) => {
+      const d = node.data;
+      const months: (number | undefined)[] = [
+        d.m1, d.m2, d.m3, d.m4, d.m5, d.m6,
+        d.m7, d.m8, d.m9, d.m10, d.m11, d.m12,
+      ];
+      const capturedMonths = months.filter(v => v != null).length;
+      const activeMonths = months.filter(v => v != null && v > 0).length;
+      const total = d.total_amount ?? 0;
+      return {
+        financial_year_id: d.financial_year_id,
+        financial_year_name: d.financial_year_name,
+        months,
+        total,
+        capturedMonths,
+        activeMonths,
+        avgActive: activeMonths > 0 ? total / activeMonths : 0,
+      };
+    });
+    built.sort((a, b) => {
+      const aFy = FINANCIAL_YEARS.find(f => f.id === a.financial_year_id)?.fy_start_year ?? 0;
+      const bFy = FINANCIAL_YEARS.find(f => f.id === b.financial_year_id)?.fy_start_year ?? 0;
+      return aFy - bFy;
+    });
+    this.rows.set(built);
+    this.isLoading.set(false);
   }
 
   dotClass(val: number | undefined): string {

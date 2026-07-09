@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IGrantApplicationData } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 
 @Component({
   selector: 'app-applicant-ownership',
@@ -77,7 +77,7 @@ export class ApplicantOwnershipComponent {
   isSaving = signal(false);
   draft: Partial<IGrantApplicationData> = {};
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   startEdit(): void {
     this.draft = {
@@ -92,7 +92,7 @@ export class ApplicantOwnershipComponent {
 
   save(): void {
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, {
+    this.api.updateApplication(this.applicantId, {
       youth_owned: this.draft.youth_owned,
       black_owned: this.draft.black_owned,
       black_women_owned: this.draft.black_women_owned,

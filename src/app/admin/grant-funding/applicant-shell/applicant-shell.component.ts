@@ -132,8 +132,7 @@ export class ApplicantShellComponent implements OnInit {
     this.route.params.subscribe(params => {
       this.applicantId = +params['id'];
       if (this.applicantId) {
-        // Load workflow first so the stage badge resolves immediately when app data arrives
-        this.workflowSvc.loadWorkflow(this.WORKFLOW_ID).subscribe(() => this.loadApplication());
+        this.loadApplication();
       }
     });
   }

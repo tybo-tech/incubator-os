@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IGrantApplicationData, SA_PROVINCES, SA_MUNICIPALITIES, RESIDENTIAL_AREAS } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 
 @Component({
   selector: 'app-applicant-address',
@@ -135,7 +135,7 @@ export class ApplicantAddressComponent {
     return RESIDENTIAL_AREAS.find(r => r.value === value)?.label ?? (value || '—');
   }
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   startEdit(): void {
     this.draft = {
@@ -155,7 +155,7 @@ export class ApplicantAddressComponent {
 
   save(): void {
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, {
+    this.api.updateApplication(this.applicantId, {
       address_line1: this.draft.address_line1,
       address_line2: this.draft.address_line2,
       suburb: this.draft.suburb,

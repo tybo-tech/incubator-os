@@ -7,8 +7,8 @@ In Progress
 
 ## Tasks
 
-[ ] Login
-[ ] Dashboard
+[x] Login
+[x] Dashboard
 [ ] Customers
 [ ] Orders
 [ ] Reporting

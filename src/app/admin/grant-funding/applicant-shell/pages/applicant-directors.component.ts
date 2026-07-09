@@ -8,7 +8,7 @@ import {
   NOK_RELATIONSHIP_OPTIONS,
   SA_RACES,
 } from '../../interfaces/grant-application.interfaces';
-import { GrantApplicationService } from '../../services/grant-application.service';
+import { GrantApplicationApiService } from '../../services/grant-application-api.service';
 
 @Component({
   selector: 'app-applicant-directors',
@@ -286,7 +286,7 @@ export class ApplicantDirectorsComponent {
   nokRelationships = NOK_RELATIONSHIP_OPTIONS;
   races = SA_RACES;
 
-  constructor(private grantService: GrantApplicationService) {}
+  constructor(private api: GrantApplicationApiService) {}
 
   // ── Add ──────────────────────────────────────────────────────────────────────
   openAdd(): void {
@@ -385,7 +385,7 @@ export class ApplicantDirectorsComponent {
 
   private persist(patch: Partial<IGrantApplicationData>, onSuccess?: () => void): void {
     this.isSaving.set(true);
-    this.grantService.updateApplication(this.applicantId, patch).subscribe({
+    this.api.updateApplication(this.applicantId, patch).subscribe({
       next: node => {
         this.isSaving.set(false);
         onSuccess?.();
