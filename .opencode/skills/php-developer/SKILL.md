@@ -241,6 +241,43 @@ Key methods in `CategoryItem`:
 - `getCompaniesInCohort(cohortId)` — list companies with assignment details
 - `getCompanyParticipation(companyId)` — all cohorts for a company
 
+### Category CRUD
+
+**Delete** — must use `cohort_id` column (not `category_id`):
+```php
+public function deleteCategory(int $id): bool
+{
+    $this->deleteChildrenCascade($id);
+    $stmt = $this->conn->prepare("DELETE FROM categories_item WHERE cohort_id = ?");
+    $stmt->execute([$id]);
+    $stmt = $this->conn->prepare("DELETE FROM categories WHERE id = ?");
+    $stmt->execute([$id]);
+    return $stmt->rowCount() > 0;
+}
+```
+
+**Update** — safe allow-list pattern:
+```php
+public function updateCategory(int $id, array $fields): ?array
+{
+    $allowed = ['name','description','image_url','parent_id','type'];
+    $sets = [];
+    $params = [];
+    foreach ($allowed as $k) {
+        if (array_key_exists($k, $fields)) {
+            $sets[] = "$k = ?";
+            $params[] = $fields[$k];
+        }
+    }
+    if (!$sets) return $current;
+    $params[] = $id;
+    $sql = "UPDATE categories SET ".implode(', ', $sets).", updated_at = NOW() WHERE id = ?";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute($params);
+    return $this->getCategoryById($id);
+}
+```
+
 ## Node Model Extensions
 
 ```php

@@ -114,6 +114,97 @@ onClientChange(): void {
 }
 ```
 
+## Category Hierarchy CRUD Pattern
+
+All three levels (client, program, cohort) follow the same consistent UI pattern:
+
+### Card Layout
+- Edit button (pencil icon) and Delete button (trash icon) in top-right of each card
+- Primary action button at bottom ("View Programs", "View Cohorts", "View Companies")
+- Statistics grid showing counts
+- `$event.stopPropagation()` on action buttons to prevent card click
+
+### Create/Edit Modal
+Reuse the shared `CreateModalComponent` for both create and edit:
+
+```typescript
+// Template
+<app-create-modal
+  [show]="showCreateModal() || showEditModal()"
+  [config]="showEditModal() ? editModalConfig() : createModalConfig"
+  [isSubmitting]="isCreating"
+  (cancel)="closeEditModal()"
+  (submit)="showEditModal() ? onEditSubmit($event) : onCreateSubmit($event)">
+</app-create-modal>
+
+// Config with initialData for edit
+createModalConfig: CreateModalConfig = {
+  title: 'Create New Client',
+  submitLabel: 'Create Client',
+  fields: [
+    { key: 'name', label: 'Client Name', type: 'text', placeholder: 'Enter name', required: true },
+    { key: 'description', label: 'Description', type: 'textarea', rows: 3 },
+  ]
+};
+
+editModalConfig = computed<CreateModalConfig>(() => ({
+  title: 'Edit Client',
+  submitLabel: 'Save Changes',
+  fields: [ /* same fields */ ],
+  initialData: {
+    name: this.editingItem()?.name ?? '',
+    description: this.editingItem()?.description ?? '',
+  }
+}));
+```
+
+### Delete Pattern
+```typescript
+deleteItem(item: Item): void {
+  if (confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
+    this.isLoading.set(true);
+    this.service.deleteCategory(item.id).pipe(
+      catchError(error => {
+        this.toastService.show('Failed to delete.', 'error');
+        this.isLoading.set(false);
+        return EMPTY;
+      })
+    ).subscribe(() => {
+      this.toastService.show(`"${item.name}" deleted successfully.`, 'success');
+      this.loadItems();
+    });
+  }
+}
+```
+
+### Edit Submit Pattern
+```typescript
+onEditSubmit(formData: any): void {
+  const item = this.editingItem();
+  if (!item) return;
+  this.isCreating.set(true);
+  this.service.updateCategory(item.id, {
+    name: formData.name,
+    description: formData.description || undefined,
+  }).pipe(
+    catchError(error => { /* error handling */ })
+  ).subscribe(() => {
+    this.isCreating.set(false);
+    this.closeEditModal();
+    this.toastService.show(`"${formData.name}" updated successfully.`, 'success');
+    this.loadItems();
+  });
+}
+```
+
+### State Signals
+```typescript
+showCreateModal = signal(false);
+showEditModal = signal(false);
+editingItem = signal<Item | null>(null);
+isCreating = signal(false);
+```
+
 ## Session Template
 
 Every session file must follow this exact structure:
