@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GrantFundingStateService } from './services/grant-funding-state.service';
-import { GrantApplicationApiService, Cohort, ImportResult, UndoResult } from './services/grant-application-api.service';
+import { GrantApplicationApiService, ImportResult, UndoResult } from './services/grant-application-api.service';
+import { CategoryService } from '../../../services/category.service';
+import { ICategory } from '../../../models/simple.schema';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
@@ -25,7 +27,7 @@ import { ToastService } from '../../services/toast.service';
           <p class="text-sm text-gray-500 mt-1">
             {{ state.promoteMode() === 'import'
               ? 'Import ' + state.filtered().length + ' applicant(s) into a cohort as companies'
-              : 'Remove all companies from this cohort and revert the import'
+              : 'Remove all companies from a cohort and revert the import'
             }}
           </p>
         </div>
@@ -33,9 +35,43 @@ import { ToastService } from '../../services/toast.service';
         <!-- Import mode -->
         <ng-container *ngIf="state.promoteMode() === 'import'">
           <div class="px-6 py-4 space-y-4">
+
+            <!-- Client -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Destination Cohort <span class="text-red-500">*</span>
+                Client <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="selectedClientId"
+                (ngModelChange)="onClientChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option [value]="0">-- Select a client --</option>
+                <option *ngFor="let c of clients()" [value]="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+
+            <!-- Program -->
+            <div *ngIf="selectedClientId">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Program <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="selectedProgramId"
+                (ngModelChange)="onProgramChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option [value]="0">-- Select a program --</option>
+                <option *ngFor="let p of programs()" [value]="p.id">{{ p.name }}</option>
+              </select>
+            </div>
+
+            <!-- Cohort -->
+            <div *ngIf="selectedProgramId">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Cohort <span class="text-red-500">*</span>
               </label>
               <select
                 [(ngModel)]="selectedCohortId"
@@ -47,6 +83,7 @@ import { ToastService } from '../../services/toast.service';
               </select>
             </div>
 
+            <!-- Status Filter -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Status Filter
@@ -71,9 +108,43 @@ import { ToastService } from '../../services/toast.service';
         <!-- Undo mode -->
         <ng-container *ngIf="state.promoteMode() === 'undo'">
           <div class="px-6 py-4 space-y-4">
+
+            <!-- Client -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Cohort to Undo <span class="text-red-500">*</span>
+                Client <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="selectedClientId"
+                (ngModelChange)="onClientChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option [value]="0">-- Select a client --</option>
+                <option *ngFor="let c of clients()" [value]="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+
+            <!-- Program -->
+            <div *ngIf="selectedClientId">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Program <span class="text-red-500">*</span>
+              </label>
+              <select
+                [(ngModel)]="selectedProgramId"
+                (ngModelChange)="onProgramChange()"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option [value]="0">-- Select a program --</option>
+                <option *ngFor="let p of programs()" [value]="p.id">{{ p.name }}</option>
+              </select>
+            </div>
+
+            <!-- Cohort -->
+            <div *ngIf="selectedProgramId">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Cohort <span class="text-red-500">*</span>
               </label>
               <select
                 [(ngModel)]="selectedCohortId"
@@ -84,6 +155,7 @@ import { ToastService } from '../../services/toast.service';
                 <option *ngFor="let c of cohorts()" [value]="c.id">{{ c.name }}</option>
               </select>
             </div>
+
             <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
               <strong>Warning:</strong> This will detach all companies from the cohort,
               clear company IDs from applicant records, and delete any companies that
@@ -144,23 +216,54 @@ import { ToastService } from '../../services/toast.service';
     </div>
   `
 })
-export class PromoteToCohortModalComponent {
+export class PromoteToCohortModalComponent implements OnInit {
   state = inject(GrantFundingStateService);
   private api = inject(GrantApplicationApiService);
+  private categorySvc = inject(CategoryService);
   private toast = inject(ToastService);
 
-  cohorts = signal<Cohort[]>([]);
+  clients = signal<ICategory[]>([]);
+  programs = signal<ICategory[]>([]);
+  cohorts = signal<ICategory[]>([]);
+
+  selectedClientId = 0;
+  selectedProgramId = 0;
   selectedCohortId = 0;
   selectedStatus = '';
+
   isProcessing = signal(false);
   importResult = signal<ImportResult | null>(null);
   undoResult = signal<UndoResult | null>(null);
 
   ngOnInit(): void {
-    this.api.getCohorts().subscribe({
-      next: (cs) => this.cohorts.set(cs),
-      error: () => this.toast.show('Failed to load cohorts', 'error'),
+    this.categorySvc.listCategories({ type: 'client', depth: 1 }).subscribe({
+      next: (cs) => this.clients.set(cs),
+      error: () => this.toast.show('Failed to load clients', 'error'),
     });
+  }
+
+  onClientChange(): void {
+    this.selectedProgramId = 0;
+    this.selectedCohortId = 0;
+    this.programs.set([]);
+    this.cohorts.set([]);
+    if (this.selectedClientId) {
+      this.categorySvc.listProgramsForClient(this.selectedClientId).subscribe({
+        next: (ps) => this.programs.set(ps),
+        error: () => this.toast.show('Failed to load programs', 'error'),
+      });
+    }
+  }
+
+  onProgramChange(): void {
+    this.selectedCohortId = 0;
+    this.cohorts.set([]);
+    if (this.selectedProgramId) {
+      this.categorySvc.listCohortsForProgram(this.selectedProgramId).subscribe({
+        next: (cs) => this.cohorts.set(cs),
+        error: () => this.toast.show('Failed to load cohorts', 'error'),
+      });
+    }
   }
 
   execute(): void {
