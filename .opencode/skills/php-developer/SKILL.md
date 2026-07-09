@@ -1,362 +1,298 @@
-# PHP Developer
+# PHP Developer — Capability Builder
 
 ## Responsibilities
 
 - PHP 8.1
-- Business capabilities (services)
-- API endpoints (queries + commands)
-- Database (Node repository, Company, CategoryItem)
-- Validation
-- Business rules
-- API contracts
-- Read latest session
-- Update latest session
+- Business capabilities (use cases, not services)
+- API endpoints (thin controllers — queries never write, commands always transactional)
+- Database (repositories for companies, users, nodes, categories)
+- DTOs for every contract
+- Validation and business rules
+- Refer to `docs/standards/capability-specification-v1.md` as the canonical architecture
 
 ## Golden Rules
 
-- Backend owns business logic
-- Don't move business rules to Angular
-- Keep APIs consistent
-- Every new endpoint must represent a business capability, not a database operation
-- Frontend sends patches, not merged objects — backend owns the merge
+- Backend owns business logic — never push business rules to Angular
+- Every endpoint represents a business capability, not a database operation
+- Use cases, not services — one class per business operation, one public method `execute()`
+- Queries never modify state — no side effects, no transactions
+- Commands always transactional — use `TransactionManager`, never `beginTransaction()` directly
+- Controllers are thin — parse input, call use case, serialize response, no business logic
+- Entity IDs come from the URL (`?id=N`), never from the request body
+- DTOs for every contract — `*Request`, `*Response`, `*Summary`, `CommandResult`
+- All DTO properties are `readonly`
+- Repositories never call other repositories — only use cases orchestrate
+- Every command returns `CommandResult` — `{success, message, data?, auditId?, warnings?}`
+- Every capability has a `feature.json` manifest and an `AI.md` context file
 - Every completed task updates: Code → Session → Sprint
-- Update session before finishing
 
 ## Architecture
 
 ```
 api-incubator-os/
-├── api/                          ← NEW: business capability endpoints
+├── api/{capability}/                    ← Transport layer (thin controllers)
+│   ├── queries/
+│   │   └── get-{thing}.php             ← Delegates to a single use case
+│   └── commands/
+│       ├── {business-action}.php        ← Delegates to a single use case
+│       └── ...
+├── capabilities/
 │   └── {capability}/
-│       ├── queries/              ← Read operations (never modify data)
-│       └── commands/             ← Write operations (always modify data)
-├── api-nodes/                    ← LEGACY: generic CRUD, untouched
-│   ├── node/                     ← Node CRUD endpoints
-│   ├── company/                  ← Company CRUD endpoints
-│   └── category/                 ← Category/cohort endpoints
-├── models/                       ← REPOSITORIES: generic CRUD, stays as-is
-│   ├── Node.php                  ← Generic JSON node storage
-│   ├── Company.php               ← Companies table (WRITABLE pattern)
-│   ├── Categories.php           ← Category hierarchy (client/program/cohort)
-│   └── CategoryItem.php         ← Company-cohort assignments
-└── services/
-    └── {capability}/
-        ├── {Capability}Service.php
-        └── README.md
+│       ├── feature.json                 ← Capability manifest
+│       ├── AI.md                        ← AI context for agent sessions
+│       ├── Application/
+│       │   ├── Queries/
+│       │   │   ├── Get{Thing}.php       ← Single use case class
+│       │   │   └── ...
+│       │   └── Commands/
+│       │       ├── {BusinessAction}.php ← Single use case class
+│       │       └── ...
+│       ├── Contracts/
+│       │   ├── Requests/
+│       │   │   ├── {Action}Request.php  ← Command input DTO
+│       │   │   └── ...
+│       │   ├── Responses/
+│       │   │   ├── {Thing}Response.php  ← Query output DTO
+│       │   │   ├── CommandResult.php    ← Command output envelope
+│       │   │   └── ...
+│       │   └── Projections/
+│       │       └── {Thing}Summary.php   ← Embedded projection DTO
+│       ├── Repository/
+│       │   └── {Entity}Repository.php   ← Data access
+│       └── README.md
+├── core/                                ← Shared platform infrastructure
+│   └── Infrastructure/
+│       └── TransactionManager.php       ← Shared across all capabilities
+├── api-nodes/                           ← LEGACY: generic CRUD, untouched
+└── models/                              ← LEGACY: PDO-based models, untouched
 ```
 
-## Capability Pattern
+## Use Case Template
 
-Every capability follows this structure:
+### Query (read-only, never modifies state)
 
-### 1. Service (`services/{capability}/{Capability}Service.php`)
+```php
+final class GetOverview
+{
+    public function __construct(
+        private CompanyRepository $companyRepo,
+        private UserRepository $userRepo,
+    ) {}
+
+    public function execute(int $companyId): CompanyOverviewResponse
+    {
+        $company = $this->companyRepo->getById($companyId);
+        $directors = array_map(
+            fn(array $u) => DirectorSummary::fromUser($u),
+            $this->userRepo->listByCompany($companyId)
+        );
+        return new CompanyOverviewResponse(
+            company: $company,
+            directors: $directors,
+        );
+    }
+}
+```
+
+### Command (always transactional)
+
+```php
+final class RegisterDirector
+{
+    public function __construct(
+        private UserRepository $userRepo,
+        private TransactionManager $tx,
+    ) {}
+
+    public function execute(int $companyId, RegisterDirectorRequest $input): CommandResult
+    {
+        return $this->tx->execute(function () use ($companyId, $input) {
+            $user = $this->userRepo->create([
+                'company_id' => $companyId,
+                'full_name' => $input->fullName,
+                'email' => $input->email,
+                'phone' => $input->phone,
+                'username' => $input->email ?? $input->fullName,
+                'role' => 'Director',
+                'gender' => $input->gender,
+                'id_number' => $input->idNumber,
+                'status' => 'active',
+            ]);
+            return new CommandResult(
+                success: true,
+                message: 'Director registered successfully',
+                data: DirectorSummary::fromUser($user),
+            );
+        });
+    }
+}
+```
+
+## Controller Template
+
+```php
+<?php
+// api/{capability}/queries/get-{thing}.php
+
+include_once '../../../config/Database.php';
+include_once '../../../core/Infrastructure/TransactionManager.php';
+include_once '../../../capabilities/{capability}/Contracts/Responses/CommandResult.php';
+include_once '../../../capabilities/{capability}/Contracts/Responses/{Thing}Response.php';
+include_once '../../../capabilities/{capability}/Contracts/Projections/{Thing}Summary.php';
+include_once '../../../capabilities/{capability}/Contracts/Requests/{Action}Request.php';
+include_once '../../../capabilities/{capability}/Application/Queries/Get{Thing}.php';
+include_once '../../../capabilities/{capability}/Repository/{Entity}Repository.php';
+
+$id = (int)($_GET['id'] ?? 0);
+if (!$id) { http_response_code(400); echo json_encode(['error' => 'id is required']); exit; }
+
+try {
+    $db = (new Database())->connect();
+    $result = (new GetOverview(
+        new CompanyRepository($db),
+        new UserRepository($db),
+    ))->execute($id);
+    echo json_encode($result);
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
+}
+```
+
+## DTO Templates
+
+### Response (query output)
+
+```php
+final class CompanyOverviewResponse
+{
+    public function __construct(
+        public readonly array $company,
+        public readonly array $directors,   // DirectorSummary[]
+        public readonly ?array $financialSummary = null,
+    ) {}
+}
+```
+
+### Summary (embedded projection)
+
+```php
+final class DirectorSummary
+{
+    public function __construct(
+        public readonly int $directorId,
+        public readonly string $fullName,
+        public readonly ?string $email,
+        public readonly ?string $phone,
+        public readonly string $role,
+        public readonly ?string $gender,
+        public readonly ?string $idNumber,
+    ) {}
+
+    public static function fromUser(array $user): self
+    {
+        return new self(
+            directorId: (int)$user['id'],
+            fullName: $user['full_name'] ?? '',
+            email: $user['email'] ?? null,
+            phone: $user['phone'] ?? null,
+            role: $user['role'] ?? 'Director',
+            gender: $user['gender'] ?? null,
+            idNumber: $user['id_number'] ?? null,
+        );
+    }
+}
+```
+
+### Request (command input)
+
+```php
+final class RegisterDirectorRequest
+{
+    public function __construct(
+        public readonly string $fullName,
+        public readonly ?string $email,
+        public readonly ?string $phone,
+        public readonly ?string $gender,
+        public readonly ?string $idNumber,
+    ) {}
+}
+```
+
+### CommandResult
+
+```php
+final class CommandResult
+{
+    public function __construct(
+        public readonly bool $success,
+        public readonly string $message,
+        public readonly mixed $data = null,
+        public readonly ?string $auditId = null,
+        public readonly array $warnings = [],
+    ) {}
+}
+```
+
+## TransactionManager (shared platform infrastructure)
 
 ```php
 <?php
 declare(strict_types=1);
 
-class {Capability}Service
+final class TransactionManager
 {
-    private Node $node;
-    private ?Company $company = null;
-    private ?CategoryItem $categoryItem = null;
+    public function __construct(private PDO $conn) {}
 
-    public function __construct(Node $node)
+    public function execute(callable $fn): mixed
     {
-        $this->node = $node;
-    }
-
-    private function getCompany(): Company
-    {
-        if (!$this->company) {
-            $this->company = new Company($this->node->getConnection());
+        $this->conn->beginTransaction();
+        try {
+            $result = $fn();
+            $this->conn->commit();
+            return $result;
+        } catch (Throwable $e) {
+            $this->conn->rollBack();
+            throw $e;
         }
-        return $this->company;
-    }
-
-    private function getCategoryItem(): CategoryItem
-    {
-        if (!$this->categoryItem) {
-            $this->categoryItem = new CategoryItem($this->node->getConnection());
-        }
-        return $this->categoryItem;
-    }
-
-    // Public methods = business operations
-    public function getOverview(int $id): array
-    {
-        return [
-            'entity' => $this->getEntity($id),
-            'related' => $this->getRelated($id),
-        ];
-    }
-
-    public function updateEntity(int $id, array $patch): array
-    {
-        $existing = $this->node->getById($id);
-        if (!$existing) {
-            throw new InvalidArgumentException("Not found: $id");
-        }
-        $merged = array_merge($this->toArray($existing['data']), $patch);
-        return $this->node->update($id, $merged);
-    }
-
-    // Private helpers = wrap Node calls with meaningful names
-    private function getEntity(int $id): array
-    {
-        $node = $this->node->getById($id);
-        if (!$node) {
-            throw new InvalidArgumentException("Not found: $id");
-        }
-        return $node;
-    }
-
-    private function getRelated(int $id): array
-    {
-        return $this->node->search('related_type', $id);
-    }
-
-    // Node returns stdClass from json_decode — convert to array
-    private function toArray(mixed $value): array
-    {
-        return json_decode(json_encode($value), true) ?? [];
     }
 }
 ```
 
-### 2. Query endpoint (`api/{capability}/queries/get-{thing}.php`)
+## Capability Manifest (feature.json)
 
-```php
-<?php
-
-include_once '../../../config/Database.php';
-include_once '../../../models/Node.php';
-include_once '../../../services/{capability}/{Capability}Service.php';
-
-$id = (int)($_GET['id'] ?? 0);
-
-if (!$id) {
-    http_response_code(400);
-    echo json_encode(['error' => 'id is required']);
-    exit;
-}
-
-try {
-    $db = (new Database())->connect();
-    $service = new {Capability}Service(new Node($db));
-    echo json_encode($service->getOverview($id));
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(['error' => $e->getMessage()]);
+```json
+{
+  "name": "Company",
+  "description": "Manage company profiles, directors, and financial overview",
+  "queries": [
+    { "name": "getOverview", "returns": "CompanyOverviewResponse" }
+  ],
+  "commands": [
+    { "name": "registerDirector", "input": "RegisterDirectorRequest", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Users", "Financial"]
 }
 ```
 
-### 3. Command endpoint (`api/{capability}/commands/update-{thing}.php`)
+## Legacy Models (still available for repositories)
 
-```php
-<?php
-
-include_once '../../../config/Database.php';
-include_once '../../../models/Node.php';
-include_once '../../../services/{capability}/{Capability}Service.php';
-
-$input = json_decode(file_get_contents('php://input'), true);
-$id = (int)($input['id'] ?? 0);
-$patch = $input['data'] ?? [];
-
-if (!$id) {
-    http_response_code(400);
-    echo json_encode(['error' => 'id is required']);
-    exit;
-}
-
-try {
-    $db = (new Database())->connect();
-    $service = new {Capability}Service(new Node($db));
-    echo json_encode($service->updateEntity($id, $patch));
-} catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode(['error' => $e->getMessage()]);
-}
-```
+- `Company` — companies table (WRITABLE pattern, `getById()`, `update()`, etc.)
+- `User` — users table (WRITABLE pattern, `add()`, `delete()`, `listByCompany()`, `getByUsername()`)
+- `Node` — generic JSON node storage (`getById()`, `search()`, `update()`, `getConnection()`)
+- `CategoryItem` — company-cohort assignments
+- `CompanyFinancialYearlyStats` — m1-m12 monthly financial data
 
 ## Import/Undo Pattern
 
-For operations that create companies from nodes and need reversibility:
-
-```php
-// Import: create/update companies, set company_id, attach to cohort
-public function executeImportToCompanies(?int $cohortId = null, ?string $statusFilter = null): array
-{
-    $dryRun = $this->dryRunImportToCompanies($statusFilter);
-    foreach ($dryRun['results'] as $item) {
-        $isExisting = $item['status'] === 'exists';
-        if ($isExisting) {
-            $company->update($companyId, $item['mapped_data']);
-        } else {
-            $created = $company->add($item['mapped_data']);
-            $this->node->updateCompanyId((int)$item['node_id'], $companyId);
-        }
-        // Store flag on node for undo
-        $this->node->patchNodeData((int)$item['node_id'], [
-            'is_existing_company' => $isExisting,
-            'last_action' => 'imported',
-            'last_action_at' => date('c'),
-        ]);
-        // Attach to cohort
-        $this->getCategoryItem()->attachCompany($cohortId, $companyId);
-    }
-}
-
-// Undo: detach from cohort, clear company_id, delete only new companies
-public function undoImportToCompanies(int $cohortId): array
-{
-    $companies = $this->getCategoryItem()->getCompaniesInCohort($cohortId);
-    foreach ($companies as $entry) {
-        // Check is_existing_company flag BEFORE clearing
-        $applications = $this->node->search('grant_application', null, $companyId);
-        $isExisting = check flag in app data;
-        $this->getCategoryItem()->detachCompany($cohortId, $companyId);
-        $this->node->clearCompanyId($companyId);
-        if (!$isExisting) {
-            $company->delete($companyId);
-        }
-    }
-}
-```
-
-## Category Hierarchy
-
-```
-categories table: id, name, type, parent_id, depth
-  type: 'client' (depth 1) → 'program' (depth 2) → 'cohort' (depth 3)
-
-categories_item table: links companies to cohorts
-  cohort_id, program_id, client_id, company_id, status, joined_at
-```
-
-Key methods in `CategoryItem`:
-- `attachCompany(cohortId, companyId)` — adds company to cohort (prevents duplicates)
-- `detachCompany(cohortId, companyId)` — removes from cohort
-- `getCompaniesInCohort(cohortId)` — list companies with assignment details
-- `getCompanyParticipation(companyId)` — all cohorts for a company
-
-### Category CRUD
-
-**Delete** — must use `cohort_id` column (not `category_id`):
-```php
-public function deleteCategory(int $id): bool
-{
-    $this->deleteChildrenCascade($id);
-    $stmt = $this->conn->prepare("DELETE FROM categories_item WHERE cohort_id = ?");
-    $stmt->execute([$id]);
-    $stmt = $this->conn->prepare("DELETE FROM categories WHERE id = ?");
-    $stmt->execute([$id]);
-    return $stmt->rowCount() > 0;
-}
-```
-
-**Update** — safe allow-list pattern:
-```php
-public function updateCategory(int $id, array $fields): ?array
-{
-    $allowed = ['name','description','image_url','parent_id','type'];
-    $sets = [];
-    $params = [];
-    foreach ($allowed as $k) {
-        if (array_key_exists($k, $fields)) {
-            $sets[] = "$k = ?";
-            $params[] = $fields[$k];
-        }
-    }
-    if (!$sets) return $current;
-    $params[] = $id;
-    $sql = "UPDATE categories SET ".implode(', ', $sets).", updated_at = NOW() WHERE id = ?";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->execute($params);
-    return $this->getCategoryById($id);
-}
-```
-
-## Node Model Extensions
-
-```php
-// Added to Node.php for import/undo support:
-public function getConnection()          // Expose PDO for other models
-public function updateCompanyId(id, companyId)  // Set company_id on node
-public function clearCompanyId(companyId)       // Nullify company_id on all nodes
-public function patchNodeData(id, patch)        // Merge data into node's JSON
-```
-
-## Session Template
-
-Every session file must follow this exact structure:
-
-```markdown
-# Session NNN
-
-Date:
-YYYY-MM-DD
-
-## Goal
-
-What was the objective?
-
----
-
-## Completed
-
-- Itemized list of what was done
-
----
-
-## Frontend
-
-Files modified
-
-Components
-
-Services
-
-Issues
-
----
-
-## Backend
-
-Files modified
-
-Controllers
-
-Services
-
-Database
-
----
-
-## Decisions
-
-Important architectural decisions made today.
-
----
-
-## Outstanding
-
-Things still incomplete.
-
----
-
-## Next Session
-
-The very next task that should be done.
-```
+For operations that create companies from grant applications and need reversibility, see `GrantApplicationService` in `services/grant-applications/`.
 
 ## Startup Sequence
 
-1. Read Sprint (`.ai/sprints/Sprint-NN.md`)
-2. Read Latest Session (`.ai/sessions/NNN-YYYY-MM-DD.md`)
-3. Read Session Template (above)
+1. Read `docs/standards/capability-specification-v1.md`
+2. Read Sprint (`.ai/sprints/Sprint-NN.md`)
+3. Read Latest Session (`.ai/sessions/NNN-YYYY-MM-DD.md`)
 4. Understand current task
 5. Work
-6. Update Session (create new file in `.ai/sessions/`)
+6. Update Session
 7. Update Sprint if necessary

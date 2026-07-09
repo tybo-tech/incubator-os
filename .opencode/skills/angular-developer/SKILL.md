@@ -1,279 +1,140 @@
-# Angular Developer
+# Angular Developer — Capability Consumer
 
 ## Responsibilities
 
-- Angular 19
-- TypeScript
-- Components (standalone, signals)
-- Services (API layer, state management)
-- Routing (lazy-loaded children)
-- Forms (template-driven)
-- Tailwind CSS v4
-- Project conventions
-- Read latest session
-- Update latest session
+- Angular 19 (standalone components, signals, no NgModules)
+- Consume backend capabilities, not persistence APIs
+- Single service per capability (e.g. `CompanyCapabilityService`)
+- TypeScript interfaces matching backend DTOs
+- Tailwind CSS v4 + SCSS for styling
+- Refer to `docs/standards/capability-specification-v1.md` for backend contracts
 
 ## Golden Rules
 
-- Never duplicate logic from backend
-- UI owns presentation only
-- Respect project conventions
+- Frontend calls **capabilities**, not endpoints — one service method per backend use case
+- Never assemble data from multiple API calls — the backend capability returns everything in one response
+- Never send `company_id` or storage keys — backend knows the context from the URL
+- Every capability service method returns a typed Observable matching the backend DTO
+- Components are `standalone: true` with explicit imports — no NgModules
+- Use Angular Signals (`signal()`, `computed()`) for reactive state
+- Use `BehaviorSubject` only for cross-component context (`ContextService`)
 - Every completed task updates: Code → Session → Sprint
-- Update session before finishing
 
-## Architecture
-
-```
-src/app/admin/grant-funding/
-├── services/
-│   ├── grant-application-api.service.ts   ← NEW: calls business capability endpoints
-│   ├── grant-application.service.ts        ← LEGACY: calls api-nodes CRUD
-│   ├── grant-funding-state.service.ts     ← State management (signals)
-│   └── workflow.service.ts                ← Workflow cache
-├── interfaces/
-│   ├── grant-application.interfaces.ts    ← Domain types
-│   └── applicant-overview.interface.ts    ← Read model contract
-├── pages/                                 ← Route-level components
-├── grant-funding-applications.component.ts
-├── grant-funding-header.component.ts
-├── grant-funding-filters.component.ts
-├── grant-funding-table.component.ts
-├── grant-funding-bulk-modal.component.ts
-├── promote-to-cohort-modal.component.ts
-└── workflow-settings.component.ts
-```
-
-## API Service Pattern
-
-Always create a dedicated API service for business capability endpoints:
+## Capability Service Template
 
 ```typescript
 @Injectable({ providedIn: 'root' })
-export class GrantApplicationApiService {
-  private baseUrl = `${Constants.ApiBase}/api/grant-applications`;
+export class {Capability}CapabilityService {
+  private baseUrl = `${Constants.ApiBase}/api/{capability}`;
 
   constructor(private http: HttpClient) {}
 
-  getOverview(applicantId: number): Observable<ApplicantOverview> {
-    return this.http.get<ApplicantOverview>(
-      `${this.baseUrl}/queries/get-overview.php?applicantId=${applicantId}`
+  getOverview(id: number): Observable<{Thing}OverviewResponse> {
+    return this.http.get<{Thing}OverviewResponse>(
+      `${this.baseUrl}/queries/get-overview.php?id=${id}`
     );
   }
 
-  updateApplication(applicantId: number, data: Record<string, any>): Observable<any> {
-    return this.http.put(
-      `${this.baseUrl}/commands/update-application.php`,
-      { applicantId, data }
+  {businessAction}(id: number, data: {Action}Request): Observable<CommandResult> {
+    return this.http.post<CommandResult>(
+      `${this.baseUrl}/commands/{business-action}.php?id=${id}`, data
     );
   }
 }
 ```
 
-## State Management Pattern
+## Backend DTOs → TypeScript Interfaces
 
-Use a central state service with signals:
+Map every backend PHP DTO to a TypeScript interface:
 
 ```typescript
-export class GrantFundingStateService {
-  applications = signal<GrantApplication[]>([]);
-  filtered = signal<GrantApplication[]>([]);
-  isLoading = signal(false);
-  selectedIds = signal<Set<number>>(new Set());
-  showPromoteModal = signal(false);
-  promoteMode = signal<'import' | 'undo'>('import');
-  selectedIdsArray = computed(() => Array.from(this.selectedIds()));
+interface CompanyOverviewResponse {
+  company: ICompany;
+  directors: DirectorSummary[];
+  financial_summary?: FinancialSummary;
+}
+
+interface DirectorSummary {
+  directorId: number;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  role: string;
+  gender: string | null;
+  id_number: string | null;
+}
+
+interface FinancialSummary {
+  total_revenue: number;
+  fy_count: number;
+  latest_fy: string | null;
+  active_months: number;
+  captured_months: number;
+}
+
+interface CommandResult {
+  success: boolean;
+  message: string;
+  data?: any;
+  auditId?: string;
+  warnings?: string[];
+}
+
+interface RegisterDirectorRequest {
+  full_name: string;
+  email?: string;
+  phone?: string;
+  gender?: string;
+  id_number?: string;
 }
 ```
 
-## Modal Pattern
-
-Standalone component, controlled by state service signal:
+## Component Pattern
 
 ```typescript
-@Component({ standalone: true, ... })
-export class PromoteToCohortModalComponent implements OnInit {
-  state = inject(GrantFundingStateService);
-  private api = inject(GrantApplicationApiService);
-  private toast = inject(ToastService);
-}
-```
+@Component({
+  selector: 'app-company-overview',
+  standalone: true,
+  imports: [CommonModule, MetricsOverviewComponent],
+  template: `...`
+})
+export class CompanyOverviewComponent implements OnInit {
+  companyId: string | null = null;
+  overview = signal<CompanyOverviewResponse | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
 
-## Hierarchy Selector Pattern
+  constructor(
+    private route: ActivatedRoute,
+    private capability: CompanyCapabilityService
+  ) {}
 
-Cascading 3-level selects (Client → Program → Cohort):
-
-```typescript
-onClientChange(): void {
-  this.selectedProgramId = 0;
-  this.selectedCohortId = 0;
-  this.programs.set([]);
-  this.cohorts.set([]);
-  if (this.selectedClientId) {
-    this.categorySvc.listProgramsForClient(this.selectedClientId).subscribe(...)
+  ngOnInit(): void {
+    this.route.parent?.params.subscribe(params => {
+      this.companyId = params['id'];
+      if (this.companyId) this.loadOverview();
+    });
   }
-}
-```
 
-## Category Hierarchy CRUD Pattern
-
-All three levels (client, program, cohort) follow the same consistent UI pattern:
-
-### Card Layout
-- Edit button (pencil icon) and Delete button (trash icon) in top-right of each card
-- Primary action button at bottom ("View Programs", "View Cohorts", "View Companies")
-- Statistics grid showing counts
-- `$event.stopPropagation()` on action buttons to prevent card click
-
-### Create/Edit Modal
-Reuse the shared `CreateModalComponent` for both create and edit:
-
-```typescript
-// Template
-<app-create-modal
-  [show]="showCreateModal() || showEditModal()"
-  [config]="showEditModal() ? editModalConfig() : createModalConfig"
-  [isSubmitting]="isCreating"
-  (cancel)="closeEditModal()"
-  (submit)="showEditModal() ? onEditSubmit($event) : onCreateSubmit($event)">
-</app-create-modal>
-
-// Config with initialData for edit
-createModalConfig: CreateModalConfig = {
-  title: 'Create New Client',
-  submitLabel: 'Create Client',
-  fields: [
-    { key: 'name', label: 'Client Name', type: 'text', placeholder: 'Enter name', required: true },
-    { key: 'description', label: 'Description', type: 'textarea', rows: 3 },
-  ]
-};
-
-editModalConfig = computed<CreateModalConfig>(() => ({
-  title: 'Edit Client',
-  submitLabel: 'Save Changes',
-  fields: [ /* same fields */ ],
-  initialData: {
-    name: this.editingItem()?.name ?? '',
-    description: this.editingItem()?.description ?? '',
-  }
-}));
-```
-
-### Delete Pattern
-```typescript
-deleteItem(item: Item): void {
-  if (confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
-    this.isLoading.set(true);
-    this.service.deleteCategory(item.id).pipe(
-      catchError(error => {
-        this.toastService.show('Failed to delete.', 'error');
-        this.isLoading.set(false);
-        return EMPTY;
-      })
-    ).subscribe(() => {
-      this.toastService.show(`"${item.name}" deleted successfully.`, 'success');
-      this.loadItems();
+  loadOverview(): void {
+    if (!this.companyId) return;
+    this.loading.set(true);
+    this.error.set(null);
+    const id = parseInt(this.companyId, 10);
+    if (isNaN(id)) { this.error.set('Invalid ID'); this.loading.set(false); return; }
+    this.capability.getOverview(id).subscribe({
+      next: (data) => { this.overview.set(data); this.loading.set(false); },
+      error: () => { this.error.set('Failed to load'); this.loading.set(false); },
     });
   }
 }
-```
-
-### Edit Submit Pattern
-```typescript
-onEditSubmit(formData: any): void {
-  const item = this.editingItem();
-  if (!item) return;
-  this.isCreating.set(true);
-  this.service.updateCategory(item.id, {
-    name: formData.name,
-    description: formData.description || undefined,
-  }).pipe(
-    catchError(error => { /* error handling */ })
-  ).subscribe(() => {
-    this.isCreating.set(false);
-    this.closeEditModal();
-    this.toastService.show(`"${formData.name}" updated successfully.`, 'success');
-    this.loadItems();
-  });
-}
-```
-
-### State Signals
-```typescript
-showCreateModal = signal(false);
-showEditModal = signal(false);
-editingItem = signal<Item | null>(null);
-isCreating = signal(false);
-```
-
-## Session Template
-
-Every session file must follow this exact structure:
-
-```markdown
-# Session NNN
-
-Date:
-YYYY-MM-DD
-
-## Goal
-
-What was the objective?
-
----
-
-## Completed
-
-- Itemized list of what was done
-
----
-
-## Frontend
-
-Files modified
-
-Components
-
-Services
-
-Issues
-
----
-
-## Backend
-
-Files modified
-
-Controllers
-
-Services
-
-Database
-
----
-
-## Decisions
-
-Important architectural decisions made today.
-
----
-
-## Outstanding
-
-Things still incomplete.
-
----
-
-## Next Session
-
-The very next task that should be done.
 ```
 
 ## Startup Sequence
 
 1. Read Sprint (`.ai/sprints/Sprint-NN.md`)
 2. Read Latest Session (`.ai/sessions/NNN-YYYY-MM-DD.md`)
-3. Read Session Template (above)
-4. Understand current task
-5. Work
-6. Update Session (create new file in `.ai/sessions/`)
-7. Update Sprint if necessary
+3. Understand current task
+4. Work
+5. Update Session
+6. Update Sprint if necessary

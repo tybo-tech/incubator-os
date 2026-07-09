@@ -1,0 +1,13 @@
+{
+  "name": "Company",
+  "description": "Manage company profiles, directors, and financial overview",
+  "queries": [
+    { "name": "getOverview", "returns": "CompanyOverviewResponse" }
+  ],
+  "commands": [
+    { "name": "updateProfile", "input": "UpdateProfileRequest", "returns": "CommandResult" },
+    { "name": "registerDirector", "input": "RegisterDirectorRequest", "returns": "CommandResult" },
+    { "name": "deactivateDirector", "input": "DeactivateDirectorRequest", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Users", "Financial"]
+}
