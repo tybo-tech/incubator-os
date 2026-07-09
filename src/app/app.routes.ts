@@ -77,6 +77,13 @@ export const routes: Routes = [
         m => m.PublicFormComponent
       ),
   },
+  {
+    path: 'financial/:token',
+    loadComponent: () =>
+      import('./public/public-financial-submission/public-financial-submission.component').then(
+        m => m.PublicFinancialSubmissionComponent
+      ),
+  },
 
   // ── Authenticated shell ────────────────────────────────────────────────────
   {
