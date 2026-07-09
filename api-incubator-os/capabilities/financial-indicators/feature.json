@@ -1,0 +1,18 @@
+{
+  "name": "FinancialIndicators",
+  "description": "Capture and report on monthly management account financial indicators for companies",
+  "queries": [
+    { "name": "getIndicator", "returns": "FinancialIndicatorResponse" },
+    { "name": "listByCompany", "returns": "FinancialIndicatorSummary[]" },
+    { "name": "getAnnual", "returns": "AnnualReportResponse" },
+    { "name": "getSummary", "returns": "FinancialIndicatorSummaryResponse" }
+  ],
+  "commands": [
+    { "name": "createIndicator", "input": "CreateIndicatorRequest", "returns": "CommandResult" },
+    { "name": "updateIndicator", "input": "UpdateIndicatorRequest", "returns": "CommandResult" },
+    { "name": "deleteIndicator", "input": "DeleteIndicatorRequest", "returns": "CommandResult" },
+    { "name": "requestLink", "input": "RequestLinkRequest", "returns": "CommandResult" },
+    { "name": "publicSubmit", "input": "PublicSubmitRequest", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Nodes"]
+}
