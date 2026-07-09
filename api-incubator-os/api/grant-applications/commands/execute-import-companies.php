@@ -4,6 +4,7 @@ include_once '../../../config/Database.php';
 include_once '../../../models/Node.php';
 include_once '../../../models/Company.php';
 include_once '../../../models/CategoryItem.php';
+include_once '../../../models/CompanyFinancialYearlyStats.php';
 include_once '../../../services/grant-applications/GrantApplicationService.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
