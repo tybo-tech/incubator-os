@@ -7,11 +7,11 @@ In Progress
 
 ## Tasks
 
-[x] Login
-[x] Dashboard
-[ ] Customers
-[ ] Orders
-[ ] Reporting
+[x] Set up .ai/ pipeline (sessions, sprints, skills, standards)
+[x] Build first business capability: Grant Application overview endpoint
+[x] Build Promote to Cohort feature (import/undo with hierarchy selector)
+[ ] Build Workflow capability
+[ ] Build Finance capability
 
 ---
 
@@ -23,4 +23,4 @@ None yet.
 
 ## Notes
 
-Initial sprint covering core application features.
+Initial sprint establishing the capability pattern and import/undo workflow.
