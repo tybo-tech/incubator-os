@@ -152,6 +152,7 @@ Skills are in `.opencode/skills/`. Load them at the start of every session:
 
 - **`angular-developer`** — Angular 19, components, signals, services, Tailwind, API patterns
 - **`php-developer`** — PHP 8.1, business capabilities, Node repository, import/undo pattern, category hierarchy
+- **`feature-analyzer`** — Given a root Angular component, produces complete end-to-end technical documentation of that feature (component tree, services, API, backend, data flow, technical debt, recommendations)
 
 ## .ai/ Directory
 
