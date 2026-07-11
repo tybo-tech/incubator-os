@@ -118,6 +118,16 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-clipboard-check'
     },
     {
+      label: 'Purchases',
+      route: 'purchases',
+      icon: 'fas fa-shopping-cart'
+    },
+    {
+      label: 'Seed Funding',
+      route: 'seed-funding',
+      icon: 'fas fa-hand-holding-usd'
+    },
+    {
       label: 'SWOT Analysis',
       route: 'swot',
       icon: 'fas fa-chart-line'

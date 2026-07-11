@@ -1,6 +1,5 @@
 export interface IBusinessAssessment {
   level: number;
-
   requirements: {
     registration: boolean;
     taxCompliance: boolean;
@@ -8,12 +7,10 @@ export interface IBusinessAssessment {
     youthOwned: boolean;
     bankAccount: boolean;
   };
-
   funding: {
     requestedAmount: number;
     approved: boolean;
     paid: boolean;
   };
-
   score: number;
 }

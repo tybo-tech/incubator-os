@@ -4,12 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../../../services/node.service';
 import { INode } from '../../../../../models/schema';
-import { IBusinessAssessment } from '../../../../../models/business-assessment.model';
+import { ICompanyPurchase, IPurchasedItem } from '../../../../../models/company-purchase.model';
 
-const NODE_TYPE = 'business_assessment';
+const NODE_TYPE = 'company_purchase';
 
 @Component({
-  selector: 'app-assessment-page',
+  selector: 'app-purchase-page',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
@@ -17,8 +17,8 @@ const NODE_TYPE = 'business_assessment';
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Business Assessment</h2>
-            <p class="text-gray-600 text-sm mt-1">SEDA funding eligibility assessment</p>
+            <h2 class="text-2xl font-bold text-gray-900">Company Purchases</h2>
+            <p class="text-gray-600 text-sm mt-1">Equipment, tools, materials and services procured</p>
           </div>
           <div class="flex items-center space-x-2">
             <button (click)="showImport.set(true)" class="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
@@ -27,7 +27,7 @@ const NODE_TYPE = 'business_assessment';
             </button>
             <button (click)="createNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              New Assessment
+              New Purchase
             </button>
           </div>
         </div>
@@ -35,18 +35,17 @@ const NODE_TYPE = 'business_assessment';
         <div *ngIf="loading()" class="flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
-
         <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">{{ error() }}</div>
 
         <!-- Import Dialog -->
         <div *ngIf="showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Import Assessments</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Import Purchases</h3>
             <button (click)="showImport.set(false)" class="p-1 text-gray-400 hover:text-gray-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-          <p class="text-sm text-gray-500">Paste tab-separated data. Columns: company_id, company_name, level, registration, tax_compliance, business_plan, youth_owned, bank_account, requested_amount, approved, paid, score</p>
+          <p class="text-sm text-gray-500">Paste tab-separated data. Columns: company_name, purchase_type, items, supplier, amount, purchase_order, invoice_received, invoice_type, items_received</p>
           <textarea [(ngModel)]="importText" rows="8" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono" placeholder="Paste your data here..."></textarea>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-500">{{ parsedCount }} rows parsed</span>
@@ -68,31 +67,27 @@ const NODE_TYPE = 'business_assessment';
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Reg</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tax</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Plan</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Youth</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Bank</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Requested</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Approved</th>
-                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Paid</th>
-                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Score</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">PO</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inv Type</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Received</th>
                   <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <tr *ngFor="let item of assessments()" class="hover:bg-gray-50 transition-colors">
-                  <td class="px-4 py-3 text-sm font-medium text-gray-900">Level {{ item.data.level }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.requirements.registration) }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.requirements.taxCompliance) }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.requirements.businessPlan) }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.requirements.youthOwned) }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.requirements.bankAccount) }}</td>
-                  <td class="px-4 py-3 text-sm text-right">{{ item.data.funding.requestedAmount | currency:'ZAR':'symbol':'1.0-0' }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.funding.approved) }}</td>
-                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.funding.paid) }}</td>
-                  <td class="px-4 py-3 text-sm text-right font-medium">{{ item.data.score }}%</td>
+                <tr *ngFor="let item of purchases()" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-4 py-3 text-sm text-gray-900">{{ item.data.purchaseType }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ itemDescriptions(item) }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-700">{{ item.data.supplier }}</td>
+                  <td class="px-4 py-3 text-sm text-right font-medium">{{ item.data.amount | currency:'ZAR':'symbol':'1.0-0' }}</td>
+                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.order.purchaseOrder) }}</td>
+                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.order.invoiceReceived) }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-600">{{ item.data.order.invoiceType }}</td>
+                  <td class="px-4 py-3 text-center">{{ checkIcon(item.data.order.itemsReceived) }}</td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex items-center justify-end space-x-2">
                       <button (click)="edit(item)" class="p-1 text-gray-400 hover:text-indigo-600" title="Edit">
@@ -104,8 +99,8 @@ const NODE_TYPE = 'business_assessment';
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="assessments().length === 0">
-                  <td colspan="11" class="px-4 py-8 text-center text-gray-500">No assessments found. Click "New Assessment" or "Import" to add data.</td>
+                <tr *ngIf="purchases().length === 0">
+                  <td colspan="9" class="px-4 py-8 text-center text-gray-500">No purchases found. Click "New Purchase" or "Import" to add data.</td>
                 </tr>
               </tbody>
             </table>
@@ -114,32 +109,31 @@ const NODE_TYPE = 'business_assessment';
 
         <!-- Form -->
         <div *ngIf="editing()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Assessment' : 'Edit Assessment' }}</h3>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Business Level</label>
-            <select [(ngModel)]="form.level" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-              <option [value]="1">Level 1</option><option [value]="2">Level 2</option><option [value]="3">Level 3</option><option [value]="4">Level 4</option>
-            </select>
+          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Purchase' : 'Edit Purchase' }}</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Type</label><input type="text" [(ngModel)]="form.purchaseType" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label><input type="text" [(ngModel)]="form.supplier" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount</label><input type="number" [(ngModel)]="form.amount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label><input type="text" [(ngModel)]="form.order.invoiceType" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
           </div>
           <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Requirements</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.requirements.registration" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Registration</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.requirements.taxCompliance" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Tax Compliance</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.requirements.businessPlan" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Business Plan</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.requirements.youthOwned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Youth Owned</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.requirements.bankAccount" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Bank Account</span></label>
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Order Status</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.purchaseOrder" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Purchase Order</span></label>
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.invoiceReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Invoice Received</span></label>
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.itemsReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Items Received</span></label>
             </div>
           </div>
           <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Funding</h4>
-            <div class="grid grid-cols-3 gap-4">
-              <div><label class="block text-sm font-medium text-gray-700 mb-1">Requested Amount</label><input type="number" [(ngModel)]="form.funding.requestedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-              <label class="flex items-center space-x-3 pt-6"><input type="checkbox" [(ngModel)]="form.funding.approved" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Approved</span></label>
-              <label class="flex items-center space-x-3 pt-6"><input type="checkbox" [(ngModel)]="form.funding.paid" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Paid</span></label>
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Items Purchased</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of form.items; let i = index" class="flex items-center space-x-2">
+                <input type="text" [(ngModel)]="form.items[i].description" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Item description" />
+                <button (click)="removeItem(i)" class="p-1 text-gray-400 hover:text-red-600">✕</button>
+              </div>
+              <button (click)="addItem()" class="text-sm text-blue-600 hover:text-blue-800">+ Add Item</button>
             </div>
           </div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Score (%)</label><input type="number" [(ngModel)]="form.score" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" min="0" max="100" /></div>
           <div class="flex items-center justify-end space-x-3 pt-4 border-t">
             <button (click)="cancelEdit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
             <button (click)="save()" [disabled]="saving()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ saving() ? 'Saving...' : 'Save' }}</button>
@@ -149,16 +143,16 @@ const NODE_TYPE = 'business_assessment';
     </div>
   `
 })
-export class AssessmentPageComponent implements OnInit {
+export class PurchasePageComponent implements OnInit {
   private companyId = signal<number>(0);
-  assessments = signal<INode<IBusinessAssessment>[]>([]);
+  purchases = signal<INode<ICompanyPurchase>[]>([]);
   loading = signal(false);
   saving = signal(false);
   error = signal<string | null>(null);
   editing = signal(false);
   isNew = signal(false);
   editingId: number | null = null;
-  form: IBusinessAssessment = this.emptyForm();
+  form: ICompanyPurchase = this.emptyForm();
   showImport = signal(false);
   importText = '';
   importing = signal(false);
@@ -168,7 +162,7 @@ export class AssessmentPageComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private nodeService: NodeService<IBusinessAssessment>,
+    private nodeService: NodeService<ICompanyPurchase>,
   ) {}
 
   ngOnInit(): void {
@@ -183,42 +177,51 @@ export class AssessmentPageComponent implements OnInit {
     if (!cid) return;
     this.loading.set(true); this.error.set(null);
     this.nodeService.getNodesByCompany(cid, NODE_TYPE).subscribe({
-      next: (r) => { this.assessments.set(r); this.loading.set(false); },
+      next: (r) => { this.purchases.set(r); this.loading.set(false); },
       error: () => { this.loading.set(false); }
     });
   }
 
   createNew(): void { this.form = this.emptyForm(); this.editingId = null; this.isNew.set(true); this.editing.set(true); }
-  edit(item: INode<IBusinessAssessment>): void { this.form = { ...item.data }; this.editingId = item.id ?? null; this.isNew.set(false); this.editing.set(true); }
+  edit(item: INode<ICompanyPurchase>): void { this.form = { ...item.data, items: item.data.items.map(i => ({ ...i })) }; this.editingId = item.id ?? null; this.isNew.set(false); this.editing.set(true); }
   cancelEdit(): void { this.editing.set(false); this.editingId = null; }
+  addItem(): void { this.form.items.push({ description: '' }); }
+  removeItem(i: number): void { this.form.items.splice(i, 1); }
+
+  itemDescriptions(item: INode<ICompanyPurchase>): string {
+    return (item.data.items || []).map(i => i.description).join(', ');
+  }
 
   save(): void {
     const cid = this.companyId();
     if (!cid) return;
     this.saving.set(true); this.error.set(null);
-    const node: INode<IBusinessAssessment> = { type: NODE_TYPE, company_id: cid, data: this.form };
+    const node: INode<ICompanyPurchase> = { type: NODE_TYPE, company_id: cid, data: this.form };
     const obs = this.editingId ? this.nodeService.updateNode({ ...node, id: this.editingId }) : this.nodeService.addNode(node);
     obs.subscribe({ next: () => { this.saving.set(false); this.editing.set(false); this.editingId = null; this.loadAll(); }, error: (err) => { this.saving.set(false); this.error.set(err.error?.error || 'Failed to save'); } });
   }
 
-  delete(item: INode<IBusinessAssessment>): void {
-    if (!confirm('Delete this assessment?')) return;
+  delete(item: INode<ICompanyPurchase>): void {
+    if (!confirm('Delete this purchase?')) return;
     this.nodeService.deleteNode(item.id!).subscribe({ next: () => this.loadAll(), error: (err) => this.error.set(err.error?.error || 'Failed to delete') });
   }
 
   checkIcon(v: boolean): string { return v ? '✓' : '—'; }
 
-  private parseImportText(): INode<IBusinessAssessment>[] {
+  private parseImportText(): INode<ICompanyPurchase>[] {
     const cid = this.companyId();
     if (!cid || !this.importText.trim()) return [];
     return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
       const c = l.split('\t');
+      const itemsStr = c[2] || '';
+      const items: IPurchasedItem[] = itemsStr.split(',').map(s => ({ description: s.trim() })).filter(i => i.description.length > 0);
       return { type: NODE_TYPE, company_id: cid, data: {
-        level: parseInt(c[2], 10) || 1,
-        requirements: { registration: c[3]?.toLowerCase() === 'yes', taxCompliance: c[4]?.toLowerCase() === 'yes', businessPlan: c[5]?.toLowerCase() === 'yes', youthOwned: c[6]?.toLowerCase() === 'yes', bankAccount: c[7]?.toLowerCase() === 'yes' },
-        funding: { requestedAmount: this.parseMoney(c[8]), approved: c[9]?.toLowerCase() === 'yes', paid: c[10]?.toLowerCase() === 'yes' },
-        score: parseInt(c[11], 10) || 0,
-      }} as INode<IBusinessAssessment>;
+        purchaseType: c[1] || '',
+        supplier: c[3] || '',
+        amount: this.parseMoney(c[4]),
+        order: { purchaseOrder: c[5]?.toLowerCase() === 'yes', invoiceReceived: c[6]?.toLowerCase() === 'yes', invoiceType: c[7] || '', itemsReceived: c[8]?.toLowerCase() === 'yes' },
+        items,
+      }} as INode<ICompanyPurchase>;
     });
   }
 
@@ -238,12 +241,12 @@ export class AssessmentPageComponent implements OnInit {
     if (nodes.length === 0) return;
     this.importing.set(true); this.importResult.set(null);
     this.nodeService.addNodesBatch(nodes).subscribe({
-      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} assessment records.` }); this.importText = ''; this.loadAll(); },
+      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} purchase records.` }); this.importText = ''; this.loadAll(); },
       error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); }
     });
   }
 
-  private emptyForm(): IBusinessAssessment {
-    return { level: 1, requirements: { registration: false, taxCompliance: false, businessPlan: false, youthOwned: false, bankAccount: false }, funding: { requestedAmount: 0, approved: false, paid: false }, score: 0 };
+  private emptyForm(): ICompanyPurchase {
+    return { purchaseType: '', supplier: '', amount: 0, order: { purchaseOrder: false, invoiceReceived: false, invoiceType: '', itemsReceived: false }, items: [] };
   }
 }
