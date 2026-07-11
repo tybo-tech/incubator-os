@@ -20,10 +20,16 @@ const NODE_TYPE = 'business_assessment';
             <h2 class="text-2xl font-bold text-gray-900">Business Assessment</h2>
             <p class="text-gray-600 text-sm mt-1">SEDA funding eligibility assessment</p>
           </div>
-          <button (click)="createNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            New Assessment
-          </button>
+          <div class="flex items-center space-x-2">
+            <button (click)="showImport.set(true)" class="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+              Import
+            </button>
+            <button (click)="createNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              New Assessment
+            </button>
+          </div>
         </div>
 
         <div *ngIf="loading()" class="flex items-center justify-center py-12">
@@ -32,8 +38,36 @@ const NODE_TYPE = 'business_assessment';
 
         <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">{{ error() }}</div>
 
+        <!-- Import Dialog -->
+        <div *ngIf="showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Import Assessments</h3>
+            <button (click)="showImport.set(false)" class="p-1 text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-500">Paste tab-separated data below. Columns: company_id, company_name, level, registration, tax_compliance, business_plan, youth_owned, bank_account, requested_amount, approved, paid, score</p>
+          <textarea
+            [(ngModel)]="importText"
+            rows="10"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono"
+            placeholder="Paste your data here..."></textarea>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-500">{{ parsedCount }} rows parsed</span>
+            <div class="flex space-x-2">
+              <button (click)="showImport.set(false)" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+              <button (click)="runImport()" [disabled]="importing() || parsedCount === 0" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
+                {{ importing() ? 'Importing...' : 'Import ' + parsedCount + ' Records' }}
+              </button>
+            </div>
+          </div>
+          <div *ngIf="importResult()" [class]="'text-sm p-3 rounded-md ' + (importResult()!.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200')">
+            {{ importResult()!.message }}
+          </div>
+        </div>
+
         <!-- Existing Assessments List -->
-        <div *ngIf="!loading() && !editing()" class="space-y-4">
+        <div *ngIf="!loading() && !editing() && !showImport()" class="space-y-4">
           <div *ngIf="assessments().length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
             No assessments yet. Click "New Assessment" to create one.
           </div>
@@ -125,6 +159,15 @@ export class AssessmentPageComponent implements OnInit {
 
   form: IBusinessAssessment = this.emptyForm();
 
+  showImport = signal(false);
+  importText = '';
+  importing = signal(false);
+  importResult = signal<{ success: boolean; message: string } | null>(null);
+
+  get parsedCount(): number {
+    return this.parseImportText().length;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private nodeService: NodeService<IBusinessAssessment>,
@@ -205,6 +248,74 @@ export class AssessmentPageComponent implements OnInit {
     this.nodeService.deleteNode(item.id!).subscribe({
       next: () => this.loadAll(),
       error: (err) => this.error.set(err.error?.error || 'Failed to delete')
+    });
+  }
+
+  private parseImportText(): INode<IBusinessAssessment>[] {
+    const cid = this.companyId();
+    if (!cid || !this.importText.trim()) return [];
+
+    return this.importText.trim().split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => {
+        const cols = line.split('\t');
+        return {
+          type: NODE_TYPE,
+          company_id: cid,
+          data: {
+            level: parseInt(cols[2], 10) || 1,
+            requirements: {
+              registration: cols[3]?.toLowerCase() === 'yes',
+              taxCompliance: cols[4]?.toLowerCase() === 'yes',
+              businessPlan: cols[5]?.toLowerCase() === 'yes',
+              youthOwned: cols[6]?.toLowerCase() === 'yes',
+              bankAccount: cols[7]?.toLowerCase() === 'yes',
+            },
+            funding: {
+              requestedAmount: this.parseMoney(cols[8]),
+              approved: cols[9]?.toLowerCase() === 'yes',
+              paid: cols[10]?.toLowerCase() === 'yes',
+            },
+            score: parseInt(cols[11], 10) || 0,
+          },
+        } as INode<IBusinessAssessment>;
+      });
+  }
+
+  private parseMoney(v: string | undefined): number {
+    if (!v) return 0;
+    const cleaned = v.replace(/[^\d.,-]/g, '');
+    const lastComma = cleaned.lastIndexOf(',');
+    const lastDot = cleaned.lastIndexOf('.');
+    let numeric = cleaned;
+    if (lastComma > lastDot) {
+      numeric = cleaned.replace(/\./g, '').replace(/,/g, '.');
+    } else {
+      numeric = cleaned.replace(/,/g, '');
+    }
+    const n = Number(numeric);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  runImport(): void {
+    const nodes = this.parseImportText();
+    if (nodes.length === 0) return;
+
+    this.importing.set(true);
+    this.importResult.set(null);
+
+    this.nodeService.addNodesBatch(nodes).subscribe({
+      next: () => {
+        this.importing.set(false);
+        this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} assessment records.` });
+        this.importText = '';
+        this.loadAll();
+      },
+      error: (err) => {
+        this.importing.set(false);
+        this.importResult.set({ success: false, message: err.error?.error || 'Import failed' });
+      }
     });
   }
 
