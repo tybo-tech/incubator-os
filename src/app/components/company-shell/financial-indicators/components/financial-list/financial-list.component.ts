@@ -30,7 +30,7 @@ const MONTH_NAMES: Record<number, string> = {
           <tbody class="divide-y divide-gray-100">
             <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors">
               <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ item.financialYear }}</td>
-              <td class="px-4 py-3 text-sm text-gray-700">{{ MONTH_NAMES[item.month] || item.month }}</td>
+              <td class="px-4 py-3 text-sm text-gray-700">{{ item.month > 0 ? (MONTH_NAMES[item.month] || item.month) : 'N/A' }}</td>
               <td class="px-4 py-3 text-sm text-right text-gray-900">-</td>
               <td class="px-4 py-3 text-sm text-right text-green-600 font-medium">{{ item.grossProfit | currency:'ZAR':'symbol':'1.0-0' }}</td>
               <td class="px-4 py-3 text-sm text-right" [class.text-green-600]="(item.netProfit ?? 0) >= 0" [class.text-red-600]="(item.netProfit ?? 0) < 0">

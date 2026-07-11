@@ -20,6 +20,8 @@ final class AnnualReportResponse implements JsonSerializable
             $monthNum = self::monthNameToNumber($monthName);
             if (isset($monthlyData[$monthNum])) {
                 $months[$monthName] = $monthlyData[$monthNum];
+            } elseif (isset($monthlyData[0])) {
+                $months[$monthName] = $monthlyData[0];
             } else {
                 $months[$monthName] = new AnnualMonthData();
             }
