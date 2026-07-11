@@ -75,7 +75,7 @@ final class FinancialIndicatorRepository
         $nodes = $this->listByCompany($companyId);
         foreach ($nodes as $node) {
             $meta = $node['data']['meta'] ?? [];
-            if ((int)($meta['financial_year'] ?? 0) === $financialYear && (int)($meta['month'] ?? 0) === $month) {
+            if ((int)($meta['financialYear'] ?? $meta['financial_year'] ?? 0) === $financialYear && (int)($meta['month'] ?? 0) === $month) {
                 return $node;
             }
         }
@@ -89,16 +89,16 @@ final class FinancialIndicatorRepository
 
         foreach ($nodes as $node) {
             $meta = $node['data']['meta'] ?? [];
-            $fy = (int)($meta['financial_year'] ?? 0);
+            $fy = (int)($meta['financialYear'] ?? $meta['financial_year'] ?? 0);
             $month = (int)($meta['month'] ?? 0);
 
             if ($fy !== $year) continue;
 
-            $income = $node['data']['income_statement'] ?? [];
-            $balance = $node['data']['balance_sheet'] ?? [];
+            $income = $node['data']['incomeStatement'] ?? $node['data']['income_statement'] ?? [];
+            $balance = $node['data']['balanceSheet'] ?? $node['data']['balance_sheet'] ?? [];
             $sales = (float)($income['sales'] ?? 0);
-            $costOfSales = (float)($income['cost_of_sales'] ?? 0);
-            $operatingExpenses = (float)($income['operating_expenses'] ?? 0);
+            $costOfSales = (float)($income['costOfSales'] ?? $income['cost_of_sales'] ?? 0);
+            $operatingExpenses = (float)($income['operatingExpenses'] ?? $income['operating_expenses'] ?? 0);
 
             $calc = new FinancialIndicatorCalculator();
             $gp = $calc->grossProfit($sales, $costOfSales);
@@ -115,14 +115,14 @@ final class FinancialIndicatorRepository
                 netProfit: $np,
                 netProfitPercentage: $npp,
                 cash: (float)($balance['cash'] ?? 0),
-                cashEquivalents: (float)($balance['cash_equivalents'] ?? 0),
-                shortTermInvestments: (float)($balance['short_term_investments'] ?? 0),
-                currentReceivables: (float)($balance['current_receivables'] ?? 0),
-                totalCurrentAssets: (float)($balance['total_current_assets'] ?? 0),
-                totalAssets: (float)($balance['total_assets'] ?? 0),
-                totalCurrentLiabilities: (float)($balance['total_current_liabilities'] ?? 0),
-                totalLiabilities: (float)($balance['total_liabilities'] ?? 0),
-                totalEquity: (float)($balance['total_equity'] ?? 0),
+                cashEquivalents: (float)($balance['cashEquivalents'] ?? $balance['cash_equivalents'] ?? 0),
+                shortTermInvestments: (float)($balance['shortTermInvestments'] ?? $balance['short_term_investments'] ?? 0),
+                currentReceivables: (float)($balance['currentReceivables'] ?? $balance['current_receivables'] ?? 0),
+                totalCurrentAssets: (float)($balance['totalCurrentAssets'] ?? $balance['total_current_assets'] ?? 0),
+                totalAssets: (float)($balance['totalAssets'] ?? $balance['total_assets'] ?? 0),
+                totalCurrentLiabilities: (float)($balance['totalCurrentLiabilities'] ?? $balance['total_current_liabilities'] ?? 0),
+                totalLiabilities: (float)($balance['totalLiabilities'] ?? $balance['total_liabilities'] ?? 0),
+                totalEquity: (float)($balance['totalEquity'] ?? $balance['total_equity'] ?? 0),
             );
         }
 

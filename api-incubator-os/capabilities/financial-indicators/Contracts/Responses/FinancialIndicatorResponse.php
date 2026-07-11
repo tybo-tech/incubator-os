@@ -22,12 +22,12 @@ final class FinancialIndicatorResponse implements JsonSerializable
     {
         $data = json_decode(json_encode($node['data']), true) ?? [];
         $meta = $data['meta'] ?? [];
-        $income = $data['income_statement'] ?? [];
-        $balance = $data['balance_sheet'] ?? [];
+        $income = $data['incomeStatement'] ?? $data['income_statement'] ?? [];
+        $balance = $data['balanceSheet'] ?? $data['balance_sheet'] ?? [];
 
         $sales = (float)($income['sales'] ?? 0);
-        $costOfSales = (float)($income['cost_of_sales'] ?? 0);
-        $operatingExpenses = (float)($income['operating_expenses'] ?? 0);
+        $costOfSales = (float)($income['costOfSales'] ?? $income['cost_of_sales'] ?? 0);
+        $operatingExpenses = (float)($income['operatingExpenses'] ?? $income['operating_expenses'] ?? 0);
 
         $gp = null;
         $gpp = null;

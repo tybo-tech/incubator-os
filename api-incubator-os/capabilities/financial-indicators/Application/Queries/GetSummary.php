@@ -17,11 +17,11 @@ final class GetSummary
 
         $data = $latest['data'];
         $meta = $data['meta'] ?? [];
-        $income = $data['income_statement'] ?? [];
+        $income = $data['incomeStatement'] ?? $data['income_statement'] ?? [];
 
         $sales = (float)($income['sales'] ?? 0);
-        $costOfSales = (float)($income['cost_of_sales'] ?? 0);
-        $operatingExpenses = (float)($income['operating_expenses'] ?? 0);
+        $costOfSales = (float)($income['costOfSales'] ?? $income['cost_of_sales'] ?? 0);
+        $operatingExpenses = (float)($income['operatingExpenses'] ?? $income['operating_expenses'] ?? 0);
 
         $gp = $this->calc->grossProfit($sales, $costOfSales);
         $np = $this->calc->netProfit($sales, $costOfSales, $operatingExpenses);
@@ -30,7 +30,7 @@ final class GetSummary
 
         return new FinancialIndicatorSummaryResponse(
             latestMonth: (int)($meta['month'] ?? null),
-            latestFinancialYear: (int)($meta['financial_year'] ?? null),
+            latestFinancialYear: (int)($meta['financialYear'] ?? $meta['financial_year'] ?? null),
             latestNetProfit: $np,
             latestGrossProfit: $gp,
             latestSales: $sales,
