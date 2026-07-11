@@ -11,6 +11,7 @@ import { FinancialTabComponent } from './components/companies/company-detail/fin
 import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
 // New Page Components
 import { AssessmentComponent } from './components/company-shell/pages/assessment/assessment.component';
+import { AssessmentPageComponent } from './components/company-shell/pages/assessment/assessment-page.component';
 import { SwotComponent } from './components/company-shell/pages/swot/swot.component';
 import { GpsTargetsComponent } from './components/company-shell/pages/gps-targets/gps-targets.component';
 import {
@@ -124,6 +125,10 @@ export const routes: Routes = [
           {
             path: 'assessment',
             component: AssessmentTabComponent,
+          },
+          {
+            path: 'seda-assessment',
+            component: AssessmentPageComponent,
           },
           {
             path: 'swot',
