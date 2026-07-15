@@ -75,7 +75,22 @@ export class GrantFundingShellComponent implements OnInit {
       label: 'Applications',
       route: '/admin/grant-funding/applications',
       icon: 'fas fa-file-alt'
-    }
+    },
+    {
+      label: 'SEDA Assessment',
+      route: '/admin/grant-funding/seda-assessment',
+      icon: 'fas fa-clipboard-check'
+    },
+    {
+      label: 'Purchases',
+      route: '/admin/grant-funding/purchases',
+      icon: 'fas fa-shopping-cart'
+    },
+    {
+      label: 'Seed Funding',
+      route: '/admin/grant-funding/seed-funding',
+      icon: 'fas fa-seedling'
+    },
   ];
 
   constructor(

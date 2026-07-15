@@ -342,6 +342,21 @@ export const routes: Routes = [
             path: 'reports',
             loadComponent: () => import('./admin/grant-funding/grant-funding-reports.component')
               .then(m => m.GrantFundingReportsComponent),
+          },
+          {
+            path: 'seda-assessment',
+            loadComponent: () => import('./admin/grant-funding/pages/grant-seda-assessment.component')
+              .then(m => m.GrantSedaAssessmentComponent),
+          },
+          {
+            path: 'purchases',
+            loadComponent: () => import('./admin/grant-funding/pages/grant-purchases.component')
+              .then(m => m.GrantPurchasesComponent),
+          },
+          {
+            path: 'seed-funding',
+            loadComponent: () => import('./admin/grant-funding/pages/grant-seed-funding.component')
+              .then(m => m.GrantSeedFundingComponent),
           }
         ]
       },
