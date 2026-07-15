@@ -17,7 +17,7 @@ const NODE_TYPE = 'seed_funding';
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Seed Funding</h2>
+            <h2 class="text-2xl font-bold text-gray-900">Payments Tracker</h2>
             <p class="text-gray-600 text-sm mt-1">Seed funding approval and disbursement tracking</p>
           </div>
           <div class="flex items-center space-x-2">
@@ -40,7 +40,7 @@ const NODE_TYPE = 'seed_funding';
         <!-- Import Dialog -->
         <div *ngIf="showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Import Seed Funding</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Import Payments</h3>
             <button (click)="showImport.set(false)" class="p-1 text-gray-400 hover:text-gray-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -111,7 +111,7 @@ const NODE_TYPE = 'seed_funding';
 
         <!-- Form -->
         <div *ngIf="editing()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Seed Funding' : 'Edit Seed Funding' }}</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Payment Record' : 'Edit Payment Record' }}</h3>
           <div class="grid grid-cols-3 gap-4">
             <div><label class="block text-sm font-medium text-gray-700 mb-1">Approved Amount</label><input type="number" [(ngModel)]="form.approvedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
             <div><label class="block text-sm font-medium text-gray-700 mb-1">Disbursed Amount</label><input type="number" [(ngModel)]="form.disbursedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>

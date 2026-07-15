@@ -17,7 +17,7 @@ const NODE_TYPE = 'company_purchase';
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Company Purchases</h2>
+            <h2 class="text-2xl font-bold text-gray-900">Itemized List</h2>
             <p class="text-gray-600 text-sm mt-1">Equipment, tools, materials and services procured</p>
           </div>
           <div class="flex items-center space-x-2">
@@ -40,7 +40,7 @@ const NODE_TYPE = 'company_purchase';
         <!-- Import Dialog -->
         <div *ngIf="showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Import Purchases</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Import Itemized List</h3>
             <button (click)="showImport.set(false)" class="p-1 text-gray-400 hover:text-gray-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>

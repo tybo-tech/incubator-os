@@ -12,8 +12,7 @@ import { FinancialShellComponent } from './components/company-shell/financial-sh
 // New Page Components
 import { AssessmentComponent } from './components/company-shell/pages/assessment/assessment.component';
 import { AssessmentPageComponent } from './components/company-shell/pages/assessment/assessment-page.component';
-import { PurchasePageComponent } from './components/company-shell/pages/purchases/purchase-page.component';
-import { SeedFundingPageComponent } from './components/company-shell/pages/seed-funding/seed-funding-page.component';
+import { FundingTrackerShellComponent } from './components/company-shell/funding-tracker-shell/funding-tracker-shell.component';
 import { SwotComponent } from './components/company-shell/pages/swot/swot.component';
 import { GpsTargetsComponent } from './components/company-shell/pages/gps-targets/gps-targets.component';
 import {
@@ -129,16 +128,14 @@ export const routes: Routes = [
             component: AssessmentTabComponent,
           },
           {
-            path: 'seda-assessment',
-            component: AssessmentPageComponent,
-          },
-          {
-            path: 'purchases',
-            component: PurchasePageComponent,
-          },
-          {
-            path: 'seed-funding',
-            component: SeedFundingPageComponent,
+            path: 'funding-tracker',
+            component: FundingTrackerShellComponent,
+            children: [
+              { path: '', redirectTo: 'seda-assessment', pathMatch: 'full' },
+              { path: 'seda-assessment', component: AssessmentPageComponent },
+              { path: 'purchases', loadComponent: () => import('./components/company-shell/pages/purchases/purchase-page.component').then(m => m.PurchasePageComponent) },
+              { path: 'seed-funding', loadComponent: () => import('./components/company-shell/pages/seed-funding/seed-funding-page.component').then(m => m.SeedFundingPageComponent) },
+            ]
           },
           {
             path: 'swot',

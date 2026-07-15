@@ -16,7 +16,7 @@ const NODE_TYPE = 'company_purchase';
     <div class="p-6 space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Company Purchases</h2>
+          <h2 class="text-xl font-bold text-gray-900">Itemized List</h2>
           <p class="text-sm text-gray-500">All companies — equipment, tools, materials and services</p>
         </div>
         <button (click)="showImport.set(true)" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
@@ -30,7 +30,7 @@ const NODE_TYPE = 'company_purchase';
 
       <div *ngIf="showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900">Import Purchases</h3>
+          <h3 class="text-lg font-semibold text-gray-900">Import Itemized List</h3>
           <button (click)="showImport.set(false)" class="p-1 text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <p class="text-sm text-gray-500">Paste tab-separated data. First column is company name.</p>

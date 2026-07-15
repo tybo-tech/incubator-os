@@ -82,12 +82,12 @@ export class GrantFundingShellComponent implements OnInit {
       icon: 'fas fa-clipboard-check'
     },
     {
-      label: 'Purchases',
+      label: 'Itemized List',
       route: '/admin/grant-funding/purchases',
       icon: 'fas fa-shopping-cart'
     },
     {
-      label: 'Seed Funding',
+      label: 'Payments Tracker',
       route: '/admin/grant-funding/seed-funding',
       icon: 'fas fa-seedling'
     },
