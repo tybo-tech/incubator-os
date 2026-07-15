@@ -99,7 +99,8 @@ export class GrantPurchasesComponent implements OnInit {
   importText = '';
   importing = signal(false);
   importResult = signal<{ success: boolean; message: string } | null>(null);
-  companyCache = new Map<number, string>();
+  companyMap = new Map<number, string>();
+  companyNameToId = new Map<string, number>();
 
   get parsedCount(): number { return this.parseImportText().length; }
 
@@ -112,26 +113,21 @@ export class GrantPurchasesComponent implements OnInit {
 
   loadAll(): void {
     this.loading.set(true); this.error.set(null);
-    this.nodeService.getNodesByType(NODE_TYPE).subscribe({
-      next: (r) => { this.records.set(r); this.loading.set(false); this.resolveCompanyNames(r); },
+    this.companyService.listAllCompanies().subscribe({
+      next: (companies) => {
+        this.companyMap = new Map(companies.map(c => [c.id, c.name]));
+        this.companyNameToId = new Map(companies.map(c => [c.name.toLowerCase().trim(), c.id]));
+        this.nodeService.getNodesByType(NODE_TYPE).subscribe({
+          next: (r) => { this.records.set(r); this.loading.set(false); },
+          error: () => { this.loading.set(false); }
+        });
+      },
       error: () => { this.loading.set(false); }
     });
   }
 
-  private resolveCompanyNames(records: INode<ICompanyPurchase>[]): void {
-    const ids = [...new Set(records.map(r => r.company_id).filter((id): id is number => id != null))];
-    ids.forEach(id => {
-      if (!this.companyCache.has(id)) {
-        this.companyService.getCompanyById(id).subscribe({
-          next: (c) => this.companyCache.set(id, c.name),
-          error: () => this.companyCache.set(id, `Company #${id}`)
-        });
-      }
-    });
-  }
-
   companyName(item: INode<ICompanyPurchase>): string {
-    return item.company_id ? (this.companyCache.get(item.company_id) || `Company #${item.company_id}`) : '—';
+    return item.company_id ? (this.companyMap.get(item.company_id) || `Company #${item.company_id}`) : '—';
   }
 
   itemDescriptions(item: INode<ICompanyPurchase>): string {
@@ -147,18 +143,28 @@ export class GrantPurchasesComponent implements OnInit {
 
   private parseImportText(): INode<ICompanyPurchase>[] {
     if (!this.importText.trim()) return [];
-    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
-      const c = l.split('\t');
+    const lines = this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const result: INode<ICompanyPurchase>[] = [];
+    const unmatched: string[] = [];
+    for (const line of lines) {
+      const c = line.split('\t');
+      const companyName = (c[0] || '').trim();
+      const companyId = this.companyNameToId.get(companyName.toLowerCase());
+      if (!companyId) { unmatched.push(companyName); continue; }
       const itemsStr = c[2] || '';
       const items = itemsStr.split(',').map((s: string) => ({ description: s.trim() })).filter((i: { description: string }) => i.description.length > 0);
-      return { type: NODE_TYPE, company_id: parseInt(c[0], 10) || 0, data: {
+      result.push({ type: NODE_TYPE, company_id: companyId, data: {
         purchaseType: c[1] || '',
         supplier: c[3] || '',
         amount: this.parseMoney(c[4]),
         order: { purchaseOrder: c[5]?.toLowerCase() === 'yes', invoiceReceived: c[6]?.toLowerCase() === 'yes', invoiceType: c[7] || '', itemsReceived: c[8]?.toLowerCase() === 'yes' },
         items,
-      }} as INode<ICompanyPurchase>;
-    }).filter(n => (n.company_id ?? 0) > 0);
+      }} as INode<ICompanyPurchase>);
+    }
+    if (unmatched.length > 0) {
+      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Check company names in the system.`);
+    }
+    return result;
   }
 
   private parseMoney(v: string | undefined): number {

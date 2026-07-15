@@ -103,7 +103,8 @@ export class GrantSeedFundingComponent implements OnInit {
   importText = '';
   importing = signal(false);
   importResult = signal<{ success: boolean; message: string } | null>(null);
-  companyCache = new Map<number, string>();
+  companyMap = new Map<number, string>();
+  companyNameToId = new Map<string, number>();
 
   get parsedCount(): number { return this.parseImportText().length; }
 
@@ -116,26 +117,21 @@ export class GrantSeedFundingComponent implements OnInit {
 
   loadAll(): void {
     this.loading.set(true); this.error.set(null);
-    this.nodeService.getNodesByType(NODE_TYPE).subscribe({
-      next: (r) => { this.records.set(r); this.loading.set(false); this.resolveCompanyNames(r); },
+    this.companyService.listAllCompanies().subscribe({
+      next: (companies) => {
+        this.companyMap = new Map(companies.map(c => [c.id, c.name]));
+        this.companyNameToId = new Map(companies.map(c => [c.name.toLowerCase().trim(), c.id]));
+        this.nodeService.getNodesByType(NODE_TYPE).subscribe({
+          next: (r) => { this.records.set(r); this.loading.set(false); },
+          error: () => { this.loading.set(false); }
+        });
+      },
       error: () => { this.loading.set(false); }
     });
   }
 
-  private resolveCompanyNames(records: INode<ISeedFunding>[]): void {
-    const ids = [...new Set(records.map(r => r.company_id).filter((id): id is number => id != null))];
-    ids.forEach(id => {
-      if (!this.companyCache.has(id)) {
-        this.companyService.getCompanyById(id).subscribe({
-          next: (c) => this.companyCache.set(id, c.name),
-          error: () => this.companyCache.set(id, `Company #${id}`)
-        });
-      }
-    });
-  }
-
   companyName(item: INode<ISeedFunding>): string {
-    return item.company_id ? (this.companyCache.get(item.company_id) || `Company #${item.company_id}`) : '—';
+    return item.company_id ? (this.companyMap.get(item.company_id) || `Company #${item.company_id}`) : '—';
   }
 
   getPayment(item: INode<ISeedFunding>, index: number): string {
@@ -150,15 +146,25 @@ export class GrantSeedFundingComponent implements OnInit {
 
   private parseImportText(): INode<ISeedFunding>[] {
     if (!this.importText.trim()) return [];
-    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
-      const c = l.split('\t');
+    const lines = this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const result: INode<ISeedFunding>[] = [];
+    const unmatched: string[] = [];
+    for (const line of lines) {
+      const c = line.split('\t');
+      const companyName = (c[0] || '').trim();
+      const companyId = this.companyNameToId.get(companyName.toLowerCase());
+      if (!companyId) { unmatched.push(companyName); continue; }
       const approved = this.parseMoney(c[1]);
       const pmtAmounts = [c[2], c[3], c[4], c[5], c[6], c[7]].map(v => this.parseMoney(v)).filter(v => v > 0);
       const payments = pmtAmounts.map((amt: number, i: number) => ({ paymentNumber: i + 1, amount: amt }));
       const disbursed = this.parseMoney(c[8]);
       const balance = this.parseMoney(c[9]);
-      return { type: NODE_TYPE, company_id: parseInt(c[0], 10) || 0, data: { approvedAmount: approved, disbursedAmount: disbursed, remainingBalance: balance, payments } } as INode<ISeedFunding>;
-    }).filter(n => (n.company_id ?? 0) > 0);
+      result.push({ type: NODE_TYPE, company_id: companyId, data: { approvedAmount: approved, disbursedAmount: disbursed, remainingBalance: balance, payments } } as INode<ISeedFunding>);
+    }
+    if (unmatched.length > 0) {
+      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Check company names in the system.`);
+    }
+    return result;
   }
 
   private parseMoney(v: string | undefined): number {

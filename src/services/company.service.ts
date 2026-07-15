@@ -70,6 +70,10 @@ export class CompanyService {
     return this.http.get<ICompany[]>(`${this.apiUrl}/list-companies.php?limit=${limit}&offset=${offset}`);
   }
 
+  listAllCompanies(): Observable<{ id: number; name: string }[]> {
+    return this.http.get<{ id: number; name: string }[]>(`${this.apiUrl}/list-all-companies.php`);
+  }
+
   /**
    * Get companies by industry with pagination
    */
