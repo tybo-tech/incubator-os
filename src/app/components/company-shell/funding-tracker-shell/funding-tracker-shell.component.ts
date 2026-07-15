@@ -66,6 +66,7 @@ export class FundingTrackerShellComponent implements OnInit {
     { label: 'SEDA Assessment', route: 'seda-assessment', icon: 'fas fa-clipboard-check' },
     { label: 'Itemized List', route: 'purchases', icon: 'fas fa-shopping-cart' },
     { label: 'Payments Tracker', route: 'seed-funding', icon: 'fas fa-seedling' },
+    { label: 'Process Tracker', route: 'process-tracker', icon: 'fas fa-tasks' },
   ];
 
   constructor(

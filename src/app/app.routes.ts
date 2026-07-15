@@ -135,6 +135,7 @@ export const routes: Routes = [
               { path: 'seda-assessment', component: AssessmentPageComponent },
               { path: 'purchases', loadComponent: () => import('./components/company-shell/pages/purchases/purchase-page.component').then(m => m.PurchasePageComponent) },
               { path: 'seed-funding', loadComponent: () => import('./components/company-shell/pages/seed-funding/seed-funding-page.component').then(m => m.SeedFundingPageComponent) },
+              { path: 'process-tracker', loadComponent: () => import('./components/company-shell/pages/process-tracker/process-tracker-page.component').then(m => m.ProcessTrackerPageComponent) },
             ]
           },
           {
@@ -354,6 +355,11 @@ export const routes: Routes = [
             path: 'seed-funding',
             loadComponent: () => import('./admin/grant-funding/pages/grant-seed-funding.component')
               .then(m => m.GrantSeedFundingComponent),
+          },
+          {
+            path: 'process-tracker',
+            loadComponent: () => import('./admin/grant-funding/pages/grant-process-tracker.component')
+              .then(m => m.GrantProcessTrackerComponent),
           }
         ]
       },

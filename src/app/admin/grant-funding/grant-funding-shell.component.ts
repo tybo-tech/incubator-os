@@ -91,6 +91,11 @@ export class GrantFundingShellComponent implements OnInit {
       route: '/admin/grant-funding/seed-funding',
       icon: 'fas fa-seedling'
     },
+    {
+      label: 'Process Tracker',
+      route: '/admin/grant-funding/process-tracker',
+      icon: 'fas fa-tasks'
+    },
   ];
 
   constructor(
