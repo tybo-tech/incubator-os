@@ -78,11 +78,12 @@ const NODE_TYPE = 'process_tracker';
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)">
+                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)" [class.bg-yellow-50]="!item.company_id">
                   <td class="px-4 py-3 text-center">
                     <input type="checkbox" [checked]="selectedIds().includes(item.id!)" (change)="toggleItem(item.id!)" class="h-4 w-4 text-blue-600 rounded border-gray-300" />
                   </td>
-                <td class="px-4 py-3 text-sm text-right">{{ item.data.numberOfTransactions }}</td>
+                  <td class="px-4 py-3 text-sm font-medium" [class.text-gray-900]="item.company_id" [class.text-gray-400]="!item.company_id">{{ companyName(item) }}</td>
+                  <td class="px-4 py-3 text-sm text-right">{{ item.data.numberOfTransactions }}</td>
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.quotesReceived) }}</td>
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.suppliersVerified) }}</td>
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.purchaseOrderGenerated) }}</td>
@@ -176,7 +177,8 @@ export class GrantProcessTrackerComponent implements OnInit {
   }
 
   companyName(item: INode<IProcessTracker>): string {
-    return item.company_id ? (this.companyMap.get(item.company_id) || `Company #${item.company_id}`) : '—';
+    if (!item.company_id) return item.data.companyName || '—';
+    return this.companyMap.get(item.company_id) || `Company #${item.company_id}`;
   }
 
   checkIcon(v: boolean): string { return v ? '✓' : '—'; }
@@ -195,8 +197,9 @@ export class GrantProcessTrackerComponent implements OnInit {
       const c = line.split('\t');
       const companyName = (c[1] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
-      if (!companyId) { unmatched.push(companyName); continue; }
-      result.push({ type: NODE_TYPE, company_id: companyId, data: {
+      if (!companyId) { unmatched.push(companyName); }
+      result.push({ type: NODE_TYPE, company_id: companyId || 0, data: {
+        companyName: companyName,
         numberOfTransactions: parseInt(c[2], 10) || 0,
         steps: {
           quotesReceived: c[3]?.toLowerCase() === 'yes',
@@ -212,7 +215,7 @@ export class GrantProcessTrackerComponent implements OnInit {
       }} as INode<IProcessTracker>);
     }
     if (unmatched.length > 0) {
-      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Check company names in the system.`);
+      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Records saved without company link.`);
     }
     return result;
   }

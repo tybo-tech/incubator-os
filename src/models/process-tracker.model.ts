@@ -1,4 +1,5 @@
 export interface IProcessTracker {
+  companyName?: string;
   numberOfTransactions: number;
   steps: {
     quotesReceived: boolean;

@@ -75,11 +75,11 @@ const NODE_TYPE = 'company_purchase';
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)">
+                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)" [class.bg-yellow-50]="!item.company_id">
                   <td class="px-4 py-3 text-center">
                     <input type="checkbox" [checked]="selectedIds().includes(item.id!)" (change)="toggleItem(item.id!)" class="h-4 w-4 text-blue-600 rounded border-gray-300" />
                   </td>
-                  <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ companyName(item) }}</td>
+                  <td class="px-4 py-3 text-sm font-medium" [class.text-gray-900]="item.company_id" [class.text-gray-400]="!item.company_id">{{ companyName(item) }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ item.data.purchaseType }}</td>
                 <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{{ itemDescriptions(item) }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ item.data.supplier }}</td>
@@ -171,7 +171,8 @@ export class GrantPurchasesComponent implements OnInit {
   }
 
   companyName(item: INode<ICompanyPurchase>): string {
-    return item.company_id ? (this.companyMap.get(item.company_id) || `Company #${item.company_id}`) : '—';
+    if (!item.company_id) return item.data.companyName || '—';
+    return this.companyMap.get(item.company_id) || `Company #${item.company_id}`;
   }
 
   itemDescriptions(item: INode<ICompanyPurchase>): string {
@@ -194,10 +195,11 @@ export class GrantPurchasesComponent implements OnInit {
       const c = line.split('\t');
       const companyName = (c[0] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
-      if (!companyId) { unmatched.push(companyName); continue; }
+      if (!companyId) { unmatched.push(companyName); }
       const itemsStr = c[2] || '';
       const items = itemsStr.split(',').map((s: string) => ({ description: s.trim() })).filter((i: { description: string }) => i.description.length > 0);
-      result.push({ type: NODE_TYPE, company_id: companyId, data: {
+      result.push({ type: NODE_TYPE, company_id: companyId || 0, data: {
+        companyName: companyName,
         purchaseType: c[1] || '',
         supplier: c[3] || '',
         amount: this.parseMoney(c[4]),
@@ -206,7 +208,7 @@ export class GrantPurchasesComponent implements OnInit {
       }} as INode<ICompanyPurchase>);
     }
     if (unmatched.length > 0) {
-      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Check company names in the system.`);
+      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Records saved without company link.`);
     }
     return result;
   }

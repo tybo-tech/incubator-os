@@ -3,6 +3,7 @@ export interface IPurchasedItem {
 }
 
 export interface ICompanyPurchase {
+  companyName?: string;
   purchaseType: string;
   supplier: string;
   amount: number;

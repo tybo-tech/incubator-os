@@ -4,6 +4,7 @@ export interface IFundingPayment {
 }
 
 export interface ISeedFunding {
+  companyName?: string;
   approvedAmount: number;
   disbursedAmount: number;
   remainingBalance: number;

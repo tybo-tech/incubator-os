@@ -77,11 +77,11 @@ const NODE_TYPE = 'seed_funding';
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100">
-                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)">
+                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)" [class.bg-yellow-50]="!item.company_id">
                   <td class="px-4 py-3 text-center">
                     <input type="checkbox" [checked]="selectedIds().includes(item.id!)" (change)="toggleItem(item.id!)" class="h-4 w-4 text-blue-600 rounded border-gray-300" />
                   </td>
-                  <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ companyName(item) }}</td>
+                  <td class="px-4 py-3 text-sm font-medium" [class.text-gray-900]="item.company_id" [class.text-gray-400]="!item.company_id">{{ companyName(item) }}</td>
                 <td class="px-4 py-3 text-sm text-right font-medium">{{ item.data.approvedAmount | currency:'ZAR':'symbol':'1.0-0' }}</td>
                 <td class="px-4 py-3 text-sm text-right">{{ getPayment(item, 0) }}</td>
                 <td class="px-4 py-3 text-sm text-right">{{ getPayment(item, 1) }}</td>
@@ -175,7 +175,8 @@ export class GrantSeedFundingComponent implements OnInit {
   }
 
   companyName(item: INode<ISeedFunding>): string {
-    return item.company_id ? (this.companyMap.get(item.company_id) || `Company #${item.company_id}`) : '—';
+    if (!item.company_id) return item.data.companyName || '—';
+    return this.companyMap.get(item.company_id) || `Company #${item.company_id}`;
   }
 
   getPayment(item: INode<ISeedFunding>, index: number): string {
@@ -197,16 +198,16 @@ export class GrantSeedFundingComponent implements OnInit {
       const c = line.split('\t');
       const companyName = (c[0] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
-      if (!companyId) { unmatched.push(companyName); continue; }
+      if (!companyId) { unmatched.push(companyName); }
       const approved = this.parseMoney(c[1]);
       const pmtAmounts = [c[2], c[3], c[4], c[5], c[6], c[7]].map(v => this.parseMoney(v)).filter(v => v > 0);
       const payments = pmtAmounts.map((amt: number, i: number) => ({ paymentNumber: i + 1, amount: amt }));
       const disbursed = this.parseMoney(c[8]);
       const balance = this.parseMoney(c[9]);
-      result.push({ type: NODE_TYPE, company_id: companyId, data: { approvedAmount: approved, disbursedAmount: disbursed, remainingBalance: balance, payments } } as INode<ISeedFunding>);
+      result.push({ type: NODE_TYPE, company_id: companyId || 0, data: { companyName, approvedAmount: approved, disbursedAmount: disbursed, remainingBalance: balance, payments } } as INode<ISeedFunding>);
     }
     if (unmatched.length > 0) {
-      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Check company names in the system.`);
+      this.error.set(`Could not match companies: ${unmatched.join(', ')}. Records saved without company link.`);
     }
     return result;
   }
