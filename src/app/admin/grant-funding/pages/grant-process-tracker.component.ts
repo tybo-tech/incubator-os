@@ -14,16 +14,22 @@ const NODE_TYPE = 'process_tracker';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="p-6 space-y-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-bold text-gray-900">Process Tracker</h2>
-          <p class="text-sm text-gray-500">All companies — procurement process tracking</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900">Process Tracker</h2>
+            <p class="text-sm text-gray-500">All companies — procurement process tracking</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button *ngIf="selectedIds().length > 0" (click)="deleteSelected()" class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Delete Selected ({{ selectedIds().length }})
+            </button>
+            <button (click)="showImport.set(true)" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+              <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
+              Import
+            </button>
+          </div>
         </div>
-        <button (click)="showImport.set(true)" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
-          Import
-        </button>
-      </div>
 
       <div *ngIf="loading()" class="flex justify-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
       <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">{{ error() }}</div>
@@ -53,24 +59,29 @@ const NODE_TYPE = 'process_tracker';
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"># Txns</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Quotes</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Suppliers</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">PO</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Invoices</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Exp Auth</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Disbursed</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Del Ack</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Docs</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Completion</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ companyName(item) }}</td>
+                <tr>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase w-10">
+                    <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()" class="h-4 w-4 text-blue-600 rounded border-gray-300" />
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"># Txns</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Quotes</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Suppliers</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">PO</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Invoices</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Exp Auth</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Disbursed</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Del Ack</th>
+                  <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Docs</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Completion</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors" [class.bg-blue-50]="selectedIds().includes(item.id!)">
+                  <td class="px-4 py-3 text-center">
+                    <input type="checkbox" [checked]="selectedIds().includes(item.id!)" (change)="toggleItem(item.id!)" class="h-4 w-4 text-blue-600 rounded border-gray-300" />
+                  </td>
                 <td class="px-4 py-3 text-sm text-right">{{ item.data.numberOfTransactions }}</td>
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.quotesReceived) }}</td>
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.suppliersVerified) }}</td>
@@ -88,7 +99,7 @@ const NODE_TYPE = 'process_tracker';
                 </td>
               </tr>
               <tr *ngIf="records().length === 0">
-                <td colspan="12" class="px-4 py-8 text-center text-gray-500">No process tracker records found. Click "Import" to add data.</td>
+                <td colspan="13" class="px-4 py-8 text-center text-gray-500">No process tracker records found. Click "Import" to add data.</td>
               </tr>
             </tbody>
           </table>
@@ -107,8 +118,40 @@ export class GrantProcessTrackerComponent implements OnInit {
   importResult = signal<{ success: boolean; message: string } | null>(null);
   companyMap = new Map<number, string>();
   companyNameToId = new Map<string, number>();
+  selectedIds = signal<number[]>([]);
 
   get parsedCount(): number { return this.parseImportText().length; }
+
+  get allSelected(): boolean {
+    return this.records().length > 0 && this.selectedIds().length === this.records().length;
+  }
+
+  toggleSelectAll(): void {
+    if (this.allSelected) {
+      this.selectedIds.set([]);
+    } else {
+      this.selectedIds.set(this.records().map(r => r.id!).filter(id => id != null));
+    }
+  }
+
+  toggleItem(id: number): void {
+    const current = this.selectedIds();
+    if (current.includes(id)) {
+      this.selectedIds.set(current.filter(i => i !== id));
+    } else {
+      this.selectedIds.set([...current, id]);
+    }
+  }
+
+  deleteSelected(): void {
+    const ids = this.selectedIds();
+    if (ids.length === 0) return;
+    if (!confirm(`Delete ${ids.length} selected records?`)) return;
+    this.nodeService.deleteNodesBatch(ids).subscribe({
+      next: () => { this.selectedIds.set([]); this.loadAll(); },
+      error: (err) => this.error.set(err.error?.error || 'Failed to delete')
+    });
+  }
 
   constructor(
     private nodeService: NodeService<IProcessTracker>,

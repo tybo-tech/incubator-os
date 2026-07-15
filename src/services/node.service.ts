@@ -119,6 +119,12 @@ export class NodeService<T = any> {
     return this.http.delete(url);
   }
 
+  // Batch delete multiple nodes by IDs
+  deleteNodesBatch(ids: number[]): Observable<{ success: boolean; deleted_count: number; message: string }> {
+    const url = `${this.apiUrl}/delete-nodes-batch.php`;
+    return this.http.post<{ success: boolean; deleted_count: number; message: string }>(url, { ids });
+  }
+
   // Batch add multiple nodes
   addNodesBatch(nodes: INode<T>[]): Observable<INode<T>[]> {
     const url = `${this.apiUrl}/add-nodes-batch.php`;
