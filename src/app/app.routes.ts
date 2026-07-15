@@ -11,7 +11,6 @@ import { FinancialTabComponent } from './components/companies/company-detail/fin
 import { FinancialShellComponent } from './components/company-shell/financial-shell/financial-shell.component';
 // New Page Components
 import { AssessmentComponent } from './components/company-shell/pages/assessment/assessment.component';
-import { AssessmentPageComponent } from './components/company-shell/pages/assessment/assessment-page.component';
 import { FundingTrackerShellComponent } from './components/company-shell/funding-tracker-shell/funding-tracker-shell.component';
 import { SwotComponent } from './components/company-shell/pages/swot/swot.component';
 import { GpsTargetsComponent } from './components/company-shell/pages/gps-targets/gps-targets.component';
@@ -131,11 +130,10 @@ export const routes: Routes = [
             path: 'funding-tracker',
             component: FundingTrackerShellComponent,
             children: [
-              { path: '', redirectTo: 'seda-assessment', pathMatch: 'full' },
-              { path: 'seda-assessment', component: AssessmentPageComponent },
+              { path: '', redirectTo: 'process-tracker', pathMatch: 'full' },
+              { path: 'process-tracker', loadComponent: () => import('./components/company-shell/pages/process-tracker/process-tracker-page.component').then(m => m.ProcessTrackerPageComponent) },
               { path: 'purchases', loadComponent: () => import('./components/company-shell/pages/purchases/purchase-page.component').then(m => m.PurchasePageComponent) },
               { path: 'seed-funding', loadComponent: () => import('./components/company-shell/pages/seed-funding/seed-funding-page.component').then(m => m.SeedFundingPageComponent) },
-              { path: 'process-tracker', loadComponent: () => import('./components/company-shell/pages/process-tracker/process-tracker-page.component').then(m => m.ProcessTrackerPageComponent) },
             ]
           },
           {
@@ -342,9 +340,9 @@ export const routes: Routes = [
               .then(m => m.GrantFundingReportsComponent),
           },
           {
-            path: 'seda-assessment',
-            loadComponent: () => import('./admin/grant-funding/pages/grant-seda-assessment.component')
-              .then(m => m.GrantSedaAssessmentComponent),
+            path: 'process-tracker',
+            loadComponent: () => import('./admin/grant-funding/pages/grant-process-tracker.component')
+              .then(m => m.GrantProcessTrackerComponent),
           },
           {
             path: 'purchases',
@@ -355,11 +353,6 @@ export const routes: Routes = [
             path: 'seed-funding',
             loadComponent: () => import('./admin/grant-funding/pages/grant-seed-funding.component')
               .then(m => m.GrantSeedFundingComponent),
-          },
-          {
-            path: 'process-tracker',
-            loadComponent: () => import('./admin/grant-funding/pages/grant-process-tracker.component')
-              .then(m => m.GrantProcessTrackerComponent),
           }
         ]
       },

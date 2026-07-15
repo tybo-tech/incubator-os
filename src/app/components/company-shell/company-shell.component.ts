@@ -113,11 +113,6 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-check-circle'
     },
     {
-      label: 'SEDA Assessment',
-      route: 'seda-assessment',
-      icon: 'fas fa-clipboard-check'
-    },
-    {
       label: 'Purchases',
       route: 'purchases',
       icon: 'fas fa-shopping-cart'

@@ -77,9 +77,9 @@ export class GrantFundingShellComponent implements OnInit {
       icon: 'fas fa-file-alt'
     },
     {
-      label: 'SEDA Assessment',
-      route: '/admin/grant-funding/seda-assessment',
-      icon: 'fas fa-clipboard-check'
+      label: 'Process Tracker',
+      route: '/admin/grant-funding/process-tracker',
+      icon: 'fas fa-tasks'
     },
     {
       label: 'Itemized List',
@@ -90,11 +90,6 @@ export class GrantFundingShellComponent implements OnInit {
       label: 'Payments Tracker',
       route: '/admin/grant-funding/seed-funding',
       icon: 'fas fa-seedling'
-    },
-    {
-      label: 'Process Tracker',
-      route: '/admin/grant-funding/process-tracker',
-      icon: 'fas fa-tasks'
     },
   ];
 
