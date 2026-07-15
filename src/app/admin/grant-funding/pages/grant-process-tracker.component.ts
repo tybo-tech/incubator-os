@@ -198,8 +198,10 @@ export class GrantProcessTrackerComponent implements OnInit {
     const lines = this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
     const result: INode<IProcessTracker>[] = [];
     const unmatched: string[] = [];
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       const c = line.split('\t');
+      if (i === 0 && isNaN(Number(c[0]))) continue;
       const companyName = (c[1] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
       if (!companyId) { unmatched.push(companyName); }
