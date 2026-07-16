@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { CompanyService } from '../../services/company.service';
 import { NodeService } from '../../services/node.service';
 import { INode } from '../../models/schema';
+import { ICompanyPurchase } from '../../models/company-purchase.model';
 
 @Component({
-  selector: 'app-process-tracker-form',
+  selector: 'app-purchase-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="close.emit()">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isEdit() ? 'Edit' : 'New' }} Process Record</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ isEdit() ? 'Edit' : 'New' }} Purchase</h3>
           <button (click)="close.emit()" class="p-1 text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <div class="p-6 space-y-4">
@@ -28,20 +29,27 @@ import { INode } from '../../models/schema';
             <div *ngIf="selectedCompanyName" class="mt-1 text-xs text-green-600">✓ {{ selectedCompanyName }}</div>
           </div>
           <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1"># Transactions</label><input type="number" [(ngModel)]="form.numberOfTransactions" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount Disbursed</label><input type="number" [(ngModel)]="form.amountDisbursed" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Completion %</label><input type="number" [(ngModel)]="form.completionPercentage" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" min="0" max="100" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Type</label><input type="text" [(ngModel)]="form.purchaseType" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Supplier</label><input type="text" [(ngModel)]="form.supplier" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount</label><input type="number" [(ngModel)]="form.amount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Invoice Type</label><input type="text" [(ngModel)]="form.order.invoiceType" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
           </div>
           <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Process Steps</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.quotesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Quotes Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.suppliersVerified" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Suppliers Verified</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.purchaseOrderGenerated" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">PO Generated</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.invoicesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Invoices Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.expenseAuthorizationSigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Expense Auth Signed</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.acknowledgementOfDeliverySigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Delivery Ack</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.supportingDocumentsLoaded" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Docs Loaded</span></label>
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Order Status</h4>
+            <div class="grid grid-cols-3 gap-3">
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.purchaseOrder" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Purchase Order</span></label>
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.invoiceReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Invoice Received</span></label>
+              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.order.itemsReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Items Received</span></label>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Items Purchased</h4>
+            <div class="space-y-2">
+              <div *ngFor="let item of form.items; let i = index" class="flex items-center space-x-2">
+                <input type="text" [(ngModel)]="form.items[i].description" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Item description" />
+                <button (click)="removeItem(i)" class="p-1 text-gray-400 hover:text-red-600">✕</button>
+              </div>
+              <button type="button" (click)="addItem()" class="text-sm text-blue-600 hover:text-blue-800">+ Add Item</button>
             </div>
           </div>
         </div>
@@ -53,7 +61,7 @@ import { INode } from '../../models/schema';
     </div>
   `
 })
-export class ProcessTrackerFormComponent implements OnInit {
+export class PurchaseFormComponent implements OnInit {
   nodeType = input.required<string>();
   editNode = input<INode<any> | null>(null);
   companyId = input<number>(0);
@@ -62,12 +70,12 @@ export class ProcessTrackerFormComponent implements OnInit {
 
   isEdit = computed(() => !!this.editNode());
 
-  form = {
-    companyName: '',
-    numberOfTransactions: 0,
-    steps: { quotesReceived: false, suppliersVerified: false, purchaseOrderGenerated: false, invoicesReceived: false, expenseAuthorizationSigned: false, acknowledgementOfDeliverySigned: false, supportingDocumentsLoaded: false },
-    amountDisbursed: 0,
-    completionPercentage: 0,
+  form: ICompanyPurchase = {
+    purchaseType: '',
+    supplier: '',
+    amount: 0,
+    order: { purchaseOrder: false, invoiceReceived: false, invoiceType: '', itemsReceived: false },
+    items: [],
   };
 
   companySearch = '';
@@ -87,7 +95,7 @@ export class ProcessTrackerFormComponent implements OnInit {
   ngOnInit(): void {
     const node = this.editNode();
     if (node) {
-      this.form = { ...node.data, steps: { ...node.data.steps } };
+      this.form = { ...node.data, items: node.data.items.map((i: any) => ({ ...i })), order: { ...node.data.order } };
       this.selectedCompanyId = node.company_id || 0;
       if (node.company_id) {
         const match = this.allCompanies.find(c => c.id === node.company_id);
@@ -109,6 +117,9 @@ export class ProcessTrackerFormComponent implements OnInit {
     this.companySearch = name;
     this.filteredCompanies.set([]);
   }
+
+  addItem(): void { this.form.items.push({ description: '' }); }
+  removeItem(i: number): void { this.form.items.splice(i, 1); }
 
   save(): void {
     this.saving.set(true);

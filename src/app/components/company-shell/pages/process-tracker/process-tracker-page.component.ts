@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../../../services/node.service';
+import { ProcessTrackerFormComponent } from '../../../../shared/process-tracker-form.component';
 import { INode } from '../../../../../models/schema';
 import { IProcessTracker } from '../../../../../models/process-tracker.model';
 
@@ -11,7 +12,7 @@ const NODE_TYPE = 'process_tracker';
 @Component({
   selector: 'app-process-tracker-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProcessTrackerFormComponent],
   template: `
     <div class="p-4 lg:p-8">
       <div class="max-w-7xl mx-auto space-y-6">
@@ -25,7 +26,7 @@ const NODE_TYPE = 'process_tracker';
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               Import
             </button>
-            <button (click)="createNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+            <button (click)="openNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               New Record
             </button>
@@ -56,7 +57,7 @@ const NODE_TYPE = 'process_tracker';
           </div>
         </div>
 
-        <div *ngIf="!loading() && !editing() && !showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div *ngIf="!loading() && !showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -105,48 +106,30 @@ const NODE_TYPE = 'process_tracker';
           </div>
         </div>
 
-        <div *ngIf="editing()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Process Record' : 'Edit Process Record' }}</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Number of Transactions</label><input type="number" [(ngModel)]="form.numberOfTransactions" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount Disbursed</label><input type="number" [(ngModel)]="form.amountDisbursed" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Completion %</label><input type="number" [(ngModel)]="form.completionPercentage" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" min="0" max="100" /></div>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Process Steps</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.quotesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Quotes Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.suppliersVerified" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Suppliers Verified</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.purchaseOrderGenerated" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Purchase Order Generated</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.invoicesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Invoices Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.expenseAuthorizationSigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Expense Authorization Signed</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.acknowledgementOfDeliverySigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Acknowledgement of Delivery</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.supportingDocumentsLoaded" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Supporting Documents Loaded</span></label>
-            </div>
-          </div>
-          <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <button (click)="cancelEdit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-            <button (click)="save()" [disabled]="saving()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ saving() ? 'Saving...' : 'Save' }}</button>
-          </div>
-        </div>
+        <!-- Process Tracker Form Dialog -->
+        <app-process-tracker-form
+          *ngIf="showForm()"
+          [nodeType]="NODE_TYPE"
+          [editNode]="editingNode()"
+          [companyId]="companyId()"
+          (close)="closeForm()"
+          (saved)="onFormSaved()" />
       </div>
     </div>
   `
 })
 export class ProcessTrackerPageComponent implements OnInit {
-  private companyId = signal<number>(0);
+  protected readonly NODE_TYPE = 'process_tracker';
+  protected companyId = signal<number>(0);
   records = signal<INode<IProcessTracker>[]>([]);
   loading = signal(false);
-  saving = signal(false);
   error = signal<string | null>(null);
-  editing = signal(false);
-  isNew = signal(false);
-  editingId: number | null = null;
-  form: IProcessTracker = this.emptyForm();
   showImport = signal(false);
   importText = '';
   importing = signal(false);
   importResult = signal<{ success: boolean; message: string } | null>(null);
+  showForm = signal(false);
+  editingNode = signal<INode<IProcessTracker> | null>(null);
 
   get parsedCount(): number { return this.parseImportText().length; }
 
@@ -172,18 +155,10 @@ export class ProcessTrackerPageComponent implements OnInit {
     });
   }
 
-  createNew(): void { this.form = this.emptyForm(); this.editingId = null; this.isNew.set(true); this.editing.set(true); }
-  edit(item: INode<IProcessTracker>): void { this.form = { ...item.data }; this.editingId = item.id ?? null; this.isNew.set(false); this.editing.set(true); }
-  cancelEdit(): void { this.editing.set(false); this.editingId = null; }
-
-  save(): void {
-    const cid = this.companyId();
-    if (!cid) return;
-    this.saving.set(true); this.error.set(null);
-    const node: INode<IProcessTracker> = { type: NODE_TYPE, company_id: cid, data: this.form };
-    const obs = this.editingId ? this.nodeService.updateNode({ ...node, id: this.editingId }) : this.nodeService.addNode(node);
-    obs.subscribe({ next: () => { this.saving.set(false); this.editing.set(false); this.editingId = null; this.loadAll(); }, error: (err) => { this.saving.set(false); this.error.set(err.error?.error || 'Failed to save'); } });
-  }
+  openNew(): void { this.editingNode.set(null); this.showForm.set(true); }
+  edit(item: INode<IProcessTracker>): void { this.editingNode.set(item); this.showForm.set(true); }
+  closeForm(): void { this.showForm.set(false); this.editingNode.set(null); }
+  onFormSaved(): void { this.showForm.set(false); this.editingNode.set(null); this.loadAll(); }
 
   deleteItem(item: INode<IProcessTracker>): void {
     if (!confirm('Delete this record?')) return;
@@ -233,14 +208,5 @@ export class ProcessTrackerPageComponent implements OnInit {
       next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Imported ${nodes.length} process tracker records.` }); this.importText = ''; this.loadAll(); },
       error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); }
     });
-  }
-
-  private emptyForm(): IProcessTracker {
-    return {
-      numberOfTransactions: 0,
-      steps: { quotesReceived: false, suppliersVerified: false, purchaseOrderGenerated: false, invoicesReceived: false, expenseAuthorizationSigned: false, acknowledgementOfDeliverySigned: false, supportingDocumentsLoaded: false },
-      amountDisbursed: 0,
-      completionPercentage: 0,
-    };
   }
 }

@@ -30,12 +30,13 @@ Build the complete Funding Tracker module with three data types (Process Tracker
 - [x] New Record button on Process Tracker → opens form modal
 
 ### Phase 4: Complete Remaining Types
-- [ ] Create PurchaseFormComponent — shared modal for add/edit purchases
-- [ ] Create SeedFundingFormComponent — shared modal for add/edit seed funding
-- [ ] Add edit/new buttons to GrantPurchasesComponent
-- [ ] Add edit/new buttons to GrantSeedFundingComponent
-- [ ] Update company-level PurchasePageComponent to use shared form
-- [ ] Update company-level SeedFundingPageComponent to use shared form
+- [x] Create PurchaseFormComponent — shared modal for add/edit purchases
+- [x] Create SeedFundingFormComponent — shared modal for add/edit seed funding
+- [x] Add edit/new buttons to GrantPurchasesComponent
+- [x] Add edit/new buttons to GrantSeedFundingComponent
+- [x] Update company-level PurchasePageComponent to use shared form
+- [x] Update company-level SeedFundingPageComponent to use shared form
+- [x] Update company-level ProcessTrackerPageComponent to use shared form
 
 ### Phase 5: Polish
 - [ ] Add toast notifications to all CRUD operations

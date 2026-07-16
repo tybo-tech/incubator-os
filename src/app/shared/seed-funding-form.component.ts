@@ -4,16 +4,17 @@ import { FormsModule } from '@angular/forms';
 import { CompanyService } from '../../services/company.service';
 import { NodeService } from '../../services/node.service';
 import { INode } from '../../models/schema';
+import { ISeedFunding } from '../../models/seed-funding.model';
 
 @Component({
-  selector: 'app-process-tracker-form',
+  selector: 'app-seed-funding-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="close.emit()">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isEdit() ? 'Edit' : 'New' }} Process Record</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ isEdit() ? 'Edit' : 'New' }} Payment Record</h3>
           <button (click)="close.emit()" class="p-1 text-gray-400 hover:text-gray-600">✕</button>
         </div>
         <div class="p-6 space-y-4">
@@ -27,21 +28,20 @@ import { INode } from '../../models/schema';
             </div>
             <div *ngIf="selectedCompanyName" class="mt-1 text-xs text-green-600">✓ {{ selectedCompanyName }}</div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1"># Transactions</label><input type="number" [(ngModel)]="form.numberOfTransactions" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount Disbursed</label><input type="number" [(ngModel)]="form.amountDisbursed" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Completion %</label><input type="number" [(ngModel)]="form.completionPercentage" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" min="0" max="100" /></div>
+          <div class="grid grid-cols-3 gap-4">
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Approved Amount</label><input type="number" [(ngModel)]="form.approvedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Disbursed Amount</label><input type="number" [(ngModel)]="form.disbursedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Remaining Balance</label><input type="number" [(ngModel)]="form.remainingBalance" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
           </div>
           <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Process Steps</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.quotesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Quotes Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.suppliersVerified" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Suppliers Verified</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.purchaseOrderGenerated" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">PO Generated</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.invoicesReceived" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Invoices Received</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.expenseAuthorizationSigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Expense Auth Signed</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.acknowledgementOfDeliverySigned" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Delivery Ack</span></label>
-              <label class="flex items-center space-x-3"><input type="checkbox" [(ngModel)]="form.steps.supportingDocumentsLoaded" class="h-4 w-4 text-blue-600 rounded border-gray-300"><span class="text-sm text-gray-700">Docs Loaded</span></label>
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Payments</h4>
+            <div class="space-y-2">
+              <div *ngFor="let pmt of form.payments; let i = index" class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500 w-20">Payment {{ i + 1 }}</span>
+                <input type="number" [(ngModel)]="form.payments[i].amount" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Amount" />
+                <button (click)="removePayment(i)" class="p-1 text-gray-400 hover:text-red-600">✕</button>
+              </div>
+              <button type="button" (click)="addPayment()" class="text-sm text-blue-600 hover:text-blue-800">+ Add Payment</button>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ import { INode } from '../../models/schema';
     </div>
   `
 })
-export class ProcessTrackerFormComponent implements OnInit {
+export class SeedFundingFormComponent implements OnInit {
   nodeType = input.required<string>();
   editNode = input<INode<any> | null>(null);
   companyId = input<number>(0);
@@ -62,12 +62,11 @@ export class ProcessTrackerFormComponent implements OnInit {
 
   isEdit = computed(() => !!this.editNode());
 
-  form = {
-    companyName: '',
-    numberOfTransactions: 0,
-    steps: { quotesReceived: false, suppliersVerified: false, purchaseOrderGenerated: false, invoicesReceived: false, expenseAuthorizationSigned: false, acknowledgementOfDeliverySigned: false, supportingDocumentsLoaded: false },
-    amountDisbursed: 0,
-    completionPercentage: 0,
+  form: ISeedFunding = {
+    approvedAmount: 0,
+    disbursedAmount: 0,
+    remainingBalance: 0,
+    payments: [],
   };
 
   companySearch = '';
@@ -87,7 +86,7 @@ export class ProcessTrackerFormComponent implements OnInit {
   ngOnInit(): void {
     const node = this.editNode();
     if (node) {
-      this.form = { ...node.data, steps: { ...node.data.steps } };
+      this.form = { ...node.data, payments: node.data.payments.map((p: any) => ({ ...p })) };
       this.selectedCompanyId = node.company_id || 0;
       if (node.company_id) {
         const match = this.allCompanies.find(c => c.id === node.company_id);
@@ -109,6 +108,9 @@ export class ProcessTrackerFormComponent implements OnInit {
     this.companySearch = name;
     this.filteredCompanies.set([]);
   }
+
+  addPayment(): void { this.form.payments.push({ paymentNumber: this.form.payments.length + 1, amount: 0 }); }
+  removePayment(i: number): void { this.form.payments.splice(i, 1); }
 
   save(): void {
     this.saving.set(true);

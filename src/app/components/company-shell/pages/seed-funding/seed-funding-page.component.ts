@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../../../services/node.service';
+import { SeedFundingFormComponent } from '../../../../shared/seed-funding-form.component';
 import { INode } from '../../../../../models/schema';
 import { ISeedFunding, IFundingPayment } from '../../../../../models/seed-funding.model';
 
@@ -11,7 +12,7 @@ const NODE_TYPE = 'seed_funding';
 @Component({
   selector: 'app-seed-funding-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SeedFundingFormComponent],
   template: `
     <div class="p-4 lg:p-8">
       <div class="max-w-7xl mx-auto space-y-6">
@@ -25,7 +26,7 @@ const NODE_TYPE = 'seed_funding';
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
               Import
             </button>
-            <button (click)="createNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+            <button (click)="openNew()" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
               <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               New Record
             </button>
@@ -62,7 +63,7 @@ const NODE_TYPE = 'seed_funding';
         </div>
 
         <!-- Table -->
-        <div *ngIf="!loading() && !editing() && !showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div *ngIf="!loading() && !showImport()" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -109,48 +110,30 @@ const NODE_TYPE = 'seed_funding';
           </div>
         </div>
 
-        <!-- Form -->
-        <div *ngIf="editing()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ isNew() ? 'New Payment Record' : 'Edit Payment Record' }}</h3>
-          <div class="grid grid-cols-3 gap-4">
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Approved Amount</label><input type="number" [(ngModel)]="form.approvedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Disbursed Amount</label><input type="number" [(ngModel)]="form.disbursedAmount" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-            <div><label class="block text-sm font-medium text-gray-700 mb-1">Remaining Balance</label><input type="number" [(ngModel)]="form.remainingBalance" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" /></div>
-          </div>
-          <div>
-            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b">Payments</h4>
-            <div class="space-y-2">
-              <div *ngFor="let pmt of form.payments; let i = index" class="flex items-center space-x-2">
-                <span class="text-sm text-gray-500 w-20">Payment {{ i + 1 }}</span>
-                <input type="number" [(ngModel)]="form.payments[i].amount" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Amount" />
-                <button (click)="removePayment(i)" class="p-1 text-gray-400 hover:text-red-600">✕</button>
-              </div>
-              <button (click)="addPayment()" class="text-sm text-blue-600 hover:text-blue-800">+ Add Payment</button>
-            </div>
-          </div>
-          <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <button (click)="cancelEdit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-            <button (click)="save()" [disabled]="saving()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ saving() ? 'Saving...' : 'Save' }}</button>
-          </div>
-        </div>
+        <!-- Seed Funding Form Dialog -->
+        <app-seed-funding-form
+          *ngIf="showForm()"
+          [nodeType]="NODE_TYPE"
+          [editNode]="editingNode()"
+          [companyId]="companyId()"
+          (close)="closeForm()"
+          (saved)="onFormSaved()" />
       </div>
     </div>
   `
 })
 export class SeedFundingPageComponent implements OnInit {
-  private companyId = signal<number>(0);
+  protected readonly NODE_TYPE = 'seed_funding';
+  protected companyId = signal<number>(0);
   records = signal<INode<ISeedFunding>[]>([]);
   loading = signal(false);
-  saving = signal(false);
   error = signal<string | null>(null);
-  editing = signal(false);
-  isNew = signal(false);
-  editingId: number | null = null;
-  form: ISeedFunding = this.emptyForm();
   showImport = signal(false);
   importText = '';
   importing = signal(false);
   importResult = signal<{ success: boolean; message: string } | null>(null);
+  showForm = signal(false);
+  editingNode = signal<INode<ISeedFunding> | null>(null);
 
   get parsedCount(): number { return this.parseImportText().length; }
 
@@ -176,24 +159,14 @@ export class SeedFundingPageComponent implements OnInit {
     });
   }
 
-  createNew(): void { this.form = this.emptyForm(); this.editingId = null; this.isNew.set(true); this.editing.set(true); }
-  edit(item: INode<ISeedFunding>): void { this.form = { ...item.data, payments: item.data.payments.map(p => ({ ...p })) }; this.editingId = item.id ?? null; this.isNew.set(false); this.editing.set(true); }
-  cancelEdit(): void { this.editing.set(false); this.editingId = null; }
-  addPayment(): void { this.form.payments.push({ paymentNumber: this.form.payments.length + 1, amount: 0 }); }
-  removePayment(i: number): void { this.form.payments.splice(i, 1); }
+  openNew(): void { this.editingNode.set(null); this.showForm.set(true); }
+  edit(item: INode<ISeedFunding>): void { this.editingNode.set(item); this.showForm.set(true); }
+  closeForm(): void { this.showForm.set(false); this.editingNode.set(null); }
+  onFormSaved(): void { this.showForm.set(false); this.editingNode.set(null); this.loadAll(); }
 
   getPayment(item: INode<ISeedFunding>, index: number): string {
     const pmt = (item.data.payments || [])[index];
     return pmt ? pmt.amount.toLocaleString('en-ZA', { style: 'currency', currency: 'ZAR', minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '—';
-  }
-
-  save(): void {
-    const cid = this.companyId();
-    if (!cid) return;
-    this.saving.set(true); this.error.set(null);
-    const node: INode<ISeedFunding> = { type: NODE_TYPE, company_id: cid, data: this.form };
-    const obs = this.editingId ? this.nodeService.updateNode({ ...node, id: this.editingId }) : this.nodeService.addNode(node);
-    obs.subscribe({ next: () => { this.saving.set(false); this.editing.set(false); this.editingId = null; this.loadAll(); }, error: (err) => { this.saving.set(false); this.error.set(err.error?.error || 'Failed to save'); } });
   }
 
   delete(item: INode<ISeedFunding>): void {
@@ -234,9 +207,5 @@ export class SeedFundingPageComponent implements OnInit {
       next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} seed funding records.` }); this.importText = ''; this.loadAll(); },
       error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); }
     });
-  }
-
-  private emptyForm(): ISeedFunding {
-    return { approvedAmount: 0, disbursedAmount: 0, remainingBalance: 0, payments: [] };
   }
 }
