@@ -138,10 +138,15 @@ export class GrantPurchasesComponent implements OnInit {
   showForm = signal(false);
   editingNode = signal<INode<ICompanyPurchase> | null>(null);
 
-  get parsedCount(): number { return this.parseImportText().length; }
+  get parsedCount(): number { return this.countImportRows(); }
 
   get allSelected(): boolean {
     return this.records().length > 0 && this.selectedIds().length === this.records().length;
+  }
+
+  private countImportRows(): number {
+    if (!this.importText.trim()) return 0;
+    return this.importText.trim().split('\n').filter(l => l.trim().length > 0).length;
   }
 
   toggleSelectAll(): void {

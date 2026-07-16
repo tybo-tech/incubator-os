@@ -133,7 +133,12 @@ export class PurchasePageComponent implements OnInit {
   showForm = signal(false);
   editingNode = signal<INode<ICompanyPurchase> | null>(null);
 
-  get parsedCount(): number { return this.parseImportText().length; }
+  get parsedCount(): number { return this.countImportRows(); }
+
+  private countImportRows(): number {
+    if (!this.importText.trim()) return 0;
+    return this.importText.trim().split('\n').filter(l => l.trim().length > 0).length;
+  }
 
   constructor(
     private route: ActivatedRoute,
