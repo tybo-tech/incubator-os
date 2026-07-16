@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
 import { CompanyService } from '../../../../services/company.service';
-import { AssignCompanyComponent } from '../../../shared/assign-company.component';
 import { SeedFundingFormComponent } from '../../../shared/seed-funding-form.component';
 import { ToastService } from '../../../services/toast.service';
 import { INode } from '../../../../models/schema';
@@ -14,7 +13,7 @@ const NODE_TYPE = 'seed_funding';
 @Component({
   selector: 'app-grant-seed-funding',
   standalone: true,
-  imports: [CommonModule, FormsModule, AssignCompanyComponent, SeedFundingFormComponent],
+  imports: [CommonModule, FormsModule, SeedFundingFormComponent],
   template: `
     <div class="p-6 space-y-6">
         <div class="flex items-center justify-between">
@@ -100,7 +99,6 @@ const NODE_TYPE = 'seed_funding';
                 <td class="px-4 py-3 text-sm text-right">{{ item.data.remainingBalance | currency:'ZAR':'symbol':'1.0-0' }}</td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex items-center justify-end space-x-1">
-                    <app-assign-company *ngIf="!item.company_id" [nodeId]="item.id!" (assigned)="onAssigned($event)" />
                     <button (click)="editItem(item)" class="p-1 text-gray-400 hover:text-indigo-600" title="Edit">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     </button>

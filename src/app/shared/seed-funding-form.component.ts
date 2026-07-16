@@ -88,11 +88,11 @@ export class SeedFundingFormComponent implements OnInit {
     if (node) {
       this.form = { ...node.data, payments: node.data.payments.map((p: any) => ({ ...p })) };
       this.selectedCompanyId = node.company_id || 0;
-      if (node.company_id) {
-        const match = this.allCompanies.find(c => c.id === node.company_id);
-        this.selectedCompanyName = match?.name || '';
-        this.companySearch = this.selectedCompanyName;
-      }
+      const companyName = node.company_id
+        ? (this.allCompanies.find(c => c.id === node.company_id)?.name || '')
+        : (node.data.companyName || '');
+      this.selectedCompanyName = companyName;
+      this.companySearch = companyName;
     }
   }
 

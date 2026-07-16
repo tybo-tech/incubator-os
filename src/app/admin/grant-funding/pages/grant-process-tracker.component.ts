@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
 import { CompanyService } from '../../../../services/company.service';
-import { AssignCompanyComponent } from '../../../shared/assign-company.component';
 import { ProcessTrackerFormComponent } from '../../../shared/process-tracker-form.component';
 import { ToastService } from '../../../services/toast.service';
 import { INode } from '../../../../models/schema';
@@ -14,7 +13,7 @@ const NODE_TYPE = 'process_tracker';
 @Component({
   selector: 'app-grant-process-tracker',
   standalone: true,
-  imports: [CommonModule, FormsModule, AssignCompanyComponent, ProcessTrackerFormComponent],
+  imports: [CommonModule, FormsModule, ProcessTrackerFormComponent],
   template: `
     <div class="p-6 space-y-6">
         <div class="flex items-center justify-between">
@@ -102,7 +101,6 @@ const NODE_TYPE = 'process_tracker';
                 <td class="px-4 py-3 text-sm text-right font-medium">{{ item.data.completionPercentage }}%</td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex items-center justify-end space-x-1">
-                    <app-assign-company *ngIf="!item.company_id" [nodeId]="item.id!" (assigned)="onAssigned($event)" />
                     <button (click)="editItem(item)" class="p-1 text-gray-400 hover:text-indigo-600" title="Edit">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     </button>
@@ -237,10 +235,6 @@ export class GrantProcessTrackerComponent implements OnInit {
   deleteItem(item: INode<IProcessTracker>): void {
     if (!confirm('Delete this record?')) return;
     this.nodeService.deleteNode(item.id!).subscribe({ next: () => { this.loadAll(); this.toast.deleteSuccess('Record'); }, error: (err) => { this.error.set(err.error?.error || 'Failed to delete'); this.toast.deleteError('record'); } });
-  }
-
-  onAssigned(event: { nodeId: number; companyId: number; companyName: string }): void {
-    this.loadAll();
   }
 
   private parseImportText(): INode<IProcessTracker>[] {
