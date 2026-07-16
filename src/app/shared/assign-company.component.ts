@@ -53,11 +53,16 @@ export class AssignCompanyComponent {
   }
 
   select(companyId: number, companyName: string): void {
-    this.nodeService.updateNode({ id: this.nodeId(), company_id: companyId } as any).subscribe({
-      next: () => {
-        this.searchTerm = '';
-        this.results.set([]);
-        this.assigned.emit({ nodeId: this.nodeId(), companyId, companyName });
+    this.nodeService.getNodeById(this.nodeId()).subscribe({
+      next: (node) => {
+        this.nodeService.updateNode({ ...node, company_id: companyId } as any).subscribe({
+          next: () => {
+            this.searchTerm = '';
+            this.results.set([]);
+            this.assigned.emit({ nodeId: this.nodeId(), companyId, companyName });
+          },
+          error: () => {}
+        });
       },
       error: () => {}
     });
