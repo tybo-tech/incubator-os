@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
 import { CompanyService } from '../../../../services/company.service';
 import { AssignCompanyComponent } from '../../../shared/assign-company.component';
 import { PurchaseFormComponent } from '../../../shared/purchase-form.component';
+import { ToastService } from '../../../services/toast.service';
 import { INode } from '../../../../models/schema';
 import { ICompanyPurchase } from '../../../../models/company-purchase.model';
 
@@ -137,6 +138,7 @@ export class GrantPurchasesComponent implements OnInit {
   selectedIds = signal<number[]>([]);
   showForm = signal(false);
   editingNode = signal<INode<ICompanyPurchase> | null>(null);
+  private toast = inject(ToastService);
 
   get parsedCount(): number { return this.countImportRows(); }
 
@@ -171,8 +173,8 @@ export class GrantPurchasesComponent implements OnInit {
     if (ids.length === 0) return;
     if (!confirm(`Delete ${ids.length} selected records?`)) return;
     this.nodeService.deleteNodesBatch(ids).subscribe({
-      next: () => { this.selectedIds.set([]); this.loadAll(); },
-      error: (err) => this.error.set(err.error?.error || 'Failed to delete')
+      next: () => { this.selectedIds.set([]); this.loadAll(); this.toast.success('Records deleted.'); },
+      error: (err) => { this.error.set(err.error?.error || 'Failed to delete'); this.toast.error('Failed to delete records.'); }
     });
   }
 
@@ -195,10 +197,12 @@ export class GrantPurchasesComponent implements OnInit {
     this.showForm.set(false);
     this.editingNode.set(null);
     this.loadAll();
+    this.toast.saveSuccess('Record');
   }
 
   onAssigned(event: { nodeId: number; companyId: number; companyName: string }): void {
     this.loadAll();
+    this.toast.success('Company assigned.');
   }
 
   constructor(
@@ -236,7 +240,7 @@ export class GrantPurchasesComponent implements OnInit {
 
   deleteItem(item: INode<ICompanyPurchase>): void {
     if (!confirm('Delete this purchase?')) return;
-    this.nodeService.deleteNode(item.id!).subscribe({ next: () => this.loadAll(), error: (err) => this.error.set(err.error?.error || 'Failed to delete') });
+    this.nodeService.deleteNode(item.id!).subscribe({ next: () => { this.loadAll(); this.toast.deleteSuccess('Record'); }, error: (err) => { this.error.set(err.error?.error || 'Failed to delete'); this.toast.deleteError('record'); } });
   }
 
   private parseImportText(): INode<ICompanyPurchase>[] {
@@ -284,8 +288,8 @@ export class GrantPurchasesComponent implements OnInit {
     if (nodes.length === 0) return;
     this.importing.set(true); this.importResult.set(null);
     this.nodeService.addNodesBatch(nodes).subscribe({
-      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Imported ${nodes.length} purchase records.` }); this.importText = ''; this.loadAll(); },
-      error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); }
+      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Imported ${nodes.length} purchase records.` }); this.importText = ''; this.loadAll(); this.toast.success('Import complete.'); },
+      error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); this.toast.error('Import failed.'); }
     });
   }
 }

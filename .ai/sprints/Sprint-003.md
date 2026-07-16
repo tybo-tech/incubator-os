@@ -40,6 +40,6 @@ Build the complete Funding Tracker module with three data types (Process Tracker
 - [x] Fix import: skip header row, trim Yes/No values (all 6 parsers)
 
 ### Phase 5: Polish
-- [ ] Add toast notifications to all CRUD operations
-- [ ] Add loading states to all async operations
+- [x] Add toast notifications to all CRUD operations
+- [x] Add loading states to all async operations
 - [ ] End-to-end verification of all three types

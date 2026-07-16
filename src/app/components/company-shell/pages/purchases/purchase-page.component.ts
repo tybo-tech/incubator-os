@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NodeService } from '../../../../../services/node.service';
 import { PurchaseFormComponent } from '../../../../shared/purchase-form.component';
+import { ToastService } from '../../../../services/toast.service';
 import { INode } from '../../../../../models/schema';
 import { ICompanyPurchase, IPurchasedItem } from '../../../../../models/company-purchase.model';
 
@@ -132,6 +133,7 @@ export class PurchasePageComponent implements OnInit {
   importResult = signal<{ success: boolean; message: string } | null>(null);
   showForm = signal(false);
   editingNode = signal<INode<ICompanyPurchase> | null>(null);
+  private toast = inject(ToastService);
 
   get parsedCount(): number { return this.countImportRows(); }
 
@@ -165,7 +167,7 @@ export class PurchasePageComponent implements OnInit {
   openNew(): void { this.editingNode.set(null); this.showForm.set(true); }
   edit(item: INode<ICompanyPurchase>): void { this.editingNode.set(item); this.showForm.set(true); }
   closeForm(): void { this.showForm.set(false); this.editingNode.set(null); }
-  onFormSaved(): void { this.showForm.set(false); this.editingNode.set(null); this.loadAll(); }
+  onFormSaved(): void { this.showForm.set(false); this.editingNode.set(null); this.loadAll(); this.toast.saveSuccess('Record'); }
 
   itemDescriptions(item: INode<ICompanyPurchase>): string {
     return (item.data.items || []).map(i => i.description).join(', ');
@@ -173,7 +175,7 @@ export class PurchasePageComponent implements OnInit {
 
   delete(item: INode<ICompanyPurchase>): void {
     if (!confirm('Delete this purchase?')) return;
-    this.nodeService.deleteNode(item.id!).subscribe({ next: () => this.loadAll(), error: (err) => this.error.set(err.error?.error || 'Failed to delete') });
+    this.nodeService.deleteNode(item.id!).subscribe({ next: () => { this.loadAll(); this.toast.deleteSuccess('Record'); }, error: (err) => { this.error.set(err.error?.error || 'Failed to delete'); this.toast.deleteError('record'); } });
   }
 
   checkIcon(v: boolean): string { return v ? '✓' : '—'; }
@@ -212,8 +214,8 @@ export class PurchasePageComponent implements OnInit {
     if (nodes.length === 0) return;
     this.importing.set(true); this.importResult.set(null);
     this.nodeService.addNodesBatch(nodes).subscribe({
-      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} purchase records.` }); this.importText = ''; this.loadAll(); },
-      error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); }
+      next: () => { this.importing.set(false); this.importResult.set({ success: true, message: `Successfully imported ${nodes.length} purchase records.` }); this.importText = ''; this.loadAll(); this.toast.success('Import complete.'); },
+      error: (err) => { this.importing.set(false); this.importResult.set({ success: false, message: err.error?.error || 'Import failed' }); this.toast.error('Import failed.'); }
     });
   }
 }
