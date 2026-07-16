@@ -244,7 +244,9 @@ export class GrantPurchasesComponent implements OnInit {
     const lines = this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
     const result: INode<ICompanyPurchase>[] = [];
     const unmatched: string[] = [];
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      if (i === 0 && lines[0].toLowerCase().startsWith('company name')) continue;
+      const line = lines[i];
       const c = line.split('\t');
       const companyName = (c[0] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
@@ -253,10 +255,10 @@ export class GrantPurchasesComponent implements OnInit {
       const items = itemsStr.split(',').map((s: string) => ({ description: s.trim() })).filter((i: { description: string }) => i.description.length > 0);
       result.push({ type: NODE_TYPE, company_id: companyId || 0, data: {
         companyName: companyName,
-        purchaseType: c[1] || '',
-        supplier: c[3] || '',
+        purchaseType: c[1]?.trim() || '',
+        supplier: c[3]?.trim() || '',
         amount: this.parseMoney(c[4]),
-        order: { purchaseOrder: c[5]?.toLowerCase() === 'yes', invoiceReceived: c[6]?.toLowerCase() === 'yes', invoiceType: c[7] || '', itemsReceived: c[8]?.toLowerCase() === 'yes' },
+        order: { purchaseOrder: c[5]?.trim().toLowerCase() === 'yes', invoiceReceived: c[6]?.trim().toLowerCase() === 'yes', invoiceType: c[7]?.trim() || '', itemsReceived: c[8]?.trim().toLowerCase() === 'yes' },
         items,
       }} as INode<ICompanyPurchase>);
     }

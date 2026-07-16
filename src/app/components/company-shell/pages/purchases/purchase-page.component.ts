@@ -181,18 +181,19 @@ export class PurchasePageComponent implements OnInit {
   private parseImportText(): INode<ICompanyPurchase>[] {
     const cid = this.companyId();
     if (!cid || !this.importText.trim()) return [];
-    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
+    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map((l, i) => {
+      if (i === 0 && l.toLowerCase().startsWith('company name')) return null;
       const c = l.split('\t');
       const itemsStr = c[2] || '';
       const items: IPurchasedItem[] = itemsStr.split(',').map(s => ({ description: s.trim() })).filter(i => i.description.length > 0);
       return { type: NODE_TYPE, company_id: cid, data: {
-        purchaseType: c[1] || '',
-        supplier: c[3] || '',
+        purchaseType: c[1]?.trim() || '',
+        supplier: c[3]?.trim() || '',
         amount: this.parseMoney(c[4]),
-        order: { purchaseOrder: c[5]?.toLowerCase() === 'yes', invoiceReceived: c[6]?.toLowerCase() === 'yes', invoiceType: c[7] || '', itemsReceived: c[8]?.toLowerCase() === 'yes' },
+        order: { purchaseOrder: c[5]?.trim().toLowerCase() === 'yes', invoiceReceived: c[6]?.trim().toLowerCase() === 'yes', invoiceType: c[7]?.trim() || '', itemsReceived: c[8]?.trim().toLowerCase() === 'yes' },
         items,
       }} as INode<ICompanyPurchase>;
-    });
+    }).filter(n => n !== null) as INode<ICompanyPurchase>[];
   }
 
   private parseMoney(v: string | undefined): number {

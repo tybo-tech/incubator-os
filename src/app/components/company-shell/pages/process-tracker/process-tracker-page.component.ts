@@ -175,23 +175,24 @@ export class ProcessTrackerPageComponent implements OnInit {
   private parseImportText(): INode<IProcessTracker>[] {
     const cid = this.companyId();
     if (!cid || !this.importText.trim()) return [];
-    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
+    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map((l, i) => {
+      if (i === 0 && l.toLowerCase().startsWith('company')) return null;
       const c = l.split('\t');
       return { type: NODE_TYPE, company_id: cid, data: {
         numberOfTransactions: parseInt(c[2], 10) || 0,
         steps: {
-          quotesReceived: c[3]?.toLowerCase() === 'yes',
-          suppliersVerified: c[4]?.toLowerCase() === 'yes',
-          purchaseOrderGenerated: c[5]?.toLowerCase() === 'yes',
-          invoicesReceived: c[6]?.toLowerCase() === 'yes',
-          expenseAuthorizationSigned: c[7]?.toLowerCase() === 'yes',
-          acknowledgementOfDeliverySigned: c[9]?.toLowerCase() === 'yes',
-          supportingDocumentsLoaded: c[10]?.toLowerCase() === 'yes',
+          quotesReceived: c[3]?.trim().toLowerCase() === 'yes',
+          suppliersVerified: c[4]?.trim().toLowerCase() === 'yes',
+          purchaseOrderGenerated: c[5]?.trim().toLowerCase() === 'yes',
+          invoicesReceived: c[6]?.trim().toLowerCase() === 'yes',
+          expenseAuthorizationSigned: c[7]?.trim().toLowerCase() === 'yes',
+          acknowledgementOfDeliverySigned: c[9]?.trim().toLowerCase() === 'yes',
+          supportingDocumentsLoaded: c[10]?.trim().toLowerCase() === 'yes',
         },
         amountDisbursed: this.parseMoney(c[8]),
         completionPercentage: parseInt(c[11], 10) || 0,
       }} as INode<IProcessTracker>;
-    });
+    }).filter(n => n !== null) as INode<IProcessTracker>[];
   }
 
   private parseMoney(v: string | undefined): number {

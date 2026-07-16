@@ -37,6 +37,7 @@ Build the complete Funding Tracker module with three data types (Process Tracker
 - [x] Update company-level PurchasePageComponent to use shared form
 - [x] Update company-level SeedFundingPageComponent to use shared form
 - [x] Update company-level ProcessTrackerPageComponent to use shared form
+- [x] Fix import: skip header row, trim Yes/No values (all 6 parsers)
 
 ### Phase 5: Polish
 - [ ] Add toast notifications to all CRUD operations

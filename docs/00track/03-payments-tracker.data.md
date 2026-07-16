@@ -38,4 +38,4 @@ Unplugged Concepts	 R100,000 	 R72,043.00 	 R26,987.05 					 R99,030.05 	 970
 Wishy Wash Laundry	 R100,000 	 R100,000.00 						 R100,000.00 	 -   
 Zandi Urban Warehouse	 R100,000 	 28,750.00 	 30,600.00 	 16,497.00 	 24,153.00 			 R100,000.00 	 -   
 Ziphoziyanda Solutions	 R100,000 	 R8,803.98 	 R91,196.02 					 R100,000.00 	 -   
-Zwelibany Arts	 R100,000 	 R23,779.00 	 R32,995.00 	 R43,226.00 				 R100,000.00 	 -   
+Zwelibany Arts	 R100,000 	 R23,779.00 	 R32,995.00 	 R43,226.00 				 R100,000.00 	 -  

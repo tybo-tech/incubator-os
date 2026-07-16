@@ -182,7 +182,8 @@ export class SeedFundingPageComponent implements OnInit {
   private parseImportText(): INode<ISeedFunding>[] {
     const cid = this.companyId();
     if (!cid || !this.importText.trim()) return [];
-    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map(l => {
+    return this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0).map((l, i) => {
+      if (i === 0 && l.toLowerCase().startsWith('company name')) return null;
       const c = l.split('\t');
       const approved = this.parseMoney(c[1]);
       const pmtAmounts = [c[2], c[3], c[4], c[5], c[6], c[7]].map(v => this.parseMoney(v)).filter(v => v > 0);
@@ -190,7 +191,7 @@ export class SeedFundingPageComponent implements OnInit {
       const disbursed = this.parseMoney(c[8]);
       const balance = this.parseMoney(c[9]);
       return { type: NODE_TYPE, company_id: cid, data: { approvedAmount: approved, disbursedAmount: disbursed, remainingBalance: balance, payments } } as INode<ISeedFunding>;
-    });
+    }).filter(n => n !== null) as INode<ISeedFunding>[];
   }
 
   private parseMoney(v: string | undefined): number {

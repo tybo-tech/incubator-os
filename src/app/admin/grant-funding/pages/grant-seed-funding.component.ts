@@ -247,7 +247,9 @@ export class GrantSeedFundingComponent implements OnInit {
     const lines = this.importText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
     const result: INode<ISeedFunding>[] = [];
     const unmatched: string[] = [];
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      if (i === 0 && lines[0].toLowerCase().startsWith('company name')) continue;
+      const line = lines[i];
       const c = line.split('\t');
       const companyName = (c[0] || '').trim();
       const companyId = this.companyNameToId.get(companyName.toLowerCase());
