@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
 import { CompanyService } from '../../../../services/company.service';
+import { AssignCompanyComponent } from '../../../shared/assign-company.component';
 import { INode } from '../../../../models/schema';
 import { IProcessTracker } from '../../../../models/process-tracker.model';
 
@@ -11,7 +12,7 @@ const NODE_TYPE = 'process_tracker';
 @Component({
   selector: 'app-grant-process-tracker',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AssignCompanyComponent],
   template: `
     <div class="p-6 space-y-6">
         <div class="flex items-center justify-between">
@@ -94,9 +95,12 @@ const NODE_TYPE = 'process_tracker';
                 <td class="px-4 py-3 text-center">{{ checkIcon(item.data.steps.supportingDocumentsLoaded) }}</td>
                 <td class="px-4 py-3 text-sm text-right font-medium">{{ item.data.completionPercentage }}%</td>
                 <td class="px-4 py-3 text-right">
-                  <button (click)="deleteItem(item)" class="p-1 text-gray-400 hover:text-red-600" title="Delete">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  </button>
+                  <div class="flex items-center justify-end space-x-1">
+                    <app-assign-company *ngIf="!item.company_id" [nodeId]="item.id!" (assigned)="onAssigned($event)" />
+                    <button (click)="deleteItem(item)" class="p-1 text-gray-400 hover:text-red-600" title="Delete">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr *ngIf="records().length === 0">
@@ -191,6 +195,10 @@ export class GrantProcessTrackerComponent implements OnInit {
   deleteItem(item: INode<IProcessTracker>): void {
     if (!confirm('Delete this record?')) return;
     this.nodeService.deleteNode(item.id!).subscribe({ next: () => this.loadAll(), error: (err) => this.error.set(err.error?.error || 'Failed to delete') });
+  }
+
+  onAssigned(event: { nodeId: number; companyId: number; companyName: string }): void {
+    this.loadAll();
   }
 
   private parseImportText(): INode<IProcessTracker>[] {

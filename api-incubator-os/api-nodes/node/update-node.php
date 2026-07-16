@@ -12,9 +12,14 @@ try {
 
     $result = $node->update(
         $data['id'],
-        $data['data'],
+        $data['data'] ?? [],
         $data['updatedBy'] ?? null
     );
+
+    if (isset($data['company_id'])) {
+        $node->updateCompanyId((int)$data['id'], (int)$data['company_id']);
+        $result = $node->getById((int)$data['id']);
+    }
 
     echo json_encode($result);
 
