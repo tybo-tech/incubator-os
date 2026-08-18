@@ -57,7 +57,7 @@ export abstract class ComplianceBaseComponent implements OnInit {
   formData: Partial<ComplianceRecord> = {};
 
   // Abstract properties that child components must implement
-  abstract complianceType: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
+  abstract complianceType: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'beneficial_ownership' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   abstract pageTitle: string;
   abstract pageDescription: string;
   abstract columnConfig: ComplianceColumnConfig[];

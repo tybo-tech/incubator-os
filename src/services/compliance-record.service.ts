@@ -16,7 +16,7 @@ export interface ComplianceRecordFilters {
   cohort_id?: number;
   company_id?: number;
   financial_year_id?: number;
-  type?: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
+  type?: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'beneficial_ownership' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   status?: string;
   search?: string;
   limit?: number;

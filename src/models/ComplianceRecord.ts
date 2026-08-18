@@ -25,7 +25,7 @@ export interface ComplianceRecord {
   financial_year_id: number;
 
   // Core structure
-  type: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
+  type: 'annual_returns' | 'tax_returns' | 'bbbee_certificate' | 'beneficial_ownership' | 'cipc_registration' | 'vat_registration' | 'paye_registration' | 'uif_registration' | 'workmen_compensation' | 'other';
   period?: string;            // e.g., "FY2025", "Q1 2025"
   title?: string;             // e.g., "Annual Return 2025", "VAT Registration"
   sub_type?: string;          // Additional categorization

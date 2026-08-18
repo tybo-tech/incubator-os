@@ -124,28 +124,20 @@ import { ComplianceRecord } from '../../../models/ComplianceRecord';
       <!-- Compliance Form Modal -->
       <div
         *ngIf="showForm"
-        class="fixed inset-0 z-50 overflow-y-auto"
+        class="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4"
         aria-labelledby="modal-title"
         role="dialog"
         aria-modal="true"
       >
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <!-- Background overlay -->
-          <div
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-            (click)="onFormCancel()"
-          ></div>
-
-          <!-- Modal panel -->
-          <div class="inline-block align-bottom rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <app-compliance-form
-              [config]="getFormConfig()"
-              [initialData]="formData"
-              [loading]="loading"
-              (formSubmit)="onFormSubmit($event)"
-              (formCancel)="onFormCancel()"
-            ></app-compliance-form>
-          </div>
+        <!-- Modal panel -->
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <app-compliance-form
+            [config]="getFormConfig()"
+            [initialData]="formData"
+            [loading]="loading"
+            (formSubmit)="onFormSubmit($event)"
+            (formCancel)="onFormCancel()"
+          ></app-compliance-form>
         </div>
       </div>
     </div>

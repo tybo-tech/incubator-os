@@ -28,14 +28,24 @@ export interface ComplianceFormConfig {
   template: `
     <div class="bg-white">
       <!-- Form Header -->
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-semibold text-gray-900">
-          {{ config.title }}
-        </h3>
-        <p class="text-sm text-gray-600 mt-1" *ngIf="getFieldCount() > 0">
-          {{ getRequiredFieldCount() }} required field{{ getRequiredFieldCount() !== 1 ? 's' : '' }}
-          of {{ getFieldCount() }} total
-        </p>
+      <div class="flex items-start justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">
+            {{ config.title }}
+          </h3>
+          <p class="text-sm text-gray-600 mt-1" *ngIf="getFieldCount() > 0">
+            {{ getRequiredFieldCount() }} required field{{ getRequiredFieldCount() !== 1 ? 's' : '' }}
+            of {{ getFieldCount() }} total
+          </p>
+        </div>
+        <button
+          type="button"
+          (click)="onCancel()"
+          class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          title="Close"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <!-- Dynamic Form Fields -->

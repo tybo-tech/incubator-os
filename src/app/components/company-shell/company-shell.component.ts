@@ -123,7 +123,7 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-bullseye'
     },
     {
-      label: 'Compliance',
+      label: 'BEE Compliance',
       route: 'compliance',
       icon: 'fas fa-shield-alt'
     },
