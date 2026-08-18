@@ -22,7 +22,7 @@ foreach ($requiredFields as $field) {
 }
 
 // Validate type enum - based on common compliance types
-$validTypes = ['annual_returns', 'tax_returns', 'bbbee_certificate', 'cipc_registration', 'vat_registration', 'paye_registration', 'uif_registration', 'workmen_compensation', 'other'];
+$validTypes = ['annual_returns', 'tax_returns', 'bbbee_certificate', 'beneficial_ownership', 'cipc_registration', 'vat_registration', 'paye_registration', 'uif_registration', 'workmen_compensation', 'other'];
 if (!in_array($data['type'], $validTypes)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid compliance type. Must be one of: ' . implode(', ', $validTypes)]);
