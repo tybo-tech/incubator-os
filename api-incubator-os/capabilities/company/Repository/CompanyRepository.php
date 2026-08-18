@@ -93,6 +93,69 @@ final class CompanyRepository
         );
     }
 
+    /**
+     * Recalculate the company's ownership flags (youth, black, black women)
+     * based on the current active director roster.
+     *
+     * - black_ownership: at least one director is Black
+     * - black_women_ownership: at least one director is Black AND female
+     * - youth_owned: at least one director is under 40 years of age
+     */
+    public function recalculateOwnership(int $companyId): void
+    {
+        $stmt = $this->conn->prepare("
+            SELECT race, gender, id_number
+            FROM users
+            WHERE company_id = ? AND status = 'active' AND role = 'Director'
+        ");
+        $stmt->execute([$companyId]);
+        $directors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $black = false;
+        $blackWomen = false;
+        $youth = false;
+
+        foreach ($directors as $d) {
+            $race = strtolower((string)($d['race'] ?? ''));
+            $gender = strtolower((string)($d['gender'] ?? ''));
+
+            if ($race === 'black' || $race === 'african' || $race === 'coloured' || $race === 'indian') {
+                $black = true;
+                if ($gender === 'female') {
+                    $blackWomen = true;
+                }
+            }
+
+            $dob = DirectorSummary::parseDateOfBirth($d['id_number'] ?? null);
+            if ($dob) {
+                $age = DirectorSummary::calculateAge($dob);
+                if ($age < 40) {
+                    $youth = true;
+                }
+            }
+        }
+
+        $this->conn->prepare("
+            UPDATE companies SET
+                black_ownership = ?,
+                black_women_ownership = ?,
+                youth_owned = ?,
+                black_ownership_text = ?,
+                black_women_ownership_text = ?,
+                youth_owned_text = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        ")->execute([
+            $black ? 1 : 0,
+            $blackWomen ? 1 : 0,
+            $youth ? 1 : 0,
+            $black ? 'Yes' : 'No',
+            $blackWomen ? 'Yes' : 'No',
+            $youth ? 'Yes' : 'No',
+            $companyId,
+        ]);
+    }
+
     private const WRITABLE = [
         'name','registration_no','bbbee_level','cipc_status',
         'service_offering','description','city','suburb','address','postal_code',

@@ -8,6 +8,7 @@ final class RegisterDirectorRequest
         public readonly ?string $email,
         public readonly ?string $phone,
         public readonly ?string $gender,
+        public readonly ?string $race,
         public readonly ?string $idNumber,
     ) {}
 }

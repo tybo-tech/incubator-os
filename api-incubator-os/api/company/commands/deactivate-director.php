@@ -3,9 +3,11 @@
 include_once '../../../config/Database.php';
 include_once '../../../core/Infrastructure/TransactionManager.php';
 include_once '../../../capabilities/company/Contracts/Responses/CommandResult.php';
+include_once '../../../capabilities/company/Contracts/Projections/DirectorSummary.php';
 include_once '../../../capabilities/company/Contracts/Requests/DeactivateDirectorRequest.php';
 include_once '../../../capabilities/company/Application/Commands/DeactivateDirector.php';
 include_once '../../../capabilities/company/Repository/UserRepository.php';
+include_once '../../../capabilities/company/Repository/CompanyRepository.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { http_response_code(400); echo json_encode(['error' => 'id is required']); exit; }
@@ -19,6 +21,7 @@ try {
     $request = new DeactivateDirectorRequest(directorId: $directorId);
     $result = (new DeactivateDirector(
         new UserRepository($db),
+        new CompanyRepository($db),
         new TransactionManager($db),
     ))->execute($id, $request);
     echo json_encode($result);

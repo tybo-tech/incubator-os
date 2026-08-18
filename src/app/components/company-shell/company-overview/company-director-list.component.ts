@@ -64,6 +64,19 @@ import { CompanyCapabilityService, DirectorSummary, RegisterDirectorRequest } fr
               <option value="other">Other</option>
             </select>
           </div>
+          <div>
+            <label class="block text-xs font-medium text-blue-700 mb-1">Race</label>
+            <select
+              [(ngModel)]="form.race"
+              class="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option value="">Select</option>
+              <option value="Black">Black</option>
+              <option value="Coloured">Coloured</option>
+              <option value="Indian">Indian</option>
+              <option value="White">White</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div class="sm:col-span-2">
             <label class="block text-xs font-medium text-blue-700 mb-1">ID Number</label>
             <input
@@ -71,6 +84,7 @@ import { CompanyCapabilityService, DirectorSummary, RegisterDirectorRequest } fr
               [(ngModel)]="form.id_number"
               placeholder="e.g. 9012295765081"
               class="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" />
+            <p class="text-[10px] text-blue-500 mt-1">Date of birth and age are derived automatically from a valid 13-digit SA ID number.</p>
           </div>
         </div>
         <div class="flex items-center space-x-2">
@@ -121,6 +135,9 @@ import { CompanyCapabilityService, DirectorSummary, RegisterDirectorRequest } fr
               </p>
               <div class="flex items-center gap-3 text-xs text-gray-400 mt-1">
                 <span *ngIf="dir.gender">Gender: {{ dir.gender }}</span>
+                <span *ngIf="dir.race">Race: {{ dir.race }}</span>
+                <span *ngIf="dir.age !== null && dir.age !== undefined">Age: {{ dir.age }}</span>
+                <span *ngIf="dir.dateOfBirth">DOB: {{ dir.dateOfBirth }}</span>
                 <span *ngIf="dir.idNumber">ID: {{ dir.idNumber }}</span>
               </div>
             </div>
@@ -152,6 +169,7 @@ export class CompanyDirectorListComponent {
     email: '',
     phone: '',
     gender: '',
+    race: '',
     id_number: ''
   };
 
@@ -168,6 +186,7 @@ export class CompanyDirectorListComponent {
       email: this.form.email || undefined,
       phone: this.form.phone || undefined,
       gender: this.form.gender || undefined,
+      race: this.form.race || undefined,
       id_number: this.form.id_number || undefined
     }).subscribe({
       next: () => {
@@ -199,6 +218,6 @@ export class CompanyDirectorListComponent {
   }
 
   private resetForm(): void {
-    this.form = { full_name: '', email: '', phone: '', gender: '', id_number: '' };
+    this.form = { full_name: '', email: '', phone: '', gender: '', race: '', id_number: '' };
   }
 }

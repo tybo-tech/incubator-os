@@ -5,6 +5,7 @@ final class RegisterDirector
 {
     public function __construct(
         private UserRepository $userRepo,
+        private CompanyRepository $companyRepo,
         private TransactionManager $tx,
     ) {}
 
@@ -38,9 +39,13 @@ final class RegisterDirector
                 'username' => $username,
                 'role' => 'Director',
                 'gender' => $input->gender,
+                'race' => $input->race,
                 'id_number' => $input->idNumber,
                 'status' => 'active',
             ]);
+
+            // Recalculate ownership flags based on the updated director roster
+            $this->companyRepo->recalculateOwnership($companyId);
 
             return new CommandResult(
                 success: true,

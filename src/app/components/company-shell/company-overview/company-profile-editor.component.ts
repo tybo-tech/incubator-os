@@ -131,7 +131,20 @@ import { CompanyCapabilityService, UpdateProfileRequest } from '../../../../serv
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">B-BBEE Level</label>
-            <input type="text" [(ngModel)]="draft.bbbee_level" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            <select [(ngModel)]="draft.bbbee_level" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select level</option>
+              <option value="Level 1">Level 1 (135% procurement recognition)</option>
+              <option value="Level 2">Level 2 (125% procurement recognition)</option>
+              <option value="Level 3">Level 3 (110% procurement recognition)</option>
+              <option value="Level 4">Level 4 (100% procurement recognition)</option>
+              <option value="Level 5">Level 5 (80% procurement recognition)</option>
+              <option value="Level 6">Level 6 (60% procurement recognition)</option>
+              <option value="Level 7">Level 7 (50% procurement recognition)</option>
+              <option value="Level 8">Level 8 (10% procurement recognition)</option>
+              <option value="Non-Compliant">Non-Compliant</option>
+              <option value="EME">EME (Exempt Micro Enterprise)</option>
+              <option value="QSE">QSE (Qualifying Small Enterprise)</option>
+            </select>
           </div>
         </div>
 

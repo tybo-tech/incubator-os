@@ -7,6 +7,7 @@ include_once '../../../capabilities/company/Contracts/Projections/DirectorSummar
 include_once '../../../capabilities/company/Contracts/Requests/RegisterDirectorRequest.php';
 include_once '../../../capabilities/company/Application/Commands/RegisterDirector.php';
 include_once '../../../capabilities/company/Repository/UserRepository.php';
+include_once '../../../capabilities/company/Repository/CompanyRepository.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { http_response_code(400); echo json_encode(['error' => 'id is required']); exit; }
@@ -25,10 +26,12 @@ try {
         email: $input['email'] ?? null,
         phone: $input['phone'] ?? null,
         gender: $input['gender'] ?? null,
+        race: $input['race'] ?? null,
         idNumber: $input['id_number'] ?? '',
     );
     $result = (new RegisterDirector(
         new UserRepository($db),
+        new CompanyRepository($db),
         new TransactionManager($db),
     ))->execute($id, $request);
     echo json_encode($result);

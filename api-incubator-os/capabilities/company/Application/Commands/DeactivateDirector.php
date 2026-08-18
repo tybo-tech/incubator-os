@@ -5,6 +5,7 @@ final class DeactivateDirector
 {
     public function __construct(
         private UserRepository $userRepo,
+        private CompanyRepository $companyRepo,
         private TransactionManager $tx,
     ) {}
 
@@ -20,6 +21,9 @@ final class DeactivateDirector
             }
 
             $this->userRepo->delete($input->directorId);
+
+            // Recalculate ownership flags based on the updated director roster
+            $this->companyRepo->recalculateOwnership($companyId);
 
             return new CommandResult(
                 success: true,

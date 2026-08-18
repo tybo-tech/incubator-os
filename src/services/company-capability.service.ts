@@ -16,7 +16,10 @@ export interface DirectorSummary {
   phone: string | null;
   role: string;
   gender: string | null;
+  race: string | null;
   idNumber: string | null;
+  dateOfBirth: string | null;
+  age: number | null;
 }
 
 export interface FinancialSummary {
@@ -40,6 +43,7 @@ export interface RegisterDirectorRequest {
   email?: string;
   phone?: string;
   gender?: string;
+  race?: string;
   id_number?: string;
 }
 
