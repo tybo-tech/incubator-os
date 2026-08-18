@@ -5,11 +5,12 @@ import { CompanyService } from '../../../services/company.service';
 import { ContextService } from '../../../services/context.service';
 import { ICompany } from '../../../models/simple.schema';
 import { filter } from 'rxjs/operators';
+import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
 
 @Component({
   selector: 'app-company-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink],
+  imports: [CommonModule, RouterOutlet, RouterLink, TabBarComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Company Shell Header -->
@@ -65,18 +66,13 @@ import { filter } from 'rxjs/operators';
           </div>
 
           <!-- Company Navigation Tabs -->
-          <div class="flex space-x-8 overflow-x-auto">
-            <a
-              *ngFor="let tab of companyTabs"
-              [routerLink]="[tab.route]"
+          <div class="flex overflow-x-auto">
+            <app-tab-bar
+              [tabs]="companyTabs"
+              [maxVisible]="7"
               [queryParams]="getQueryParams()"
-              [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ' +
-                      (isTabActive(tab.route) ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
-              <span class="flex items-center space-x-2">
-                <i [class]="tab.icon + ' w-4 h-4'"></i>
-                <span class="hidden sm:inline">{{ tab.label }}</span>
-              </span>
-            </a>
+              [activeRoute]="currentUrl"
+              [isActiveFn]="isTabActiveFn" />
           </div>
         </div>
       </div>
@@ -101,7 +97,7 @@ export class CompanyShellComponent implements OnInit {
   programId: number | null = null;
   cohortId: number | null = null;
 
-  companyTabs = [
+  companyTabs: TabItem[] = [
     {
       label: 'Overview',
       route: 'overview',
@@ -250,6 +246,8 @@ export class CompanyShellComponent implements OnInit {
     const expectedPath = `/company/${this.companyId}/${tabRoute}`;
     return this.currentUrl.startsWith(expectedPath);
   }
+
+  isTabActiveFn = (tab: TabItem): boolean => this.isTabActive(tab.route);
 
   /**
    * Get current query parameters for child component navigation

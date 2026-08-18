@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
 import { ContextService } from '../../../services/context.service';
 import { filter } from 'rxjs/operators';
+import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
 
 @Component({
   selector: 'app-compliance-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink],
+  imports: [CommonModule, RouterOutlet, RouterLink, TabBarComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Compliance Header -->
@@ -45,17 +46,12 @@ import { filter } from 'rxjs/operators';
       <!-- Navigation Tabs -->
       <div class="bg-white border-b border-gray-200">
         <div class="px-4 sm:px-6 lg:px-8">
-          <nav class="flex space-x-8 overflow-x-auto">
-            <a
-              *ngFor="let tab of complianceTabs"
-              [routerLink]="[tab.route]"
-              [queryParams]="getQueryParams()"
-              [class]="'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center space-x-2 ' +
-                      (isTabActive(tab.route) ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
-              <i [class]="tab.icon + ' w-4 h-4'"></i>
-              <span>{{ tab.label }}</span>
-            </a>
-          </nav>
+          <app-tab-bar
+            [tabs]="complianceTabs"
+            [maxVisible]="7"
+            [queryParams]="getQueryParams()"
+            [activeRoute]="currentUrl"
+            [isActiveFn]="isTabActiveFn" />
         </div>
       </div>
 
@@ -80,7 +76,7 @@ export class ComplianceShellComponent implements OnInit {
   programId: number | null = null;
   cohortId: number | null = null;
 
-  complianceTabs = [
+  complianceTabs: TabItem[] = [
     {
       label: 'Annual Returns',
       route: 'annual-returns',
@@ -144,6 +140,8 @@ export class ComplianceShellComponent implements OnInit {
   isTabActive(tabRoute: string): boolean {
     return this.currentUrl.includes(`/compliance/${tabRoute}`);
   }
+
+  isTabActiveFn = (tab: TabItem): boolean => this.isTabActive(tab.route);
 
   getQueryParams(): any {
     return this.contextService.getQueryParams();
