@@ -7,8 +7,8 @@ import { MentorshipSession } from '../../../../../models/mentorship.models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="close.emit()">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto mx-4">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900">Mentorship Session</h3>
           <button (click)="close.emit()" class="p-1 text-gray-400 hover:text-gray-600">
@@ -70,14 +70,6 @@ import { MentorshipSession } from '../../../../../models/mentorship.models';
           <div>
             <h4 class="text-sm font-semibold text-gray-800 mb-1">Next Actions</h4>
             <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ s.nextActions || 'None recorded' }}</p>
-          </div>
-
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div class="grid grid-cols-3 gap-4 text-sm">
-              <div><span class="text-blue-600">Hours:</span> <strong>{{ s.durationHours }}</strong></div>
-              <div><span class="text-blue-600">Rate:</span> <strong>R{{ (s.hourlyRate || 0).toLocaleString() }}</strong></div>
-              <div><span class="text-blue-600">Value:</span> <strong>R{{ (s.sessionValue || 0).toLocaleString() }}</strong></div>
-            </div>
           </div>
         </div>
 

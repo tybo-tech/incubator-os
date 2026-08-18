@@ -16,8 +16,6 @@ import { MentorshipSession } from '../../../../../models/mentorship.models';
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mentor</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Topic</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hours</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Value</th>
               <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
@@ -32,8 +30,6 @@ import { MentorshipSession } from '../../../../../models/mentorship.models';
                 </span>
               </td>
               <td class="px-4 py-3 text-sm text-gray-700 max-w-[200px] truncate">{{ item.topic }}</td>
-              <td class="px-4 py-3 text-sm text-right text-gray-900">{{ item.durationHours }}</td>
-              <td class="px-4 py-3 text-sm text-right text-gray-900">{{ item.sessionValue | currency:'ZAR':'symbol':'1.0-0' }}</td>
               <td class="px-4 py-3 text-center">
                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full"
                   [class.bg-green-100]="item.status === 'Completed'"
@@ -60,7 +56,7 @@ import { MentorshipSession } from '../../../../../models/mentorship.models';
               </td>
             </tr>
             <tr *ngIf="sessions().length === 0">
-              <td colspan="8" class="px-4 py-8 text-center text-gray-500">No mentorship sessions recorded. Click "New Session" to create one.</td>
+              <td colspan="6" class="px-4 py-8 text-center text-gray-500">No mentorship sessions recorded. Click "New Session" to create one.</td>
             </tr>
           </tbody>
         </table>

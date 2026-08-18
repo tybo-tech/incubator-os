@@ -8,8 +8,8 @@ import { MentorshipSessionFormData, SESSION_CATEGORIES, DELIVERY_METHODS, SESSIO
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="close.emit()">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4" (click)="$event.stopPropagation()">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-gray-900">{{ isEdit() ? 'Edit Session' : 'New Session' }}</h3>
           <button (click)="close.emit()" class="p-1 text-gray-400 hover:text-gray-600">
@@ -61,21 +61,6 @@ import { MentorshipSessionFormData, SESSION_CATEGORIES, DELIVERY_METHODS, SESSIO
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
             <textarea [(ngModel)]="formData.nextActions" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="What needs to happen next?"></textarea>
-          </div>
-
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Duration (hours)</label>
-              <input type="number" step="0.5" [(ngModel)]="formData.durationHours" (input)="recalculateValue()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate (R)</label>
-              <input type="number" [(ngModel)]="formData.hourlyRate" (input)="recalculateValue()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Session Value (R)</label>
-              <input type="number" [(ngModel)]="formData.sessionValue" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-            </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -132,12 +117,6 @@ export class MentorshipFormComponent {
         this.formData = this.emptyForm();
       }
     });
-  }
-
-  protected recalculateValue(): void {
-    const hours = Number(this.formData.durationHours) || 0;
-    const rate = Number(this.formData.hourlyRate) || 0;
-    this.formData.sessionValue = hours * rate;
   }
 
   private emptyForm(): MentorshipSessionFormData {
