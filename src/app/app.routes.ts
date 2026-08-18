@@ -53,7 +53,6 @@ import { AssessmentTabComponent } from './components/companies/company-detail/as
 import { ComplianceShellComponent } from './components/compliance/compliance-shell.component';
 import { CoachingGuideShellComponent } from './components/coaching-guide/coaching-guide-shell.component';
 import { FinancialIndicatorsPageComponent } from './components/company-shell/financial-indicators/pages/financial-indicators-page.component';
-import { MentorshipSessionPageComponent } from './components/company-shell/mentorship-session/pages/mentorship-session-page.component';
 import { DashboardRecentActivitiesComponent } from './dashboard/dashboard-recent-activities/dashboard-recent-activities.component';
 import { ProjectsListComponent } from './admin/projects/projects-list.component';
 import { ProjectDetailComponent } from './admin/projects/project-detail.component';
@@ -175,6 +174,10 @@ export const routes: Routes = [
               {
                 path: 'other-statutory-tasks',
                 loadComponent: () => import('./components/compliance/other-statutory-tasks.component').then(m => m.OtherStatutoryTasksComponent),
+              },
+              {
+                path: 'log-book',
+                loadComponent: () => import('./components/company-shell/mentorship-session/pages/mentorship-session-page.component').then(m => m.MentorshipSessionPageComponent),
               }
             ]
           },
@@ -278,10 +281,6 @@ export const routes: Routes = [
           {
             path: 'financial-indicators',
             component: FinancialIndicatorsPageComponent,
-          },
-          {
-            path: 'mentorship',
-            component: MentorshipSessionPageComponent,
           },
         ]
       },

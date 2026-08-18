@@ -113,16 +113,6 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-check-circle'
     },
     {
-      label: 'Purchases',
-      route: 'purchases',
-      icon: 'fas fa-shopping-cart'
-    },
-    {
-      label: 'Seed Funding',
-      route: 'seed-funding',
-      icon: 'fas fa-hand-holding-usd'
-    },
-    {
       label: 'SWOT Analysis',
       route: 'swot',
       icon: 'fas fa-chart-line'
@@ -131,6 +121,11 @@ export class CompanyShellComponent implements OnInit {
       label: 'GPS Targets',
       route: 'gps-targets',
       icon: 'fas fa-bullseye'
+    },
+    {
+      label: 'Compliance',
+      route: 'compliance',
+      icon: 'fas fa-shield-alt'
     },
     {
       label: 'Financial',
@@ -142,11 +137,6 @@ export class CompanyShellComponent implements OnInit {
       route: 'financial-indicators',
       icon: 'fas fa-chart-bar'
     },
-    {
-      label: 'Compliance',
-      route: 'compliance',
-      icon: 'fas fa-shield-alt'
-    },
     //coaching/guide
     {
       label: 'Coaching / Guide',
@@ -154,9 +144,14 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-chalkboard-teacher'
     },
     {
-      label: 'Mentorship',
-      route: 'mentorship',
-      icon: 'fas fa-users'
+      label: 'Purchases',
+      route: 'purchases',
+      icon: 'fas fa-shopping-cart'
+    },
+    {
+      label: 'Seed Funding',
+      route: 'seed-funding',
+      icon: 'fas fa-hand-holding-usd'
     }
   ];
 

@@ -105,6 +105,11 @@ export class ComplianceShellComponent implements OnInit {
       label: 'Other Statutory Tasks',
       route: 'other-statutory-tasks',
       icon: 'fas fa-balance-scale'
+    },
+    {
+      label: 'Log Book',
+      route: 'log-book',
+      icon: 'fas fa-book'
     }
   ];
 

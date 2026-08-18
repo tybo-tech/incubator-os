@@ -25,7 +25,7 @@ import { MentorshipViewComponent } from '../components/mentorship-view.component
         <!-- Page Header -->
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">Mentorship Sessions</h2>
+            <h2 class="text-2xl font-bold text-gray-900">Log Book</h2>
             <p class="text-gray-600 text-sm mt-1">Record and track mentorship sessions</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export class MentorshipSessionPageComponent implements OnInit {
   viewingSession = signal<MentorshipSession | null>(null);
 
   ngOnInit(): void {
-    this.route.parent?.params.subscribe(params => {
+    this.route.parent?.parent?.params.subscribe(params => {
       const id = parseInt(params['id'], 10);
       if (id) {
         this.companyId.set(id);
