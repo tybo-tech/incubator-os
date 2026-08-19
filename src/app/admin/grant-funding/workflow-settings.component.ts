@@ -21,8 +21,7 @@ import { FormTemplate } from '../form-templates/interfaces/form-template.interfa
 
       <!-- Backdrop -->
       <div
-        class="fixed inset-0 z-40 bg-black/40"
-        (click)="close()">
+        class="fixed inset-0 z-40 bg-black/40">
       </div>
 
       <!-- Slide-over drawer -->

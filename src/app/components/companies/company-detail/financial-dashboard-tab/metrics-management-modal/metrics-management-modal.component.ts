@@ -27,7 +27,7 @@ import { ModalNavigationService, ModalState } from './services/modal-navigation.
   providers: [ModalNavigationService],
   template: `
     <!-- Modal Backdrop -->
-    <div *ngIf="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModal()">
+    <div *ngIf="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
 
       <!-- Modal Content -->
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden" (click)="$event.stopPropagation()">

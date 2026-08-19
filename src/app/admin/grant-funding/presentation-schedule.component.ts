@@ -551,8 +551,7 @@ type ViewMode = 'list' | 'editor';
          APPLICANT PICKER MODAL
     ════════════════════════════════════════════════════════════════════════ -->
     <div *ngIf="showPickerModal()"
-         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-         (click)="showPickerModal.set(false)">
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col"
            (click)="$event.stopPropagation()">
 

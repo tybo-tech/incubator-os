@@ -264,8 +264,7 @@ interface UserRow extends User { }
 
 <!-- ══ Create / Edit modal ════════════════════════════════════════════════ -->
 <div *ngIf="showModal()"
-     class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-     (click)="closeModal()">
+     class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
        (click)="$event.stopPropagation()">
 
@@ -377,8 +376,7 @@ interface UserRow extends User { }
 
 <!-- ══ Set Password modal ═══════════════════════════════════════════════ -->
 <div *ngIf="passwordTarget()"
-     class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-     (click)="closePasswordModal()">
+     class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm"
        (click)="$event.stopPropagation()">
 

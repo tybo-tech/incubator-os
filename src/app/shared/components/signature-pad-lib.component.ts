@@ -38,7 +38,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
     </div>
 
     <!-- Signature Modal -->
-    <div *ngIf="showModal" class="signature-modal" (click)="closeModal()">
+    <div *ngIf="showModal" class="signature-modal">
       <div class="signature-modal-content" (click)="$event.stopPropagation()">
         <div class="signature-modal-header">
           <h3>Sign Here</h3>

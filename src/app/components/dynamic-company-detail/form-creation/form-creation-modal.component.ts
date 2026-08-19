@@ -30,7 +30,7 @@ export interface ProgramContext {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="modal-overlay" *ngIf="show()" (click)="onOverlayClick($event)">
+    <div class="modal-overlay" *ngIf="show()">
       <div class="modal-container" (click)="$event.stopPropagation()">
 
         <!-- Modal Header -->

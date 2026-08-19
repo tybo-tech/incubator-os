@@ -1,15 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Task } from '../../../models/business.models';
 import { INode } from '../../../models/schema';
 import { NodeService, ToastService } from '../../../services';
 import { GlobalTaskModalComponent } from './global-task-modal.component';
 import { ICompany } from '../../../models/simple.schema';
 
+interface BoardColumn {
+  key: string;
+  name: string;
+  tasks: INode<Task>[];
+}
+
+const STATUS_META: Record<string, { name: string; dot: string }> = {
+  todo: { name: 'To Do', dot: 'bg-gray-400' },
+  in_progress: { name: 'In Progress', dot: 'bg-blue-500' },
+  done: { name: 'Done', dot: 'bg-green-500' },
+};
+
 @Component({
   selector: 'app-tasks-list',
   standalone: true,
-  imports: [CommonModule, GlobalTaskModalComponent],
+  imports: [CommonModule, FormsModule, GlobalTaskModalComponent, DragDropModule],
   template: `
     <div class="p-6">
       <!-- Header -->
@@ -21,11 +35,37 @@ import { ICompany } from '../../../models/simple.schema';
           </h2>
           <p class="text-gray-600 mt-1">Organize and track your business tasks</p>
         </div>
-        <button (click)="openTaskModal()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
-          <i class="fas fa-plus mr-2"></i>
-          New Task
-        </button>
+        <div class="flex items-center space-x-3">
+          <!-- Company Filter -->
+          <select *ngIf="viewMode === 'board'" [(ngModel)]="boardCompanyFilter"
+                  class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="all">All Companies</option>
+            <option *ngFor="let company of availableCompanies" [value]="company.id">
+              {{ company.name }}
+            </option>
+            <option value="unassigned">Unassigned</option>
+          </select>
+          <!-- View Toggle -->
+          <div class="flex bg-gray-100 rounded-lg p-1">
+            <button (click)="viewMode = 'list'"
+                    [class]="viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                    class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-list mr-1.5"></i>
+              List
+            </button>
+            <button (click)="viewMode = 'board'"
+                    [class]="viewMode === 'board' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'"
+                    class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center">
+              <i class="fas fa-columns mr-1.5"></i>
+              Board
+            </button>
+          </div>
+          <button (click)="openTaskModal()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            New Task
+          </button>
+        </div>
       </div>
 
       <!-- Task Statistics -->
@@ -103,8 +143,8 @@ import { ICompany } from '../../../models/simple.schema';
         </button>
       </div>
 
-      <!-- Tasks List -->
-      <div *ngIf="!loading && !error" class="space-y-4">
+      <!-- List View -->
+      <div *ngIf="viewMode === 'list' && !loading && !error" class="space-y-4">
         <!-- Empty State -->
         <div *ngIf="getFilteredTasks(activeFilter).length === 0" class="text-center py-12">
           <i class="fas fa-tasks text-gray-300 text-4xl mb-4"></i>
@@ -178,6 +218,85 @@ import { ICompany } from '../../../models/simple.schema';
           </div>
         </div>
       </div>
+
+      <!-- Board View -->
+      <div *ngIf="viewMode === 'board' && !loading && !error">
+        <!-- Empty State -->
+        <div *ngIf="getFilteredTasks(activeFilter).length === 0" class="text-center py-12">
+          <i class="fas fa-columns text-gray-300 text-4xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No Tasks Found</h3>
+          <p class="text-gray-600 mb-4">
+            {{ activeFilter === 'all' ? 'Create your first task to get started' : 'No tasks match the current filter' }}
+          </p>
+          <button *ngIf="activeFilter === 'all'" (click)="openTaskModal()"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+            <i class="fas fa-plus mr-2"></i>
+            Create First Task
+          </button>
+        </div>
+
+        <!-- Board Columns -->
+        <div *ngIf="getFilteredTasks(activeFilter).length > 0"
+             cdkDropListGroup
+             class="flex items-start gap-4 overflow-x-auto pb-4">
+          <div *ngFor="let col of getBoardColumns()"
+               class="flex-shrink-0 rounded-xl bg-gray-50 border border-gray-200 flex flex-col"
+               [style.width.px]="columnWidths[col.key] || 320">
+            <!-- Column Header -->
+            <div class="px-3 py-2.5 border-b border-gray-200 bg-white rounded-t-xl flex items-center justify-between">
+              <div class="flex items-center min-w-0">
+                <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0"
+                      [class]="getColumnDot(col.key)"></span>
+                <span class="text-sm font-semibold text-gray-800 truncate">{{ col.name }}</span>
+                <span class="ml-2 px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-medium flex-shrink-0">
+                  {{ col.tasks.length }}
+                </span>
+              </div>
+              <div class="w-1.5 h-6 cursor-col-resize rounded hover:bg-blue-300 active:bg-blue-400 transition-colors flex-shrink-0"
+                   (mousedown)="startResize(col.key, $event)"
+                   title="Drag to resize column"></div>
+            </div>
+
+            <!-- Cards -->
+            <div cdkDropList
+                 [id]="col.key"
+                 [cdkDropListData]="col.tasks"
+                 (cdkDropListDropped)="onDrop($event)"
+                 class="flex-1 p-2 space-y-2 overflow-y-auto min-h-[120px]">
+              <div *ngFor="let task of col.tasks"
+                   cdkDrag
+                   [cdkDragData]="task"
+                   [class]="'bg-white rounded-lg border border-gray-200 border-l-4 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing ' + getPriorityAccent(task.data.priority)">
+                <div class="p-3">
+                  <div class="flex items-start justify-between gap-2">
+                    <h4 class="text-sm font-medium text-gray-900 leading-snug">{{ task.data.title }}</h4>
+                    <span [class]="getStatusClass(task.data.status!)" class="flex-shrink-0">
+                      {{ getStatusShort(task.data.status!) }}
+                    </span>
+                  </div>
+                  <p *ngIf="task.data.description" class="text-xs text-gray-500 mt-1.5 line-clamp-2">{{ task.data.description }}</p>
+                  <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+                    <span class="flex items-center" [class.text-red-600]="isOverdue(task)">
+                      <i class="fas fa-calendar mr-1"></i>
+                      {{ task.data.due_date | date:'MMM d' }}
+                    </span>
+                    <span *ngIf="task.company_id" class="flex items-center min-w-0 ml-2">
+                      <i class="fas fa-building mr-1 flex-shrink-0"></i>
+                      <span class="truncate">{{ getCompanyName(task) }}</span>
+                    </span>
+                  </div>
+                  <div class="flex items-center mt-2 text-xs text-gray-500" *ngIf="task.data.assigned_to">
+                    <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-semibold mr-1 flex-shrink-0">
+                      {{ getInitials(task.data.assigned_to) }}
+                    </span>
+                    <span class="truncate">{{ task.data.assigned_to }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Global Task Modal -->
@@ -206,6 +325,11 @@ export class TasksListComponent implements OnInit {
   availableCompanies: ICompany[] = [];
   loading = false;
   error: string | null = null;
+
+  // View mode
+  viewMode: 'list' | 'board' = 'list';
+  boardCompanyFilter: string | number = 'all';
+  columnWidths: Record<string, number> = {};
 
   // Modal properties
   showTaskModal = false;
@@ -239,7 +363,11 @@ export class TasksListComponent implements OnInit {
 
     try {
       const allTasks = await this.nodeService.getNodesByType('task').toPromise();
-      this.tasks = allTasks || [];
+      this.tasks = (allTasks || []).sort((a, b) => {
+        const aTime = new Date(a.created_at || a.data.created_date || 0).getTime();
+        const bTime = new Date(b.created_at || b.data.created_date || 0).getTime();
+        return bTime - aTime;
+      });
     } catch (error) {
       console.error('❌ Error loading tasks:', error);
       this.error = 'Failed to load tasks. Please try again.';
@@ -317,6 +445,15 @@ export class TasksListComponent implements OnInit {
     }
   }
 
+  getPriorityAccent(priority?: string): string {
+    switch (priority) {
+      case 'high': return 'border-l-red-500';
+      case 'medium': return 'border-l-yellow-400';
+      case 'low': return 'border-l-blue-400';
+      default: return 'border-l-gray-300';
+    }
+  }
+
   getStatusClass(status: string): string {
     const baseClass = 'px-2 py-1 rounded-full text-xs font-medium ';
     switch (status) {
@@ -334,6 +471,100 @@ export class TasksListComponent implements OnInit {
       case 'todo': return '📋 To Do';
       default: return status;
     }
+  }
+
+  getStatusShort(status: string): string {
+    switch (status) {
+      case 'done': return 'Done';
+      case 'in_progress': return 'In Progress';
+      case 'todo': return 'To Do';
+      default: return status;
+    }
+  }
+
+  getInitials(name: string): string {
+    return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  // Board methods
+  getBoardColumns(): BoardColumn[] {
+    const filtered = this.getFilteredTasks(this.activeFilter).filter(task => {
+      if (this.boardCompanyFilter === 'all') return true;
+      if (this.boardCompanyFilter === 'unassigned') return !task.company_id;
+      return task.company_id === this.boardCompanyFilter;
+    });
+
+    const groups = new Map<string, INode<Task>[]>();
+    for (const task of filtered) {
+      const key = task.data.status || 'todo';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(task);
+    }
+
+    return ['todo', 'in_progress', 'done'].map(key => ({
+      key,
+      name: STATUS_META[key].name,
+      tasks: groups.get(key) || []
+    }));
+  }
+
+  getColumnDot(key: string): string {
+    return STATUS_META[key]?.dot || 'bg-gray-400';
+  }
+
+  getCompanyName(task: INode<Task>): string {
+    if (!task.company_id) return 'Unassigned';
+    const company = this.availableCompanies.find(c => c.id === task.company_id);
+    return company ? company.name : 'Company';
+  }
+
+  startResize(key: string, event: MouseEvent) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = this.columnWidths[key] || 320;
+
+    const onMove = (e: MouseEvent) => {
+      const width = Math.max(240, Math.min(480, startWidth + (e.clientX - startX)));
+      this.columnWidths[key] = width;
+    };
+
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
+
+  onDrop(event: CdkDragDrop<INode<Task>[]>) {
+    const task = event.item.data;
+    const targetStatus = event.container.id;
+
+    if (task.data.status === targetStatus) return;
+
+    const updated: INode<Task> = {
+      ...task,
+      data: {
+        ...task.data,
+        status: targetStatus,
+        completed: targetStatus === 'done'
+      }
+    };
+
+    this.nodeService.updateNode(updated).toPromise()
+      .then(saved => {
+        if (saved) {
+          const index = this.tasks.findIndex(t => t.id === task.id);
+          if (index !== -1) {
+            this.tasks[index] = saved;
+          }
+        }
+      })
+      .catch(err => {
+        console.error('❌ Error moving task:', err);
+        this.toast.error('Failed to move task. Please try again.');
+      });
   }
 
   // Modal methods

@@ -15,7 +15,6 @@ import { ToastService } from '../../services/toast.service';
     <div
       *ngIf="state.showPromoteModal()"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      (click)="state.closePromoteModal()"
     >
       <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full" (click)="$event.stopPropagation()">
 

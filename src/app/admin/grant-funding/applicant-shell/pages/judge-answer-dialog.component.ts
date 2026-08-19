@@ -22,8 +22,7 @@ export interface JudgeAnswerRow {
   imports: [CommonModule],
   template: `
     <!-- Backdrop -->
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
-         (click)="onBackdropClick($event)">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
       <!-- Panel -->

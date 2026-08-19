@@ -8,8 +8,7 @@ import { ICompany } from '../../../../models/simple.schema';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-         (click)="onBackdropClick($event)">
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] flex flex-col"
            (click)="$event.stopPropagation()">
 

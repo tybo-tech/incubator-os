@@ -11,7 +11,6 @@ import { GrantFundingStateService } from './services/grant-funding-state.service
     <div
       *ngIf="state.showBulkModal()"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      (click)="state.closeBulkModal()"
     >
       <div class="bg-white rounded-xl shadow-2xl max-w-md w-full" (click)="$event.stopPropagation()">
         <div class="px-6 py-4 border-b border-gray-200">

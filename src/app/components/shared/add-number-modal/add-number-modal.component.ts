@@ -10,8 +10,7 @@ import { FormsModule } from '@angular/forms';
     <!-- Backdrop -->
     <div
       *ngIf="isOpen()"
-      class="fixed inset-0 z-50 flex items-center justify-center"
-      (click)="onBackdropClick($event)">
+      class="fixed inset-0 z-50 flex items-center justify-center">
 
       <!-- Animated Backdrop -->
       <div

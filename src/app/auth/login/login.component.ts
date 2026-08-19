@@ -126,7 +126,7 @@ export class LoginComponent {
   errorMsg  = signal<string | null>(null);
   showPassword = signal(false);
 
-  readonly version = 'v2.0.0';
+  readonly version = 'v2.0.1';
 
   private logSvc = inject(ActivityLogStateService);
 

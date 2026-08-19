@@ -223,8 +223,7 @@ type SnapshotStatus = 'ok' | 'warning' | 'error' | 'pending';
 
     <!-- ── Presentations / Uploads popup ─────────────────────────────────── -->
     <div *ngIf="uploadsOpen()"
-         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-         (click)="uploadsOpen.set(false)">
+         class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
 
       <div class="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md"
            (click)="$event.stopPropagation()">
