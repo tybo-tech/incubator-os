@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -11,7 +11,6 @@ interface LiveCalc {
   netProfit: number;
   netProfitPercentage: number;
 }
-
 @Component({
   selector: 'app-public-financial-submission',
   standalone: true,
@@ -106,16 +105,22 @@ interface LiveCalc {
                     <label class="block text-sm font-medium text-gray-700 mb-1">Operating Expenses</label>
                     <input type="number" [(ngModel)]="operatingExpenses" (input)="recalc()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
-                </div>
-              </div>
-
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p class="text-sm font-medium text-blue-800 mb-2">Calculated Values</p>
-                <div class="grid grid-cols-4 gap-4 text-sm">
-                  <div><span class="text-blue-600">Gross Profit:</span> <strong>{{ liveCalc().grossProfit | currency:'ZAR':'symbol':'1.0-0' }}</strong></div>
-                  <div><span class="text-blue-600">Gross %:</span> <strong>{{ liveCalc().grossProfitPercentage }}%</strong></div>
-                  <div><span class="text-blue-600">Net Profit:</span> <strong>{{ liveCalc().netProfit | currency:'ZAR':'symbol':'1.0-0' }}</strong></div>
-                  <div><span class="text-blue-600">Net %:</span> <strong>{{ liveCalc().netProfitPercentage }}%</strong></div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gross Profit</label>
+                    <input type="text" [value]="liveCalc().grossProfit | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gross Profit %</label>
+                    <input type="text" [value]="liveCalc().grossProfitPercentage + '%'" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Net Profit</label>
+                    <input type="text" [value]="liveCalc().netProfit | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Net Profit %</label>
+                    <input type="text" [value]="liveCalc().netProfitPercentage + '%'" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+                  </div>
                 </div>
               </div>
 
@@ -127,10 +132,10 @@ interface LiveCalc {
                   <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Term Investments</label><input type="number" [(ngModel)]="shortTermInvestments" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
                   <div><label class="block text-sm font-medium text-gray-700 mb-1">Current Receivables</label><input type="number" [(ngModel)]="currentReceivables" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
                   <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Current Assets</label><input type="number" [(ngModel)]="totalCurrentAssets" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Assets</label><input type="number" [(ngModel)]="totalAssets" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Assets</label><input type="number" [(ngModel)]="totalAssets" (input)="recalc()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
                   <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Current Liabilities</label><input type="number" [(ngModel)]="totalCurrentLiabilities" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Liabilities</label><input type="number" [(ngModel)]="totalLiabilities" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Equity</label><input type="number" [(ngModel)]="totalEquity" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Liabilities</label><input type="number" [(ngModel)]="totalLiabilities" (input)="recalc()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+                  <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Equity</label><input type="text" [value]="liveEquity() | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" /></div>
                 </div>
               </div>
 
@@ -172,26 +177,14 @@ export class PublicFinancialSubmissionComponent implements OnInit {
   totalAssets = 0;
   totalCurrentLiabilities = 0;
   totalLiabilities = 0;
-  totalEquity = 0;
 
   private monthNames: Record<number, string> = {
     1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June',
     7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December',
   };
 
-  protected liveCalc = computed<LiveCalc>(() => {
-    const s = this.sales;
-    const c = this.costOfSales;
-    const o = this.operatingExpenses;
-    const gp = s - c;
-    const np = gp - o;
-    return {
-      grossProfit: gp,
-      grossProfitPercentage: s > 0 ? Math.round((gp / s) * 100) : 0,
-      netProfit: np,
-      netProfitPercentage: s > 0 ? Math.round((np / s) * 100) : 0,
-    };
-  });
+  protected liveCalc = signal<LiveCalc>({ grossProfit: 0, grossProfitPercentage: 0, netProfit: 0, netProfitPercentage: 0 });
+  protected liveEquity = signal<number>(0);
 
   constructor(
     private route: ActivatedRoute,
@@ -231,9 +224,23 @@ export class PublicFinancialSubmissionComponent implements OnInit {
     });
   }
 
-  protected recalc(): void {}
+  protected recalc(): void {
+    const s = this.sales ?? 0;
+    const c = this.costOfSales ?? 0;
+    const o = this.operatingExpenses ?? 0;
+    const gp = s - c;
+    const np = gp - o;
+    this.liveCalc.set({
+      grossProfit: gp,
+      grossProfitPercentage: s > 0 ? Math.round((gp / s) * 100) : 0,
+      netProfit: np,
+      netProfitPercentage: s > 0 ? Math.round((np / s) * 100) : 0,
+    });
+    this.liveEquity.set((this.totalAssets ?? 0) - (this.totalLiabilities ?? 0));
+  }
 
   submit(): void {
+    this.recalc();
     this.submitting.set(true);
     this.error.set(null);
 
@@ -260,7 +267,7 @@ export class PublicFinancialSubmissionComponent implements OnInit {
           total_assets: this.totalAssets,
           total_current_liabilities: this.totalCurrentLiabilities,
           total_liabilities: this.totalLiabilities,
-          total_equity: this.totalEquity,
+          total_equity: this.liveEquity(),
         },
       },
     };

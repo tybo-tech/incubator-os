@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
+import { Component, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinancialIndicatorData } from '../../../../../../services/financial-indicator.service';
@@ -58,17 +58,22 @@ import { LiveCalculations } from '../../models/financial-indicator.model';
                 <label class="block text-sm font-medium text-gray-700 mb-1">Operating Expenses</label>
                 <input type="number" [(ngModel)]="formData.incomeStatement.operatingExpenses" (input)="recalculate()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
               </div>
-            </div>
-          </div>
-
-          <!-- Live Calculations -->
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-sm font-medium text-blue-800 mb-2">Calculated Values (temporary - backend is source of truth)</p>
-            <div class="grid grid-cols-4 gap-4 text-sm">
-              <div><span class="text-blue-600">Gross Profit:</span> <strong>{{ liveCalc().grossProfit | currency:'ZAR':'symbol':'1.0-0' }}</strong></div>
-              <div><span class="text-blue-600">Gross %:</span> <strong>{{ liveCalc().grossProfitPercentage }}%</strong></div>
-              <div><span class="text-blue-600">Net Profit:</span> <strong>{{ liveCalc().netProfit | currency:'ZAR':'symbol':'1.0-0' }}</strong></div>
-              <div><span class="text-blue-600">Net %:</span> <strong>{{ liveCalc().netProfitPercentage }}%</strong></div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gross Profit</label>
+                <input type="text" [value]="liveCalc().grossProfit | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gross Profit %</label>
+                <input type="text" [value]="liveCalc().grossProfitPercentage + '%'" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Net Profit</label>
+                <input type="text" [value]="liveCalc().netProfit | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Net Profit %</label>
+                <input type="text" [value]="liveCalc().netProfitPercentage + '%'" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" />
+              </div>
             </div>
           </div>
 
@@ -81,10 +86,10 @@ import { LiveCalculations } from '../../models/financial-indicator.model';
               <div><label class="block text-sm font-medium text-gray-700 mb-1">Short Term Investments</label><input type="number" [(ngModel)]="formData.balanceSheet.shortTermInvestments" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
               <div><label class="block text-sm font-medium text-gray-700 mb-1">Current Receivables</label><input type="number" [(ngModel)]="formData.balanceSheet.currentReceivables" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
               <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Current Assets</label><input type="number" [(ngModel)]="formData.balanceSheet.totalCurrentAssets" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Assets</label><input type="number" [(ngModel)]="formData.balanceSheet.totalAssets" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Assets</label><input type="number" [(ngModel)]="formData.balanceSheet.totalAssets" (input)="recalculate()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
               <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Current Liabilities</label><input type="number" [(ngModel)]="formData.balanceSheet.totalCurrentLiabilities" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Liabilities</label><input type="number" [(ngModel)]="formData.balanceSheet.totalLiabilities" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
-              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Equity</label><input type="number" [(ngModel)]="formData.balanceSheet.totalEquity" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Liabilities</label><input type="number" [(ngModel)]="formData.balanceSheet.totalLiabilities" (input)="recalculate()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /></div>
+              <div><label class="block text-sm font-medium text-gray-700 mb-1">Total Equity</label><input type="text" [value]="liveBalance() | number" readonly class="w-full bg-gray-100 border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-600" /></div>
             </div>
           </div>
         </div>
@@ -92,7 +97,7 @@ import { LiveCalculations } from '../../models/financial-indicator.model';
         <!-- Footer -->
         <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200">
           <button (click)="close.emit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-          <button (click)="save.emit(formData)" [disabled]="saving()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button (click)="onSave()" [disabled]="saving()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
             {{ saving() ? 'Saving...' : (isEdit() ? 'Update' : 'Create') }}
           </button>
         </div>
@@ -115,7 +120,10 @@ export class FinancialFormComponent {
   ];
 
   protected formData: FinancialIndicatorData = this.emptyForm();
-  protected liveCalc = computed<LiveCalculations>(() => {
+  protected liveCalc = signal<LiveCalculations>(this.calcIncome());
+  protected liveBalance = signal<number>(0);
+
+  private calcIncome(): LiveCalculations {
     const s = this.formData.incomeStatement.sales ?? 0;
     const c = this.formData.incomeStatement.costOfSales ?? 0;
     const o = this.formData.incomeStatement.operatingExpenses ?? 0;
@@ -127,7 +135,13 @@ export class FinancialFormComponent {
       netProfit: np,
       netProfitPercentage: s > 0 ? Math.round((np / s) * 100) : 0,
     };
-  });
+  }
+
+  private calcEquity(): number {
+    const assets = this.formData.balanceSheet.totalAssets ?? 0;
+    const liabilities = this.formData.balanceSheet.totalLiabilities ?? 0;
+    return assets - liabilities;
+  }
 
   constructor() {
     effect(() => {
@@ -141,11 +155,20 @@ export class FinancialFormComponent {
       } else {
         this.formData = this.emptyForm();
       }
+      this.recalculate();
     });
   }
 
   protected recalculate(): void {
-    // Signal automatically recalculates via computed()
+    this.liveCalc.set(this.calcIncome());
+    const equity = this.calcEquity();
+    this.liveBalance.set(equity);
+    this.formData.balanceSheet.totalEquity = equity;
+  }
+
+  protected onSave(): void {
+    this.recalculate();
+    this.save.emit(this.formData);
   }
 
   private emptyForm(): FinancialIndicatorData {

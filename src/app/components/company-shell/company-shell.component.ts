@@ -124,11 +124,6 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-shield-alt'
     },
     {
-      label: 'Financial',
-      route: 'financials',
-      icon: 'fas fa-dollar-sign'
-    },
-    {
       label: 'Financial Indicators',
       route: 'financial-indicators',
       icon: 'fas fa-chart-bar'
@@ -148,6 +143,11 @@ export class CompanyShellComponent implements OnInit {
       label: 'Seed Funding',
       route: 'seed-funding',
       icon: 'fas fa-hand-holding-usd'
+    },
+    {
+      label: 'Financial (Legacy)',
+      route: 'financials',
+      icon: 'fas fa-dollar-sign'
     }
   ];
 
