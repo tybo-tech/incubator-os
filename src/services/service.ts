@@ -1,4 +1,4 @@
-const isLocalApi = !false;
+const isLocalApi = false;
 export const Constants = {
   Currency: 'ZAR', // Fixed: Use proper ISO currency code for South African Rand
   LocalUser: 'currentUser',
