@@ -1,11 +1,11 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CompanyModalComponent } from './company-modal/company-modal.component';
 import { CompanyFormModalComponent } from './company-form-modal/company-form-modal.component';
 import { RichCompanyCardComponent } from '../../admin/overview/components/rich-company-card.component';
 import { CompanyService, CompanyListOptions, CompanyListResponse } from '../../../services/company.service';
-import { ICompany } from '../../../models/simple.schema';
+import { IndustryService } from '../../../services/industry.service';
+import { ICompany, Industry } from '../../../models/simple.schema';
 import { Router } from '@angular/router';
 import { catchError, EMPTY, debounceTime, distinctUntilChanged } from 'rxjs';
 import { Subject } from 'rxjs';
@@ -13,13 +13,14 @@ import { Subject } from 'rxjs';
 @Component({
   selector: 'app-companies',
   standalone: true,
-  imports: [CommonModule, FormsModule, CompanyModalComponent, CompanyFormModalComponent, RichCompanyCardComponent],
+  imports: [CommonModule, FormsModule, CompanyFormModalComponent, RichCompanyCardComponent],
   templateUrl: './companies.component.html',
   styleUrl: './companies.component.scss',
 })
 export class CompaniesComponent implements OnInit {
   // State management with signals
   companies = signal<ICompany[]>([]);
+  industries = signal<Industry[]>([]);
   isLoading = signal(false);
   error = signal<string | null>(null);
 
@@ -34,7 +35,6 @@ export class CompaniesComponent implements OnInit {
   selectedIndustry = signal<number | null>(null);
 
   // Modal state
-  selectedCompany: ICompany | null = null;
   isModalOpen = false;
   isFormModalOpen = false;
   editMode = false;
@@ -43,7 +43,11 @@ export class CompaniesComponent implements OnInit {
   // Search debouncing
   private searchSubject = new Subject<string>();
 
-  constructor(private companyService: CompanyService, private router: Router) {
+  constructor(
+    private companyService: CompanyService,
+    private industryService: IndustryService,
+    private router: Router
+  ) {
     // Setup search debouncing
     this.searchSubject.pipe(
       debounceTime(300),
@@ -56,7 +60,15 @@ export class CompaniesComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadIndustries();
     this.loadCompanies();
+  }
+
+  loadIndustries() {
+    this.industryService.getActiveIndustries({ limit: 1000 }).subscribe({
+      next: (res) => this.industries.set(res.data.map(node => node.data)),
+      error: (err) => console.error('Error loading industries:', err),
+    });
   }
 
   loadCompanies() {
@@ -81,7 +93,7 @@ export class CompaniesComponent implements OnInit {
       // Map the API response to match the expected interface
       const mappedCompanies: ICompany[] = response.data.map((company: any) => ({
         ...company,
-        sector_name: company.service_offering, // Map service_offering to sector_name for display
+        sector_name: company.sector_name || company.industry?.name || company.service_offering,
       }));
 
       this.companies.set(mappedCompanies);
@@ -152,15 +164,13 @@ export class CompaniesComponent implements OnInit {
     return pageNum;
   }
 
-  openCompanyModal(company: ICompany) {
-    this.selectedCompany = company;
-    this.isModalOpen = true;
-      this.router.navigate(['/companies', company.id]);
+  trackByIndustry(index: number, industry: Industry): number {
+    return industry.id;
   }
 
-  closeCompanyModal() {
-    this.selectedCompany = null;
-    this.isModalOpen = false;
+  // Company navigation — all routes to the full Company Shell view
+  viewCompany(company: ICompany) {
+    this.router.navigate(['/company', company.id]);
   }
 
   // Company Form Modal Methods
@@ -168,16 +178,10 @@ export class CompaniesComponent implements OnInit {
     this.editMode = false;
     this.companyToEdit = null;
     this.isFormModalOpen = true;
-
   }
 
   openEditCompanyModal(company: ICompany) {
-    // this.editMode = true;
-    // this.companyToEdit = company;
-    // this.isFormModalOpen = true;
-
-    //companies/1
-    this.router.navigate(['/companies', company.id]);
+    this.viewCompany(company);
   }
 
   closeFormModal() {
@@ -250,12 +254,11 @@ export class CompaniesComponent implements OnInit {
 
   // Rich company card event handlers
   onCompanyCardClick(company: ICompany) {
-    this.selectedCompany = company;
-    this.isModalOpen = true;
+    this.viewCompany(company);
   }
 
   onCompanyViewClick(company: ICompany) {
-    this.router.navigate(['/companies', company.id]);
+    this.viewCompany(company);
   }
 
   onCompanyEditClick(company: ICompany) {

@@ -58,7 +58,9 @@
           (change)="onIndustryFilterChange($event)"
           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
           <option value="">All Industries</option>
-          <!-- Industry options would be loaded dynamically -->
+          <option *ngFor="let industry of industries(); trackBy: trackByIndustry" [value]="industry.id">
+            {{ industry.name }}
+          </option>
         </select>
         <select
           [value]="pageSize"
@@ -164,13 +166,6 @@
     </div>
   </div>
 </div>
-
-<!-- Company View Modal -->
-<app-company-modal
-  [company]="selectedCompany"
-  [isOpen]="isModalOpen"
-  (closeModal)="closeCompanyModal()">
-</app-company-modal>
 
 <!-- Company Form Modal -->
 <app-company-form-modal

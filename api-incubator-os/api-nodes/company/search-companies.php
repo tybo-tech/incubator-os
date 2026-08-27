@@ -3,6 +3,15 @@ include_once '../../config/Database.php';
 include_once '../../models/Company.php';
 
 $filters = $_GET;
+
+// Normalize search param: frontend sends `search`, model reads `q`
+if (isset($filters['search']) && !empty($filters['search'])) {
+    $filters['q'] = $filters['search'];
+} elseif (isset($filters['search']) && $filters['search'] === '') {
+    // empty search means no filter
+    unset($filters['search']);
+}
+
 $limit = isset($filters['limit']) ? (int)$filters['limit'] : 20;
 $offset = isset($filters['offset']) ? (int)$filters['offset'] : 0;
 $page = isset($filters['page']) ? (int)$filters['page'] : 1;
@@ -32,7 +41,9 @@ try {
         'data' => $companies,
         'pagination' => [
             'current_page' => $currentPage,
+            'page' => $currentPage,
             'per_page' => $limit,
+            'limit' => $limit,
             'total' => $totalCount,
             'pages' => $totalPages,
             'has_more' => $currentPage < $totalPages,
