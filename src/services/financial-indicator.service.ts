@@ -104,7 +104,7 @@ export interface CommandResult {
 
 @Injectable({ providedIn: 'root' })
 export class FinancialIndicatorService {
-  private baseUrl = `${Constants.ApiBase}/api/financial-indicators`;
+  private baseUrl = `${Constants.ApiBase}api/financial-indicators`;
 
   constructor(private http: HttpClient) {}
 

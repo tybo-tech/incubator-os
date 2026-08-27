@@ -1,7 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin, finalize, catchError, of, switchMap } from 'rxjs';
 import { FinancialIndicatorsFacade } from '../services/financial-indicators.facade';
+import { CompanyService } from '../../../../../services/company.service';
 import { FinancialIndicatorSummary, FinancialIndicatorResponse, FinancialIndicatorData, FinancialIndicatorSummaryResponse, AnnualReportResponse } from '../../../../../services/financial-indicator.service';
 import { FinancialIndicatorExportService } from '../../../../../services/financial-indicator-export.service';
 import { FinancialSummaryCardsComponent } from '../components/financial-summary/financial-summary-cards.component';
@@ -132,6 +134,7 @@ export class FinancialIndicatorsPageComponent implements OnInit {
     private route: ActivatedRoute,
     private facade: FinancialIndicatorsFacade,
     private exportService: FinancialIndicatorExportService,
+    private companyService: CompanyService,
   ) {}
 
   companyId = signal<number>(0);
@@ -160,8 +163,18 @@ export class FinancialIndicatorsPageComponent implements OnInit {
       const id = parseInt(params['id'], 10);
       if (id) {
         this.companyId.set(id);
+        this.loadCompanyName(id);
         this.loadAll();
       }
+    });
+  }
+
+  loadCompanyName(id: number): void {
+    this.companyService.getCompanyById(id).subscribe({
+      next: (company) => {
+        if (company?.name) this.companyName.set(company.name);
+      },
+      error: () => {},
     });
   }
 
@@ -172,24 +185,45 @@ export class FinancialIndicatorsPageComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const year = new Date().getFullYear();
+    // Load summary + records in parallel first so we can derive the latest
+    // financial year from the actual data (not the calendar year).
+    const summary$ = this.facade.getSummary(cid).pipe(
+      catchError((err) => {
+        this.error.set(err.error?.error || 'Failed to load summary.');
+        return of(null);
+      })
+    );
 
-    this.facade.getSummary(cid).subscribe({
-      next: (s) => { this.summary.set(s); },
-      error: () => {}
-    });
+    const records$ = this.facade.listByCompany(cid).pipe(
+      catchError((err) => {
+        this.error.set(err.error?.error || 'Failed to load monthly reports.');
+        return of(null);
+      })
+    );
 
-    this.facade.listByCompany(cid).subscribe({
-      next: (r) => { this.records.set(r); },
-      error: () => {}
-    });
+    forkJoin({ summary: summary$, records: records$ })
+      .pipe(
+        switchMap(({ summary, records }) => {
+          if (summary) this.summary.set(summary);
+          const list = records ?? [];
+          if (list.length) this.records.set(list);
 
-    this.facade.getAnnual(cid, year).subscribe({
-      next: (a) => { this.annualReport.set(a); },
-      error: () => {}
-    });
+          // Use the latest financial year present in the monthly records.
+          // Falls back to the summary's latest year, then the calendar year.
+          const year = this.resolveFinancialYear(list, summary);
 
-    this.loading.set(false);
+          return this.facade.getAnnual(cid, year).pipe(
+            catchError((err) => {
+              this.error.set(err.error?.error || 'Failed to load annual report.');
+              return of(null);
+            })
+          );
+        }),
+        finalize(() => this.loading.set(false))
+      )
+      .subscribe((annual) => {
+        if (annual) this.annualReport.set(annual);
+      });
   }
 
   openImport(): void {
@@ -203,9 +237,18 @@ export class FinancialIndicatorsPageComponent implements OnInit {
   async exportData(): Promise<void> {
     const cid = this.companyId();
     if (!cid) return;
-    const year = new Date().getFullYear();
+    const year = this.resolveFinancialYear(this.records(), this.summary());
     const name = this.companyName() || `Company_${cid}`;
     await this.exportService.exportAnnualReport(cid, year, name);
+  }
+
+  private resolveFinancialYear(records: FinancialIndicatorSummary[], summary: FinancialIndicatorSummaryResponse | null): number {
+    let year = 0;
+    for (const r of records) {
+      if (r.financialYear > year) year = r.financialYear;
+    }
+    if (!year && summary?.latestFinancialYear) year = summary.latestFinancialYear;
+    return year || new Date().getFullYear();
   }
 
   openCreate(): void {
