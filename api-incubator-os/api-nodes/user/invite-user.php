@@ -12,7 +12,17 @@ include_once '../../models/User.php';
 include_once '../../helpers/Mailer.php';
 
 // Require authenticated session
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'None',
+    ]);
+    session_start();
+}
 
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
