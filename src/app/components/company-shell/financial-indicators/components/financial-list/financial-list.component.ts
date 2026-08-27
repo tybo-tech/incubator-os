@@ -17,10 +17,12 @@ const MONTH_NAMES: Record<number, string> = {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Financial Year</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sales</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cost of Sales</th>
               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Gross Profit</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Operating Expenses</th>
               <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Net Profit</th>
               <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
@@ -29,10 +31,12 @@ const MONTH_NAMES: Record<number, string> = {
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr *ngFor="let item of records()" class="hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ item.financialYear }}</td>
+              <td class="px-4 py-3 text-lg font-bold text-blue-700">{{ item.financialYear }}</td>
               <td class="px-4 py-3 text-sm text-gray-700">{{ item.month > 0 ? (MONTH_NAMES[item.month] || item.month) : 'N/A' }}</td>
-              <td class="px-4 py-3 text-sm text-right text-gray-900">-</td>
+              <td class="px-4 py-3 text-sm text-right text-gray-900">{{ item.sales | currency:'ZAR':'symbol':'1.0-0' }}</td>
+              <td class="px-4 py-3 text-sm text-right text-gray-900">{{ item.costOfSales | currency:'ZAR':'symbol':'1.0-0' }}</td>
               <td class="px-4 py-3 text-sm text-right text-green-600 font-medium">{{ item.grossProfit | currency:'ZAR':'symbol':'1.0-0' }}</td>
+              <td class="px-4 py-3 text-sm text-right text-gray-900">{{ item.operatingExpenses | currency:'ZAR':'symbol':'1.0-0' }}</td>
               <td class="px-4 py-3 text-sm text-right" [class.text-green-600]="(item.netProfit ?? 0) >= 0" [class.text-red-600]="(item.netProfit ?? 0) < 0">
                 {{ item.netProfit | currency:'ZAR':'symbol':'1.0-0' }}
               </td>
@@ -57,7 +61,7 @@ const MONTH_NAMES: Record<number, string> = {
               </td>
             </tr>
             <tr *ngIf="records().length === 0">
-              <td colspan="8" class="px-4 py-8 text-center text-gray-500">No financial records found. Click "New Report" to create one.</td>
+              <td colspan="10" class="px-4 py-8 text-center text-gray-500">No financial records found. Click "New Report" to create one.</td>
             </tr>
           </tbody>
         </table>

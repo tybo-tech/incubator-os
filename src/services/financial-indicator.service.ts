@@ -53,6 +53,9 @@ export interface FinancialIndicatorSummary {
   id: number;
   financialYear: number;
   month: number;
+  sales: number | null;
+  costOfSales: number | null;
+  operatingExpenses: number | null;
   netProfit: number | null;
   grossProfit: number | null;
   status: string;
