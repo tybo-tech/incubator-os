@@ -114,10 +114,20 @@ class NormalizedMigrator
         return $this->migrate($companyIds, true);
     }
 
-    /** Clear normalized data for given companies (for re-migrate) */
+    /**
+     * Clear normalized data for given companies (for re-migrate).
+     * PROTECTED: CLI / dev-only. Production should create new batches, not delete live data.
+     * Requires either CLI execution or ALLOW_DESTRUCTIVE_MIGRATION=true env flag.
+     */
     public function clearForCompanies(array $companyIds): array
     {
         if (!$companyIds) throw new InvalidArgumentException("companyIds required for clear");
+        // Guard: only allow from CLI or explicit dev flag
+        $isCli = php_sapi_name() === 'cli';
+        $allowFlag = getenv('ALLOW_DESTRUCTIVE_MIGRATION') === 'true' || ($_ENV['ALLOW_DESTRUCTIVE_MIGRATION'] ?? '') === 'true';
+        if (!$isCli && !$allowFlag) {
+            throw new RuntimeException("clearForCompanies is CLI/dev-only. Set ALLOW_DESTRUCTIVE_MIGRATION=true for controlled re-migration, or use a new migration batch for production.");
+        }
         $companyIds = array_map('intval', $companyIds);
         $in = implode(',', array_fill(0, count($companyIds), '?'));
         $this->conn->beginTransaction();
@@ -229,7 +239,7 @@ class NormalizedMigrator
         $analysisId = (int)$this->conn->lastInsertId();
         $itemsCreated = 0; $itemsSkipped = 0;
 
-        // Extract 4 quadrants
+        // Extract 4 quadrants — now with legacy_path for deterministic identity
         $extracted = $this->extractSwotItems($data);
         foreach ($extracted as $item) {
             if (empty(trim((string)($item['description'] ?? ''))) ) { $itemsSkipped++; continue; }
@@ -237,7 +247,14 @@ class NormalizedMigrator
             $desc = trim((string)$item['description']);
             if ($this->isJunkDescription($desc)) { $itemsSkipped++; continue; }
 
-            $stmt2 = $this->conn->prepare("INSERT INTO swot_items (swot_analysis_id, category, description, impact, priority, status, recommended_response, owner_user_id, owner_label, target_date, date_added, legacy_source_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $legacyPath = $item['legacy_path'] ?? null;
+            // Idempotency via legacy_path + swot_analysis_id (UNIQUE)
+            if ($legacyPath) {
+                $chk = $this->conn->prepare("SELECT id FROM swot_items WHERE swot_analysis_id = ? AND legacy_path = ? LIMIT 1");
+                $chk->execute([$analysisId, $legacyPath]);
+                if ($chk->fetchColumn()) { $itemsSkipped++; continue; }
+            }
+            $stmt2 = $this->conn->prepare("INSERT INTO swot_items (swot_analysis_id, category, description, impact, priority, status, recommended_response, owner_user_id, owner_label, target_date, date_added, legacy_source_key, legacy_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt2->execute([
                 $analysisId,
                 $item['category'],
@@ -251,6 +268,7 @@ class NormalizedMigrator
                 $this->toDate($item['target_date'] ?? null),
                 $this->toDateTime($item['date_added'] ?? null),
                 $item['source_key'] ?? null,
+                $legacyPath,
             ]);
             $itemsCreated++;
         }
@@ -263,15 +281,15 @@ class NormalizedMigrator
         $out = [];
         // Primary shape: internal {strengths, weaknesses}, external {opportunities, threats}
         $quadrants = [
-            ['path'=>['internal','strengths'],'category'=>'strength'],
-            ['path'=>['internal','weaknesses'],'category'=>'weakness'],
-            ['path'=>['external','opportunities'],'category'=>'opportunity'],
-            ['path'=>['external','threats'],'category'=>'threat'],
+            ['path'=>['internal','strengths'],'category'=>'strength','legacy_prefix'=>'internal.strengths'],
+            ['path'=>['internal','weaknesses'],'category'=>'weakness','legacy_prefix'=>'internal.weaknesses'],
+            ['path'=>['external','opportunities'],'category'=>'opportunity','legacy_prefix'=>'external.opportunities'],
+            ['path'=>['external','threats'],'category'=>'threat','legacy_prefix'=>'external.threats'],
         ];
         foreach ($quadrants as $q) {
             $arr = $data[$q['path'][0]][$q['path'][1]] ?? null;
             if (!is_array($arr)) continue;
-            foreach ($arr as $item) {
+            foreach ($arr as $idx => $item) {
                 if (!is_array($item)) continue;
                 $out[] = [
                     'category' => $q['category'],
@@ -285,6 +303,7 @@ class NormalizedMigrator
                     'target_date' => $item['target_date'] ?? null,
                     'date_added' => $item['date_added'] ?? null,
                     'source_key' => $item['source_key'] ?? null,
+                    'legacy_path' => $q['legacy_prefix'] . "[$idx]",
                 ];
             }
         }
@@ -303,14 +322,15 @@ class NormalizedMigrator
         foreach (self::GPS_CATEGORIES as $cat) {
             $targets = $data[$cat]['targets'] ?? null;
             if (!is_array($targets)) continue;
-            foreach ($targets as $t) {
+            foreach ($targets as $idx => $t) {
                 if (!is_array($t)) continue;
                 $desc = trim((string)($t['description'] ?? ''));
                 if ($desc === '' || $this->isJunkDescription($desc)) { $targetsSkipped++; continue; }
 
-                // Idempotency: skip if same company+category+description already exists
-                $chk = $this->conn->prepare("SELECT id FROM gps_targets WHERE company_id = ? AND category = ? AND description = ? LIMIT 1");
-                $chk->execute([$companyId, $cat, $desc]);
+                $legacyPath = "$cat.targets[$idx]";
+                // Idempotency via legacy_node_id + legacy_path (UNIQUE), not description
+                $chk = $this->conn->prepare("SELECT id FROM gps_targets WHERE legacy_node_id = ? AND legacy_path = ? LIMIT 1");
+                $chk->execute([$legacyNodeId, $legacyPath]);
                 if ($chk->fetchColumn()) { $targetsSkipped++; continue; }
 
                 $title = trim((string)($t['title'] ?? ''));
@@ -325,7 +345,7 @@ class NormalizedMigrator
                 $evidence = $t['evidence'] ?? $t['success_evidence_required'] ?? null;
                 $assigned = $t['assigned_to'] ?? $t['owner_label'] ?? null;
 
-                $stmt = $this->conn->prepare("INSERT INTO gps_targets (company_id, category, title, description, priority, impact, status, owner_user_id, owner_label, due_date, progress_mode, manual_progress_percentage, success_evidence_required, legacy_node_id, completed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?, ?, ?, ?, ?)");
+                $stmt = $this->conn->prepare("INSERT INTO gps_targets (company_id, category, title, description, priority, impact, status, owner_user_id, owner_label, due_date, progress_mode, manual_progress_percentage, success_evidence_required, legacy_node_id, legacy_path, completed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?, ?, ?, ?, ?, ?)");
                 $completedAt = $status === 'completed' ? date('Y-m-d H:i:s') : null;
                 $stmt->execute([
                     $companyId,
@@ -341,6 +361,7 @@ class NormalizedMigrator
                     $progress,
                     $evidence,
                     $legacyNodeId,
+                    $legacyPath,
                     $completedAt,
                     $t['date_added'] ?? $node['created_at'] ?? date('Y-m-d H:i:s'),
                     $node['updated_at'] ?? date('Y-m-d H:i:s'),

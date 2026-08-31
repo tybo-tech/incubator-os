@@ -21,11 +21,13 @@ CREATE TABLE IF NOT EXISTS `swot_analyses` (
   `updated_by` INT DEFAULT NULL COMMENT 'FK -> users.id',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `current_company_id` INT GENERATED ALWAYS AS (CASE WHEN is_current = 1 THEN company_id ELSE NULL END) STORED COMMENT 'Enforces one current per company via UNIQUE',
   PRIMARY KEY (`id`),
   KEY `idx_swot_analyses_company` (`company_id`),
   KEY `idx_swot_analyses_company_current` (`company_id`, `is_current`),
   KEY `idx_swot_analyses_status` (`status`),
-  KEY `idx_swot_analyses_legacy` (`legacy_node_id`)
+  KEY `idx_swot_analyses_legacy` (`legacy_node_id`),
+  UNIQUE KEY `uq_swot_current_company` (`current_company_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -46,6 +48,7 @@ CREATE TABLE IF NOT EXISTS `swot_items` (
   `target_date` DATE DEFAULT NULL,
   `date_added` DATETIME DEFAULT NULL COMMENT 'Original JSON date_added',
   `legacy_source_key` VARCHAR(100) DEFAULT NULL COMMENT 'Original source_key for migration hint only',
+  `legacy_path` VARCHAR(255) DEFAULT NULL COMMENT 'Deterministic source identity e.g. internal.strengths[0]',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -54,6 +57,7 @@ CREATE TABLE IF NOT EXISTS `swot_items` (
   KEY `idx_swot_items_status` (`status`),
   KEY `idx_swot_items_priority` (`priority`),
   KEY `idx_swot_items_owner` (`owner_user_id`),
+  UNIQUE KEY `uq_swot_items_analysis_path` (`swot_analysis_id`, `legacy_path`),
   CONSTRAINT `fk_swot_items_analysis` FOREIGN KEY (`swot_analysis_id`) REFERENCES `swot_analyses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -77,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `gps_targets` (
   `manual_progress_percentage` DECIMAL(5,2) NOT NULL DEFAULT 0.00 COMMENT 'Used only when progress_mode=manual',
   `success_evidence_required` TEXT DEFAULT NULL COMMENT 'Rename of legacy evidence',
   `legacy_node_id` INT DEFAULT NULL COMMENT 'Source nodes.id for audit',
+  `legacy_path` VARCHAR(255) DEFAULT NULL COMMENT 'Deterministic source identity e.g. finance.targets[1]',
   `completed_at` DATETIME DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -87,7 +92,8 @@ CREATE TABLE IF NOT EXISTS `gps_targets` (
   KEY `idx_gps_targets_due` (`due_date`),
   KEY `idx_gps_targets_priority` (`priority`),
   KEY `idx_gps_targets_progress_mode` (`progress_mode`),
-  KEY `idx_gps_targets_legacy` (`legacy_node_id`)
+  KEY `idx_gps_targets_legacy` (`legacy_node_id`),
+  UNIQUE KEY `uq_gps_targets_node_path` (`legacy_node_id`, `legacy_path`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -166,7 +172,7 @@ CREATE TABLE IF NOT EXISTS `gps_target_metrics` (
   `metric_type_id` BIGINT NOT NULL COMMENT 'FK -> metric_types.id (metric_types.id is BIGINT in newer schema)',
   `baseline_value` DECIMAL(14,2) DEFAULT NULL,
   `target_value` DECIMAL(14,2) NOT NULL,
-  `current_value` DECIMAL(14,2) DEFAULT NULL COMMENT 'Read from metric_records or manual',
+  `current_value` DECIMAL(14,2) DEFAULT NULL COMMENT 'cached snapshot only — derive from metric_records in Sprint 006',
   `notes` TEXT DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

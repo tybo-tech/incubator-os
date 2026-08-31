@@ -8,7 +8,7 @@ class GpsTarget
     private const WRITABLE = [
         'company_id','category','title','description','priority','impact','status',
         'owner_user_id','owner_label','due_date','progress_mode','manual_progress_percentage',
-        'success_evidence_required','legacy_node_id','completed_at'
+        'success_evidence_required','legacy_node_id','legacy_path','completed_at'
     ];
 
     private const CATEGORIES = ['strategy_general','finance','sales_marketing','personal_development'];

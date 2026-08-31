@@ -5,6 +5,7 @@ class GpsTargetMetric
 {
     private PDO $conn;
 
+    // current_value is a cached snapshot only; once Sprint 006 wires metrics, derive from metric_records instead of dual-maintaining
     private const WRITABLE = ['gps_target_id','metric_type_id','baseline_value','target_value','current_value','notes'];
 
     public function __construct(PDO $db)

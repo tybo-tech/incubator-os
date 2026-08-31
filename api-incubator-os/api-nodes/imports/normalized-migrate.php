@@ -40,7 +40,16 @@ try {
             break;
 
         case 'clear':
+            // Protected: CLI/dev-only — see NormalizedMigrator::clearForCompanies() guard.
+            // In production, prefer a new migration batch over deleting live targets.
             if (!$companyIds) throw new InvalidArgumentException("companyIds required for clear");
+            $isCli = php_sapi_name() === 'cli';
+            $allowFlag = getenv('ALLOW_DESTRUCTIVE_MIGRATION') === 'true' || ($_ENV['ALLOW_DESTRUCTIVE_MIGRATION'] ?? '') === 'true';
+            if (!$isCli && !$allowFlag) {
+                http_response_code(403);
+                echo json_encode(['success'=>false,'error'=>'clear is CLI/dev-only. Set ALLOW_DESTRUCTIVE_MIGRATION=true for controlled re-migration. In production, create a new batch instead of clearing live data.'], JSON_PRETTY_PRINT);
+                break;
+            }
             $result = $migrator->clearForCompanies($companyIds);
             echo json_encode(['success'=>true,'action'=>'clear','data'=>$result], JSON_PRETTY_PRINT);
             break;

@@ -8,7 +8,7 @@ class SwotItem
     private const WRITABLE = [
         'swot_analysis_id', 'category', 'description', 'impact', 'priority',
         'status', 'recommended_response', 'owner_user_id', 'owner_label',
-        'target_date', 'date_added', 'legacy_source_key'
+        'target_date', 'date_added', 'legacy_source_key', 'legacy_path'
     ];
 
     private const CATEGORIES = ['strength','weakness','opportunity','threat'];

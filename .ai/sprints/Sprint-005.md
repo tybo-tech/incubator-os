@@ -29,16 +29,17 @@ erDiagram
 
 ## Tasks
 
-### Phase 1 — Schema (preserve `nodes`, add 7 tables)
+### Phase 1 — Schema (preserve `nodes`, add 7 tables) — **Corrections 2026-08-31**
 
-- [x] `migrations/2026-08-31-normalized-swot-gps.sql`
-  - [x] `swot_analyses` (`id, company_id, analysis_date, summary, status draft|completed|archived, is_current TINYINT, legacy_node_id, created_by, updated_by, created_at, updated_at`) — unique partial: one `is_current=1` per company enforced in app layer
-  - [x] `swot_items` (`id, swot_analysis_id, category strength|weakness|opportunity|threat, description, impact, priority, status, recommended_response, owner_user_id NULL, owner_label, target_date DATE NULL, legacy_source_key, created_at, updated_at`) — FK to swot_analyses
-  - [x] `gps_targets` (`id, company_id, category strategy_general|finance|sales_marketing|personal_development, title VARCHAR 255, description TEXT, priority, impact, status not_started|in_progress|at_risk|completed|cancelled, owner_user_id NULL, owner_label, due_date DATE NULL, progress_mode manual|tasks|metric, manual_progress_percentage DECIMAL 5,2, success_evidence_required TEXT, legacy_node_id, completed_at, created_at, updated_at`) — category on row, not container
+- [x] `migrations/2026-08-31-normalized-swot-gps.sql` (updated with 3 corrections)
+  - [x] `swot_analyses` (`id, company_id, analysis_date, summary, status draft|completed|archived, is_current TINYINT, legacy_node_id, created_by, updated_by, created_at, updated_at, current_company_id INT GENERATED ALWAYS AS (CASE WHEN is_current=1 THEN company_id ELSE NULL END) STORED UNIQUE`) — DB-enforced one current per company via `UNIQUE(current_company_id)` (MySQL allows multiple NULLs, only one non-null per company). App-layer `clearCurrentForCompany()` remains as fast path; DB is the guard against concurrent `is_current=1` races.
+  - [x] `swot_items` (`id, swot_analysis_id, category strength|weakness|opportunity|threat, description, impact, priority, status, recommended_response, owner_user_id NULL, owner_label, target_date DATE NULL, legacy_source_key, legacy_path VARCHAR(255) NULL e.g. internal.strengths[0], created_at, updated_at`) — FK to swot_analyses, `UNIQUE(swot_analysis_id, legacy_path)` for deterministic re-run safety; `legacy_node_id` alone is insufficient (one node contains 8 targets)
+  - [x] `gps_targets` (`id, company_id, category strategy_general|finance|sales_marketing|personal_development, title VARCHAR 255, description TEXT, priority, impact, status not_started|in_progress|at_risk|completed|cancelled, owner_user_id NULL, owner_label, due_date DATE NULL, progress_mode manual|tasks|metric, manual_progress_percentage DECIMAL 5,2, success_evidence_required TEXT, legacy_node_id, legacy_path VARCHAR(255) NULL e.g. finance.targets[1], completed_at, created_at, updated_at`) — `UNIQUE(legacy_node_id, legacy_path)` for true idempotency; do not depend on `company+category+description` (same wording can be legitimately duplicated)
   - [x] `gps_target_sources` (`id, gps_target_id, source_type swot_item|coaching|assessment|programme|funder|manual|legacy_unlinked, swot_item_id NULL, notes, created_at, updated_at`) — many-to-many SWOT↔GPS
   - [x] `gps_target_tasks` (`id, gps_target_id, title, description, owner_user_id NULL, owner_label, due_date DATE NULL, status not_started|in_progress|completed|blocked, sort_order SMALLINT, completed_at, created_at, updated_at`)
   - [x] `gps_target_updates` (`id, gps_target_id, progress_percentage DECIMAL 5,2, status VARCHAR 50, note TEXT, recorded_by INT NULL, recorded_at DATETIME, created_at, updated_at`)
-  - [x] `gps_target_metrics` (`id, gps_target_id, metric_type_id BIGINT FK to metric_types, baseline_value, target_value, current_value, notes, created_at, updated_at`)
+  - [x] `gps_target_metrics` (`id, gps_target_id, metric_type_id BIGINT FK to metric_types, baseline_value, target_value, current_value DECIMAL 14,2 COMMENT 'cached snapshot only — derive from metric_records in Sprint 006', notes, created_at, updated_at`)
+  - [x] Patch `migrations/2026-08-31b-patch-legacy-path.sql` — for existing installs that already ran the first version: adds `legacy_path` columns + uniques + generated column if missing (idempotent)
   - [x] Indexes: `company_id`, `category`, `status`, `due_date`, `is_current`, foreign keys
 
 ### Phase 2 — PHP Models / Repositories (PDO, strict_types, WRITABLE, JSON response envelope)
@@ -69,19 +70,21 @@ erDiagram
   - [x] Reads `nodes` where `type = 'swot_analysis'` / `'gps_targets'`
   - [x] Deduplicates: group by `company_id`, select **latest `updated_at`** row per company+type (flag others as `legacy_duplicate` in log, do not auto-merge)
   - [x] For first sprint, migrate controlled sample: `59, 107, 126` (meaningful real data) — exposed as `companyIds` param
-  - [x] SWOT: one `swot_analyses` row per selected node → N `swot_items` rows for each of the 4 arrays (`internal.strengths`, `internal.weaknesses`, `external.opportunities`, `external.threats`) — skip empty `description`, map `action_required → recommended_response`, `assigned_to → owner_label`, preserve `impact/priority/status/target_date/date_added`
-  - [x] GPS: one `gps_targets` row per object in all 4 category arrays — map `description → description`, generate `title` (first 80 chars), `evidence → success_evidence_required`, `due_date → due_date`, `progress_percentage → manual_progress_percentage`, `category` on row, default `progress_mode=manual`
+  - [x] SWOT: one `swot_analyses` row per selected node → N `swot_items` rows for each of the 4 arrays (`internal.strengths`, `internal.weaknesses`, `external.opportunities`, `external.threats`) — skip empty `description`, map `action_required → recommended_response`, `assigned_to → owner_label`, preserve `impact/priority/status/target_date/date_added`, set `legacy_path` as `internal.strengths[0]` etc. for deterministic `UNIQUE(swot_analysis_id, legacy_path)` idempotency
+  - [x] GPS: one `gps_targets` row per object in all 4 category arrays — map `description → description`, generate `title` (first 80 chars), `evidence → success_evidence_required`, `due_date → due_date`, `progress_percentage → manual_progress_percentage`, `category` on row, default `progress_mode=manual`, set `legacy_path` as `finance.targets[1]` etc. for `UNIQUE(legacy_node_id, legacy_path)` (never `company+category+description`)
   - [x] Owner handling: attempt to resolve `owner_user_id` if `assigned_to` matches a user email/name, else leave NULL and keep `owner_label`
   - [x] Sources: default `legacy_unlinked` — do NOT auto-link via `source_key`; optionally log hint `source_key` for manual review
+  - [x] `clearForCompanies()` is now **CLI/dev-only** — guarded by `php_sapi_name()==='cli'` or `ALLOW_DESTRUCTIVE_MIGRATION=true`; HTTP `clear` action returns 403 otherwise. Production should create a new batch, not delete live targets.
   - [x] Dry-run mode + detailed import summary (nodes processed, items created, skipped duplicates, errors)
-- [x] CLI / endpoint: `api-nodes/imports/normalized-migrate.php` — accepts `companyIds[]`, `dryRun`, returns JSON summary
+- [x] CLI / endpoint: `api-nodes/imports/normalized-migrate.php` — accepts `companyIds[]`, `dryRun`, returns JSON summary; `clear` is protected (403 unless CLI/dev flag)
 
 ### Phase 5 — Verification
 
 - [x] Sample migration dry-run for `59, 107, 126` — verify counts match dump (59: 1 swot_item + 1 target; 107: 12 swot_items + 8 targets; 126: 8 items — dump parse hit encoding edge but live DB will parse; simulated via python)
 - [x] Verify `nodes` untouched (audit source still intact — migrator never writes to `nodes`)
-- [x] PHP lint `php -l` passes for all 7 models + 25 endpoints (0 errors)
-- [x] Session doc `.ai/sessions/007-2026-08-31.md` + update this sprint file (Rule of Three)
+- [x] PHP lint `php -l` passes for all 7 models + 33 endpoints (6+5+7+4+5+3+3=33, sprint doc corrected from 25) — 0 errors
+- [x] `gps_target_metrics.current_value` treated as cached snapshot only (Sprint 006 will derive from `metric_records` instead of dual-maintaining)
+- [x] Session doc `.ai/sessions/007-2026-08-31.md` + update this sprint file + patch file (Rule of Three)
 
 ## Out of Scope for Sprint 005
 
