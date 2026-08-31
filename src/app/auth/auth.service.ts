@@ -76,6 +76,10 @@ export class AuthService {
     return this.hasRole('System Administrator', 'Coordinator');
   }
 
+  isSystemAdministrator(): boolean {
+    return this.hasRole('System Administrator');
+  }
+
   private loadFromStorage(): User | null {
     try {
       const raw = localStorage.getItem(this.storageKey);

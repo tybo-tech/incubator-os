@@ -19,8 +19,11 @@ import { MigrationService } from '../../normalized/services/migration.service';
       <div class="flex flex-wrap gap-3 items-end">
         <div class="flex-1 min-w-[240px]">
           <label class="text-xs font-semibold text-slate-600">Company IDs (comma separated)</label>
-          <input [(ngModel)]="companyIdsInput" placeholder="11 or 59,11" class="w-full border rounded-lg px-3 py-2 text-sm" />
+          <input [(ngModel)]="companyIdsInput" (ngModelChange)="onIdsChange()" placeholder="11 or 59,11" class="w-full border rounded-lg px-3 py-2 text-sm" />
           <p class="text-xs text-slate-400 mt-1">Explicit list required — never migrate all implicitly. Local demo: 11. Prod demo: 59,11.</p>
+          @if (preview() && !isPreviewCurrent()) {
+            <p class="text-xs text-amber-600 mt-1">Preview is stale — company IDs changed. Re-run preview before migrating.</p>
+          }
         </div>
         <button (click)="doPreview()" [disabled]="loading()" class="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm disabled:opacity-50">Preview migration</button>
       </div>
@@ -54,7 +57,13 @@ import { MigrationService } from '../../normalized/services/migration.service';
             <label class="text-xs font-semibold">Confirm phrase to migrate</label>
             <input [(ngModel)]="confirmInput" placeholder="MIGRATE_NORMALIZED_SWOT_GPS" class="w-full border rounded-lg px-3 py-2 text-sm font-mono" />
             <button (click)="doMigrate()" [disabled]="!canMigrate() || loading()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-50">Run migration</button>
-            <p class="text-xs text-slate-400">Button disabled until preview success and exact phrase typed.</p>
+            <p class="text-xs text-slate-400">Button disabled until preview success for the exact company IDs, no errors, and exact phrase typed.</p>
+            @if (preview() && hasPreviewErrors()) {
+              <p class="text-xs text-red-600">Preview reports errors — fix source data before migrating.</p>
+            }
+            @if (preview() && !isPreviewCurrent()) {
+              <p class="text-xs text-amber-600">Cannot migrate — preview was for [{{ previewedCompanyIds()?.join(', ') }}] but input is now [{{ parseIds().join(', ') }}]. Re-preview.</p>
+            }
           </div>
         </div>
       }
@@ -74,21 +83,22 @@ import { MigrationService } from '../../normalized/services/migration.service';
       @if (audits().length) {
         <div class="border rounded-lg overflow-auto">
           <table class="w-full text-xs">
-            <thead class="bg-slate-100"><tr><th class="text-left p-2">When</th><th class="text-left p-2">User</th><th class="text-left p-2">Action</th><th class="text-left p-2">Companies</th><th class="text-left p-2">Status</th><th class="text-left p-2">Summary</th></tr></thead>
+            <thead class="bg-slate-100"><tr><th class="text-left p-2">Date</th><th class="text-left p-2">Type</th><th class="text-left p-2">Migration</th><th class="text-left p-2">Description</th><th class="text-left p-2">User</th><th class="text-left p-2">Status</th></tr></thead>
             <tbody>
               @for (a of audits(); track a.id) {
                 <tr class="border-t">
-                  <td class="p-2">{{ a.created_at }}</td>
-                  <td class="p-2">{{ a.user_email || a.user_id }} <span class="text-slate-400">{{ a.user_role }}</span></td>
-                  <td class="p-2">{{ a.action }}</td>
-                  <td class="p-2">{{ a.company_ids?.join(', ') }}</td>
-                  <td class="p-2">{{ a.status }}</td>
-                  <td class="p-2 max-w-xs truncate" title="{{ a.result_summary | json }}">{{ a.result_summary?.swot?.items_created }}/{{ a.result_summary?.gps?.targets_created }} items/targets</td>
+                  <td class="p-2">{{ a.created_at | date:'short' }}</td>
+                  <td class="p-2">{{ a.operation_type || a.action }}</td>
+                  <td class="p-2">{{ a.migration_key || '—' }}<div class="text-slate-400">{{ a.title || '' }}</div></td>
+                  <td class="p-2 max-w-xs" title="{{ a.description }}">{{ a.description || a.result_summary?.swot?.items_created + '/' + a.result_summary?.gps?.targets_created + ' items/targets' }}</td>
+                  <td class="p-2">{{ a.user_email || a.user_id }}<div class="text-slate-400">{{ a.user_role }} · {{ a.environment || '' }}</div></td>
+                  <td class="p-2"><span class="px-2 py-0.5 rounded text-white" [class.bg-emerald-600]="a.status==='success'" [class.bg-red-600]="a.status==='error'" [class.bg-slate-400]="a.status!=='success' && a.status!=='error'">{{ a.status }}</span><div class="text-slate-400">{{ a.commit_sha?.slice(0,7) || '' }}</div></td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
+        <p class="text-xs text-slate-400">Preview attempts remain in detailed history; main view emphasizes completed migrations with durable description.</p>
       }
     </div>
 
@@ -105,13 +115,43 @@ export class DataMigrationPage {
   loading = signal(false);
   error = signal<string | null>(null);
   preview = signal<any | null>(null);
+  previewedCompanyIds = signal<number[] | null>(null);
   migrateResult = signal<any | null>(null);
   audits = signal<any[]>([]);
 
-  canMigrate = computed(() => !!this.preview() && this.confirmInput === 'MIGRATE_NORMALIZED_SWOT_GPS');
+  hasPreviewErrors = computed(() => {
+    const p = this.preview();
+    if (!p) return false;
+    return ((p.swot?.errors?.length || 0) + (p.gps?.errors?.length || 0)) > 0;
+  });
 
-  private parseIds(): number[] {
+  isPreviewCurrent = computed(() => {
+    const previewed = this.previewedCompanyIds();
+    if (!previewed || !this.preview()) return false;
+    const cur = this.parseIds().slice().sort((a,b)=>a-b);
+    const prev = previewed.slice().sort((a,b)=>a-b);
+    if (cur.length !== prev.length) return false;
+    return cur.every((v,i)=> v===prev[i]);
+  });
+
+  canMigrate = computed(() => {
+    if (!this.preview() || !this.isPreviewCurrent()) return false;
+    if (this.confirmInput !== 'MIGRATE_NORMALIZED_SWOT_GPS') return false;
+    if (this.hasPreviewErrors()) return false;
+    return true;
+  });
+
+  parseIds(): number[] {
     return this.companyIdsInput.split(',').map(s => parseInt(s.trim(),10)).filter(n=>Number.isFinite(n) && n>0);
+  }
+
+  onIdsChange(): void {
+    // Invalidate preview when input diverges from previewed IDs
+    if (this.preview() && !this.isPreviewCurrent()) {
+      // keep preview visible but canMigrate will be false and stale warning shown
+      // Optionally clear migrateResult
+      this.migrateResult.set(null);
+    }
   }
 
   doPreview(): void {
@@ -119,7 +159,7 @@ export class DataMigrationPage {
     if (!ids.length) { this.error.set('companyIds required — e.g. 11 or 59,11'); return; }
     this.loading.set(true); this.error.set(null); this.migrateResult.set(null);
     this.svc.preview(ids).subscribe({
-      next: res => { this.preview.set(res.data); this.loading.set(false); this.loadAudits(); },
+      next: res => { this.preview.set(res.data); this.previewedCompanyIds.set(ids.slice()); this.loading.set(false); this.loadAudits(); },
       error: err => { this.error.set(err.error?.error || err.message); this.loading.set(false); }
     });
   }

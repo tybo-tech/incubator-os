@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
-import { adminGuard } from './auth/admin.guard';
+import { adminGuard, migrationAdminGuard } from './auth/admin.guard';
 import { CompaniesComponent } from './components/companies/companies.component';
 import { CompanyDetailComponent } from './components/companies/company-detail/company-detail.component';
 import { DynamicCompanyDetailComponent } from './components/dynamic-company-detail/dynamic-company-detail.component';
@@ -327,7 +327,7 @@ export const routes: Routes = [
       {
         path: 'admin/system-tools/data-migration',
         loadComponent: () => import('./features/admin/data-migration/data-migration.page').then(m => m.DataMigrationPage),
-        canActivate: [authGuard, adminGuard],
+        canActivate: [authGuard, migrationAdminGuard],
       },
       {
         path: 'admin/grouping',

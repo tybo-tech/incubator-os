@@ -8,3 +8,11 @@ export const adminGuard: CanActivateFn = () => {
   if (auth.isAdmin()) return true;
   return router.createUrlTree(['/']);
 };
+
+export const migrationAdminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  // Migration is System Administrator only — Coordinator cannot execute data migrations
+  if (auth.isSystemAdministrator()) return true;
+  return router.createUrlTree(['/']);
+};

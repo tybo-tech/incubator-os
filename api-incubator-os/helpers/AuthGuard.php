@@ -77,6 +77,13 @@ function auth_is_admin(array $user): bool
         || in_array($user['role'] ?? '', ['System Administrator','Coordinator'], true);
 }
 
+function auth_is_migration_admin(array $user): bool
+{
+    // Migration is System Administrator only — Coordinator is not permitted to run data migrations
+    $role = strtolower(trim((string)($user['role'] ?? '')));
+    return $role === 'system administrator' || ($user['role'] ?? '') === 'System Administrator';
+}
+
 function auth_require_company_access(array $user, int $companyId): void
 {
     if ($companyId <= 0) return; // nothing to check

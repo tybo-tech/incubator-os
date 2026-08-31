@@ -18,8 +18,32 @@ include_once '../../config/headers.php';
 
 function audit_migration(PDO $db, ?array $authUser, string $action, array $companyIds, ?string $confirm, array $result, string $status, ?string $errorMessage): void
 {
+    // Canonical durable reporting for the normalized SWOT/GPS data migration
+    $canonical = [
+        'operation_type' => 'data_migration',
+        'migration_key'  => '2026-08-31-normalized-swot-gps',
+        'title'          => 'Normalize SWOT and GPS records',
+        'description'    => 'Migrated legacy SWOT analyses and GPS targets from JSON nodes into normalized relational tables to support individual identities, relationships, tasks, progress tracking and dashboard reporting. Legacy nodes were retained as an archive.',
+    ];
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $env = 'production';
+    if (str_contains($host, 'localhost') || str_contains($host, '127.0.0.1') || $host === '') $env = 'local';
+    elseif (str_contains($host, 'staging')) $env = 'staging';
+    $commitSha = getenv('GIT_COMMIT_SHA') ?: getenv('COMMIT_SHA') ?: getenv('GIT_COMMIT') ?: null;
+    // Try to read .git HEAD as fallback (local dev only)
+    if (!$commitSha && is_file(__DIR__ . '/../../../.git/HEAD')) {
+        $head = @file_get_contents(__DIR__ . '/../../../.git/HEAD');
+        if ($head && str_starts_with(trim($head), 'ref:')) {
+            $ref = trim(substr(trim($head), 5));
+            $refFile = __DIR__ . '/../../../.git/' . $ref;
+            if (is_file($refFile)) $commitSha = trim((string)@file_get_contents($refFile));
+        } elseif ($head) {
+            $commitSha = trim($head);
+        }
+    }
+
     try {
-        // Ensure table exists (migration may not have run yet in dev) — best-effort
+        // Ensure table exists (migration may not have run yet in dev) — best-effort, with durable columns
         $db->exec("CREATE TABLE IF NOT EXISTS `normalized_migration_audits` (
           `id` BIGINT NOT NULL AUTO_INCREMENT,
           `user_id` INT DEFAULT NULL,
@@ -33,13 +57,28 @@ function audit_migration(PDO $db, ?array $authUser, string $action, array $compa
           `status` ENUM('success','error') NOT NULL DEFAULT 'success',
           `error_message` TEXT DEFAULT NULL,
           `ip_address` VARCHAR(45) DEFAULT NULL,
+          `operation_type` ENUM('schema_migration','data_migration','backfill','repair','cleanup') NOT NULL DEFAULT 'data_migration',
+          `migration_key` VARCHAR(100) DEFAULT NULL,
+          `title` VARCHAR(255) DEFAULT NULL,
+          `description` TEXT DEFAULT NULL,
+          `environment` ENUM('local','staging','production') DEFAULT NULL,
+          `commit_sha` VARCHAR(40) DEFAULT NULL,
           `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
+        // Add columns if table existed before patch (idempotent)
+        try {
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `operation_type` ENUM('schema_migration','data_migration','backfill','repair','cleanup') NOT NULL DEFAULT 'data_migration'");
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `migration_key` VARCHAR(100) DEFAULT NULL");
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `title` VARCHAR(255) DEFAULT NULL");
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `description` TEXT DEFAULT NULL");
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `environment` ENUM('local','staging','production') DEFAULT NULL");
+            $db->exec("ALTER TABLE `normalized_migration_audits` ADD COLUMN IF NOT EXISTS `commit_sha` VARCHAR(40) DEFAULT NULL");
+        } catch (Throwable $e) { /* MySQL 8.0.43 may not support ADD COLUMN IF NOT EXISTS — ignore, patch handles it */ }
     } catch (Throwable $e) { /* ignore */ }
 
     try {
-        $stmt = $db->prepare("INSERT INTO normalized_migration_audits (user_id, user_email, user_role, action, company_ids, confirm_provided, result_summary, errors, status, error_message, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $db->prepare("INSERT INTO normalized_migration_audits (user_id, user_email, user_role, action, company_ids, confirm_provided, result_summary, errors, status, error_message, ip_address, operation_type, migration_key, title, description, environment, commit_sha) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $userId = $authUser['id'] ?? null;
         $userEmail = $authUser['email'] ?? $authUser['username'] ?? null;
         $userRole = $authUser['role'] ?? null;
@@ -66,6 +105,12 @@ function audit_migration(PDO $db, ?array $authUser, string $action, array $compa
             $status,
             $errorMessage,
             $ip,
+            $canonical['operation_type'],
+            $canonical['migration_key'],
+            $canonical['title'],
+            $canonical['description'],
+            $env,
+            $commitSha ? substr($commitSha, 0, 40) : null,
         ]);
     } catch (Throwable $e) {
         // Audit failure must not break migration — log to error_log
@@ -145,11 +190,11 @@ try {
         exit;
     }
 
-    // Auth: must be logged-in System Administrator
+    // Auth: must be logged-in System Administrator — strict (Coordinator cannot migrate; use auth_is_admin for general admin, but migration is SA-only)
     $authUser = auth_require_user($db);
-    if (!auth_is_admin($authUser)) {
+    if (!auth_is_migration_admin($authUser)) {
         http_response_code(403);
-        echo json_encode(['success'=>false,'error'=>'Forbidden — preview/migrate requires System Administrator.'], JSON_PRETTY_PRINT);
+        echo json_encode(['success'=>false,'error'=>'Forbidden — preview/migrate requires System Administrator (Coordinator not permitted).'], JSON_PRETTY_PRINT);
         exit;
     }
 
