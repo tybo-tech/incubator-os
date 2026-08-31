@@ -1,12 +1,26 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/GpsTargetMetric.php';
+include_once '../../models/User.php';
+include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
 try {
     $db = (new Database())->connect();
     $model = new GpsTargetMetric($db);
     $input = json_decode(file_get_contents('php://input'), true);
     if (!$input) $input = $_POST;
+
+    $authUser = auth_require_user($db);
+    $authInput = $input ?? [];
+    if (!is_array($authInput)) $authInput = [];
+    auth_enforce_request($db, $authUser, array_merge($_GET, $authInput));
+    $checkId = (int)($input['id'] ?? $_GET['id'] ?? 0);
+    if ($checkId) {
+        $stmtTmp = $db->prepare("SELECT gps_target_id FROM gps_target_metrics WHERE id = ?");
+        $stmtTmp->execute([$checkId]);
+        $tmpGps = $stmtTmp->fetchColumn();
+        if ($tmpGps) auth_require_target_access($db, $authUser, (int)$tmpGps);
+    }
     $id = (int)($input['id'] ?? $_GET['id'] ?? 0);
     if ($id) { echo json_encode(['success'=>$model->detach($id)]); return; }
     $gpsId = (int)($input['gps_target_id'] ?? 0);

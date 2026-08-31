@@ -1,4 +1,4 @@
-const isLocalApi = !false;
+const isLocalApi = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 export const Constants = {
   Currency: 'ZAR', // Fixed: Use proper ISO currency code for South African Rand
   LocalUser: 'currentUser',

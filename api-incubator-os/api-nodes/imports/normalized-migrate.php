@@ -1,11 +1,25 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/NormalizedMigrator.php';
+include_once '../../models/User.php';
+include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
 
 try {
     $database = new Database();
     $db = $database->connect();
+
+    // All migrator HTTP access requires authentication
+    $isCli = php_sapi_name() === 'cli';
+    if (!$isCli) {
+        $authUser = auth_require_user($db);
+        // Only admins may run migrator via HTTP (if ever allowed); prefer CLI
+        if (!auth_is_admin($authUser)) {
+            http_response_code(403);
+            echo json_encode(['success'=>false,'error'=>'Forbidden — migrator is admin/CLI-only.']);
+            exit;
+        }
+    }
     $migrator = new NormalizedMigrator($db);
 
     $method = $_SERVER['REQUEST_METHOD'];
@@ -33,6 +47,16 @@ try {
 
         case 'migrate':
         case 'import':
+        case 'migrate-all':
+            // P0: migrator is CLI-only — do not allow HTTP populate for all companies
+            if (!$isCli) {
+                $allowHttpMigrate = getenv('ALLOW_HTTP_MIGRATE') === 'true';
+                if (!$allowHttpMigrate) {
+                    http_response_code(403);
+                    echo json_encode(['success'=>false,'error'=>'migrate is CLI-only. Run via php api-nodes/imports/normalized-migrate-cli.php or set ALLOW_HTTP_MIGRATE=true for emergency dev use.'], JSON_PRETTY_PRINT);
+                    break;
+                }
+            }
             if (!$companyIds && !$explicitAll) $companyIds = [59,107,126];
             if ($explicitAll) $companyIds = [];
             $result = $migrator->migrate($companyIds, $dryRun);

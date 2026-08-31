@@ -30,6 +30,11 @@ class GpsTargetSource
         $this->assertGpsExists($f['gps_target_id']);
         if ($f['swot_item_id']) $this->assertSwotItemExists($f['swot_item_id']);
 
+        // P1: same-company assertion
+        if ($f['swot_item_id']) {
+            $this->assertSameCompany($f['gps_target_id'], $f['swot_item_id']);
+        }
+
         // upsert: if same pair exists, update notes
         if ($f['swot_item_id']) {
             $existing = $this->findLink($f['gps_target_id'], $f['swot_item_id']);
@@ -43,7 +48,15 @@ class GpsTargetSource
         $sql = "INSERT INTO gps_target_sources (" . implode(',', $cols) . ") VALUES (" . implode(',', $ph) . ")";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(array_values($f));
-        return $this->getById((int)$this->conn->lastInsertId());
+        $newId = (int)$this->conn->lastInsertId();
+
+        // P1: when a real SWOT link is created, remove the placeholder legacy_unlinked row
+        if ($f['source_type'] === 'swot_item' && $f['swot_item_id']) {
+            $del = $this->conn->prepare("DELETE FROM gps_target_sources WHERE gps_target_id = ? AND source_type = 'legacy_unlinked' AND id != ?");
+            $del->execute([$f['gps_target_id'], $newId]);
+        }
+
+        return $this->getById($newId);
     }
 
     public function update(int $id, array $data): ?array
@@ -132,6 +145,20 @@ class GpsTargetSource
         $stmt = $this->conn->prepare("SELECT id FROM swot_items WHERE id = ?");
         $stmt->execute([$id]);
         if (!$stmt->fetchColumn()) throw new RuntimeException("swot_items id $id not found");
+    }
+
+    private function assertSameCompany(int $gpsTargetId, int $swotItemId): void
+    {
+        $stmt = $this->conn->prepare("SELECT company_id FROM gps_targets WHERE id = ?");
+        $stmt->execute([$gpsTargetId]);
+        $gpsCompany = $stmt->fetchColumn();
+        $stmt2 = $this->conn->prepare("SELECT sa.company_id FROM swot_items si JOIN swot_analyses sa ON sa.id = si.swot_analysis_id WHERE si.id = ?");
+        $stmt2->execute([$swotItemId]);
+        $swotCompany = $stmt2->fetchColumn();
+        if ($gpsCompany === false || $swotCompany === false) return;
+        if ((int)$gpsCompany !== (int)$swotCompany) {
+            throw new RuntimeException("Cannot link target (company $gpsCompany) to SWOT item (company $swotCompany) — cross-company links are not allowed.");
+        }
     }
 
     private function filterWritable(array $data): array

@@ -1,11 +1,17 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/SwotAnalysis.php';
+include_once '../../models/User.php';
+include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
 
 try {
     $database = new Database();
     $db = $database->connect();
+    $authUser = auth_require_user($db);
+    $authInput = $input ?? [];
+    if (!is_array($authInput)) $authInput = [];
+    auth_enforce_request($db, $authUser, array_merge($_GET, $authInput));
     $model = new SwotAnalysis($db);
     $id = (int)($_GET['id'] ?? 0);
     if (!$id) throw new InvalidArgumentException("id is required");

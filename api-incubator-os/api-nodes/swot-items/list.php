@@ -1,9 +1,15 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/SwotItem.php';
+include_once '../../models/User.php';
+include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
 try {
     $db = (new Database())->connect();
+    $authUser = auth_require_user($db);
+    $authInput = $input ?? [];
+    if (!is_array($authInput)) $authInput = [];
+    auth_enforce_request($db, $authUser, array_merge($_GET, $authInput));
     $model = new SwotItem($db);
     $filters = [];
     if (isset($_GET['swot_analysis_id'])) $filters['swot_analysis_id'] = (int)$_GET['swot_analysis_id'];

@@ -26,6 +26,7 @@ class GpsTargetUpdate
         if (isset($f['recorded_by']) && $f['recorded_by'] !== null) $f['recorded_by'] = (int)$f['recorded_by'];
 
         // also update the parent target's manual progress if mode=manual
+        // Fix: previously bypassed GpsTarget::update() so completed_at was never set
         $this->conn->beginTransaction();
         try {
             $cols = array_keys($f);
@@ -34,9 +35,15 @@ class GpsTargetUpdate
             $stmt = $this->conn->prepare($sql);
             $stmt->execute(array_values($f));
             $id = (int)$this->conn->lastInsertId();
-            // sync parent if manual mode
-            $stmt2 = $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = ?, updated_at = NOW() WHERE id = ? AND progress_mode = 'manual'");
-            $stmt2->execute([$f['progress_percentage'], $this->mapToGpsStatus($f['status']), $f['gps_target_id']]);
+            // sync parent if manual mode — also set completed_at correctly
+            $mappedStatus = $this->mapToGpsStatus($f['status']);
+            if ($mappedStatus === 'completed') {
+                $stmt2 = $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = ?, completed_at = COALESCE(completed_at, NOW()), updated_at = NOW() WHERE id = ? AND progress_mode = 'manual'");
+                $stmt2->execute([$f['progress_percentage'], $mappedStatus, $f['gps_target_id']]);
+            } else {
+                $stmt2 = $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = ?, completed_at = NULL, updated_at = NOW() WHERE id = ? AND progress_mode = 'manual'");
+                $stmt2->execute([$f['progress_percentage'], $mappedStatus, $f['gps_target_id']]);
+            }
             $this->conn->commit();
             return $this->getById($id);
         } catch (Throwable $e) {

@@ -57,13 +57,18 @@ class NormalizedMigrator
             foreach ($this->duplicateInfo($swotNodes) as $dup) $summary['duplicates_flagged'][] = $dup;
 
             foreach ($selectedSwot as $node) {
+                $sp = 'sp_swot_' . (int)$node['id'];
+                $this->conn->exec("SAVEPOINT $sp");
                 try {
                     $res = $this->migrateSwotNode($node);
                     $summary['swot']['analyses_created'] += $res['analyses'];
                     $summary['swot']['items_created'] += $res['items_created'];
                     $summary['swot']['items_skipped_empty'] += $res['items_skipped'];
                     $summary['companies_processed'][$node['company_id']] = true;
+                    $this->conn->exec("RELEASE SAVEPOINT $sp");
                 } catch (Throwable $e) {
+                    $this->conn->exec("ROLLBACK TO SAVEPOINT $sp");
+                    $this->conn->exec("RELEASE SAVEPOINT $sp");
                     $summary['swot']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$node['company_id'],'error'=>$e->getMessage()];
                 }
             }
@@ -79,13 +84,18 @@ class NormalizedMigrator
             }
 
             foreach ($selectedGps as $node) {
+                $sp = 'sp_gps_' . (int)$node['id'];
+                $this->conn->exec("SAVEPOINT $sp");
                 try {
                     $res = $this->migrateGpsNode($node);
                     $summary['gps']['targets_created'] += $res['targets_created'];
                     $summary['gps']['targets_skipped_empty'] += $res['targets_skipped'];
                     $summary['gps']['sources_created'] += $res['sources_created'];
                     $summary['companies_processed'][$node['company_id']] = true;
+                    $this->conn->exec("RELEASE SAVEPOINT $sp");
                 } catch (Throwable $e) {
+                    $this->conn->exec("ROLLBACK TO SAVEPOINT $sp");
+                    $this->conn->exec("RELEASE SAVEPOINT $sp");
                     $summary['gps']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$node['company_id'],'error'=>$e->getMessage()];
                 }
             }
