@@ -28,6 +28,23 @@ class NormalizedMigrator
     }
 
     /**
+     * Resolved company_id: nodes.company_id when >0 else JSON data.company_id when >0.
+     * Covers legacy rows 1946-1951 etc where column is NULL but JSON has "11".
+     */
+    private function resolveCompanyId(array $node): int
+    {
+        $col = (int)($node['company_id'] ?? 0);
+        if ($col > 0) return $col;
+        $raw = (string)($node['data'] ?? '');
+        if ($raw === '') return 0;
+        $data = json_decode($raw, true);
+        if (!is_array($data)) return 0;
+        // JSON may store "11" as string; cast to int
+        $j = isset($data['company_id']) ? (int)$data['company_id'] : 0;
+        return $j > 0 ? $j : 0;
+    }
+
+    /**
      * Migrate selected companies to normalized tables.
      * @param int[] $companyIds empty = all companies (not recommended for first run)
      * @param bool $dryRun if true, rolls back at end and reports what would happen
@@ -59,17 +76,18 @@ class NormalizedMigrator
             foreach ($selectedSwot as $node) {
                 $sp = 'sp_swot_' . (int)$node['id'];
                 $this->conn->exec("SAVEPOINT $sp");
+                $rcid = $this->resolveCompanyId($node);
                 try {
                     $res = $this->migrateSwotNode($node);
                     $summary['swot']['analyses_created'] += $res['analyses'];
                     $summary['swot']['items_created'] += $res['items_created'];
                     $summary['swot']['items_skipped_empty'] += $res['items_skipped'];
-                    $summary['companies_processed'][$node['company_id']] = true;
+                    $summary['companies_processed'][$rcid] = true;
                     $this->conn->exec("RELEASE SAVEPOINT $sp");
                 } catch (Throwable $e) {
                     $this->conn->exec("ROLLBACK TO SAVEPOINT $sp");
                     $this->conn->exec("RELEASE SAVEPOINT $sp");
-                    $summary['swot']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$node['company_id'],'error'=>$e->getMessage()];
+                    $summary['swot']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$rcid,'error'=>$e->getMessage()];
                 }
             }
 
@@ -86,17 +104,18 @@ class NormalizedMigrator
             foreach ($selectedGps as $node) {
                 $sp = 'sp_gps_' . (int)$node['id'];
                 $this->conn->exec("SAVEPOINT $sp");
+                $rcid = $this->resolveCompanyId($node);
                 try {
                     $res = $this->migrateGpsNode($node);
                     $summary['gps']['targets_created'] += $res['targets_created'];
                     $summary['gps']['targets_skipped_empty'] += $res['targets_skipped'];
                     $summary['gps']['sources_created'] += $res['sources_created'];
-                    $summary['companies_processed'][$node['company_id']] = true;
+                    $summary['companies_processed'][$rcid] = true;
                     $this->conn->exec("RELEASE SAVEPOINT $sp");
                 } catch (Throwable $e) {
                     $this->conn->exec("ROLLBACK TO SAVEPOINT $sp");
                     $this->conn->exec("RELEASE SAVEPOINT $sp");
-                    $summary['gps']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$node['company_id'],'error'=>$e->getMessage()];
+                    $summary['gps']['errors'][] = ['node_id'=>$node['id'],'company_id'=>$rcid,'error'=>$e->getMessage()];
                 }
             }
 
@@ -173,11 +192,20 @@ class NormalizedMigrator
     {
         if ($companyIds) {
             $in = implode(',', array_fill(0, count($companyIds), '?'));
-            $sql = "SELECT * FROM nodes WHERE type = ? AND company_id IN ($in) ORDER BY company_id ASC, updated_at ASC";
+            // Include JSON fallback so rows with NULL column but data.company_id=11 are found for --companyIds=11.
+            // Example legacy rows 1946-1951: company_id NULL, data->company_id "11".
+            $sql = "SELECT * FROM nodes WHERE type = ? AND (company_id IN ($in) OR CAST(JSON_UNQUOTE(JSON_EXTRACT(data, '$.company_id')) AS UNSIGNED) IN ($in)) ORDER BY updated_at ASC";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute(array_merge([$type], $companyIds));
+            // type + col filter + json filter
+            $stmt->execute(array_merge([$type], $companyIds, $companyIds));
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Narrow to exact resolved match: column>0 ? column : json
+            $rows = array_values(array_filter($rows, function (array $r) use ($companyIds): bool {
+                return in_array($this->resolveCompanyId($r), $companyIds, true);
+            }));
+            return $rows;
         } else {
-            $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE type = ? ORDER BY company_id ASC, updated_at ASC");
+            $stmt = $this->conn->prepare("SELECT * FROM nodes WHERE type = ? ORDER BY updated_at ASC");
             $stmt->execute([$type]);
         }
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -185,12 +213,13 @@ class NormalizedMigrator
         return $rows;
     }
 
-    /** @return array<int, array> latest row per company */
+    /** @return array<int, array> latest row per company — uses resolved company_id (column>0 ? column : json) */
     private function selectLatestPerCompany(array $rows): array
     {
         $latest = [];
         foreach ($rows as $row) {
-            $cid = (int)$row['company_id'];
+            $cid = $this->resolveCompanyId($row);
+            if ($cid === 0) continue; // skip orphaned rows with no company
             // keep latest by updated_at (rows are ordered ASC, so overwrite)
             $latest[$cid] = $row;
         }
@@ -200,7 +229,11 @@ class NormalizedMigrator
     private function duplicateInfo(array $rows): array
     {
         $byCompany = [];
-        foreach ($rows as $r) $byCompany[(int)$r['company_id']][] = $r;
+        foreach ($rows as $r) {
+            $cid = $this->resolveCompanyId($r);
+            if ($cid === 0) $cid = 0;
+            $byCompany[$cid][] = $r;
+        }
         $out = [];
         foreach ($byCompany as $cid => $grp) {
             if (count($grp) > 1) {
@@ -214,7 +247,8 @@ class NormalizedMigrator
     {
         $data = json_decode((string)$node['data'], true);
         if (!is_array($data)) $data = [];
-        $companyId = (int)$node['company_id'];
+        $companyId = $this->resolveCompanyId($node);
+        if ($companyId === 0) throw new RuntimeException("SWOT node {$node['id']} has no resolvable company_id (column and JSON both empty)");
         $legacyNodeId = (int)$node['id'];
 
         // Check if already migrated (idempotency: legacy_node_id unique per company)
@@ -324,7 +358,8 @@ class NormalizedMigrator
     {
         $data = json_decode((string)$node['data'], true);
         if (!is_array($data)) $data = [];
-        $companyId = (int)$node['company_id'];
+        $companyId = $this->resolveCompanyId($node);
+        if ($companyId === 0) throw new RuntimeException("GPS node {$node['id']} has no resolvable company_id (column and JSON both empty)");
         $legacyNodeId = (int)$node['id'];
 
         $targetsCreated = 0; $targetsSkipped = 0; $sourcesCreated = 0;
@@ -357,6 +392,8 @@ class NormalizedMigrator
 
                 $stmt = $this->conn->prepare("INSERT INTO gps_targets (company_id, category, title, description, priority, impact, status, owner_user_id, owner_label, due_date, progress_mode, manual_progress_percentage, success_evidence_required, legacy_node_id, legacy_path, completed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?, ?, ?, ?, ?, ?)");
                 $completedAt = $status === 'completed' ? date('Y-m-d H:i:s') : null;
+                $createdAt = $this->toDateTime($t['date_added'] ?? $node['created_at'] ?? null) ?? date('Y-m-d H:i:s');
+                $updatedAt = $this->toDateTime($node['updated_at'] ?? null) ?? date('Y-m-d H:i:s');
                 $stmt->execute([
                     $companyId,
                     $cat,
@@ -373,8 +410,8 @@ class NormalizedMigrator
                     $legacyNodeId,
                     $legacyPath,
                     $completedAt,
-                    $t['date_added'] ?? $node['created_at'] ?? date('Y-m-d H:i:s'),
-                    $node['updated_at'] ?? date('Y-m-d H:i:s'),
+                    $createdAt,
+                    $updatedAt,
                 ]);
                 $gpsId = (int)$this->conn->lastInsertId();
                 $targetsCreated++;
