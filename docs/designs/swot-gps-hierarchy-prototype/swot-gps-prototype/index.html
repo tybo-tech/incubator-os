@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Incubator OS — SWOT and GPS Hierarchy</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="incubatorHierarchyMock">
+  <div class="ios-shell">
+    <aside class="ios-side" aria-label="Application navigation">
+      <div class="ios-brand"><span class="ios-logo">▦</span> incubator-os</div>
+      <nav class="ios-nav">
+        <div class="ios-nav-item"><i data-lucide="gauge" aria-hidden="true"></i> Overview</div>
+        <div class="ios-nav-item"><i data-lucide="hand-coins" aria-hidden="true"></i> Grant Funding</div>
+        <div class="ios-nav-item active"><i data-lucide="building-2" aria-hidden="true"></i> All Companies</div>
+        <div class="ios-nav-item"><i data-lucide="list-checks" aria-hidden="true"></i> Tasks</div>
+        <div class="ios-nav-item"><i data-lucide="users" aria-hidden="true"></i> Users</div>
+        <div class="ios-nav-item"><i data-lucide="folder-kanban" aria-hidden="true"></i> Project Management</div>
+      </nav>
+      <div class="ios-side-spacer"></div>
+      <div class="ios-user">Ndumiso Mthembu<br><span style="color:#8fa0bb">Signed in</span></div>
+    </aside>
+
+    <main class="ios-main">
+      <header class="ios-company">
+        <div class="ios-company-left">
+          <div class="ios-company-avatar">0</div>
+          <div><div class="ios-company-name">035 Freshcuts (Pty) Ltd</div><div class="ios-company-reg">2022/827697/07</div></div>
+        </div>
+        <button class="ios-primary" type="button"><i data-lucide="plus" aria-hidden="true"></i> Action</button>
+      </header>
+
+      <nav class="ios-tabs" aria-label="Company workspace">
+        <button class="ios-tab" type="button">Overview</button>
+        <button class="ios-tab" type="button">Assessment</button>
+        <button class="ios-tab active" type="button" data-page="swotPage">SWOT Analysis</button>
+        <button class="ios-tab" type="button" data-page="gpsPage">GPS Targets</button>
+        <button class="ios-tab" type="button">Financial Indicators</button>
+        <button class="ios-tab" type="button">Coaching / Guide</button>
+      </nav>
+
+      <section class="ios-content">
+        <div class="ios-page active" id="swotPage">
+          <div class="ios-heading">
+            <div><h2 class="ios-title">SWOT Strategy Workspace</h2><p class="ios-subtitle">Turn business findings into measurable targets and practical tasks.</p></div>
+            <div class="ios-legend" aria-label="Hierarchy legend"><span class="ios-key"><span class="ios-dot"></span> SWOT finding</span><span class="ios-key"><span class="ios-dot target"></span> GPS target</span><span class="ios-key"><span class="ios-dot task"></span> Task</span></div>
+          </div>
+
+          <div class="ios-summary">
+            <div class="ios-summary-item"><div class="ios-summary-value">3</div><div class="ios-summary-label">SWOT findings</div></div>
+            <div class="ios-summary-item"><div class="ios-summary-value">3</div><div class="ios-summary-label">Linked targets</div></div>
+            <div class="ios-summary-item"><div class="ios-summary-value">7</div><div class="ios-summary-label">Active tasks</div></div>
+            <div class="ios-summary-item"><div class="ios-summary-value">52%</div><div class="ios-summary-label">Overall progress</div></div>
+          </div>
+
+          <div class="ios-list">
+            <article class="ios-swot open">
+              <button class="ios-swot-head" type="button" aria-expanded="true">
+                <span class="ios-swot-main"><i class="ios-chevron" data-lucide="chevron-right" aria-hidden="true"></i><span><span class="ios-kicker"><span class="ios-badge weakness">Weakness</span><span class="ios-priority">High priority</span></span><span class="ios-swot-title">The business depends heavily on one major customer</span><span class="ios-swot-context">This customer currently contributes approximately 70% of total revenue.</span></span></span>
+                <span class="ios-swot-count">2 GPS targets · 5 tasks</span>
+              </button>
+              <div class="ios-children">
+                <div class="ios-child-label"><span>Linked GPS targets</span><button class="ios-link-button" type="button">+ Create target</button></div>
+                <div class="ios-target">
+                  <div class="ios-target-top"><div><div class="ios-target-title">Reduce largest-customer revenue contribution to 40%</div><div class="ios-target-meta"><span>Sales &amp; Marketing</span><span>Due 15 Dec 2026</span><span>Owner: Ndu</span></div></div><span class="ios-status">In progress</span></div>
+                  <div class="ios-progress-row"><div class="ios-progress" aria-label="Target progress 60 percent"><span style="width:60%"></span></div><span class="ios-progress-value">60%</span></div>
+                  <div class="ios-tasks">
+                    <label class="ios-task done"><input type="checkbox" checked><span class="ios-task-name">Build a list of 50 qualified prospects</span><span class="ios-task-owner">Ndu</span></label>
+                    <label class="ios-task"><input type="checkbox"><span class="ios-task-name">Contact 20 prospects every week</span><span class="ios-task-owner">Thando</span></label>
+                    <label class="ios-task"><input type="checkbox"><span class="ios-task-name">Submit five proposals each month</span><span class="ios-task-owner">Ndu</span></label>
+                  </div>
+                </div>
+                <div class="ios-target">
+                  <div class="ios-target-top"><div><div class="ios-target-title">Sign five new SME customers</div><div class="ios-target-meta"><span>Sales &amp; Marketing</span><span>Due 30 Nov 2026</span><span>Owner: Thando</span></div></div><span class="ios-status">In progress</span></div>
+                  <div class="ios-progress-row"><div class="ios-progress" aria-label="Target progress 40 percent"><span style="width:40%"></span></div><span class="ios-progress-value">2 of 5</span></div>
+                  <div class="ios-tasks">
+                    <label class="ios-task done"><input type="checkbox" checked><span class="ios-task-name">Define SME customer offer</span><span class="ios-task-owner">Thando</span></label>
+                    <label class="ios-task"><input type="checkbox"><span class="ios-task-name">Run first outreach campaign</span><span class="ios-task-owner">Ndu</span></label>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="ios-swot opportunity">
+              <button class="ios-swot-head" type="button" aria-expanded="false">
+                <span class="ios-swot-main"><i class="ios-chevron" data-lucide="chevron-right" aria-hidden="true"></i><span><span class="ios-kicker"><span class="ios-badge opportunity">Opportunity</span><span class="ios-priority">Medium priority</span></span><span class="ios-swot-title">Growing demand from corporate catering customers</span><span class="ios-swot-context">Three corporate prospects requested recurring supply quotations.</span></span></span>
+                <span class="ios-swot-count">1 GPS target · 2 tasks</span>
+              </button>
+              <div class="ios-children">
+                <div class="ios-child-label"><span>Linked GPS targets</span><button class="ios-link-button" type="button">+ Create target</button></div>
+                <div class="ios-target">
+                  <div class="ios-target-top"><div><div class="ios-target-title">Secure three recurring corporate supply contracts</div><div class="ios-target-meta"><span>Strategy / General</span><span>Due 31 Jan 2027</span><span>Owner: Ndu</span></div></div><span class="ios-status">Not started</span></div>
+                  <div class="ios-progress-row"><div class="ios-progress" aria-label="Target progress 0 percent"><span style="width:0%"></span></div><span class="ios-progress-value">0 of 3</span></div>
+                  <div class="ios-tasks">
+                    <label class="ios-task"><input type="checkbox"><span class="ios-task-name">Create corporate pricing package</span><span class="ios-task-owner">Ndu</span></label>
+                    <label class="ios-task"><input type="checkbox"><span class="ios-task-name">Schedule tastings with three prospects</span><span class="ios-task-owner">Lebo</span></label>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="ios-swot strength">
+              <button class="ios-swot-head" type="button" aria-expanded="false">
+                <span class="ios-swot-main"><i class="ios-chevron" data-lucide="chevron-right" aria-hidden="true"></i><span><span class="ios-kicker"><span class="ios-badge strength">Strength</span><span class="ios-priority">Medium priority</span></span><span class="ios-swot-title">Strong AI capability and access to modern development tools</span><span class="ios-swot-context">The team can use AI to automate repetitive operational work.</span></span></span>
+                <span class="ios-swot-count">No target linked</span>
+              </button>
+              <div class="ios-children">
+                <div class="ios-child-label"><span>Linked GPS targets</span></div>
+                <div class="ios-empty-target"><span>No measurable target has been created from this finding.</span><button class="ios-primary" type="button">Create GPS target</button></div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="ios-page" id="gpsPage">
+          <div class="ios-heading">
+            <div><h2 class="ios-title">GPS Targets</h2><p class="ios-subtitle">Track measurable outcomes while preserving the strategic source behind each target.</p></div>
+            <button class="ios-primary" type="button">+ Add independent target</button>
+          </div>
+          <div class="ios-target-grid">
+            <section class="ios-category"><div class="ios-category-title"><span>Sales &amp; Marketing</span><span style="color:var(--ios-blue)">2 targets</span></div>
+              <div class="ios-target"><div class="ios-target-top"><div><div class="ios-target-title">Reduce largest-customer revenue contribution to 40%</div><div class="ios-source"><i data-lucide="git-branch" aria-hidden="true"></i> From SWOT weakness: <strong>Customer concentration</strong></div></div><span class="ios-status">60%</span></div></div>
+              <div class="ios-target"><div class="ios-target-top"><div><div class="ios-target-title">Sign five new SME customers</div><div class="ios-source"><i data-lucide="git-branch" aria-hidden="true"></i> From SWOT weakness: <strong>Customer concentration</strong></div></div><span class="ios-status">40%</span></div></div>
+            </section>
+            <section class="ios-category"><div class="ios-category-title"><span>Strategy / General</span><span style="color:var(--ios-purple)">1 target</span></div>
+              <div class="ios-target"><div class="ios-target-top"><div><div class="ios-target-title">Secure three recurring corporate supply contracts</div><div class="ios-source"><i data-lucide="git-branch" aria-hidden="true"></i> From SWOT opportunity: <strong>Corporate demand</strong></div></div><span class="ios-status">0%</span></div></div>
+            </section>
+            <section class="ios-category"><div class="ios-category-title"><span>Finance</span><span style="color:var(--ios-green)">1 target</span></div>
+              <div class="ios-target"><div class="ios-target-top"><div><div class="ios-target-title">Maintain a minimum three-month cash reserve</div><div class="ios-source"><i data-lucide="landmark" aria-hidden="true"></i> Source: <strong>Funder programme requirement</strong></div></div><span class="ios-status">25%</span></div></div>
+            </section>
+            <section class="ios-category"><div class="ios-category-title"><span>Personal Development</span><span style="color:var(--ios-orange)">1 target</span></div>
+              <div class="ios-target"><div class="ios-target-top"><div><div class="ios-target-title">Build and deploy two working internal AI agents</div><div class="ios-source"><i data-lucide="user-round" aria-hidden="true"></i> Source: <strong>Coaching session</strong></div></div><span class="ios-status">50%</span></div></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
