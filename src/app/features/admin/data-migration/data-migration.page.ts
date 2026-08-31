@@ -75,10 +75,10 @@ import { MigrationService } from '../../normalized/services/migration.service';
         </div>
       }
 
-      <div class="flex gap-2 items-center">
+      <div class="flex gap-2 items-center flex-wrap">
         <button (click)="loadAudits()" class="px-3 py-2 rounded-lg border text-sm">Reload audit history</button>
-        <label class="flex items-center gap-1 text-xs"><input type="checkbox" [checked]="showPreviews()" (change)="showPreviews.set($any($event.target).checked)" /> Show preview attempts</label>
-        <span class="text-xs text-slate-400">Main view emphasizes completed migrations; toggle to see dry-runs.</span>
+        <label class="flex items-center gap-1 text-xs"><input type="checkbox" [checked]="showPreviews()" (change)="showPreviews.set($any($event.target).checked)" /> Include preview attempts</label>
+        <span class="text-xs text-slate-400">Showing migration runs; toggle to include dry-runs. Failed runs remain visible.</span>
       </div>
 
       @if (filteredAudits().length) {
@@ -100,9 +100,9 @@ import { MigrationService } from '../../normalized/services/migration.service';
             </tbody>
           </table>
         </div>
-        <p class="text-xs text-slate-400">@if (!showPreviews()) { Showing completed migrations only — toggle to see preview attempts. } @else { Showing all attempts including previews. }</p>
+        <p class="text-xs text-slate-400">@if (!showPreviews()) { Showing migration runs — toggle to include preview attempts. } @else { Showing migration runs including previews. }</p>
       } @else if (audits().length) {
-        <p class="text-xs text-slate-400">No completed migrations yet — toggle “Show preview attempts” to see dry-runs.</p>
+        <p class="text-xs text-slate-400">No migration runs yet — toggle “Include preview attempts” to see dry-runs.</p>
       }
     </div>
 

@@ -104,19 +104,29 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-home'
     },
     {
+      label: 'SWOT Workspace',
+      route: 'swot-v2',
+      icon: 'fas fa-layer-group'
+    },
+    {
+      label: 'GPS Targets',
+      route: 'gps-targets-v2',
+      icon: 'fas fa-bullseye'
+    },
+    {
       label: 'Assessment',
       route: 'assessment',
       icon: 'fas fa-check-circle'
     },
     {
-      label: 'SWOT Analysis',
+      label: 'SWOT (Legacy)',
       route: 'swot',
       icon: 'fas fa-chart-line'
     },
     {
-      label: 'GPS Targets',
+      label: 'GPS (Legacy)',
       route: 'gps-targets',
-      icon: 'fas fa-bullseye'
+      icon: 'fas fa-crosshairs'
     },
     {
       label: 'BEE Compliance',

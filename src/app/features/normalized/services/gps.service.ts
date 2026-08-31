@@ -27,6 +27,8 @@ export interface GpsTargetSource {
   source_type: string;
   swot_item_id: number | null;
   notes: string | null;
+  swot_description?: string | null;
+  swot_category?: string | null;
 }
 
 export interface GpsTask {
@@ -38,6 +40,8 @@ export interface GpsTask {
   sort_order: number;
   due_date: string | null;
   completed_at: string | null;
+  owner_label?: string | null;
+  owner_user_id?: number | null;
 }
 
 export interface GpsUpdate {
@@ -47,6 +51,7 @@ export interface GpsUpdate {
   status: string;
   note: string | null;
   recorded_at: string;
+  recorded_by?: number | null;
 }
 
 export interface DashboardCounts {
@@ -91,6 +96,23 @@ export class GpsService {
     return this.http.get<GpsTargetSource[]>(`${this.sourceBase}/list-by-target.php`, { params, withCredentials: true });
   }
 
+  getTarget(id: number): Observable<GpsTarget> {
+    const params = new HttpParams().set('id', String(id));
+    return this.http.get<GpsTarget>(`${this.base}/get.php`, { params, withCredentials: true });
+  }
+
+  createTarget(data: Partial<GpsTarget> & { company_id: number }): Observable<GpsTarget> {
+    return this.http.post<GpsTarget>(`${this.base}/create.php`, data, { withCredentials: true });
+  }
+
+  updateTarget(id: number, data: Partial<GpsTarget>): Observable<GpsTarget> {
+    return this.http.post<GpsTarget>(`${this.base}/update.php`, { id, ...data }, { withCredentials: true });
+  }
+
+  deleteTarget(id: number): Observable<any> {
+    return this.http.post<any>(`${this.base}/delete.php`, { id }, { withCredentials: true });
+  }
+
   link(targetId: number, swotItemId: number): Observable<any> {
     return this.http.post(`${this.sourceBase}/link.php`, { gps_target_id: targetId, swot_item_id: swotItemId }, { withCredentials: true });
   }
@@ -99,13 +121,37 @@ export class GpsService {
     return this.http.post(`${this.sourceBase}/unlink.php`, { id: linkId }, { withCredentials: true });
   }
 
+  unlinkByTargetAndSwot(targetId: number, swotItemId: number): Observable<any> {
+    return this.http.post(`${this.sourceBase}/unlink.php`, { gps_target_id: targetId, swot_item_id: swotItemId }, { withCredentials: true });
+  }
+
   tasks(targetId: number): Observable<GpsTask[]> {
     const params = new HttpParams().set('gps_target_id', String(targetId));
     return this.http.get<GpsTask[]>(`${this.taskBase}/list.php`, { params, withCredentials: true });
   }
 
+  createTask(data: Partial<GpsTask> & { gps_target_id: number; title: string }): Observable<GpsTask> {
+    return this.http.post<GpsTask>(`${this.taskBase}/create.php`, data, { withCredentials: true });
+  }
+
+  updateTask(id: number, data: Partial<GpsTask>): Observable<GpsTask> {
+    return this.http.post<GpsTask>(`${this.taskBase}/update.php`, { id, ...data }, { withCredentials: true });
+  }
+
+  deleteTask(id: number): Observable<any> {
+    return this.http.post<any>(`${this.taskBase}/delete.php`, { id }, { withCredentials: true });
+  }
+
+  reorderTasks(gpsTargetId: number, orderedIds: number[]): Observable<GpsTask[]> {
+    return this.http.post<GpsTask[]>(`${this.taskBase}/reorder.php`, { gps_target_id: gpsTargetId, ordered_ids: orderedIds }, { withCredentials: true });
+  }
+
   updates(targetId: number): Observable<GpsUpdate[]> {
     const params = new HttpParams().set('gps_target_id', String(targetId));
     return this.http.get<GpsUpdate[]>(`${this.updateBase}/history.php`, { params, withCredentials: true });
+  }
+
+  addUpdate(data: { gps_target_id: number; progress_percentage: number; status: string; note?: string | null }): Observable<GpsUpdate> {
+    return this.http.post<GpsUpdate>(`${this.updateBase}/add.php`, data, { withCredentials: true });
   }
 }

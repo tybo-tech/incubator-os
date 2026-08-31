@@ -138,6 +138,16 @@ export const routes: Routes = [
             ]
           },
           {
+            path: 'swot-v2',
+            loadComponent: () => import('./features/normalized/swot-hierarchy/swot-hierarchy.page').then(m => m.SwotHierarchyPage),
+            canActivate: [authGuard],
+          },
+          {
+            path: 'gps-targets-v2',
+            loadComponent: () => import('./features/normalized/gps-hierarchy/gps-hierarchy.page').then(m => m.GpsHierarchyPage),
+            canActivate: [authGuard],
+          },
+          {
             path: 'swot',
             // component: SwotComponent,
             component: SwotTabComponent,
@@ -314,16 +324,6 @@ export const routes: Routes = [
         component: CompaniesComponent, // Placeholder for now
       },
 
-      {
-        path: 'company/:id/swot-v2',
-        loadComponent: () => import('./features/normalized/swot-hierarchy/swot-hierarchy.page').then(m => m.SwotHierarchyPage),
-        canActivate: [authGuard],
-      },
-      {
-        path: 'company/:id/gps-targets-v2',
-        loadComponent: () => import('./features/normalized/gps-hierarchy/gps-hierarchy.page').then(m => m.GpsHierarchyPage),
-        canActivate: [authGuard],
-      },
       {
         path: 'admin/system-tools/data-migration',
         loadComponent: () => import('./features/admin/data-migration/data-migration.page').then(m => m.DataMigrationPage),

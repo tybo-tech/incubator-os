@@ -5,11 +5,12 @@ import { MetricsOverviewComponent, MetricCard } from '../../shared/metrics-overv
 import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } from '../../../../services/company-capability.service';
 import { CompanyProfileEditorComponent } from './company-profile-editor.component';
 import { CompanyDirectorListComponent } from './company-director-list.component';
+import { DashboardNormalizedCardsComponent } from '../../../features/normalized/dashboard-cards/dashboard-cards.component';
 
 @Component({
   selector: 'app-company-overview',
   standalone: true,
-  imports: [CommonModule, MetricsOverviewComponent, CompanyProfileEditorComponent, CompanyDirectorListComponent],
+  imports: [CommonModule, MetricsOverviewComponent, CompanyProfileEditorComponent, CompanyDirectorListComponent, DashboardNormalizedCardsComponent],
   template: `
     <div class="p-4 lg:p-8">
       <div class="max-w-7xl mx-auto">
@@ -21,6 +22,11 @@ import { CompanyDirectorListComponent } from './company-director-list.component'
 
         <!-- Company Metrics Overview -->
         <app-metrics-overview [metrics]="companyMetrics()"></app-metrics-overview>
+
+        <!-- Normalized Strategy Workspace Cards -->
+        @if (companyIdNumber()) {
+          <app-dashboard-normalized-cards [companyId]="companyIdNumber()"></app-dashboard-normalized-cards>
+        }
 
         <!-- Loading State -->
         <div *ngIf="loading()" class="text-center py-8">
