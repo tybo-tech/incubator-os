@@ -19,7 +19,7 @@ import { MigrationService } from '../../normalized/services/migration.service';
       <div class="flex flex-wrap gap-3 items-end">
         <div class="flex-1 min-w-[240px]">
           <label class="text-xs font-semibold text-slate-600">Company IDs (comma separated)</label>
-          <input [(ngModel)]="companyIdsInput" (ngModelChange)="onIdsChange()" placeholder="11 or 59,11" class="w-full border rounded-lg px-3 py-2 text-sm" />
+          <input [ngModel]="companyIdsInput()" (ngModelChange)="companyIdsInput.set($event); onIdsChange()" placeholder="11 or 59,11" class="w-full border rounded-lg px-3 py-2 text-sm" />
           <p class="text-xs text-slate-400 mt-1">Explicit list required — never migrate all implicitly. Local demo: 11. Prod demo: 59,11.</p>
           @if (preview() && !isPreviewCurrent()) {
             <p class="text-xs text-amber-600 mt-1">Preview is stale — company IDs changed. Re-run preview before migrating.</p>
@@ -55,7 +55,7 @@ import { MigrationService } from '../../normalized/services/migration.service';
 
           <div class="border-t pt-3 space-y-2">
             <label class="text-xs font-semibold">Confirm phrase to migrate</label>
-            <input [(ngModel)]="confirmInput" placeholder="MIGRATE_NORMALIZED_SWOT_GPS" class="w-full border rounded-lg px-3 py-2 text-sm font-mono" />
+            <input [ngModel]="confirmInput()" (ngModelChange)="confirmInput.set($event)" placeholder="MIGRATE_NORMALIZED_SWOT_GPS" class="w-full border rounded-lg px-3 py-2 text-sm font-mono" />
             <button (click)="doMigrate()" [disabled]="!canMigrate() || loading()" class="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm disabled:opacity-50">Run migration</button>
             <p class="text-xs text-slate-400">Button disabled until preview success for the exact company IDs, no errors, and exact phrase typed.</p>
             @if (preview() && hasPreviewErrors()) {
@@ -75,30 +75,34 @@ import { MigrationService } from '../../normalized/services/migration.service';
         </div>
       }
 
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center">
         <button (click)="loadAudits()" class="px-3 py-2 rounded-lg border text-sm">Reload audit history</button>
-        <span class="text-xs text-slate-400 self-center">Shows who ran preview/migrate, companyIds, counts, timestamp.</span>
+        <label class="flex items-center gap-1 text-xs"><input type="checkbox" [checked]="showPreviews()" (change)="showPreviews.set($any($event.target).checked)" /> Show preview attempts</label>
+        <span class="text-xs text-slate-400">Main view emphasizes completed migrations; toggle to see dry-runs.</span>
       </div>
 
-      @if (audits().length) {
+      @if (filteredAudits().length) {
         <div class="border rounded-lg overflow-auto">
           <table class="w-full text-xs">
-            <thead class="bg-slate-100"><tr><th class="text-left p-2">Date</th><th class="text-left p-2">Type</th><th class="text-left p-2">Migration</th><th class="text-left p-2">Description</th><th class="text-left p-2">User</th><th class="text-left p-2">Status</th></tr></thead>
+            <thead class="bg-slate-100"><tr><th class="text-left p-2">Date</th><th class="text-left p-2">Type</th><th class="text-left p-2">Migration</th><th class="text-left p-2">Action</th><th class="text-left p-2">Description</th><th class="text-left p-2">User</th><th class="text-left p-2">Status</th></tr></thead>
             <tbody>
-              @for (a of audits(); track a.id) {
+              @for (a of filteredAudits(); track a.id) {
                 <tr class="border-t">
                   <td class="p-2">{{ a.created_at | date:'short' }}</td>
                   <td class="p-2">{{ a.operation_type || a.action }}</td>
                   <td class="p-2">{{ a.migration_key || '—' }}<div class="text-slate-400">{{ a.title || '' }}</div></td>
+                  <td class="p-2">{{ a.action }}</td>
                   <td class="p-2 max-w-xs" title="{{ a.description }}">{{ a.description || a.result_summary?.swot?.items_created + '/' + a.result_summary?.gps?.targets_created + ' items/targets' }}</td>
                   <td class="p-2">{{ a.user_email || a.user_id }}<div class="text-slate-400">{{ a.user_role }} · {{ a.environment || '' }}</div></td>
-                  <td class="p-2"><span class="px-2 py-0.5 rounded text-white" [class.bg-emerald-600]="a.status==='success'" [class.bg-red-600]="a.status==='error'" [class.bg-slate-400]="a.status!=='success' && a.status!=='error'">{{ a.status }}</span><div class="text-slate-400">{{ a.commit_sha?.slice(0,7) || '' }}</div></td>
+                  <td class="p-2"><span class="px-2 py-0.5 rounded text-white" [class.bg-emerald-600]="a.status==='success' && a.action==='migrate'" [class.bg-sky-600]="a.status==='success' && a.action==='preview'" [class.bg-red-600]="a.status==='error'">{{ a.status==='success' ? (a.action==='preview' ? 'previewed' : a.action==='migrate' ? 'completed' : a.status) : 'failed' }}</span><div class="text-slate-400">{{ a.commit_sha?.slice(0,7) || '' }}</div></td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
-        <p class="text-xs text-slate-400">Preview attempts remain in detailed history; main view emphasizes completed migrations with durable description.</p>
+        <p class="text-xs text-slate-400">@if (!showPreviews()) { Showing completed migrations only — toggle to see preview attempts. } @else { Showing all attempts including previews. }</p>
+      } @else if (audits().length) {
+        <p class="text-xs text-slate-400">No completed migrations yet — toggle “Show preview attempts” to see dry-runs.</p>
       }
     </div>
 
@@ -110,14 +114,22 @@ import { MigrationService } from '../../normalized/services/migration.service';
 })
 export class DataMigrationPage {
   private svc = inject(MigrationService);
-  companyIdsInput = '11';
-  confirmInput = '';
+  companyIdsInput = signal('11');
+  confirmInput = signal('');
+  showPreviews = signal(false);
   loading = signal(false);
   error = signal<string | null>(null);
   preview = signal<any | null>(null);
   previewedCompanyIds = signal<number[] | null>(null);
   migrateResult = signal<any | null>(null);
   audits = signal<any[]>([]);
+
+  filteredAudits = computed(() => {
+    const all = this.audits();
+    if (this.showPreviews()) return all;
+    // main view emphasizes completed migrations
+    return all.filter(a => a.action === 'migrate');
+  });
 
   hasPreviewErrors = computed(() => {
     const p = this.preview();
@@ -136,13 +148,13 @@ export class DataMigrationPage {
 
   canMigrate = computed(() => {
     if (!this.preview() || !this.isPreviewCurrent()) return false;
-    if (this.confirmInput !== 'MIGRATE_NORMALIZED_SWOT_GPS') return false;
+    if (this.confirmInput() !== 'MIGRATE_NORMALIZED_SWOT_GPS') return false;
     if (this.hasPreviewErrors()) return false;
     return true;
   });
 
   parseIds(): number[] {
-    return this.companyIdsInput.split(',').map(s => parseInt(s.trim(),10)).filter(n=>Number.isFinite(n) && n>0);
+    return this.companyIdsInput().split(',').map(s => parseInt(s.trim(),10)).filter(n=>Number.isFinite(n) && n>0);
   }
 
   onIdsChange(): void {
@@ -165,9 +177,10 @@ export class DataMigrationPage {
   }
 
   doMigrate(): void {
+    if (!this.canMigrate()) return;
     const ids = this.parseIds();
     this.loading.set(true); this.error.set(null);
-    this.svc.migrate(ids, this.confirmInput).subscribe({
+    this.svc.migrate(ids, this.confirmInput()).subscribe({
       next: res => { this.migrateResult.set(res.data); this.loading.set(false); this.loadAudits(); },
       error: err => { this.error.set(err.error?.error || err.message); this.loading.set(false); }
     });

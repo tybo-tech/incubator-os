@@ -32,11 +32,12 @@ CALL add_audit_column_if_missing('commit_sha', "VARCHAR(40) DEFAULT NULL COMMENT
 DROP PROCEDURE add_audit_column_if_missing;
 
 -- Backfill existing rows with canonical description for the normalized migration
+-- Note: environment is NOT backfilled here — supply deployment environment explicitly on first real run;
+-- using 'local' as default would falsely label historical production records. New audits set environment via host detection.
 UPDATE `normalized_migration_audits`
 SET
   operation_type = COALESCE(operation_type, 'data_migration'),
   migration_key = COALESCE(migration_key, '2026-08-31-normalized-swot-gps'),
   title = COALESCE(title, 'Normalize SWOT and GPS records'),
-  description = COALESCE(description, 'Migrated legacy SWOT analyses and GPS targets from JSON nodes into normalized relational tables to support individual identities, relationships, tasks, progress tracking and dashboard reporting. Legacy nodes were retained as an archive.'),
-  environment = COALESCE(environment, 'local')
+  description = COALESCE(description, 'Migrated legacy SWOT analyses and GPS targets from JSON nodes into normalized relational tables to support individual identities, relationships, tasks, progress tracking and dashboard reporting. Legacy nodes were retained as an archive.')
 WHERE description IS NULL OR migration_key IS NULL;

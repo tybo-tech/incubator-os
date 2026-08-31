@@ -93,16 +93,24 @@ Do NOT run production migration yet.
 * All new components are standalone, OnPush, signals, `inject()`, `@if`/`@for`, lazy-loaded
 * `php -l` clean for any new PHP (audit-list), `ng build` passes, no `*ngIf`/`*ngFor`, no `ALLOW_HTTP_MIGRATE`, `migration-audit-list` returns generic error (detailed logged server-side)
 
-## Review — Commit `0c9e9eb` (2026-08-31)
+## Review — Commit `0c9e9eb` → `7e59bc4` (2026-08-31)
 
 **Status: Strong localhost UI scaffold — NOT production-ready Sprint 006 completion yet.**
 
-Findings closed in this patch:
+Findings closed in `7e59bc4`:
 
 1. **[HIGH] Stale preview → FIXED** — `previewedCompanyIds` + `isPreviewCurrent()` + `onIdsChange()` + `hasPreviewErrors()` block; `canMigrate` now requires exact ID match and zero errors.
 2. **[HIGH] Durable reporting → FIXED** — `migrations/2026-08-31b-patch-audit-reporting.sql` + `audit_migration()` canonical `operation_type`, `migration_key`, `title`, `description`, `environment`, `commit_sha`; Admin table now `Date|Type|Migration|Description|User|Status`; `migration-audit-list.php` returns new columns.
 3. **[MEDIUM] Audit endpoint leak → FIXED** — `error_log` server-side, `500` generic client message.
 4. **[MEDIUM] SA-only policy → FIXED** — `auth_is_migration_admin()` / `isSystemAdministrator()` / `migrationAdminGuard` — Coordinator cannot preview/migrate/audit; wording now consistent `System Administrator (Coordinator not permitted)`.
+
+## Review — Commit `7e59bc4` (follow-up)
+
+**High — computed() vs ngModel:** plain `companyIdsInput`/`confirmInput` broke `computed` tracking → fixed via `signal('11')`/`signal('')` + `[ngModel]="companyIdsInput()" (ngModelChange)="companyIdsInput.set($event)"`, `canMigrate`/`isPreviewCurrent` now correctly invalidate, stale `11→59` and missing confirm now disable Run.
+
+**Medium — preview vs completed indistinguishable:** added `Action` column (`preview`/`migrate`) and mapped `Status` to `previewed`/`completed`/`failed` (`success+preview→previewed`, `success+migrate→completed`), `filteredAudits` computed with `showPreviews` toggle (default completed only) — table now `Date|Type|Migration|Action|Description|User|Status`.
+
+**Small — env backfill:** patch now leaves `environment` as `NULL` for unknown historical rows instead of falsely `local`; new audits set `environment` via host detection (`localhost→local`, else `production`) and `commit_sha` via env/.git.
 
 Remaining Sprint scope (still TODO for full 006 completion):
 
