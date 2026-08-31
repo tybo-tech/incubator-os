@@ -330,6 +330,11 @@ export const routes: Routes = [
         canActivate: [authGuard, migrationAdminGuard],
       },
       {
+        path: 'admin/tools',
+        loadComponent: () => import('./features/admin/tools/tools-dashboard.page').then(m => m.ToolsDashboardPage),
+        canActivate: [authGuard, adminGuard],
+      },
+      {
         path: 'admin/grouping',
         children: groupingRoutes,
       },
