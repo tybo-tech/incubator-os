@@ -1,0 +1,18 @@
+<?php
+include_once '../../config/Database.php';
+include_once '../../models/SwotAnalysis.php';
+include_once '../../config/headers.php';
+
+try {
+    $database = new Database();
+    $db = $database->connect();
+    $model = new SwotAnalysis($db);
+    $id = (int)($_GET['id'] ?? 0);
+    if (!$id) throw new InvalidArgumentException("id is required");
+    $row = $model->getById($id);
+    if (!$row) { http_response_code(404); echo json_encode(['error' => "swot_analyses id $id not found"]); return; }
+    echo json_encode($row);
+} catch (Throwable $e) {
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
+}
