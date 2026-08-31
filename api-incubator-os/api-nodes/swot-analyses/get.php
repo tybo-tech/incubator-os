@@ -15,6 +15,7 @@ try {
     $model = new SwotAnalysis($db);
     $id = (int)($_GET['id'] ?? 0);
     if (!$id) throw new InvalidArgumentException("id is required");
+    auth_require_swot_analysis_access($db, $authUser, $id);
     $row = $model->getById($id);
     if (!$row) { http_response_code(404); echo json_encode(['error' => "swot_analyses id $id not found"]); return; }
     echo json_encode($row);
