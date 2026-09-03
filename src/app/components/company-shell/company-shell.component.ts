@@ -119,16 +119,6 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-check-circle'
     },
     {
-      label: 'SWOT (Legacy)',
-      route: 'swot',
-      icon: 'fas fa-chart-line'
-    },
-    {
-      label: 'GPS (Legacy)',
-      route: 'gps-targets',
-      icon: 'fas fa-crosshairs'
-    },
-    {
       label: 'BEE Compliance',
       route: 'compliance',
       icon: 'fas fa-shield-alt'
@@ -158,6 +148,16 @@ export class CompanyShellComponent implements OnInit {
       label: 'Financial (Legacy)',
       route: 'financials',
       icon: 'fas fa-dollar-sign'
+    },
+    {
+      label: 'SWOT (Legacy)',
+      route: 'swot',
+      icon: 'fas fa-chart-line'
+    },
+    {
+      label: 'GPS (Legacy)',
+      route: 'gps-targets',
+      icon: 'fas fa-crosshairs'
     }
   ];
 

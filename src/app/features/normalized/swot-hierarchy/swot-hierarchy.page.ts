@@ -210,7 +210,7 @@ export class SwotHierarchyPage {
   private swot = inject(SwotService);
   private gps = inject(GpsService);
 
-  companyId = signal<number>(Number(this.route.snapshot.paramMap.get('id') || 0));
+  companyId = signal<number>(0);
   loading = signal(false);
   error = signal<string | null>(null);
   successMsg = signal<string | null>(null);
@@ -276,7 +276,22 @@ export class SwotHierarchyPage {
     return Math.round(avg);
   });
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    // company/:id is the parent CompanyShell route — walk the param chain
+    this.route.paramMap.subscribe(pm => {
+      if (pm.get('id')) this.companyId.set(Number(pm.get('id')));
+    });
+    this.route.parent?.paramMap.subscribe(pm => {
+      if (pm.get('id')) this.companyId.set(Number(pm.get('id')));
+    });
+    // fallback: full snapshot chain (handles deep nesting / first load)
+    let r: ActivatedRoute | null = this.route;
+    while (r && !this.companyId()) {
+      if (r.snapshot.paramMap.get('id')) this.companyId.set(Number(r.snapshot.paramMap.get('id')));
+      r = r.parent;
+    }
+    if (this.companyId()) this.load();
+  }
 
   load(): void {
     const cid = this.companyId();
