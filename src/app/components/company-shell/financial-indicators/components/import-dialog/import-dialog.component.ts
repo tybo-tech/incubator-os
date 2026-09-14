@@ -27,15 +27,15 @@ interface ImportRow {
   imports: [CommonModule],
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4" (click)="$event.stopPropagation()">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden mx-4" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
           <h3 class="text-lg font-semibold text-gray-900">Import Financial Indicators</h3>
           <button (click)="close.emit()" class="p-1 text-gray-400 hover:text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <div class="p-6 space-y-6">
+        <div class="p-6 space-y-6 flex-1 overflow-y-auto min-h-0">
           <!-- Instructions -->
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
             <p class="font-semibold mb-2">How to import</p>
@@ -142,7 +142,7 @@ interface ImportRow {
           <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">{{ error() }}</div>
         </div>
 
-        <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200 shrink-0">
           <button (click)="close.emit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Close</button>
           <button (click)="upload()" [disabled]="parsedRows().length === 0 || uploading()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
             {{ uploading() ? 'Importing...' : 'Import ' + (parsedRows().length > 0 ? '(' + parsedRows().length + ' records)' : '') }}

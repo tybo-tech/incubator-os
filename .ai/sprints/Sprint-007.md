@@ -1004,3 +1004,29 @@ Verified after restoration: co11 = 1 analysis · 8 items · 12 targets · 12 sou
 
 * The `financial-indicators` dialogs already required an explicit close — no change was needed there.
 * Legacy financial-shell dialogs were deliberately left untouched (freeze); apply the popup rule there only on explicit request.
+
+---
+
+## Popup layout hardening — 2026-09-16 (session 021)
+
+**Status: ✅ Complete. Every current popup now keeps a fixed header/footer and scrolls only the body.**
+
+### Delivered
+
+| Item | Where |
+| --- | --- |
+| Shared popup layout (sticky head/foot, scrollable body) | `src/styles.scss` — `.sw-modal-card` flex column + `overflow:hidden`; `.sw-modal-head`/`.sw-modal-foot` `flex:0 0 auto`; `.sw-modal-body` `flex:1; min-height:0; overflow-y:auto` |
+| Tailwind contract applied | `financial-target-entry` + `financial-indicators` dialogs (`financial-form`, `view-dialog`, `import-dialog`, `request-dialog`) |
+| Documented | `AGENTS.md` — "Popup layout — fixed header/footer, scrollable body" |
+
+### Behaviour (verified, 620px-tall viewport)
+
+* **Results → Add result**: card `overflow:hidden`; body `659/431`, scrolled to bottom while the header (y≈26) and footer (y≈529) stayed put.
+* **financial-indicators → New Report**: body `677/426`, head/footer unmoved.
+* **financial-indicators → Create revenue target**: body `492/412`, head/footer unmoved.
+* `ng build` passes; 0 post-login runtime console errors.
+
+### Notes
+
+* The shared `.sw-modal` fix repaired the normalized Results/Targets/SWOT popups with no template changes.
+* A structural `app-modal` wrapper component remains an optional future improvement.

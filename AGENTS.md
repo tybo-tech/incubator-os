@@ -75,6 +75,12 @@ api-incubator-os/  PHP 8.1 backend (custom MVC, Docker-based)
 - Implementation: put `.sw-modal` / dialog wrapper elements in the template with **no** `(click)="close()"` on the backdrop. Keep `(click)="$event.stopPropagation()"` on the dialog card. Applies to all new dialogs (the financial-indicators dialogs and the normalized SWOT/Targets/Results popups already follow this).
 - Destructive confirmation remains allowed to use `confirm()` where already present.
 
+### Popup layout — fixed header/footer, scrollable body
+
+- A popup's **header and footer/actions must stay fixed**; when the content is tall **only the body scrolls**. Never let the whole card scroll — the header and the Save/Cancel actions scroll out of view.
+- **`.sw-modal` (normalized SWOT/Targets/Results popups)** already enforces this: `.sw-modal-card` is a flex column, `.sw-modal-head`/`.sw-modal-foot` are `flex:0 0 auto`, and `.sw-modal-body` is `flex:1; min-height:0; overflow-y:auto`. Use the `head → body → foot` structure and do **not** put `overflow:auto` on the card.
+- **Tailwind dialogs** (e.g. the financial-indicators dialogs, `financial-target-entry`) must use the same contract: card `flex flex-col max-h-[90vh] overflow-hidden`; header and footer `shrink-0`; body `flex-1 overflow-y-auto min-h-0`.
+
 ### View persistence (localStorage)
 
 - Every list/table screen must **persist its view settings to `localStorage`** so a refresh, or navigating away and back, keeps the user's layout: view mode (table/grouped), filter chips, sort key/direction, group collapse state, and row expansion.
