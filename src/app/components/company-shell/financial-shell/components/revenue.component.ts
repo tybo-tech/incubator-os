@@ -12,6 +12,7 @@ import { DoughnutComponent } from '../../../../charts/doughnut/doughnut.componen
 // Chart Data Interfaces
 import { ILineChart, IBarChart } from '../../../../../models/Charts';
 import { IKeyValue } from '../../../../../models/IKeyValue';
+import { FinancialTargetEntryComponent, RevenueYearOption } from './financial-target-entry.component';
 
 // Display row interface for UI binding
 interface RevenueDisplayRow {
@@ -43,7 +44,7 @@ interface RevenueDisplayRow {
 @Component({
   selector: 'app-revenue',
   standalone: true,
-  imports: [CommonModule, FormsModule, LineChartComponent, BarChartComponent],
+  imports: [CommonModule, FormsModule, LineChartComponent, BarChartComponent, FinancialTargetEntryComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <!-- Header -->
@@ -57,6 +58,11 @@ interface RevenueDisplayRow {
           </div>
         </div>
       </div>
+
+      <!-- Financial-screen target entry (Sprint 007 Phase 6) -->
+      @if (companyId) {
+        <app-financial-target-entry [companyId]="companyId" [years]="yearOptions"></app-financial-target-entry>
+      }
 
       <!-- Loading State -->
       <div *ngIf="loading" class="flex justify-center items-center py-8">
@@ -444,6 +450,7 @@ export class RevenueComponent implements OnInit {
   cohortId!: number;
   revenueRows: RevenueDisplayRow[] = [];
   loading = false;
+  yearOptions: RevenueYearOption[] = [];
 
   // Chart Data Properties
   quarterlyTrendsChart: ILineChart = { labels: [], datasets: [] };
@@ -520,6 +527,9 @@ export class RevenueComponent implements OnInit {
         'Revenue Component - Live quarterly data loaded:',
         this.revenueRows
       );
+
+      // Year options for the financial target-entry component (company financial years with data)
+      this.yearOptions = this.revenueRows.map((r) => ({ id: r.financial_year_id, name: r.financial_year_name }));
 
       // Prepare chart data
       this.prepareChartData();

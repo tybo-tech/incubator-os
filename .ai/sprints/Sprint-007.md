@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 5 complete (2026-09-16); ready for Phase 6
+> **Status**: Locked — Phase 6 complete (2026-09-16); ready for Phase 7
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -362,23 +362,25 @@ A company-level view of what actually changed — including what is **awaiting r
 
 Let entrepreneurs create targets directly from financial management.
 
+**Status: ✅ Complete — 2026-09-16 (session 019). See the Phase 6 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **6.1** On the revenue screen (`revenue.component.ts`), add **Create target** and **Link existing target** actions, prefilled with the company, measure (`REVENUE_TOTAL` / `REVENUE_EXPORT`), and the period currently being viewed (financial year / quarter from `company_financial_yearly_stats`).
-- [ ] **6.2** `Create target` → create the `gps_target` (`gps-targets/create.php`) and bind the measure in `gps_target_metrics` (period + direction + `period_total`) in one flow; prefer a transactional single request over two client calls.
-- [ ] **6.3** `Link existing target` → attach the measure binding to a selected unlinked company target (reuse the dropdown pattern from SWOT).
-- [ ] **6.4** Record provenance via `gps_target_sources` with `source_type='manual'` and a period/measure note.
-- [ ] **6.5** Show an inline confirmation that the target is now in the central **Targets** workspace, with a link.
-- [ ] **6.6** Handle the "no accounts / incomplete financials" case in the prefill (warn rather than guess a baseline).
+- [x] **6.1** On the revenue screen, added **Create revenue target** and **Link existing target** actions, prefilled with the company, measure (`REVENUE_TOTAL` / `REVENUE_EXPORT`) and the financial-year/quarter period.
+- [x] **6.2** `Create target` creates the `gps_target` + metric binding (`period_total`) **in one transactional request** (`gps-targets/create-measured.php`).
+- [x] **6.3** `Link existing target` attaches the binding to a selected company target (`gps-targets/link-measure.php`), upserting by (target, measure) so there is no duplication.
+- [x] **6.4** Provenance recorded via `gps_target_sources` with `source_type='manual'` and a measure/period note (single row per target).
+- [x] **6.5** Inline confirmation shows the new target's id with links to the **Targets** and **Results** workspaces.
+- [x] **6.6** Prefill previews both periods through the measurement service and **warns** (`no_accounts` / `partial_coverage` / `unknown` / `incomplete` / unresolved rows) instead of fabricating a baseline.
 
 #### Exit Criteria
 
-- [ ] `Create target` on the revenue screen produces a metric-mode target with the measure, period, direction and baseline prefilled, visible in `Targets` and `Results`
-- [ ] `Link existing target` attaches the binding to an existing target without duplicating it
-- [ ] Provenance appears as a manual/financial origin, not a SWOT origin
-- [ ] Missing financial periods produce a warning, not a fabricated baseline
-- [ ] Locked revenue calculations are reused (no re-entry of revenue data); **no reads/writes to `metric_records`**
-- [ ] Standalone/OnPush/signals; `ng build` passes
+- [x] `Create target` on the revenue screen produces a metric-mode target with the measure, period, direction and goal, visible in `Targets` and `Results`
+- [x] `Link existing target` attaches the binding to an existing target without duplicating it
+- [x] Provenance appears as a manual/financial origin, not a SWOT origin
+- [x] Missing financial periods produce a warning, not a fabricated baseline
+- [x] Locked revenue calculations are reused (no re-entry of revenue data); **no reads/writes to `metric_records`**
+- [x] Standalone/OnPush/signals; `ng build` passes
 
 ---
 
@@ -924,3 +926,50 @@ Three clearly separated scopes: **Results & achievements** (`kind` result/achiev
 * `awaiting-review` and measurable snapshots remain empty on un-fixtured local data (revenue is only `partial_coverage`), so demoing the measurable path requires the controlled fixture (as done here).
 * Numeric inputs bind to `number | null` but accept raw strings from the DOM; the backend casts — a typed form control would be tidier.
 * No production changes (review gate).
+
+---
+
+## Phase 6 Completion — 2026-09-16 (session 019)
+
+**Status: ✅ Complete. All Phase 6 tasks and exit criteria satisfied. Stopped at the Phase 6 review gate — no production deployment.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Financial target-entry UI (action bar + create/link popup + period preview) | `src/app/components/company-shell/financial-shell/components/financial-target-entry.component.ts` (new) |
+| Embedded on the revenue screen | `revenue.component.ts` (import + action bar + year options) |
+| Client methods | `src/app/features/normalized/services/gps.service.ts` (`measurePreview`, `createFromMeasure`, `linkMeasure`) |
+| Read-only period preview (reuses the measurement service) | `api-incubator-os/api-nodes/gps-targets/measure-preview.php` (new) |
+| Transactional create (target + binding + provenance) | `api-incubator-os/api-nodes/gps-targets/create-measured.php` (new) |
+| Transactional link (binding + provenance, no duplication) | `api-incubator-os/api-nodes/gps-targets/link-measure.php` (new) |
+| Public measurement hooks | `api-incubator-os/services/TargetMeasurementService.php` (`measurePeriodForMetric`, `metricTypeByCode`) |
+
+No migration required (endpoints + UI only).
+
+### Behaviour (verified)
+
+* **Preview** (`measure-preview`): company 11 `REVENUE_TOTAL` fy1 → `partial_coverage`, subtotal `75,838`, coverage `1/2` (domestic resolves; export unresolved), accounts `16` present + `80` missing, `unresolved_rows 0`, month totals returned. Invalid period → `invalid_period` (no fabrication).
+* **Create** (`create-measured`): created target `#131` → `progress_mode='metric'`, `metric_type_id=1`, `target_value=250000`, `direction=increase`, `calculation_method=period_total`, plus a single `gps_target_sources` row `source_type='manual'` with the note `Financial measure REVENUE_TOTAL · target period …`.
+* **Link** (`link-measure`): attached the binding to existing target `#118` and created exactly **one** manual provenance row; a second call updated the binding and created **no** duplicate source.
+* **Browser** (Playwright, company 11 revenue screen): action bar renders; create popup prefills Combined measure + FY periods and shows the read-only preview with the **partial-coverage warnings**; create succeeds and shows the inline "Target #131 now appears in the central Targets workspace (Results)" confirmation; the link popup lists company 11's targets (marking already-metric ones).
+* `ng build` passes (dev + prod). **0 post-login runtime console errors** (only the pre-auth `401`).
+
+### Measures offered
+
+Export revenue (`REVENUE_EXPORT`) and Combined revenue (`REVENUE_TOTAL`). The UI explains that a **domestic-only measure is pending definition approval** — per the Phase 3 review, `REVENUE_TOTAL` remains combined and shows partial coverage where export accounts are absent; no unapproved measure was invented.
+
+### ⚠ Incident: local company 11 data loss and restoration
+
+While developing the Phase 5 UI fixtures, the **first run of a buggy fixture-cleanup script deleted company 11's local `company_accounts`, `company_financial_yearly_stats` and `gps_targets`** (it iterated a teardown over company 11 and failed later on a users FK). Company 10 and 59 were unaffected. Company 11's local data was **restored faithfully**:
+
+* **Financial rows** — copied identical `company_accounts` (ids 16, 80) and `company_financial_yearly_stats` (ids 139, 209; totals 75,838 / 123,865) from the local `incubator_os_prod` clone.
+* **Normalized SWOT/GPS** — the swot analysis + 8 items had survived; `gps_targets` (12) + `gps_target_sources` (12) were recreated with the audited migration CLI (`normalized-migrate-cli.php --action=migrate --companyIds=11`).
+
+Verified after restoration: co11 = 1 analysis · 8 items · 12 targets · 12 sources · 2 accounts · 2 stats. An orphaned `progress_mode='metric'` (from a raw metric delete during testing) was reset to `manual`; 0 orphan metric-mode targets remain. No production data was involved.
+
+### Remaining issues / notes
+
+* Local revenue remains `partial_coverage` for Combined revenue (no `export_revenue` accounts in any company), so the combined subtotal is explicitly partial.
+* The financial target-entry popup currently offers per-period (FY/quarter) selection from the years present on the revenue screen; a dedicated quarter-level entry point could be added later.
+* Production changes remain out of scope (review gate).

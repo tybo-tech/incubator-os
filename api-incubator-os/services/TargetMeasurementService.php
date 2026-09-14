@@ -425,6 +425,25 @@ class TargetMeasurementService
         return ['ok' => false, 'reason' => "unsupported period_type '$type'."];
     }
 
+    /**
+     * Public: measure a single period for a measure/company without a target.
+     * Used by the financial-screen prefill (Sprint 007 Phase 6) to preview the
+     * baseline/target period and surface warnings before a target exists.
+     */
+    public function measurePeriodForMetric(int $companyId, string $periodType, string $periodRef, int $metricTypeId): array
+    {
+        return $this->measurePeriod($companyId, $periodType, $periodRef, $metricTypeId);
+    }
+
+    /** Resolve a measure definition by its code (e.g. REVENUE_TOTAL). */
+    public function metricTypeByCode(string $code): ?array
+    {
+        $stmt = $this->conn->prepare("SELECT id, code, name, unit, period_type FROM metric_types WHERE code = ?");
+        $stmt->execute([$code]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
     private function countUnresolvedRows(int $companyId, int $fyId): int
     {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM company_financial_yearly_stats WHERE company_id = ? AND financial_year_id = ? AND account_id IS NULL");

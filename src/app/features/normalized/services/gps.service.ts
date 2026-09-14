@@ -154,4 +154,23 @@ export class GpsService {
   addUpdate(data: { gps_target_id: number; progress_percentage: number; status: string; note?: string | null }): Observable<GpsUpdate> {
     return this.http.post<GpsUpdate>(`${this.updateBase}/add.php`, data, { withCredentials: true });
   }
+
+  // ---- Financial-screen target entry (Sprint 007 Phase 6) ----
+
+  measurePreview(companyId: number, metricCode: string, periodType: string, periodRef: string): Observable<any> {
+    const params = new HttpParams()
+      .set('company_id', String(companyId))
+      .set('metric_code', metricCode)
+      .set('period_type', periodType)
+      .set('period_ref', periodRef);
+    return this.http.get<any>(`${this.base}/measure-preview.php`, { params, withCredentials: true });
+  }
+
+  createFromMeasure(data: Record<string, unknown>): Observable<any> {
+    return this.http.post<any>(`${this.base}/create-measured.php`, data, { withCredentials: true });
+  }
+
+  linkMeasure(data: Record<string, unknown>): Observable<any> {
+    return this.http.post<any>(`${this.base}/link-measure.php`, data, { withCredentials: true });
+  }
 }
