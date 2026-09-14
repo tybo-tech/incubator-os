@@ -181,7 +181,15 @@ export class FinancialIndicatorsPageComponent implements OnInit {
   /** Financial-year options for the revenue target-entry component (measure periods). */
   loadFinancialYears(): void {
     this.financialYearService.getAllFinancialYears().subscribe({
-      next: (years) => this.yearOptions.set((years || []).map(y => ({ id: y.id, name: y.name }))),
+      next: (years) => this.yearOptions.set((years || []).map(y => ({
+        id: y.id,
+        name: y.name,
+        isActive: y.is_active,
+        startYear: y.fy_start_year,
+        startMonth: y.start_month,
+        endYear: y.fy_end_year,
+        endMonth: y.end_month,
+      }))),
       error: () => {},
     });
   }

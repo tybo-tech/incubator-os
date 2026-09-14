@@ -1,13 +1,24 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, signal, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { GpsService, GpsTarget } from '../../../../features/normalized/services/gps.service';
 
+/**
+ * A financial year offered as a measurement period. The date fields are required to order the
+ * options by their real period (`ORDER BY id` from the API is arbitrary relative to dates):
+ * `startYear`/`startMonth` and `endYear`/`endMonth`. A year without a start date cannot be
+ * auto-selected (see `FinancialTargetEntryComponent`).
+ */
 export interface RevenueYearOption {
   id: number;
   name: string;
+  isActive?: boolean;
+  startYear?: number;
+  startMonth?: number;
+  endYear?: number;
+  endMonth?: number;
 }
 
 type Mode = 'create' | 'link';
@@ -93,10 +104,11 @@ type Direction = 'increase' | 'decrease' | 'maintain';
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <label class="block">
               <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Baseline FY</span>
-              <select class="w-full border border-gray-300 rounded-lg px-3 py-2" [(ngModel)]="baselineYearId" (ngModelChange)="refreshPreview()">
+              <select class="w-full border border-gray-300 rounded-lg px-3 py-2" [ngModel]="baselineYearId()" (ngModelChange)="onBaselineYearChange($event)">
                 <option [ngValue]="0">—</option>
-                @for (y of years(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
+                @for (y of sortedYears(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
               </select>
+              @if (!baselineYearId()) { <span class="block text-xs text-amber-700 mt-1">Select a baseline year — none could be determined automatically.</span> }
             </label>
             <label class="block">
               <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Baseline period</span>
@@ -107,10 +119,11 @@ type Direction = 'increase' | 'decrease' | 'maintain';
             </label>
             <label class="block">
               <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Target FY</span>
-              <select class="w-full border border-gray-300 rounded-lg px-3 py-2" [(ngModel)]="targetYearId" (ngModelChange)="refreshPreview()">
+              <select class="w-full border border-gray-300 rounded-lg px-3 py-2" [ngModel]="targetYearId()" (ngModelChange)="onTargetYearChange($event)">
                 <option [ngValue]="0">—</option>
-                @for (y of years(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
+                @for (y of sortedYears(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
               </select>
+              @if (!targetYearId()) { <span class="block text-xs text-amber-700 mt-1">Select a target year — none could be determined automatically.</span> }
             </label>
             <label class="block">
               <span class="block text-xs font-semibold text-gray-500 uppercase mb-1">Target period</span>
@@ -210,11 +223,13 @@ export class FinancialTargetEntryComponent {
   dueDate = '';
   toleranceValue: number | null = null;
   toleranceUnit: 'absolute' | 'percent' = 'absolute';
-  baselineYearId = 0;
+  baselineYearId = signal(0);
   baselineQuarter = 'FY';
-  targetYearId = 0;
+  targetYearId = signal(0);
   targetQuarter = 'FY';
   linkTargetId = '';
+  /** True once the user changes a year select; deliberate choices are preserved across reopen. */
+  private periodsTouched = false;
 
   targets = signal<GpsTarget[]>([]);
   baselinePreview = signal<any>(null);
@@ -227,6 +242,92 @@ export class FinancialTargetEntryComponent {
   error = signal<string | null>(null);
 
   unit = computed(() => 'ZAR');
+
+  /** Financial years ordered by their real period start (the API's `ORDER BY id` is arbitrary). */
+  readonly sortedYears = computed(() => {
+    const list = [...(this.years() ?? [])];
+    return list.sort((a, b) => {
+      const ak = this.startKey(a);
+      const bk = this.startKey(b);
+      if (ak == null && bk == null) return 0;
+      if (ak == null) return 1;
+      if (bk == null) return -1;
+      if (ak !== bk) return ak - bk;
+      return (this.endKey(a) ?? ak) - (this.endKey(b) ?? bk);
+    });
+  });
+
+  constructor() {
+    // (Re)derive the default baseline/target periods whenever the year options arrive or change
+    // (e.g. an async load that lands after the dialog opens). A deliberate user selection is
+    // never overwritten — only stale ids that no longer resolve are cleared.
+    effect(() => {
+      const years = this.sortedYears();
+      if (!this.mode()) return;
+      const valid = years.filter((y) => this.startKey(y) != null);
+      if (this.periodsTouched) {
+        const ids = new Set(valid.map((y) => y.id));
+        if (this.targetYearId() && !ids.has(this.targetYearId())) this.targetYearId.set(0);
+        if (this.baselineYearId() && !ids.has(this.baselineYearId())) this.baselineYearId.set(0);
+        return;
+      }
+      if (!valid.length) return;
+      this.applyPeriodDefaults();
+      this.refreshPreview();
+    });
+  }
+
+  /** Target = current/open/latest applicable year; baseline = its immediate predecessor. */
+  private applyPeriodDefaults(): void {
+    const valid = this.sortedYears().filter((y) => this.startKey(y) != null);
+    const target = this.pickTargetYear(valid);
+    this.targetYearId.set(target?.id ?? 0);
+    const idx = target ? valid.findIndex((y) => y.id === target.id) : -1;
+    this.baselineYearId.set(idx > 0 ? valid[idx - 1].id : 0);
+  }
+
+  /**
+   * The "current/open/latest applicable" year: the year whose period contains today, else the
+   * active (open) year, else the latest year by period. Never an arbitrary array position.
+   */
+  private pickTargetYear(valid: RevenueYearOption[]): RevenueYearOption | null {
+    if (!valid.length) return null;
+    const now = new Date();
+    const todayKey = now.getFullYear() * 12 + now.getMonth();
+    const current = valid.find((y) => {
+      const s = this.startKey(y);
+      const e = this.endKey(y);
+      return s != null && e != null && todayKey >= s && todayKey <= e;
+    });
+    if (current) return current;
+    const active = valid.find((y) => y.isActive);
+    if (active) return active;
+    return valid[valid.length - 1];
+  }
+
+  /** Comparable month ordinal (year * 12 + month); null when the period cannot be determined. */
+  private startKey(y: RevenueYearOption): number | null {
+    if (y.startYear == null || y.startMonth == null) return null;
+    return y.startYear * 12 + (y.startMonth - 1);
+  }
+
+  private endKey(y: RevenueYearOption): number | null {
+    const start = this.startKey(y);
+    if (y.endYear != null && y.endMonth != null) return y.endYear * 12 + (y.endMonth - 1);
+    return start == null ? null : start + 11;
+  }
+
+  onBaselineYearChange(id: number): void {
+    this.baselineYearId.set(Number(id) || 0);
+    this.periodsTouched = true;
+    this.refreshPreview();
+  }
+
+  onTargetYearChange(id: number): void {
+    this.targetYearId.set(Number(id) || 0);
+    this.periodsTouched = true;
+    this.refreshPreview();
+  }
 
   warnings = computed(() => {
     const out: string[] = [];
@@ -248,16 +349,12 @@ export class FinancialTargetEntryComponent {
     this.formError.set(null);
     this.successTargetId.set(null);
     this.error.set(null);
-    const ys = this.years();
-    this.targetYearId = ys[0]?.id ?? 0;
-    this.baselineYearId = ys[1]?.id ?? ys[0]?.id ?? 0;
     this.baselineQuarter = 'FY';
     this.targetQuarter = 'FY';
     this.goal = null;
     this.title = '';
     this.linkTargetId = '';
     if (mode === 'link') this.loadTargets();
-    this.refreshPreview();
   }
 
   close(): void {
@@ -279,9 +376,9 @@ export class FinancialTargetEntryComponent {
   refreshPreview(): void {
     const cid = this.companyId();
     if (!cid) return;
-    const b = this.period('baseline', this.baselineYearId, this.baselineQuarter);
-    const t = this.period('target', this.targetYearId, this.targetQuarter);
-    if (this.baselineYearId === 0 || this.targetYearId === 0) { this.baselinePreview.set(null); this.targetPreview.set(null); return; }
+    if (this.baselineYearId() === 0 || this.targetYearId() === 0) { this.baselinePreview.set(null); this.targetPreview.set(null); return; }
+    const b = this.period('baseline', this.baselineYearId(), this.baselineQuarter);
+    const t = this.period('target', this.targetYearId(), this.targetQuarter);
     this.previewLoading.set(true);
     this.previewError.set(null);
     forkJoin({
@@ -295,11 +392,13 @@ export class FinancialTargetEntryComponent {
 
   save(): void {
     if (this.mode() === 'link' && !this.linkTargetId) { this.formError.set('Select an existing target to link.'); return; }
+    if (!this.targetYearId()) { this.formError.set('Select a target financial year — none could be determined automatically.'); return; }
+    if (!this.baselineYearId()) { this.formError.set('Select a baseline financial year — none could be determined automatically.'); return; }
     if (this.goal === null || this.goal === undefined || String(this.goal) === '') { this.formError.set('A goal value is required.'); return; }
     if (this.direction === 'maintain' && (this.toleranceValue === null || this.toleranceValue === undefined)) { this.formError.set('A tolerance value is required when direction is maintain.'); return; }
 
-    const b = this.period('baseline', this.baselineYearId, this.baselineQuarter);
-    const t = this.period('target', this.targetYearId, this.targetQuarter);
+    const b = this.period('baseline', this.baselineYearId(), this.baselineQuarter);
+    const t = this.period('target', this.targetYearId(), this.targetQuarter);
     const base: Record<string, unknown> = {
       metric_code: this.measureCode,
       target_value: this.goal,

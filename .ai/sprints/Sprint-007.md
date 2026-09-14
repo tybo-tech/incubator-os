@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: ✅ Complete — all 8 phases done (2026-09-16). Production deployment plan documented, not executed.
+> **Status**: ✅ Complete — all 8 phases done (2026-09-16), plus the release-readiness amendment (session 024). Production deployment plan documented, not executed.
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -1114,3 +1114,34 @@ End-to-end slice through both entry points (SWOT and financial) with screenshots
 ### Hold point
 
 Production migration and deployment require **explicit authorization**. See proof doc §7 (backup/preflight, migration order, API order, Angular order, permissions, smoke tests, data-integrity queries, rollback boundaries, and what cannot be rolled back after verified achievements exist).
+
+---
+
+## Release-Readiness Amendment — 2026-09-16 (session 024)
+
+**Base:** `main` @ `15c87f8` (Phase 8 closure). **Scope:** release-readiness only — no new features, no deployment. **Status: ✅ Complete — stopped at the production authorization gate.**
+
+### 1. Financial-year period selection (defect fix)
+
+Replaced the "first two financial years by array position" default in `FinancialTargetEntryComponent` (the shared Financial-Indicators / revenue target-entry dialog).
+
+- Years are now ordered by their **real period dates** (`fy_start_year`/`start_month`, then end). The API returns `ORDER BY id`, which is not chronological, so the component no longer trusts array position.
+- Defaults: **target = the current/open/latest applicable year** (period contains today → active year → latest by period); **baseline = its immediate predecessor**.
+- **Fewer than two valid years** → the missing selection is left empty with an inline prompt and save is blocked — never an arbitrary position.
+- A user's deliberate selection is **preserved** when the dialog is reopened/edited.
+- The two parent mappers (`financial-indicators-page`, legacy `revenue.component`, shared-component additive change only) now pass the period dates.
+
+**Browser-verified cases** (request interception for unsorted/limited responses): current year present; API unsorted (reversed, current moved off index 0); current absent + active present; current and active both absent; one year; no years; deliberate selection across Cancel→reopen. See proof doc §9.1.
+
+### 2. Durable review evidence
+
+The eight Phase 8 screenshots were gitignored (`.gitignore` `/*.png`) and therefore absent from `15c87f8`. Seven **unique** redacted copies are now committed under `docs/evidence/sprint-007/` (the sidebar personal user block is redacted; no credentials/cookies/tokens/unrelated content) and linked from proof doc §1 with captions. `p8-progress-separate` and `p8-actual-authoritative` were byte-identical, so one durable copy serves both.
+
+### 3. Release-readiness note
+
+Proof doc §9.2 quantifies the remaining data limitations (local reference dataset): 81 companies hold accounts, **0** with an `export_revenue` account; 96 companies have financial-yearly-stats rows; **105 of 179** rows (`account_id IS NULL`) across 65 companies. Affected revenue measures (`REVENUE_TOTAL`, `REVENUE_ANNUAL`, `REVENUE_EXPORT`) are non-authoritative and cannot be verified. **No repair or backfill was performed.**
+
+### Gate
+
+Release-readiness amendment complete; **no production migration or deployment executed.** The next decision is the explicit production authorization already required by the §7.9 hold point.
+

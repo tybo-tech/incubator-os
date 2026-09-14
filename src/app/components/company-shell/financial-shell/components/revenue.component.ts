@@ -528,8 +528,14 @@ export class RevenueComponent implements OnInit {
         this.revenueRows
       );
 
-      // Year options for the financial target-entry component (company financial years with data)
-      this.yearOptions = this.revenueRows.map((r) => ({ id: r.financial_year_id, name: r.financial_year_name }));
+      // Year options for the financial target-entry component (company financial years with data).
+      // Dates are passed so the component can order periods by their real range, not array position.
+      this.yearOptions = this.revenueRows.map((r) => ({
+        id: r.financial_year_id,
+        name: r.financial_year_name,
+        startYear: r.fy_start_year,
+        startMonth: r.start_month,
+      }));
 
       // Prepare chart data
       this.prepareChartData();
