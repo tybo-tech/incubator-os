@@ -101,7 +101,7 @@ class GpsTargetSource
 
     public function listBySwotItem(int $swotItemId): array
     {
-        $stmt = $this->conn->prepare("SELECT gts.*, gt.title as target_title, gt.status as target_status FROM gps_target_sources gts JOIN gps_targets gt ON gt.id = gts.gps_target_id WHERE gts.swot_item_id = ? ORDER BY gts.created_at ASC");
+        $stmt = $this->conn->prepare("SELECT gts.id AS source_id, gts.gps_target_id, gts.source_type, gts.swot_item_id, gts.notes AS link_notes, gts.created_at AS linked_at, gt.id, gt.company_id, gt.title, gt.description, gt.category, gt.priority, gt.status, gt.progress_mode, gt.manual_progress_percentage, gt.due_date, gt.owner_label, gt.created_at, gt.updated_at, si.description AS swot_description, si.category AS swot_category FROM gps_target_sources gts JOIN gps_targets gt ON gt.id = gts.gps_target_id LEFT JOIN swot_items si ON si.id = gts.swot_item_id WHERE gts.swot_item_id = ? ORDER BY gts.created_at ASC");
         $stmt->execute([$swotItemId]);
         return array_map([$this, 'castRow'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
@@ -179,6 +179,9 @@ class GpsTargetSource
         $row['id'] = (int)$row['id'];
         $row['gps_target_id'] = (int)$row['gps_target_id'];
         if (isset($row['swot_item_id']) && $row['swot_item_id'] !== null) $row['swot_item_id'] = (int)$row['swot_item_id'];
+        if (isset($row['source_id']) && $row['source_id'] !== null) $row['source_id'] = (int)$row['source_id'];
+        if (isset($row['company_id']) && $row['company_id'] !== null) $row['company_id'] = (int)$row['company_id'];
+        if (isset($row['manual_progress_percentage']) && $row['manual_progress_percentage'] !== null) $row['manual_progress_percentage'] = (float)$row['manual_progress_percentage'];
         return $row;
     }
 }

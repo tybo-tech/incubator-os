@@ -95,7 +95,7 @@ import { GpsService, GpsTarget, GpsTask } from '../services/gps.service';
               <span class="ios-swot-main">
                 <span class="ios-chevron">›</span>
                 <span>
-                  <span class="ios-kicker"><span class="ios-badge {{ q.key }}">{{ q.label.slice(0,-1) }}</span><span class="ios-priority">{{ item.priority }} priority</span></span>
+                  <span class="ios-kicker"><span class="ios-badge {{ q.key }}">{{ q.badge }}</span><span class="ios-priority">{{ item.priority }} priority</span></span>
                   <span class="ios-swot-title">{{ item.description }}</span>
                   @if (item.recommended_response) { <span class="ios-swot-context">{{ item.recommended_response }}</span> }
                   <span class="ios-swot-context">Impact: {{ item.impact }} · Status: {{ item.status }} · Owner: {{ item.owner_label || '—' }} · Target: {{ item.target_date || '—' }}</span>
@@ -238,10 +238,10 @@ export class SwotHierarchyPage {
   createLoading = signal(false);
 
   quadrants = [
-    { key: 'strength', label: 'Strengths' },
-    { key: 'weakness', label: 'Weaknesses' },
-    { key: 'opportunity', label: 'Opportunities' },
-    { key: 'threat', label: 'Threats' },
+    { key: 'strength', label: 'Strengths', badge: 'Strength' },
+    { key: 'weakness', label: 'Weaknesses', badge: 'Weakness' },
+    { key: 'opportunity', label: 'Opportunities', badge: 'Opportunity' },
+    { key: 'threat', label: 'Threats', badge: 'Threat' },
   ] as const;
 
   itemsByCategory = computed(() => {
@@ -439,12 +439,10 @@ export class SwotHierarchyPage {
 
   doUnlink(t: any, swotItemId: number): void {
     const targetId = this.displayTargetId(t);
-    // find link id: need to fetch sources for target to find link row id; listBySwotItem rows contain gts id? The join returns gts fields including id. Use that id if present.
-    const linkId = Number(t.id && t.swot_item_id ? t.id : 0); // if row is gts, id is link id; but our displayTargetId uses target id, so ambiguous. Fetch sources for target to find correct link.
-    // simpler: use unlinkByTargetAndSwot
+    // listBySwotItem rows carry source_id (link row id); fall back to pair-based unlink
+    const linkId = Number(t.source_id ?? 0);
     if (!confirm('Unlink this target from the SWOT item? The target itself will remain.')) return;
     const obs = linkId ? this.gps.unlink(linkId) : this.gps.unlinkByTargetAndSwot(targetId, swotItemId);
-    // If linkId is actually target id, the first will fail; fallback to second via error handling
     obs.subscribe({
       next: () => {
         this.successMsg.set('Unlinked target #' + targetId);
@@ -453,16 +451,14 @@ export class SwotHierarchyPage {
         });
       },
       error: e => {
-        // try fallback
-        if (linkId) {
-          this.gps.unlinkByTargetAndSwot(targetId, swotItemId).subscribe({
-            next: () => {
-              this.successMsg.set('Unlinked target #' + targetId);
-              this.gps.listBySwotItem(swotItemId).subscribe({ next: rows => { this.linked.update(m => ({ ...m, [swotItemId]: rows })); this.loadTargets(); } });
-            },
-            error: e2 => this.error.set(e2.error?.error || e2.message)
-          });
-        } else this.error.set(e.error?.error || e.message);
+        // fallback: pair-based unlink
+        this.gps.unlinkByTargetAndSwot(targetId, swotItemId).subscribe({
+          next: () => {
+            this.successMsg.set('Unlinked target #' + targetId);
+            this.gps.listBySwotItem(swotItemId).subscribe({ next: rows => { this.linked.update(m => ({ ...m, [swotItemId]: rows })); this.loadTargets(); } });
+          },
+          error: e2 => this.error.set(e2.error?.error || e2.message)
+        });
       }
     });
   }

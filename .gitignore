@@ -43,3 +43,6 @@ Thumbs.db
 
 # Playwright MCP artifacts
 /.playwright-mcp
+
+# Root-level QA screenshots
+/*.png

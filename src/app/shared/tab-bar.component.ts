@@ -38,31 +38,31 @@ export interface TabItem {
           </svg>
           <span>More</span>
         </button>
+
+        <!-- CDK Overlay Dropdown Panel -->
+        <ng-template cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="trigger"
+          [cdkConnectedOverlayOpen]="dropdownOpen()"
+          [cdkConnectedOverlayPositions]="positions"
+          [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+          [cdkConnectedOverlayHasBackdrop]="true"
+          (backdropClick)="closeDropdown()"
+          (detach)="closeDropdown()">
+          <div class="w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+            <a
+              *ngFor="let tab of overflowTabs()"
+              [routerLink]="[tab.route]"
+              [queryParams]="queryParams()"
+              (click)="closeDropdown()"
+              [class]="'flex items-center space-x-2 px-4 py-2.5 text-sm transition-colors ' +
+                      (isActive(tab) ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-50')">
+              <i [class]="tab.icon + ' w-4 h-4'"></i>
+              <span>{{ tab.label }}</span>
+            </a>
+          </div>
+        </ng-template>
       </div>
     </nav>
-
-    <!-- CDK Overlay Dropdown Panel -->
-    <ng-template cdkConnectedOverlay
-      [cdkConnectedOverlayOrigin]="trigger"
-      [cdkConnectedOverlayOpen]="dropdownOpen()"
-      [cdkConnectedOverlayPositions]="positions"
-      [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
-      [cdkConnectedOverlayHasBackdrop]="true"
-      (backdropClick)="closeDropdown()"
-      (detach)="closeDropdown()">
-      <div class="w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-        <a
-          *ngFor="let tab of overflowTabs()"
-          [routerLink]="[tab.route]"
-          [queryParams]="queryParams()"
-          (click)="closeDropdown()"
-          [class]="'flex items-center space-x-2 px-4 py-2.5 text-sm transition-colors ' +
-                  (isActive(tab) ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-50')">
-          <i [class]="tab.icon + ' w-4 h-4'"></i>
-          <span>{{ tab.label }}</span>
-        </a>
-      </div>
-    </ng-template>
   `,
 })
 export class TabBarComponent {
