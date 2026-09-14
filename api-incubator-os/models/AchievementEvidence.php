@@ -11,12 +11,13 @@ if (!class_exists('ConflictException')) {
 /**
  * AchievementEvidence — evidence attached to an achievement.
  *
- * Lifecycle (Sprint 007 Phase 4):
- *   - Append-only: `add()` is permitted on drafts AND on verified records.
- *   - Deletion is permitted ONLY while the parent achievement is `unverified` (draft cleanup);
- *     on a decided record (verified/rejected/revoked) deletion returns a ConflictException → 409.
+ * Lifecycle (Sprint 007 Phase 4; tightened Phase 8):
+ *   - Evidence is editable/appendable ONLY while the parent achievement is `unverified` (draft).
+ *   - On a decided record (verified/rejected/revoked) `add()` and `delete()` both return a
+ *     ConflictException → 409: verified evidence is immutable.
  *   - `metric_snapshot` rows are written automatically by Achievement::verify() inside its
- *     transaction; a unique functional index (`uq_evidence_metric_snapshot`) allows at most one.
+ *     transaction (the parent is still `unverified` at that point); a unique functional index
+ *     (`uq_evidence_metric_snapshot`) allows at most one.
  */
 class AchievementEvidence
 {
@@ -34,6 +35,9 @@ class AchievementEvidence
     {
         $status = $this->parentStatus($achievementId);
         if ($status === null) throw new NotFoundException("achievements id $achievementId not found");
+        if ($status !== 'unverified') {
+            throw new ConflictException('Evidence on a verified record is immutable — revoke or supersede instead.');
+        }
 
         $source = strtolower(trim((string)($data['source_type'] ?? 'note')));
         if (!in_array($source, self::SOURCE_TYPES, true)) {

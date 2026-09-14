@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 7 complete (2026-09-16); ready for Phase 8
+> **Status**: ✅ Complete — all 8 phases done (2026-09-16). Production deployment plan documented, not executed.
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -413,28 +413,30 @@ Bring measurement and achievement into the existing target detail.
 
 Prove both entry points and the vertical slice, then hand over the pattern.
 
+**Status: ✅ Complete — 2026-09-16 (session 023). See `docs/sprint-007-phase8-proof.md` and the Phase 8 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **8.1** Run the complete slice locally via the **SWOT entry point**: revenue **finding (SWOT) → target → tasks → calculated actual → evidenced achievement**.
-- [ ] **8.2** Run the complete slice via the **financial entry point**: revenue screen → **Create target** (prefilled measure/period) → calculated actual → evidenced achievement. Confirm the target also appears in `Targets` and in **Results**.
-- [ ] **8.3** Record one **qualitative** achievement with no target, and one **decision**; confirm the decision is excluded from achievement counts and labelled as an event.
-- [ ] **8.4** Confirm a **measured target awaiting review** appears in Results before any achievement is created.
-- [ ] **8.5** Playwright pass across `results` + `gps-targets-v2` + the revenue entry point; confirm **0 post-login console errors**.
-- [ ] **8.6** Update `.ai/sessions/` (new session file), this sprint's progress, and `migrations/README.md`.
-- [ ] **8.7** Confirm the `MetricRecord.php` removal orphaned no endpoints; `php -l` sweep and `ng build`.
-- [ ] **8.8** Document the reusable pattern (measure → account binding → period → calculation method → actual → achievement) for employment, profitability, funding and qualitative milestones.
+- [x] **8.1** Run the complete slice locally via the **SWOT entry point**: revenue **finding (SWOT) → target → tasks → calculated actual → evidenced achievement**.
+- [x] **8.2** Run the complete slice via the **financial entry point**: financial screen → **Create target** (prefilled measure/period) → calculated actual → evidenced achievement. Confirm the target also appears in `Targets` and in **Results**.
+- [x] **8.3** Record one **qualitative** achievement with no target, and one **decision**; confirm the decision is excluded from achievement counts and labelled as an event.
+- [x] **8.4** Confirm a **measured target awaiting review** appears in Results before any achievement is created.
+- [x] **8.5** Playwright pass across `results` + `gps-targets-v2` + the financial entry point; confirm **0 post-login console errors**.
+- [x] **8.6** Update `.ai/sessions/` (new session file), this sprint's progress, and `migrations/README.md`.
+- [x] **8.7** Confirm the `MetricRecord.php` removal orphaned no endpoints; `php -l` sweep and `ng build`.
+- [x] **8.8** Document the reusable pattern (measure → account binding → period → calculation method → actual → achievement) for employment, profitability, funding and qualitative milestones.
 
 #### Exit Criteria
 
-- [ ] Both entry points (SWOT and financial) produce a target that reaches a calculated actual and an evidenced achievement
-- [ ] The financial entry point proves company + measure + period prefill
-- [ ] A qualitative achievement and a decision are demonstrated; the decision is excluded from achievement counts
-- [ ] A measured target appears under **awaiting review** before any achievement exists
-- [ ] The full slice is demonstrated and screenshotted
-- [ ] Every prior phase's exit criteria is satisfied
-- [ ] Session + sprint + migration docs updated (Rule of Three)
-- [ ] A production deployment plan is documented — **not executed** without explicit go-ahead
-- [ ] `php -l` and `ng build` both clean
+- [x] Both entry points (SWOT and financial) produce a target that reaches a calculated actual and an evidenced achievement
+- [x] The financial entry point proves company + measure + period prefill
+- [x] A qualitative achievement and a decision are demonstrated; the decision is excluded from achievement counts
+- [x] A measured target appears under **awaiting review** before any achievement exists
+- [x] The full slice is demonstrated and screenshotted
+- [x] Every prior phase's exit criteria is satisfied
+- [x] Session + sprint + migration docs updated (Rule of Three)
+- [x] A production deployment plan is documented — **not executed** without explicit go-ahead
+- [x] `php -l` and `ng build` both clean
 
 ---
 
@@ -544,26 +546,26 @@ Documented to prevent architectural assumptions that would conflict with future 
 
 The sprint is complete when:
 
-- [ ] All 8 phases are complete and every phase exit criterion is satisfied
-- [ ] A measurable target's actual is derived from `company_financial_yearly_stats` through `metric_type_accounts` — never re-entered into `metric_records`
-- [ ] Account resolution is company-scoped; overlapping bindings are deduplicated; incomplete/missing data is reported as such, never as a false zero/achievement
-- [ ] The Measurement Contract is implemented exactly: period refs, `increase`/`decrease`/`maintain` formulas, explicit tolerance, and the `target == baseline` guard
-- [ ] Task completion and outcome progress are independent; finishing all tasks never auto-completes a target
-- [ ] Achievements are dated (`achieved_on`), attributable (`recorded_by`), verifiable (`verified_by`), and may exist without a target; identities are server-derived
-- [ ] The measurement snapshot is captured **automatically and atomically** on verification, with periods, account bindings, completeness and `calculation_version`
-- [ ] Verified achievements and evidence are immutable; corrections **revoke** (with reason) or **supersede** — nothing verified is destroyed
-- [ ] Verification is permitted for System Administrator or an authorized coach scoped to the company — consistent across backend, UI and this document
-- [ ] Decisions are distinguishable from achievements, excluded from counts, and event-date labelled
-- [ ] `company/:id/results` shows **measured targets awaiting review** alongside recorded results and achievements
-- [ ] `Create target` / `Link existing target` on the revenue screen create a prefilled metric target visible in `Targets` and `Results`
-- [ ] The `Targets` popup shows separate task % and outcome %, a derived actual, and its achievements
-- [ ] Dead code removed: `models/MetricRecord.php` and `api-nodes/enhanced-metrics.php`
-- [ ] Locked foundation untouched: no changes to existing table shapes beyond the additive `gps_target_metrics` columns; no changes to the shared `.sw-*` design language
-- [ ] All new Angular code is standalone, `OnPush`, signals/`computed()`/`inject()`, `@if`/`@for`; lazy-loaded
-- [ ] Company isolation enforced on every new endpoint; authorized actions (verify, measure binding) guarded
-- [ ] `php -l` clean on all new/changed PHP; `ng build` passes; **0 console errors** on `results` and `targets`
-- [ ] Session file + sprint progress + `migrations/README.md` updated (Rule of Three)
-- [ ] Production deployment plan documented and **not executed** without explicit go-ahead
+- [x] All 8 phases are complete and every phase exit criterion is satisfied — *each phase's Completion section + this sprint's status*
+- [x] A measurable target's actual is derived from `company_financial_yearly_stats` through `metric_type_accounts` — never re-entered into `metric_records` — *`TargetMeasurementService` (read-only); no `metric_records` access*
+- [x] Account resolution is company-scoped; overlapping bindings are deduplicated; incomplete/missing data is reported as such, never as a false zero/achievement — *`MetricTypeAccount::resolveAccounts()`; all completeness states Phase 7/8*
+- [x] The Measurement Contract is implemented exactly: period refs, `increase`/`decrease`/`maintain` formulas, explicit tolerance, and the `target == baseline` guard — *`TargetMeasurementService::computeProgress()`; `invalid_definition` proven*
+- [x] Task completion and outcome progress are independent; finishing all tasks never auto-completes a target — *Phase 2; Phase 8 `1/2 · 50%` with `status` unchanged*
+- [x] Achievements are dated (`achieved_on`), attributable (`recorded_by`), verifiable (`verified_by`), and may exist without a target; identities are server-derived — *`Achievement`; qualitative + decision proof*
+- [x] The measurement snapshot is captured **automatically and atomically** on verification, with periods, account bindings, completeness and `calculation_version` — *`Achievement::verify()` single transaction; 1 `metric_snapshot`*
+- [x] Verified achievements and evidence are immutable; corrections **revoke** (with reason) or **supersede** — nothing verified is destroyed — *Phase 8 evidence-immutability fix; revoke preserves, supersede links*
+- [x] Verification is permitted for **System Administrator only** (there is no Coach role) scoped to the company; draft authoring for company users — *`auth_is_system_administrator`; SA vs Director proof*
+- [x] Decisions are distinguishable from achievements, excluded from counts, and event-date labelled — *`p8-decision-excluded.png`; `decisions 1 (excluded)`*
+- [x] `company/:id/results` shows **measured targets awaiting review** alongside recorded results and achievements — *`p8-awaiting-review.png`; leaves list after verification*
+- [x] `Create target` / `Link existing target` on the financial screen create a prefilled metric target visible in `Targets` and `Results` — *Phase 6 + Phase 8 path B (`#137`)*
+- [x] The `Targets` popup shows separate task % and outcome %, a derived actual, and its achievements — *`p8-progress-separate.png`, `p8-actual-authoritative.png`*
+- [x] Dead code removed: `models/MetricRecord.php` and `api-nodes/enhanced-metrics.php` — *Phase 1.6; Phase 8 repo-wide search found no executable consumer*
+- [x] Locked foundation untouched: no changes to existing table shapes beyond the additive `gps_target_metrics` columns; no changes to the shared `.sw-*` design language — *migrations additive; `.sw-*` only extended*
+- [x] All new Angular code is standalone, `OnPush`, signals/`computed()`/`inject()`, `@if`/`@for`; lazy-loaded — *`results.page.ts`, `gps-hierarchy.page.ts`, `financial-target-entry`, services*
+- [x] Company isolation enforced on every new endpoint; authorized actions (verify, measure binding) guarded — *Phase 8: Director → company 10 target = 403*
+- [x] `php -l` clean on all new/changed PHP; `ng build` passes; **0 console errors** on `results` and `targets` — *Phase 8 sweep; 0 unexpected post-login errors*
+- [x] Session file + sprint progress + `migrations/README.md` updated (Rule of Three) — *sessions 014–023; README Phase 8 note*
+- [x] Production deployment plan documented and **not executed** without explicit go-ahead — *`docs/sprint-007-phase8-proof.md` §7; hold point §7.9*
 
 ---
 
@@ -1078,3 +1080,37 @@ A controlled company-11 fixture (deactivated the empty `Secondary` account, adde
 ### Remaining Phase 8 work
 
 End-to-end slice through both entry points (SWOT and financial) with screenshots, a qualitative achievement + a decision demonstration, `awaiting review` before achievement, `php -l` sweep, migration README update, the reusable-pattern write-up, and the (non-executed) production deployment plan.
+
+---
+
+## Phase 8 Completion — 2026-09-16 (session 023)
+
+**Status: ✅ Complete — Sprint-007 closure. All 8 phases and every Definition-of-Done item are satisfied. Production migration/deployment is documented only (hold point) and was not executed.**
+
+### Delivered
+
+| Item | Where |
+| --- | --- |
+| Full proof (both entry paths, lifecycle matrix, screenshot index, reusable pattern, deployment plan) | `docs/sprint-007-phase8-proof.md` (new) |
+| Company-usability on the measures endpoint (+ dropdown labelling) | `api-incubator-os/api-nodes/gps-targets/measures.php`, `gps.service.ts`, `gps-hierarchy.page.ts` |
+| Verified-evidence immutability fix | `api-incubator-os/models/AchievementEvidence.php` (+ `achievement-evidence/create.php` doc) |
+| Stale evidence-list fix after lifecycle actions | `src/app/features/normalized/results/results.page.ts` (`refreshRecord`) |
+| Migration README (idempotency, evidence semantics, measures semantics) | `api-incubator-os/migrations/README.md` |
+
+### Proof totals
+
+* **Both entry paths** completed to a verified evidenced achievement (SWOT `#136`, financial `#137`), each with exactly **one** `metric_snapshot`.
+* **8 screenshots** captured (see proof doc §1); stored as `p8-*.png` in the repo root and **not committed**.
+* **Lifecycle matrix**: qualitative, decision (excluded, not verifiable), draft evidence add/delete, verified evidence 409, rejection without snapshot, revocation preserves, supersede links, repeated verify 409 (no duplicate snapshot), SA vs Director, company isolation 403, awaiting-review eligibility, global-measure ≠ company-ready.
+* **Technical**: `php -l` sweep clean; `ng build` passes; both Sprint-007 migrations idempotent (exit 0); no executable consumer of the deleted `MetricRecord`/`enhanced-metrics.php`.
+* **Fixtures removed** — final local state: companies 136; company 11 = 12 targets · 2 active accounts · 2 stats rows; achievements 1 (pre-existing) · evidence 1 (pre-existing) · `gps_target_metrics` 0.
+
+### Material corrections
+
+1. **Verified evidence was mutable** — `AchievementEvidence::add()` allowed appending to a verified record. Tightened to draft-only (`409` once decided); `verify()` unaffected (snapshot written while still `unverified`).
+2. **Stale evidence list** — the Results popup did not reload evidence after verify; now refreshed.
+3. **`measures.php` company-usability** — added company-scoped `usable`/`account_count` and dropdown labelling so a global binding is never presented as company-ready.
+
+### Hold point
+
+Production migration and deployment require **explicit authorization**. See proof doc §7 (backup/preflight, migration order, API order, Angular order, permissions, smoke tests, data-integrity queries, rollback boundaries, and what cannot be rolled back after verified achievements exist).

@@ -872,7 +872,12 @@ export class ResultsPage {
 
   private refreshRecord(saved: Achievement): void {
     this.records.update(list => list.map(x => x.id === saved.id ? saved : x));
-    if (this.popupRecord()?.id === saved.id) this.popupRecord.set(saved);
+    if (this.popupRecord()?.id === saved.id) {
+      this.popupRecord.set(saved);
+      // Lifecycle actions (verify writes a metric snapshot) change the evidence list —
+      // reload it so the open popup does not show a stale count.
+      this.loadEvidence(saved.id);
+    }
     this.api.counts(this.companyId()).subscribe({ next: c => this.counts.set(c), error: () => {} });
     this.api.awaitingReview(this.companyId()).subscribe({ next: a => this.awaiting.set(a), error: () => {} });
   }

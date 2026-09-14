@@ -540,7 +540,7 @@ type PopupMode = 'view' | 'edit';
                 <div class="sw-form-grid">
                   <label class="sw-field"><span>Measure</span>
                     <select class="sw-select" [(ngModel)]="bindMetricTypeId">
-                      @for (m of measures(); track m.id) { <option [ngValue]="m.id">{{ m.name }} ({{ m.code }})</option> }
+                      @for (m of measures(); track m.id) { <option [ngValue]="m.id">{{ m.name }} ({{ m.code }}){{ m.usable === false ? ' — no company accounts (will read no_accounts)' : '' }}</option> }
                     </select>
                   </label>
                   <label class="sw-field"><span>Direction</span>
@@ -811,7 +811,6 @@ export class GpsHierarchyPage {
 
   // ---------- lifecycle ----------
   ngOnInit(): void {
-    this.loadMeasures();
     this.loadFinancialYears();
     this.route.paramMap.subscribe(pm => {
       const v = Number(pm.get('id') || 0);
@@ -833,6 +832,7 @@ export class GpsHierarchyPage {
     const cid = this.companyId();
     if (!cid) { this.error.set('Missing company id'); return; }
     if (!this.viewStateRestored) this.restoreViewState(cid);
+    this.loadMeasures(cid);
     this.loading.set(true); this.error.set(null);
     this.gps.grouped(cid).subscribe({
       next: g => {
@@ -1094,8 +1094,8 @@ export class GpsHierarchyPage {
   }
 
   // ---------- Phase 7: actual / measure binding / achievements ----------
-  loadMeasures(): void {
-    this.gps.measures().subscribe({ next: rows => this.measures.set(rows || []), error: () => this.measures.set([]) });
+  loadMeasures(companyId: number): void {
+    this.gps.measures(companyId).subscribe({ next: rows => this.measures.set(rows || []), error: () => this.measures.set([]) });
   }
 
   loadFinancialYears(): void {

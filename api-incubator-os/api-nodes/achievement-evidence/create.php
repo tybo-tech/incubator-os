@@ -5,8 +5,8 @@ include_once '../../models/User.php';
 include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
 /**
- * Attach evidence to an achievement. POST JSON { achievement_id, source_type, label?, reference?, snapshot_json? }
- * Append-only: allowed on drafts AND on verified records. `created_by` is the authenticated user.
+ * Attach evidence to an achievement DRAFT. POST JSON { achievement_id, source_type, label?, reference?, snapshot_json? }
+ * Draft-only: a decided record (verified/rejected/revoked) → 409. `created_by` is the authenticated user.
  */
 try {
     $db = (new Database())->connect();

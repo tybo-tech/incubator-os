@@ -51,6 +51,9 @@ export interface MeasureOption {
   code: string;
   name: string;
   unit: string | null;
+  /** Present when the request was company-scoped: whether any account resolves for that company. */
+  usable?: boolean;
+  account_count?: number;
 }
 
 export interface GpsTargetSource {
@@ -215,9 +218,13 @@ export class GpsService {
     return this.http.get<any>(`${this.base}/actual.php`, { params, withCredentials: true });
   }
 
-  /** Measures (metric types) with account bindings — for the measure-binding UI. */
-  measures(): Observable<MeasureOption[]> {
-    return this.http.get<MeasureOption[]>(`${this.base}/measures.php`, { withCredentials: true });
+  /** Measures (metric types) with account bindings — for the measure-binding UI.
+   *  Pass the company id to receive a company-specific `usable` flag (a global binding
+   *  does not mean the measure resolves any accounts for the company). */
+  measures(companyId?: number): Observable<MeasureOption[]> {
+    let params = new HttpParams();
+    if (companyId) params = params.set('company_id', String(companyId));
+    return this.http.get<MeasureOption[]>(`${this.base}/measures.php`, { params, withCredentials: true });
   }
 
   /** Measure bindings for a target (each row carries the embedded derived actual). */
