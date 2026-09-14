@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — ready for implementation (amended 2026-09-14 per reviewer feedback)
+> **Status**: Locked — Phase 1 complete (2026-09-15); ready for Phase 2
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -214,26 +214,28 @@ Navigation changes (`CompanyShell.tabBar`): rename **`GPS Targets` → `Targets`
 
 Build the authoritative measure→account binding and prepare the database.
 
+**Status: ✅ Complete — 2026-09-15 (session 014). All tasks and exit criteria satisfied; see the Phase 1 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **1.1** Create `migrations/2026-09-15-results-achievements.sql` — additive, idempotent, guarded: creates `metric_type_accounts`, `achievements`, `achievement_evidence`; `ALTER TABLE gps_target_metrics` adds `baseline_period_type`, `baseline_period_ref`, `target_period_type`, `target_period_ref`, `direction`, `calculation_method`, `maintain_tolerance_value`, `maintain_tolerance_unit`, `calculation_version`. Include rollback notes in a header comment.
-- [ ] **1.2** Seed revenue bindings in the migration: `REVENUE_TOTAL` → `domestic_revenue` + `export_revenue` (`sum`), `REVENUE_EXPORT` → `export_revenue` (`sum`), `REVENUE_ANNUAL` → `domestic_revenue` + `export_revenue` (`sum`).
-- [ ] **1.3** Add `models/MetricTypeAccount.php` — `WRITABLE`, `bind()`, `unbind()`, `listByType()`, `resolveAccounts(metric_type_id, company_id)` (**company-scoped**), `declare(strict_types=1)`, PDO injection.
-- [ ] **1.4** Extend `GpsTargetMetric.php` `WRITABLE` with the new columns; validate enums (`direction`, `calculation_method` = `period_total` only, `maintain_tolerance_unit`) and enforce a tolerance when `direction='maintain'`.
-- [ ] **1.5** Add endpoints `api-nodes/metric-type-accounts/{list,get,create,update,delete}.php` (System Administrator / migration-admin guarded, JSON, try-catch `400`).
-- [ ] **1.6** Delete `models/MetricRecord.php` and `api-nodes/enhanced-metrics.php`; confirm no remaining references; note removal in `migrations/README.md` and session docs.
-- [ ] **1.7** Update `migrations/README.md` with the new migration row and local pre-req command.
+- [x] **1.1** Create `migrations/2026-09-15-results-achievements.sql` — additive, idempotent, guarded: creates `metric_type_accounts`, `achievements`, `achievement_evidence`; `ALTER TABLE gps_target_metrics` adds `baseline_period_type`, `baseline_period_ref`, `target_period_type`, `target_period_ref`, `direction`, `calculation_method`, `maintain_tolerance_value`, `maintain_tolerance_unit`, `calculation_version`. Include rollback notes in a header comment.
+- [x] **1.2** Seed revenue bindings in the migration: `REVENUE_TOTAL` → `domestic_revenue` + `export_revenue` (`sum`), `REVENUE_EXPORT` → `export_revenue` (`sum`), `REVENUE_ANNUAL` → `domestic_revenue` + `export_revenue` (`sum`).
+- [x] **1.3** Add `models/MetricTypeAccount.php` — `WRITABLE`, `bind()`, `unbind()`, `listByType()`, `resolveAccounts(metric_type_id, company_id)` (**company-scoped**), `declare(strict_types=1)`, PDO injection.
+- [x] **1.4** Extend `GpsTargetMetric.php` `WRITABLE` with the new columns; validate enums (`direction`, `calculation_method` = `period_total` only, `maintain_tolerance_unit`) and enforce a tolerance when `direction='maintain'`.
+- [x] **1.5** Add endpoints `api-nodes/metric-type-accounts/{list,get,create,update,delete}.php` (System Administrator / migration-admin guarded, JSON, try-catch `400`).
+- [x] **1.6** Delete `models/MetricRecord.php` and `api-nodes/enhanced-metrics.php`; confirm no remaining references; note removal in `migrations/README.md` and session docs.
+- [x] **1.7** Update `migrations/README.md` with the new migration row and local pre-req command.
 
 #### Exit Criteria
 
-- [ ] Migration applies cleanly to local `incubator_os` and is idempotent on re-run
-- [ ] `SHOW COLUMNS FROM gps_target_metrics` shows all nine new columns
-- [ ] `metric_type_accounts` contains the three revenue bindings; a **company-scoped** resolve for `REVENUE_TOTAL` returns only that company's `domestic_revenue` + `export_revenue` accounts
-- [ ] `calculation_method` accepts only `period_total`; an unsupported value is rejected
-- [ ] `direction='maintain'` without a tolerance value/unit is rejected
-- [ ] `MetricRecord` class + `enhanced-metrics.php` removed; no remaining references
-- [ ] `php -l` clean on every new/changed PHP file
-- [ ] `ng build` still passes (no frontend change required this phase)
+- [x] Migration applies cleanly to local `incubator_os` and is idempotent on re-run
+- [x] `SHOW COLUMNS FROM gps_target_metrics` shows all nine new columns
+- [x] `metric_type_accounts` contains the three revenue bindings; a **company-scoped** resolve for `REVENUE_TOTAL` returns only that company's `domestic_revenue` + `export_revenue` accounts
+- [x] `calculation_method` accepts only `period_total`; an unsupported value is rejected
+- [x] `direction='maintain'` without a tolerance value/unit is rejected
+- [x] `MetricRecord` class + `enhanced-metrics.php` removed; no remaining references
+- [x] `php -l` clean on every new/changed PHP file
+- [x] `ng build` still passes (no frontend change required this phase)
 
 ---
 
@@ -609,3 +611,53 @@ The four open questions from the source review are **resolved** and the five iss
 
 * **Results workspace extended** — **Phase 5.3** adds **Measured targets awaiting review** (`achievements/awaiting-review.php`), so entrepreneurs surface in Results before anyone manually creates an achievement. Phase 8.4 verifies this.
 * **Phase count corrected** to **8** (financial entry inserted as Phase 6; popup and verification phases renumbered).
+
+---
+
+## Phase 1 Completion — 2026-09-15 (session 014)
+
+**Status: ✅ Complete. All Phase 1 tasks and exit criteria satisfied. Stopped at the Phase 1 review gate — no production deployment.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Migration (3 tables + 9 columns + seeded bindings + rollback notes) | `api-incubator-os/migrations/2026-09-15-results-achievements.sql` |
+| Measure→account model (company-scoped resolve + dedup) | `api-incubator-os/models/MetricTypeAccount.php` |
+| Measurement-field extension + validation + latent-bug fix | `api-incubator-os/models/GpsTargetMetric.php` |
+| Guarded endpoints (SA-only) | `api-incubator-os/api-nodes/metric-type-accounts/{list,get,create,update,delete}.php` |
+| Dead code removed | `api-incubator-os/models/MetricRecord.php`, `api-incubator-os/api-nodes/enhanced-metrics.php` |
+| Docs | `api-incubator-os/migrations/README.md` (row #18, local command, financial-semantics notes) |
+
+### Validation evidence
+
+* **Migration idempotency** — applied to local `incubator_os`; second run emitted only `… exists` notes, exit 0, no errors.
+* **Schema** — 3 tables present; all **9** new `gps_target_metrics` columns present with correct types/enums.
+* **Seeded bindings** — 5 rows: `REVENUE_TOTAL` × {domestic_revenue, export_revenue}, `REVENUE_EXPORT` × {export_revenue}, `REVENUE_ANNUAL` × {domestic_revenue, export_revenue}, all `is_revenue=1`, `combine_mode=sum`.
+* **Company-scoped resolution** — `resolveAccounts(REVENUE_TOTAL, 11)` → accounts `16,80` (all company 11, all domestic_revenue); `resolveAccounts(REVENUE_TOTAL, 59)` → accounts `1,88` and contains **neither** 16 nor 80.
+* **Dedup** — adding an overlapping pinned binding for account 16 still returned account 16 **exactly once**; no duplicate account ids.
+* **Validation** — `calculation_method='closing_balance'` rejected (`Unsupported calculation_method … implemented: period_total`); `direction='maintain'` without tolerance rejected; with tolerance accepted and stored.
+* **Endpoint guard** — unauth → `401`; Director (non-admin) → `403`; SA → bindings JSON; `get.php?id=1` → binding; missing id → `404`.
+* **`php -l`** — clean on both models + all 5 endpoints. **`ng build`** — passes.
+
+### Issues found and fixed
+
+1. **[BUG, pre-existing] `GpsTargetMetric::attach()` always returned `null`.** It read `lastInsertId()` *after* the `UPDATE gps_targets SET progress_mode='metric'`, and an UPDATE resets `lastInsertId()` to `0` on this MySQL/PDO build → `getById(0)` → `null`, which with `strict_types` + `array` return type is a fatal `TypeError`. Never surfaced because metric writes were out of scope ("read-only chips only") in Sprint 006. Fixed by capturing the id immediately after the INSERT.
+2. **[DESIGN CLARITY] `account_id` on a global binding.** `metric_type_accounts` is keyed by measure (global), so a pinned `account_id` is company-specific. Implemented semantics: `account_id = NULL` resolves by `account_type` within the requested company; a pinned `account_id` matches that account **only when it belongs to the requested company** (otherwise ignored). Documented in the model and this spec.
+
+### Financial-schema findings (drives Phase 3)
+
+Inspected `company_financial_yearly_stats` before assuming missing vs zero:
+
+* `m1…m12` are nullable, but **0 of 179** live rows have any NULL month — month-nullness alone cannot signal "not captured".
+* Row **presence** per (`company_id`, `account_id`, `financial_year_id`) is the only structural "captured" signal; an all-zero row is indistinguishable from a true zero.
+* Generated `total_amount` `COALESCE`s NULL→0, so it must **not** be used for completeness.
+* `account_id` is NULL on **105 of 179** rows → resolve by `company_accounts.account_type` per company, not by `account_id`.
+* No `export_revenue`/`expense` accounts exist yet (91 `domestic_revenue`, 1 `other`) → `export_revenue` bindings resolve to zero accounts and must surface as `no_accounts`, never `0`.
+
+Recorded in `migrations/README.md` for Phase 3.
+
+### Remaining issues / notes
+
+* `config/headers.php:26` emits an `Undefined array key "REQUEST_METHOD"` warning under CLI only (test harness); harmless over Apache. Pre-existing, not introduced here.
+* Production migration **not** applied (out of scope — Phase 1 review gate).

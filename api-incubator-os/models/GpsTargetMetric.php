@@ -5,8 +5,18 @@ class GpsTargetMetric
 {
     private PDO $conn;
 
-    // current_value is a cached snapshot only; once Sprint 006 wires metrics, derive from metric_records instead of dual-maintaining
-    private const WRITABLE = ['gps_target_id','metric_type_id','baseline_value','target_value','current_value','notes'];
+    // current_value is a cached snapshot only; Sprint 007 derives actuals from the measure binding
+    // (metric_type_accounts -> company_financial_yearly_stats) instead of dual-maintaining.
+    private const WRITABLE = [
+        'gps_target_id','metric_type_id','baseline_value','target_value','current_value','notes',
+        'baseline_period_type','baseline_period_ref','target_period_type','target_period_ref',
+        'direction','calculation_method','maintain_tolerance_value','maintain_tolerance_unit','calculation_version'
+    ];
+    private const PERIOD_TYPES = ['financial_year','quarter','custom'];
+    private const DIRECTIONS = ['increase','decrease','maintain'];
+    // Only period_total is implemented in the Sprint 007 revenue slice; others are reserved.
+    private const CALC_METHODS = ['period_total'];
+    private const TOLERANCE_UNITS = ['absolute','percent'];
 
     public function __construct(PDO $db)
     {
@@ -25,6 +35,7 @@ class GpsTargetMetric
         $f['target_value'] = (float)$f['target_value'];
         if (isset($f['baseline_value']) && $f['baseline_value'] !== null) $f['baseline_value'] = (float)$f['baseline_value'];
         if (isset($f['current_value']) && $f['current_value'] !== null) $f['current_value'] = (float)$f['current_value'];
+        $f = $this->normalizeMeasurement($f, []);
         $this->assertGpsExists($f['gps_target_id']);
         // upsert metric link
         $existing = $this->findLink($f['gps_target_id'], $f['metric_type_id']);
@@ -36,10 +47,12 @@ class GpsTargetMetric
         $sql = "INSERT INTO gps_target_metrics (" . implode(',', $cols) . ") VALUES (" . implode(',', $ph) . ")";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(array_values($f));
+        // Capture the new id BEFORE the UPDATE below — an UPDATE resets lastInsertId() to 0 on MySQL/PDO.
+        $newId = (int)$this->conn->lastInsertId();
         // switch target to metric mode
         $stmt2 = $this->conn->prepare("UPDATE gps_targets SET progress_mode = 'metric', updated_at = NOW() WHERE id = ?");
         $stmt2->execute([$f['gps_target_id']]);
-        return $this->getById((int)$this->conn->lastInsertId());
+        return $this->getById($newId);
     }
 
     public function update(int $id, array $data): ?array
@@ -50,6 +63,7 @@ class GpsTargetMetric
         if (isset($f['target_value'])) $f['target_value'] = (float)$f['target_value'];
         if (array_key_exists('baseline_value', $f)) $f['baseline_value'] = $f['baseline_value'] !== null ? (float)$f['baseline_value'] : null;
         if (array_key_exists('current_value', $f)) $f['current_value'] = $f['current_value'] !== null ? (float)$f['current_value'] : null;
+        $f = $this->normalizeMeasurement($f, $existing);
         if (!$f) return $existing;
         $sets = []; $params = [];
         foreach ($f as $k => $v) { $sets[] = "$k = ?"; $params[] = $v; }
@@ -132,6 +146,66 @@ class GpsTargetMetric
         if (!$stmt->fetchColumn()) throw new RuntimeException("gps_targets id $id not found");
     }
 
+    /**
+     * Normalise and validate the Sprint 007 measurement fields, then enforce that
+     * direction='maintain' always carries an explicit tolerance (value + unit).
+     */
+    private function normalizeMeasurement(array $f, array $existing): array
+    {
+        foreach (['baseline_period_type', 'target_period_type'] as $k) {
+            if (array_key_exists($k, $f)) $f[$k] = $this->normalizeEnumOrNull($f[$k], self::PERIOD_TYPES, $k);
+        }
+        foreach (['baseline_period_ref', 'target_period_ref', 'calculation_version'] as $k) {
+            if (array_key_exists($k, $f)) {
+                $v = $f[$k];
+                $f[$k] = ($v === null || trim((string)$v) === '') ? null : trim((string)$v);
+            }
+        }
+        if (array_key_exists('direction', $f)) {
+            $f['direction'] = $this->normalizeEnumOrNull($f['direction'], self::DIRECTIONS, 'direction');
+        }
+        if (array_key_exists('calculation_method', $f)) {
+            $m = $f['calculation_method'];
+            if ($m === null || trim((string)$m) === '') {
+                $f['calculation_method'] = null;
+            } else {
+                $m = strtolower(trim((string)$m));
+                if (!in_array($m, self::CALC_METHODS, true)) {
+                    throw new InvalidArgumentException("Unsupported calculation_method '$m' — implemented: " . implode(', ', self::CALC_METHODS));
+                }
+                $f['calculation_method'] = $m;
+            }
+        }
+        if (array_key_exists('maintain_tolerance_value', $f)) {
+            $v = $f['maintain_tolerance_value'];
+            $f['maintain_tolerance_value'] = ($v === null || $v === '') ? null : (float)$v;
+        }
+        if (array_key_exists('maintain_tolerance_unit', $f)) {
+            $f['maintain_tolerance_unit'] = $this->normalizeEnumOrNull($f['maintain_tolerance_unit'], self::TOLERANCE_UNITS, 'maintain_tolerance_unit');
+        }
+
+        $direction = $f['direction'] ?? ($existing['direction'] ?? null);
+        if ($direction === 'maintain') {
+            $value = array_key_exists('maintain_tolerance_value', $f) ? $f['maintain_tolerance_value'] : ($existing['maintain_tolerance_value'] ?? null);
+            $unit = array_key_exists('maintain_tolerance_unit', $f) ? $f['maintain_tolerance_unit'] : ($existing['maintain_tolerance_unit'] ?? null);
+            if ($value === null || $unit === null) {
+                throw new InvalidArgumentException("direction='maintain' requires maintain_tolerance_value and maintain_tolerance_unit (absolute|percent)");
+            }
+        }
+        return $f;
+    }
+
+    private function normalizeEnumOrNull(mixed $v, array $allowed, string $field): ?string
+    {
+        if ($v === null) return null;
+        $s = strtolower(trim((string)$v));
+        if ($s === '') return null;
+        if (!in_array($s, $allowed, true)) {
+            throw new InvalidArgumentException("Invalid $field '$s' — allowed: " . implode(', ', $allowed));
+        }
+        return $s;
+    }
+
     private function filterWritable(array $data): array
     {
         $out = [];
@@ -147,6 +221,7 @@ class GpsTargetMetric
         if (isset($row['baseline_value']) && $row['baseline_value'] !== null) $row['baseline_value'] = (float)$row['baseline_value'];
         if (isset($row['target_value']) && $row['target_value'] !== null) $row['target_value'] = (float)$row['target_value'];
         if (isset($row['current_value']) && $row['current_value'] !== null) $row['current_value'] = (float)$row['current_value'];
+        if (isset($row['maintain_tolerance_value']) && $row['maintain_tolerance_value'] !== null) $row['maintain_tolerance_value'] = (float)$row['maintain_tolerance_value'];
         return $row;
     }
 }

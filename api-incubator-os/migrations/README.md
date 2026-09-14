@@ -9,6 +9,7 @@
 Get-Content api-incubator-os/migrations/2026-08-31-normalized-swot-gps.sql -Raw | podman exec -i incubator-os-mysql-container mysql -u docker -pdocker incubator_os
 Get-Content api-incubator-os/migrations/2026-08-31-normalized-migration-audit.sql -Raw | podman exec -i incubator-os-mysql-container mysql -u docker -pdocker incubator_os
 Get-Content api-incubator-os/migrations/2026-08-31b-patch-audit-reporting.sql -Raw | podman exec -i incubator-os-mysql-container mysql -u docker -pdocker incubator_os
+Get-Content api-incubator-os/migrations/2026-09-15-results-achievements.sql -Raw | podman exec -i incubator-os-mysql-container mysql -u docker -pdocker incubator_os
 ```
 
 Production (phpMyAdmin): import the same files in order before first use of `Admin → Tools → Data Migration`. `normalized-migrate.php` auto-creates tables as fallback, but prod should have them via SQL.
@@ -42,6 +43,7 @@ DESCRIBE normalized_migration_audits; -- should have operation_type, migration_k
 | **15** | `2026-08-31b-patch-legacy-path.sql` | **Idempotent patch** for installs that ran #13 before `legacy_path` fix — adds `legacy_path` + `UNIQUE(swot_analysis_id, legacy_path)` / `UNIQUE(legacy_node_id, legacy_path)` + `current_company_id` if missing | **✅ effectively applied** (main #13 already contained `legacy_path`; patch is no-op locally) | **✅ effectively applied** — main #13 already included `legacy_path`; patch not needed |
 | **16** | `2026-08-31b-patch-audit-reporting.sql` | **Durable reporting** — adds `operation_type`, `migration_key`, `title`, `description`, `environment`, `commit_sha` to `normalized_migration_audits`; backfills `operation_type/migration_key/title/description` with canonical “Normalize SWOT and GPS records — Migrated legacy SWOT analyses and GPS targets from JSON nodes … Legacy nodes were retained as an archive.” Leaves `environment` NULL for unknown history (new audits set via host) | **✅ run locally** | **✅ applied — prod `rbttaces_api` 2026-09-14** |
 | **17** | `2026-09-14-align-nodes-token.sql` | **Guarded repair** — aligns `nodes.token` with canonical `VARCHAR(64) NULL UNIQUE` + `idx_nodes_token` (from #10). Prod had drifted to `VARCHAR(1000)` with no UNIQUE/index. Safe to re-run; no-op where already correct | **✅ no-op** (local already canonical) | **✅ applied — prod `rbttaces_api` 2026-09-14** (3 ALTERs via phpMyAdmin) |
+| **18** | `2026-09-15-results-achievements.sql` | **Sprint 007 Phase 1 — Results & Achievements foundation.** Creates `metric_type_accounts` (measure → financial account source binding), `achievements` (dated/attributable/verifiable outcomes; `kind = result\|achievement\|decision`), `achievement_evidence` (preserved review evidence); adds 9 measurement columns to `gps_target_metrics` (`baseline/target_period_type+ref`, `direction`, `calculation_method`, `maintain_tolerance_value+unit`, `calculation_version`); seeds revenue bindings (`REVENUE_TOTAL`/`REVENUE_EXPORT`/`REVENUE_ANNUAL`). Idempotent (IF NOT EXISTS + information_schema-guarded ALTERs + `ON DUPLICATE KEY UPDATE` seeds). Rollback notes in the file header | **✅ run locally — 5 bindings, 9 columns** | ⏳ not yet (Phase 1 review gate) |
 
 ## Canonical backfill values (for two-year history)
 
@@ -80,3 +82,19 @@ SELECT COUNT(*) FROM nodes;                -- 3319 (unchanged)
 ```
 
 Do NOT run `migrate-all` or `clear` from HTTP — they are CLI-only (`normalized-migrate-cli.php`).
+
+## Sprint 007 Phase 1 — notes for implementing Phase 3 (measurement)
+
+**Dead code removed (2026-09-15).** `models/MetricRecord.php` and `api-nodes/enhanced-metrics.php` were deleted. `MetricRecord` inserted `year`/`quarter`/`value`/`note` — columns that do not exist in the live `metric_records` table — and was only referenced by the unused `enhanced-metrics.php`. The authoritative `metric_records` shape is the `year_`/`q1…q4`/`total`/`margin_pct`/`unit`/`notes`/`title` shape used by `Metrics.php` and `RatioCalculatorService`.
+
+**Financial data semantics (inspected 2026-09-15 — critical for actuals).**
+
+`company_financial_yearly_stats` (`account_id`, `financial_year_id`, `is_revenue`, `m1…m12`, generated `total_amount`):
+
+- `m1…m12` are **nullable** (`DEFAULT 0.00`), but the live data currently has **zero NULL months** (0 of 179 rows). So month-nullness alone **cannot** distinguish "not captured" from a genuine zero.
+- The only structural signal of "data captured" is the **presence of a row** for (`company_id`, `account_id`, `financial_year_id`). A row existing with all-zero months is indistinguishable from a real zero-revenue period.
+- `total_amount` is a **generated column that `COALESCE`s NULL → 0**, so it silently hides missing months. **Do not use it for completeness** — read `m1…m12` directly.
+- `account_id` is **nullable and often absent**: 105 of 179 revenue rows have `account_id = NULL`. Account resolution therefore cannot rely on `account_id`; use `company_accounts` **per company** (by `account_type`), and only use a pinned `account_id` where present.
+- `company_accounts.account_type` in live data is almost entirely `domestic_revenue` (91 rows) plus 1 `other`; **no `export_revenue` or `expense` accounts exist yet** — so `export_revenue` bindings resolve to zero accounts and must surface as `no_accounts`, never as 0.
+
+Implication for Phase 3: derive `complete` / `incomplete` / `no_accounts` from **row presence per (account, financial_year)**, honour any NULL month as incomplete, and never treat a missing row/binding as zero.
