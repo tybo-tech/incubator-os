@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 2 complete (2026-09-15); ready for Phase 3
+> **Status**: Locked — Phase 3 complete (2026-09-15); ready for Phase 4
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -272,25 +272,27 @@ Derive actuals from financial records through the measure→account binding, imp
 > 2. **Null-`account_id` financial rows require a verified association before inclusion.** They cannot be attributed by `account_type` alone; either establish a demonstrable link/reconciliation or **exclude them and report the unresolved count**. Never silently total them.
 > 3. Generated `total_amount` `COALESCE`s NULL → 0 and must not be used for completeness (read `m1…m12` directly).
 
+**Status: ✅ Complete — 2026-09-15 (session 016). See the Phase 3 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **3.1** Create `services/TargetMeasurementService.php` — given a `gps_target` + its metric link + `metric_type_accounts` binding, resolve accounts **scoped to the target's company** and sum `company_financial_yearly_stats.m1…m12` for the period; return `{ actual, baseline, target, unit, direction, completeness, missing_months, calculation_version }`.
-- [ ] **3.2** Implement period-reference parsing for `financial_year` / `quarter` / `custom` (`financial_years.id`, `<fy_id>:Q<n>`, `YYYY-MM-DD..YYYY-MM-DD`) for both baseline and target.
-- [ ] **3.3** Implement overlapping-binding **deduplication by `account_id`** so no account is counted twice.
-- [ ] **3.4** Implement completeness: `complete` only when all accounts resolve and all months present; otherwise `no_accounts` / `incomplete` with `missing_months[]`.
-- [ ] **3.5** Implement formulas for `increase` / `decrease` / `maintain` (explicit absolute/percent tolerance) and the `target == baseline` guard (`invalid_definition`, never divide by zero).
-- [ ] **3.6** Add endpoint `api-nodes/gps-targets/actual.php?gps_target_id=` returning the calculated `{ actual, baseline, target, unit, direction, completeness, missing_months, progress, calculation_version }`.
-- [ ] **3.7** Extend `gps-target-metrics/{list,get}.php` responses with the computed actual (read-only; never persisted to `metric_records`).
+- [x] **3.1** Create `services/TargetMeasurementService.php` — company-scoped, deduplicated account resolution and period subtotals from `company_financial_yearly_stats`; returns per-period measurement + `calculation_version`. (Shape refined — see Phase 3 Completion.)
+- [x] **3.2** Implement period-reference parsing for `financial_year` / `quarter` / `custom` (`financial_years.id`, `<fy_id>:Q<n>`, `YYYY-MM-DD..YYYY-MM-DD`) for both baseline and target. (`custom` supported only within a single financial year.)
+- [x] **3.3** Implement overlapping-binding **deduplication by `account_id`** so no account is counted twice.
+- [x] **3.4** Implement completeness with the review's distinctions: `no_accounts` / `partial_coverage` / `incomplete` / `unknown` / `complete` (plus `missing_months[]` and `unresolved_rows`).
+- [x] **3.5** Implement formulas for `increase` / `decrease` / `maintain` (explicit absolute/percent tolerance) and the `target == baseline` guard (`invalid_definition`, never divide by zero).
+- [x] **3.6** Add endpoint `api-nodes/gps-targets/actual.php?gps_target_id=`.
+- [x] **3.7** Extend `gps-target-metrics/list.php` response with the computed actual (read-only; never persisted to `metric_records`).
 
 #### Exit Criteria
 
-- [ ] For a revenue target on the local demo company, the computed actual equals the manual `CompanyFinancialYearlyStatsService.calculateQuarterlyTotals` figure for the same account(s) and financial year (cross-checked)
-- [ ] Account resolution is company-scoped — a binding cannot resolve another company's accounts (verified)
-- [ ] Overlapping bindings that resolve to the same `account_id` are counted once (verified)
-- [ ] `no_accounts` and `incomplete` (with `missing_months[]`) are returned correctly and never presented as an achieved low/zero value
-- [ ] `increase`, `decrease` and `maintain` (absolute + percent) all compute correctly; `target == baseline` returns `invalid_definition` without error
-- [ ] No writes occur to `metric_records`
-- [ ] `php -l` clean
+- [x] For a revenue target, the computed actual equals the manual `CompanyFinancialYearlyStatsService.calculateQuarterlyTotals` grouping (cross-checked: Q1 = m1–m3, Q2 = m4–m6, full year = m1–m12)
+- [x] Account resolution is company-scoped — a binding cannot resolve another company's accounts (verified)
+- [x] Overlapping bindings that resolve to the same `account_id` are counted once (verified)
+- [x] `no_accounts` and `incomplete` (with `missing_months[]`) are returned correctly and never presented as an achieved low/zero value
+- [x] `increase`, `decrease` and `maintain` (absolute + percent) all compute correctly; `target == baseline` returns `invalid_definition` without error
+- [x] No writes occur to `metric_records`
+- [x] `php -l` clean
 
 ---
 
@@ -718,3 +720,71 @@ Recorded in `migrations/README.md` for Phase 3.
 
 * `config/headers.php:26` CLI-only `REQUEST_METHOD` warning persists (test harness); harmless over Apache, pre-existing.
 * Production migration **not** applied (Phase 2 review gate).
+
+---
+
+## Phase 3 Completion — 2026-09-15 (session 016)
+
+**Status: ✅ Complete. All Phase 3 tasks and exit criteria satisfied. Stopped at the Phase 3 review gate — no production deployment; no data altered.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Read-only actuals service (company-scoped, dedup, per-period completeness, formulas) | `api-incubator-os/services/TargetMeasurementService.php` |
+| Derived-actual endpoint | `api-incubator-os/api-nodes/gps-targets/actual.php` |
+| Metric list now carries the derived actual | `api-incubator-os/api-nodes/gps-target-metrics/list.php` |
+
+### Calculation examples (controlled fixtures)
+
+| Direction | Baseline | Goal (`target_value`) | Actual | Result |
+| --- | --- | --- | --- | --- |
+| increase | 100 | 200 | 150 | 50% |
+| decrease | 100 | 60 | 80 | 50% |
+| maintain (absolute 10) | 100 | — | 105 | met (drift 5 ≤ 10) |
+| maintain (percent 10%) | 100 | — | 115 | not met (drift 15 > 10) |
+| maintain (percent, baseline 0) | 0 | — | 5 | `invalid_definition` (percent of zero) |
+| increase (goal = baseline) | 100 | 100 | 150 | `invalid_definition` (no divide by zero) |
+
+Period maths cross-checked against `CompanyFinancialYearlyStatsService.calculateQuarterlyTotals`: **Q1 = m1–m3 (`10+20+30=60`)**, **Q2 = m4–m6 (`40+50+60=150`)**, full year = m1–m12 (`780`). With `financial_years.start_month = 3`, Q2 labels **Jun, Jul, Aug**.
+
+### Completeness model (per period)
+
+`no_accounts` → `partial_coverage` → `incomplete` → `unknown` → `complete`, in that precedence:
+
+* **`no_accounts`** — the bindings resolve to no accounts for the company.
+* **`partial_coverage`** — only some required bindings resolve (e.g. `Revenue` needs `domestic_revenue` + `export_revenue`; the company has no `export_revenue` account). Subtotal is **partial revenue**, not combined revenue.
+* **`incomplete`** — a resolved account has no row for the period, or a required month is NULL.
+* **`unknown`** — rows exist but are entirely zero-filled: capture cannot be confirmed (legacy zero-fill).
+* **`complete`** — all bindings resolve, all rows present, and the row is populated (at least one non-zero month) so its zeros are **confirmed**.
+
+`authoritative` / `eligible_for_achievement` require **both** periods `complete` **and** zero unresolved rows in both. Progress is computed only when both periods are `complete`; if unresolved rows exist the value is non-authoritative.
+
+### Validation evidence
+
+* **43/43 controlled-fixture checks pass** (transactional, rolled back) covering: quarter boundaries, dedup, company isolation, partial coverage, no accounts, unresolved rows, unknown vs confirmed-zero, incomplete (NULL month / missing account), all six formula cases, separate baseline/target completeness, and unconfigured targets.
+* **Cross-company isolation** — Director (company 1) reading company 11's target → `403`; unauth → `401`; missing `gps_target_id` → `400`; SA → well-formed JSON.
+* **Read-only** — `TargetMeasurementService` contains no `INSERT`/`UPDATE`/`DELETE` and never references `metric_records` (grep-verified). No writes occurred to `metric_records`.
+* **`php -l`** clean on the service and both endpoints.
+
+### Contract changes (from the reviewed spec)
+
+1. **Goal semantics corrected.** Progress now uses `gps_target_metrics.target_value` as the goal; the initial implementation wrongly used the target-period subtotal as the goal (caught by fixtures). Baseline = baseline-period subtotal, actual = target-period subtotal.
+2. **Completeness expanded** from `complete/incomplete/no_accounts` to the five states above (adds `unknown` and `partial_coverage`), with `subtotal_is_partial` on every period.
+3. **Authority gating**: `authoritative`/`eligible_for_achievement` require both periods `complete` **and** zero unresolved rows (per review); unresolved rows are excluded from subtotals and reported.
+4. **`custom` periods** are supported only within a single financial year; multi-FY ranges return `invalid_period`.
+5. **`maintain` + `percent` tolerance with a zero baseline** returns `invalid_definition`.
+
+### What the existing local data supports (no backfill performed)
+
+* **0 real metric links** (`gps_target_metrics` empty) → every current target reports `configured=false / no_measure_configured`.
+* **105 of 179** financial rows have `account_id IS NULL` (unresolved) → excluded and reported; **4** rows are all-zero (`unknown`).
+* **`Revenue` (REVENUE_TOTAL) is always `partial_coverage`**: no company has an `export_revenue` account, so the combined binding never fully resolves. Example — company 11 baseline fy4 / target fy1: `partial_coverage`, target subtotal `75,838` (domestic only), export binding unresolved, account "Secondary" has no row → `progress not_computed`, non-authoritative.
+* A **domestic-only** measure could reach `complete` for a company whose accounts are all populated (e.g. company 59, fy1: both domestic accounts have rows) — this is the realistic path to an authoritative result.
+* **Nothing was silently repaired or backfilled.**
+
+### Remaining issues / notes
+
+* The revenue slice cannot be demonstrated end-to-end on real data until (a) an `export_revenue` account exists or a domestic-only measure is bound, and (b) the null-`account_id` rows are reconciled or explicitly accepted as excluded.
+* `gps-target-metrics/list.php` computes the actual once per `gps_target_id` request (cheap); no per-row recalculation.
+* Production changes remain out of scope (Phase 3 review gate).

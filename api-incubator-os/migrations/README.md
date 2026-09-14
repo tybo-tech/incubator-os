@@ -111,3 +111,11 @@ SELECT id, company_id, status, completed_at, manual_progress_percentage
 FROM gps_targets
 WHERE progress_mode = 'tasks' AND status = 'completed';
 ```
+
+**Sprint 007 Phase 3 — actuals derived (2026-09-15).** `services/TargetMeasurementService.php` reads `company_financial_yearly_stats` through the `metric_type_accounts` bindings and returns a per-period measurement. It is **read-only** (no writes; `metric_records` unused). Per-period `status` is one of `no_accounts` / `partial_coverage` / `incomplete` / `unknown` / `complete`:
+* `unknown` = zero-filled rows whose capture cannot be confirmed (do not treat as `complete`);
+* `partial_coverage` = only some required bindings resolve (subtotal is partial, not combined revenue);
+* `incomplete` = a resolved account has no row for the period, or a required month is NULL;
+* `complete` = all bindings resolved, all rows present, and rows populated (zeros confirmed).
+
+`authoritative` / `eligible_for_achievement` require **both periods `complete` and zero unresolved (`account_id IS NULL`) rows**. Verified with controlled fixtures; the existing local data currently yields `partial_coverage` for `REVENUE_TOTAL` (no company has an `export_revenue` account) and has 105 unresolved rows across 179 — **no data was repaired or backfilled**.
