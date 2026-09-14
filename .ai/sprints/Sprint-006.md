@@ -146,3 +146,25 @@ Findings closed in `7e59bc4`:
 
 **Left as-is by instruction:** Company 10 demo data drift (all 3 original tasks completed + stray task `454` on target #49 @ 75%). Production migration still **paused**.
 
+## Production Deployment — 2026-09-14 (executed) — session 010
+
+**Status: Sprint 006 shipped to production. Legacy SWOT/GPS is live in the new screens; manual linking verified on prod.**
+
+**Schema parity (prod `rbttaces_api` vs local):** 38 tables identical · 603 vs 603 columns (only `nodes.token` differed: `varchar(1000)`/no indexes vs `varchar(64)` + `UNIQUE(token)` + `idx_nodes_token`) · indexes 142 vs 144 (same two) · normalized #13/#14/#16 already applied, #15 effectively applied.
+
+**Prod data state:** normalized tables empty pre-run (clean slate). Sources: 50 `swot_analysis` nodes (12 companies), 10 `gps_targets` nodes (10 companies), 131 companies, 106 users (6 SA, all active).
+
+**Validation:** prod dump restored to local clone `incubator_os_prod`; exact `NormalizedMigrator` dry run + real run → `12 analyses / 80 items / 62 targets / 62 legacy_unlinked sources`, `errors: []`, `nodes` 3319 → 3319. Companies `1,5,11,14,20,22,26,59,107,120,123,126,142`; duplicates flagged Co 11 (38→#1946), Co 20 (2→#1969).
+
+**Alignment:** prod `nodes.token` repaired via phpMyAdmin (3 statements) — now recorded as guarded patch `migrations/2026-09-14-align-nodes-token.sql`. Prod `config/Database.php` confirmed correct (`setServer()` → `rbttaces_api`, `setLocal()` commented) and prod-only `common/common.php` noted as not-overwritable.
+
+**Prod migration (Admin UI, preview-gated):** `Admin → System Tools → Data Migration` → preview matched the local clone exactly (`50/12 · 80/5 · 62/9 · 62`, `rolled_back: yes`) → `Migrate` with `MIGRATE_NORMALIZED_SWOT_GPS` → `dry_run:false`, `rolled_back:false`, `errors: []`. Audit row: `data_migration` · `2026-08-31-normalized-swot-gps` · `Normalize SWOT and GPS records` · `migrate` · `mrnnmthembu@gmail.com` · `System Administrator · production` · **completed**.
+
+**Screens verified on prod:** Co 11 → 9 findings / 12 targets (all *Legacy import — not linked*), Analysis #15, progress preserved (75/50/100%); Co 26 → 14 findings, Analysis #17; **0 console errors**.
+
+**Manual link verified on prod:** weakness #105 “Booking system needed” → target #101 “Introduce booking system.” → `Linked target #101`, SWOT card hydrated (`finance · Due 2024-03-15 · Owner: Director`), GPS provenance **“From SWOT weakness: Booking system needed”**, persisted across reload (`1 linked, 11 legacy_unlinked`), then **unlinked** back to `0 linked, 12 legacy_unlinked` (unlink re-creates the `legacy_unlinked` placeholder — no orphaned targets).
+
+**Acceptance against Sprint 006 criteria:** hierarchy pages read only normalized endpoints ✅ · Company 11 (plus 12 other companies) render locally/prod from production data ✅ · Admin migration SA-only, POST-only, stale-preview guarded, confirm phrase, audit-logged with durable description ✅ · dashboard cards derive from normalized endpoints ✅ · standalone/OnPush/signals/@if/@for ✅ · `php -l` / `ng build` clean ✅ · no `ALLOW_HTTP_MIGRATE` ✅.
+
+**Outstanding:** rotate SA password (`mrnnmthembu@gmail.com`) · decide on 2 empty analyses (Co 120, 123) · apply token patch to any other deployment showing drift · confirm prod `nodes` count (expected 3319) in phpMyAdmin · users perform real linking on prod.
+

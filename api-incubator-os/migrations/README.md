@@ -37,10 +37,11 @@ DESCRIBE normalized_migration_audits; -- should have operation_type, migration_k
 | 10 | `2026-07-09-add-token-column.sql` | add token col | ✅ | ✅ |
 | 11 | `update_metric_records_for_categories.sql` | metric_records categories | ✅ | ✅ |
 | 12 | `migrate-account-types.php` | PHP account-type backfill (run once via CLI) | ✅ | ✅ |
-| **13** | `2026-08-31-normalized-swot-gps.sql` | **Normalized SWOT/GPS — 7 tables** (`swot_analyses` with `current_company_id` generated UNIQUE, `swot_items` + `gps_targets` with `legacy_path` UNIQUE, `gps_target_sources/tasks/updates/metrics`) — preserves `nodes` as archive | **✅ run locally — 1 analysis (Company 11), 8 items, 12 targets, 12 sources** | **❌ NOT YET — run via phpMyAdmin before first Admin migration** |
-| **14** | `2026-08-31-normalized-migration-audit.sql` | `normalized_migration_audits` (user, company_ids, result_summary, errors, status) — Admin preview/migrate audit | **✅ run locally — 1 audit row** | **❌ NOT YET** |
-| **15** | `2026-08-31b-patch-legacy-path.sql` | **Idempotent patch** for installs that ran #13 before `legacy_path` fix — adds `legacy_path` + `UNIQUE(swot_analysis_id, legacy_path)` / `UNIQUE(legacy_node_id, legacy_path)` + `current_company_id` if missing | **✅ effectively applied** (main #13 already contained `legacy_path`; patch is no-op locally) | **Run if prod ran #13 early, else skip (main #13 already includes it)** |
-| **16** | `2026-08-31b-patch-audit-reporting.sql` | **Durable reporting** — adds `operation_type`, `migration_key`, `title`, `description`, `environment`, `commit_sha` to `normalized_migration_audits`; backfills `operation_type/migration_key/title/description` with canonical “Normalize SWOT and GPS records — Migrated legacy SWOT analyses and GPS targets from JSON nodes … Legacy nodes were retained as an archive.” Leaves `environment` NULL for unknown history (new audits set via host) | **✅ run locally** | **❌ NOT YET** |
+| **13** | `2026-08-31-normalized-swot-gps.sql` | **Normalized SWOT/GPS — 7 tables** (`swot_analyses` with `current_company_id` generated UNIQUE, `swot_items` + `gps_targets` with `legacy_path` UNIQUE, `gps_target_sources/tasks/updates/metrics`) — preserves `nodes` as archive | **✅ run locally — 1 analysis (Company 11), 8 items, 12 targets, 12 sources** | **✅ applied — prod `rbttaces_api` 2026-09-14** (verified `legacy_path` + `current_company_id`) |
+| **14** | `2026-08-31-normalized-migration-audit.sql` | `normalized_migration_audits` (user, company_ids, result_summary, errors, status) — Admin preview/migrate audit | **✅ run locally — 1 audit row** | **✅ applied — prod `rbttaces_api` 2026-09-14** |
+| **15** | `2026-08-31b-patch-legacy-path.sql` | **Idempotent patch** for installs that ran #13 before `legacy_path` fix — adds `legacy_path` + `UNIQUE(swot_analysis_id, legacy_path)` / `UNIQUE(legacy_node_id, legacy_path)` + `current_company_id` if missing | **✅ effectively applied** (main #13 already contained `legacy_path`; patch is no-op locally) | **✅ effectively applied** — main #13 already included `legacy_path`; patch not needed |
+| **16** | `2026-08-31b-patch-audit-reporting.sql` | **Durable reporting** — adds `operation_type`, `migration_key`, `title`, `description`, `environment`, `commit_sha` to `normalized_migration_audits`; backfills `operation_type/migration_key/title/description` with canonical “Normalize SWOT and GPS records — Migrated legacy SWOT analyses and GPS targets from JSON nodes … Legacy nodes were retained as an archive.” Leaves `environment` NULL for unknown history (new audits set via host) | **✅ run locally** | **✅ applied — prod `rbttaces_api` 2026-09-14** |
+| **17** | `2026-09-14-align-nodes-token.sql` | **Guarded repair** — aligns `nodes.token` with canonical `VARCHAR(64) NULL UNIQUE` + `idx_nodes_token` (from #10). Prod had drifted to `VARCHAR(1000)` with no UNIQUE/index. Safe to re-run; no-op where already correct | **✅ no-op** (local already canonical) | **✅ applied — prod `rbttaces_api` 2026-09-14** (3 ALTERs via phpMyAdmin) |
 
 ## Canonical backfill values (for two-year history)
 
@@ -62,10 +63,20 @@ SELECT id, action, company_ids, operation_type, migration_key, environment, comm
 
 `nodes` is untouched — `SELECT COUNT(*) FROM nodes` before/after migration is identical.
 
-## Production checklist (when UI is ready)
+## Production run (executed 2026-09-14 — `rbttaces_api`)
 
-1. Import #13, #14, #16 via phpMyAdmin (in order).
-2. If prod already had #13 without `legacy_path`, also import #15.
-3. Login as `System Administrator` → `Admin → Tools → Data Migration` → `Preview [59,11]` → verify `8/12` etc. → `Migrate` with `MIGRATE_NORMALIZED_SWOT_GPS` → check `normalized_migration_audits` row with durable description.
+1. ✅ #13, #14, #16 already present; #17 (`align-nodes-token`) applied via phpMyAdmin.
+2. ✅ Migration executed via `Admin → System Tools → Data Migration` (System Administrator) with explicit `companyIds` `1,5,11,14,20,22,26,59,107,120,123,126,142`, preview-gated (`50/12 · 80/5 · 62/9 · 62`, `rolled_back: yes`) then `MIGRATE_NORMALIZED_SWOT_GPS`.
+3. ✅ Result `dry_run:false`, `rolled_back:false`, `errors: []` → `swot_analyses` 12 · `swot_items` 80 · `gps_targets` 62 · `gps_target_sources` 62 (all `legacy_unlinked`) · audit row `migrate` / `completed`.
+4. ✅ New screens show migrated production data (Company 11 → 9 findings / 12 targets); manual SWOT→GPS link + unlink verified on prod.
+
+Expected counts:
+```sql
+SELECT COUNT(*) FROM swot_analyses;        -- 12
+SELECT COUNT(*) FROM swot_items;           -- 80
+SELECT COUNT(*) FROM gps_targets;          -- 62
+SELECT COUNT(*) FROM gps_target_sources;   -- 62 (all legacy_unlinked)
+SELECT COUNT(*) FROM nodes;                -- 3319 (unchanged)
+```
 
 Do NOT run `migrate-all` or `clear` from HTTP — they are CLI-only (`normalized-migrate-cli.php`).
