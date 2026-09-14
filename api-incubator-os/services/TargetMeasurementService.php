@@ -74,6 +74,7 @@ class TargetMeasurementService
             'unit' => $metricType['unit'] ?? null,
             'direction' => $direction,
             'calculation_method' => $method,
+            'target_value' => $link['target_value'] !== null ? (float)$link['target_value'] : null,
             'tolerance' => [
                 'value' => $link['maintain_tolerance_value'] !== null ? (float)$link['maintain_tolerance_value'] : null,
                 'unit' => $link['maintain_tolerance_unit'] ?? null,

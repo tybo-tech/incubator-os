@@ -77,11 +77,18 @@ function auth_is_admin(array $user): bool
         || in_array($user['role'] ?? '', ['System Administrator','Coordinator'], true);
 }
 
+function auth_is_system_administrator(array $user): bool
+{
+    // The only privileged role used for approval-style actions (migrations, verification).
+    // There is no 'Coach' role in this system — do not invent one.
+    $role = strtolower(trim((string)($user['role'] ?? '')));
+    return $role === 'system administrator' || ($user['role'] ?? '') === 'System Administrator';
+}
+
 function auth_is_migration_admin(array $user): bool
 {
     // Migration is System Administrator only — Coordinator is not permitted to run data migrations
-    $role = strtolower(trim((string)($user['role'] ?? '')));
-    return $role === 'system administrator' || ($user['role'] ?? '') === 'System Administrator';
+    return auth_is_system_administrator($user);
 }
 
 function auth_require_company_access(array $user, int $companyId): void

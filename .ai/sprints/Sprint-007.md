@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 3 complete (2026-09-15); ready for Phase 4
+> **Status**: Locked — Phase 4 complete (2026-09-16); ready for Phase 5
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -300,28 +300,30 @@ Derive actuals from financial records through the measure→account binding, imp
 
 Make outcomes first-class, dated, attributable, verifiable and correctable without data loss.
 
+**Status: ✅ Complete — 2026-09-16 (session 017). See the Phase 4 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **4.1** Add `models/Achievement.php` — `WRITABLE`, validate `kind` / `category` / `verification_status` / `direction` enums, allow null `gps_target_id`, keep `achieved_on` separate from `recorded_at`, forbid `kind='decision'` from verification.
-- [ ] **4.2** Add `models/AchievementEvidence.php` — `add()` / `listByAchievement()` / `delete()`; delete permitted **only while the parent achievement is `unverified`**; cascade on draft delete only.
-- [ ] **4.3** Add endpoints `api-nodes/achievements/{list,get,create,update,delete,verify,revoke,supersede}.php` with company isolation. `verify`/`revoke` permitted for **System Administrator or an authorized coach scoped to the achievement's company**; `delete` permitted for **drafts only**; `recorded_by` / `verified_by` derived from the authenticated session (never the request body).
-- [ ] **4.4** Add endpoints `api-nodes/achievement-evidence/{list,create,delete}.php`; `delete` returns `409` for verified achievements.
-- [ ] **4.5** **Automatic snapshot at verification**: on `verify`, `TargetMeasurementService` computes the snapshot server-side and it is written to `achievement_evidence` (`source_type='metric_snapshot'`) in the **same transaction** as the status change; the snapshot contains periods, account bindings, completeness, and `calculation_version`. Verification fails if the snapshot cannot be produced.
-- [ ] **4.6** Implement revocation/supersession: `revoke` sets `verification_status='revoked'` + `revoked_reason`/`revoked_by`/`revoked_at` and retains the record; `supersede` links `supersedes_id` to the original. Neither hard-deletes.
-- [ ] **4.7** Add list endpoints `achievements/by-company.php?company_id=`, `achievements/by-target.php?gps_target_id=`, and `achievements/awaiting-review.php?company_id=` (measured targets with a completed period and no recorded outcome), each with evidence counts; decisions excluded from achievement counts.
+- [x] **4.1** Add `models/Achievement.php` — `WRITABLE`, validate `kind` / `category` / `direction` enums, allow null `gps_target_id`, keep `achieved_on` separate from `recorded_at`, forbid `kind='decision'` from verification/rejection. (`verification_status` is lifecycle-only — never writable from input; same-company checks for the linked target and the superseded record.)
+- [x] **4.2** Add `models/AchievementEvidence.php` — `add()` / `listByAchievement()` / `delete()`; **append-only** (add allowed on drafts and verified records); delete permitted **only while the parent is `unverified`**, else `ConflictException` → `409`; cascade on draft delete.
+- [x] **4.3** Add endpoints `api-nodes/achievements/{list,get,create,update,delete,verify,reject,revoke,supersede,by-company,by-target,awaiting-review,counts}.php` with company isolation. Verification/approval actions are **System Administrator only** (see correction below); draft edit/delete for company users; identity always server-derived.
+- [x] **4.4** Add endpoints `api-nodes/achievement-evidence/{list,create,delete}.php`; `delete` returns `409` for decided records (drafts return a deliberate success shape).
+- [x] **4.5** **Automatic snapshot at verification**: on `verify`, `TargetMeasurementService` computes the snapshot server-side and it is written to `achievement_evidence` (`source_type='metric_snapshot'`) in the **same transaction** as the status change; the snapshot preserves periods, values, actual, unit, direction, tolerance, completeness, resolved account bindings, unresolved-row info, eligibility and `calculation_version`. Verification fails (rolls back, achievement unchanged) if the snapshot cannot be produced.
+- [x] **4.6** Implement revocation/supersession: `revoke` requires a reason and sets `verification_status='revoked'` + `revoked_reason`/`revoked_by`/`revoked_at`, retaining the record and evidence; `supersede` creates a new draft linked via `supersedes_id`, leaving the original untouched. Neither hard-deletes.
+- [x] **4.7** Add list endpoints `achievements/by-company.php`, `achievements/by-target.php`, `achievements/awaiting-review.php`, and `counts.php`; decisions are excluded from achievement counts.
 
 #### Exit Criteria
 
-- [ ] An achievement with `gps_target_id = NULL` is accepted and returned (qualitative path)
-- [ ] `achieved_on` and `recorded_at` are stored and returned independently
-- [ ] Verifying a measurable achievement writes a `metric_snapshot` evidence row **atomically** — a failed snapshot aborts the verification (no partial state)
-- [ ] A non-authorized coach / non-SA cannot verify; an authorized coach **within the company** can
-- [ ] Evidence delete returns `409` for verified achievements; drafts can be cleaned up
-- [ ] Revoke retains the record with a reason; supersede links to the original; neither deletes
-- [ ] A `decision` cannot be verified and is excluded from achievement counts
-- [ ] `recorded_by` / `verified_by` reflect the authenticated user even when a different value is posted
-- [ ] Cross-company requests return `403`
-- [ ] `php -l` clean
+- [x] An achievement with `gps_target_id = NULL` is accepted and returned (qualitative path)
+- [x] `achieved_on` and `recorded_at` are stored and returned independently
+- [x] Verifying a measurable achievement writes a `metric_snapshot` evidence row **atomically** — a failed snapshot aborts the verification (no partial state)
+- [x] A non-SA cannot verify; **no Coach role exists in this system** (roles: Director / System Administrator / Judge), so the coach path is deferred and no role string was invented — verification is System Administrator scoped via `auth_require_company_access`
+- [x] Evidence delete returns `409` for verified achievements; drafts can be cleaned up
+- [x] Revoke retains the record with a reason; supersede links to the original; neither deletes
+- [x] A `decision` cannot be verified (or rejected) and is excluded from achievement counts
+- [x] `recorded_by` / `verified_by` reflect the authenticated user even when a different value is posted
+- [x] Cross-company requests return `403`
+- [x] `php -l` clean
 
 ---
 
@@ -788,3 +790,77 @@ Period maths cross-checked against `CompanyFinancialYearlyStatsService.calculate
 * The revenue slice cannot be demonstrated end-to-end on real data until (a) an `export_revenue` account exists or a domestic-only measure is bound, and (b) the null-`account_id` rows are reconciled or explicitly accepted as excluded.
 * `gps-target-metrics/list.php` computes the actual once per `gps_target_id` request (cheap); no per-row recalculation.
 * Production changes remain out of scope (Phase 3 review gate).
+
+---
+
+## Phase 4 Completion — 2026-09-16 (session 017)
+
+**Status: ✅ Complete. All Phase 4 tasks and exit criteria satisfied. Stopped at the Phase 4 review gate — no production deployment; local data unchanged (fixtures created and removed).**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Achievement model (lifecycle, snapshot, races, same-company checks) | `api-incubator-os/models/Achievement.php` |
+| Evidence model (append-only, draft-deletable) | `api-incubator-os/models/AchievementEvidence.php` |
+| Achievements endpoints (13) | `api-incubator-os/api-nodes/achievements/{list,get,create,update,delete,verify,reject,revoke,supersede,by-company,by-target,awaiting-review,counts}.php` |
+| Evidence endpoints (3) | `api-incubator-os/api-nodes/achievement-evidence/{list,create,delete}.php` |
+| Schema guard (≤1 metric snapshot per achievement) | `api-incubator-os/migrations/2026-09-16-achievements-snapshot-guard.sql` |
+| Auth helper | `api-incubator-os/helpers/AuthGuard.php` — `auth_is_system_administrator()` (existing role only) |
+| Goal exposed in measurement output | `api-incubator-os/services/TargetMeasurementService.php` — `measure.target_value` |
+
+### Endpoint contracts
+
+| Endpoint | Method | Success | Errors |
+| --- | --- | --- | --- |
+| `achievements/create.php` | POST `{company_id,title,kind?,category?,gps_target_id?,achieved_on?,…}` | `200` draft | `400` validation · `403` company |
+| `achievements/update.php` | POST `{id,…}` | `200` (draft) | `409` verified · `403` |
+| `achievements/delete.php` | POST `{id}` | `{success,id}` (draft) | `409` verified · `404` |
+| `achievements/get.php` | GET `?id=` | `200` achievement + `evidence[]` | `404` |
+| `achievements/list.php` (`by-company`, `by-target`) | GET `?company_id=` / `?gps_target_id=` | `200` array | `403` |
+| `achievements/verify.php` | POST `{id}` | `200` verified (+1 `metric_snapshot` if measurable) | `409` ineligible/decided/decision · `403` non-SA |
+| `achievements/reject.php` | POST `{id}` | `200` rejected (**no** snapshot) | `409` · `403` |
+| `achievements/revoke.php` | POST `{id,reason}` | `200` revoked | `400` missing reason · `409` not verified · `403` |
+| `achievements/supersede.php` | POST `{id,…overrides}` | `200` new **draft** | `409` not verified · `403` |
+| `achievements/counts.php` | GET `?company_id=` | `{total,by_status,decisions}` (decisions excluded) | `403` |
+| `achievements/awaiting-review.php` | GET `?company_id=` | array of eligible measured targets w/o verified outcome | `403` |
+| `achievement-evidence/create.php` | POST `{achievement_id,source_type,label?,reference?,snapshot_json?}` | `200` | `404` · `403` |
+| `achievement-evidence/delete.php` | POST `{id}` | `{success,deleted,id}` (draft) | `409` decided · `404` |
+
+All create/update/delete requests derive `recorded_by` / `verified_by` / timestamps from the authenticated session; posted `recorded_by`, `verified_by` and `verification_status` are ignored.
+
+### Lifecycle & transaction evidence (40/40 fixture checks)
+
+* **Qualitative** (no target) verifies with **no snapshot**; `achieved_on` returned independently of `recorded_at`.
+* **Measurable eligible** verify writes exactly one `metric_snapshot`; `baseline=100 / target(goal)=200 / actual=150` copied to the record; unit `ZAR`, direction `increase`; snapshot carries periods, values, unit, direction, tolerance, completeness, resolved accounts, `unresolved_rows`, eligibility and `calculation_version=rev1`.
+* **Rejection** sets `rejected` + decider with **no snapshot**.
+* **Decision** verify **and** reject both refused (`409`); unchanged; excluded from counts (`decisions` reported separately).
+* **Draft edit/delete succeed; verified edit/delete → `409`**; draft evidence delete returns `{success:true,deleted:true,id}`; verified evidence delete → `409`.
+* **Revoke** requires a reason (`400` without) and preserves the record + evidence; revoking a non-verified record → `409`.
+* **Supersede** creates a linked draft (`supersedes_id`) and leaves the original verified with its evidence intact; superseding a non-verified record → `409`.
+* **Rollback on failed measurement**: ineligible measurement → `409`, achievement stays `unverified`, **zero snapshots**.
+* **Repeated verification**: second call → `409`, exactly one snapshot; the DB **functional unique index** blocks a second `metric_snapshot` even if the lock were bypassed.
+* **Race handling**: `verify`/`reject`/`revoke` take `SELECT … FOR UPDATE` on the achievement row, re-check `verification_status`, and perform snapshot + status change in one transaction.
+
+### Authorization results (endpoint-level)
+
+* Non-SA (Director, company 11) `verify` / `reject` → **`403`**.
+* SA `verify` → `200` verified; `reject` → `200` rejected.
+* Cross-company list (Director company 1 → company 11) → **`403`**.
+* Linking a target from another company → `400` (`Linked target (company X) does not belong to this achievement's company`).
+* Unauthenticated → `401`; missing id → `400`.
+
+### Schema correction (required)
+
+`achievement_evidence` now has a **functional unique index** `uq_evidence_metric_snapshot` over `(CASE WHEN source_type='metric_snapshot' THEN achievement_id END)` — enforcing at most one metric snapshot per achievement. A stored generated column was attempted first but InnoDB rejects it (error 1215) because it derives from the foreign-key column `achievement_id`; the functional index is the working equivalent. Guarded + idempotent.
+
+### Contract correction
+
+The sprint's original Phase 4 exit criterion referenced an "authorized coach". **No Coach role exists** in this system (roles: Director, System Administrator, Judge; "coaching" is a feature domain). Per the instruction not to introduce a guessed role string, verification/rejection/revocation/supersede are **System Administrator only**, scoped by the existing `auth_require_company_access` rule; the coach path is deferred until a real role and access rule exist. The exit criterion in this document has been corrected accordingly.
+
+### Remaining issues / notes
+
+* `awaiting-review` returns nothing on local data (current measurements are only partial coverage) — expected; the eligible path is proven with fixtures.
+* Supersede/revoke are SA-only (approval-style). Allowing a company user to draft a correction that SA then verifies is a possible future relaxation.
+* Frontend not yet wired to the achievements endpoints (Phase 5 UI).
+* Production changes remain out of scope (Phase 4 review gate).
