@@ -33,7 +33,6 @@ class GpsTargetTask
         $stmt = $this->conn->prepare($sql);
         $stmt->execute(array_values($f));
         $newId = (int)$this->conn->lastInsertId();
-        $this->recalcTaskProgress($f['gps_target_id']);
         return $this->getById($newId);
     }
 
@@ -57,10 +56,6 @@ class GpsTargetTask
         $sql = "UPDATE gps_target_tasks SET " . implode(', ', $sets) . ", updated_at = NOW() WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
-        // Recalc parent progress if in tasks mode
-        $gpsTargetId = $existing['gps_target_id'];
-        if (isset($f['gps_target_id'])) $gpsTargetId = (int)$f['gps_target_id'];
-        $this->recalcTaskProgress($gpsTargetId);
         return $this->getById($id);
     }
 
@@ -114,50 +109,24 @@ class GpsTargetTask
 
     public function delete(int $id): bool
     {
-        // Capture parent before delete for recalc
-        $stmt0 = $this->conn->prepare("SELECT gps_target_id FROM gps_target_tasks WHERE id = ?");
-        $stmt0->execute([$id]);
-        $gpsTargetId = $stmt0->fetchColumn();
+        // Task completion is decoupled from target outcome progress — deleting a task
+        // never mutates the parent target (Sprint 007 Phase 2).
         $stmt = $this->conn->prepare("DELETE FROM gps_target_tasks WHERE id = ?");
         $stmt->execute([$id]);
-        $deleted = $stmt->rowCount() > 0;
-        if ($deleted && $gpsTargetId) {
-            $this->recalcTaskProgress((int)$gpsTargetId);
-        }
-        return $deleted;
+        return $stmt->rowCount() > 0;
     }
 
     /**
-     * Recalculate parent target progress when progress_mode = 'tasks'
-     * task progress = completed tasks / total tasks * 100
-     * When 100%, set parent to completed and populate completed_at
+     * Sprint 007 Phase 2 — task completion is activity progress only.
+     *
+     * The previous implementation ("recalcTaskProgress") wrote the task ratio into
+     * `gps_targets.manual_progress_percentage` and flipped the target to `completed`
+     * when every task was done. That conflated activity with business outcome
+     * (e.g. "Increase revenue" being declared achieved because the sales tasks closed).
+     *
+     * Task progress is now exposed read-only via GpsTarget::taskProgress(). Deleting
+     * this method is intentional — do not reintroduce parent writes here.
      */
-    private function recalcTaskProgress(int $gpsTargetId): void
-    {
-        // Only recalc if target is in tasks mode
-        $stmt = $this->conn->prepare("SELECT progress_mode FROM gps_targets WHERE id = ?");
-        $stmt->execute([$gpsTargetId]);
-        $mode = $stmt->fetchColumn();
-        if ($mode !== 'tasks') return;
-
-        $stmt2 = $this->conn->prepare("SELECT COUNT(*) as total, SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as done FROM gps_target_tasks WHERE gps_target_id = ?");
-        $stmt2->execute([$gpsTargetId]);
-        $row = $stmt2->fetch(PDO::FETCH_ASSOC);
-        $total = (int)($row['total'] ?? 0);
-        $done = (int)($row['done'] ?? 0);
-        $progress = $total > 0 ? round($done / $total * 100, 2) : 0;
-
-        if ($total > 0 && $done === $total) {
-            $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = 'completed', completed_at = COALESCE(completed_at, NOW()), updated_at = NOW() WHERE id = ?")
-                ->execute([$progress, $gpsTargetId]);
-        } elseif ($done > 0 || $progress > 0) {
-            $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = 'in_progress', completed_at = NULL, updated_at = NOW() WHERE id = ?")
-                ->execute([$progress, $gpsTargetId]);
-        } else {
-            $this->conn->prepare("UPDATE gps_targets SET manual_progress_percentage = ?, status = 'not_started', completed_at = NULL, updated_at = NOW() WHERE id = ?")
-                ->execute([$progress, $gpsTargetId]);
-        }
-    }
 
     private function nextSortOrder(int $gpsTargetId): int
     {

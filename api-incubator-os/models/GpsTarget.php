@@ -80,7 +80,36 @@ class GpsTarget
         $stmt = $this->conn->prepare("SELECT * FROM gps_targets WHERE id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ? $this->castRow($row) : null;
+        if (!$row) return null;
+        $target = $this->castRow($row);
+        // Read-only activity aggregate (Sprint 007 Phase 2). Never persisted.
+        $target['task_progress'] = $this->taskProgress($id);
+        return $target;
+    }
+
+    /**
+     * Read-only task completion aggregate for a target.
+     *
+     * This is activity progress only — it must never be written back to the target's
+     * `status`, `completed_at`, or `manual_progress_percentage` (Sprint 007 Phase 2).
+     *
+     * @return array{total:int,completed:int,percent:float}
+     */
+    public function taskProgress(int $id): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT COUNT(*) AS total, SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) AS completed
+             FROM gps_target_tasks WHERE gps_target_id = ?"
+        );
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $total = (int)($row['total'] ?? 0);
+        $completed = (int)($row['completed'] ?? 0);
+        return [
+            'total' => $total,
+            'completed' => $completed,
+            'percent' => $total > 0 ? round($completed / $total * 100, 2) : 0.0,
+        ];
     }
 
     public function listAll(array $filters = []): array

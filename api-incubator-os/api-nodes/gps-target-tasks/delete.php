@@ -1,6 +1,7 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/GpsTargetTask.php';
+include_once '../../models/GpsTarget.php';
 include_once '../../models/User.php';
 include_once '../../helpers/AuthGuard.php';
 include_once '../../config/headers.php';
@@ -22,5 +23,16 @@ try {
     $model = new GpsTargetTask($db);
     $id = (int)($input['id'] ?? $_GET['id'] ?? $_POST['id'] ?? 0);
     if (!$id) throw new InvalidArgumentException("id required");
-    echo json_encode(['success'=>$model->delete($id),'id'=>$id]);
+
+    // Resolve the parent before deleting so we can return the aggregate.
+    $parentStmt = $db->prepare("SELECT gps_target_id FROM gps_target_tasks WHERE id = ?");
+    $parentStmt->execute([$id]);
+    $gpsTargetId = (int)($parentStmt->fetchColumn() ?: 0);
+
+    $out = ['success' => $model->delete($id), 'id' => $id];
+    // Read-only task completion aggregate. The parent target is never mutated (Sprint 007 Phase 2).
+    if ($gpsTargetId > 0) {
+        $out['task_progress'] = (new GpsTarget($db))->taskProgress($gpsTargetId);
+    }
+    echo json_encode($out);
 } catch (Throwable $e) { http_response_code(400); echo json_encode(['error'=>$e->getMessage()]); }

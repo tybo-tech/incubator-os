@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 1 complete (2026-09-15); ready for Phase 2
+> **Status**: Locked — Phase 2 complete (2026-09-15); ready for Phase 3
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -243,27 +243,34 @@ Build the authoritative measure→account binding and prepare the database.
 
 Stop task completion from declaring business outcomes achieved.
 
+**Status: ✅ Complete — 2026-09-15 (session 015). See the Phase 2 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **2.1** Modify `GpsTargetTask::recalcTaskProgress()` so it **no longer writes** `manual_progress_percentage`, `status`, or `completed_at` to `gps_targets`.
-- [ ] **2.2** Add `GpsTarget::taskProgress(int $id): array` returning `{ total, completed, percent }` as a **read-only** aggregate.
-- [ ] **2.3** Add outcome-progress derivation: for `progress_mode='metric'` outcome progress is computed from actual vs baseline/target (Phase 3); `tasks` mode reports task % for **display only**; `manual` mode is unchanged.
-- [ ] **2.4** Update `gps-target-tasks/{create,update,delete,reorder}.php` responses to include task % while leaving the parent target untouched.
-- [ ] **2.5** Document (do not auto-fix) any target previously flipped to `completed` by task recalc; add a manual-review note to the migration README.
+- [x] **2.1** Modify `GpsTargetTask::recalcTaskProgress()` so it **no longer writes** `manual_progress_percentage`, `status`, or `completed_at` to `gps_targets`. (The mutating method was removed; a comment records why it must not return.)
+- [x] **2.2** Add `GpsTarget::taskProgress(int $id): array` returning `{ total, completed, percent }` as a **read-only** aggregate.
+- [x] **2.3** Add outcome-progress derivation: for `progress_mode='metric'` outcome progress is computed from actual vs baseline/target (Phase 3); `tasks` mode reports task % for **display only**; `manual` mode is unchanged.
+- [x] **2.4** Update `gps-target-tasks/{create,update,delete}.php` responses to include task % while leaving the parent target untouched (`reorder.php` returns an ordered array and does not affect completion — left unchanged).
+- [x] **2.5** Document (do not auto-fix) any target previously flipped to `completed` by task recalc; add a manual-review note to the migration README.
 
 #### Exit Criteria
 
-- [ ] Completing all tasks does **not** set the parent target `status='completed'` or populate `completed_at` (verified via API)
-- [ ] A `tasks`-mode target still reports task completion % via the read aggregate
-- [ ] A `manual`-mode target behaves exactly as before
-- [ ] Existing task CRUD endpoints return the same fields plus task % — no regressions
-- [ ] `php -l` clean
+- [x] Completing all tasks does **not** set the parent target `status='completed'` or populate `completed_at` (verified via API)
+- [x] A `tasks`-mode target still reports task completion % via the read aggregate
+- [x] A `manual`-mode target behaves exactly as before
+- [x] Existing task CRUD endpoints return the same fields plus task % — no regressions
+- [x] `php -l` clean
 
 ---
 
 ### Phase 3 — Actuals Calculation Service (Revenue Vertical Slice)
 
 Derive actuals from financial records through the measure→account binding, implementing the **Measurement Contract** above in full.
+
+> **Constraints carried from Phase 1/2 (recorded 2026-09-15):**
+> 1. **Row presence does not establish monthly completeness.** With zero-filled months, an all-zero row is indistinguishable from a genuine zero; `completeness` is unknown unless another field or workflow confirms captured months. Do not infer completeness from month values.
+> 2. **Null-`account_id` financial rows require a verified association before inclusion.** They cannot be attributed by `account_type` alone; either establish a demonstrable link/reconciliation or **exclude them and report the unresolved count**. Never silently total them.
+> 3. Generated `total_amount` `COALESCE`s NULL → 0 and must not be used for completeness (read `m1…m12` directly).
 
 #### Tasks
 
@@ -661,3 +668,53 @@ Recorded in `migrations/README.md` for Phase 3.
 
 * `config/headers.php:26` emits an `Undefined array key "REQUEST_METHOD"` warning under CLI only (test harness); harmless over Apache. Pre-existing, not introduced here.
 * Production migration **not** applied (out of scope — Phase 1 review gate).
+
+---
+
+## Phase 2 Completion — 2026-09-15 (session 015)
+
+**Status: ✅ Complete. All Phase 2 tasks and exit criteria satisfied. Stopped at the Phase 2 review gate — no production deployment.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Parent mutation removed + rationale comment | `api-incubator-os/models/GpsTargetTask.php` |
+| Read-only aggregate `taskProgress()` + embedded in `getById` | `api-incubator-os/models/GpsTarget.php` |
+| Task endpoints return aggregate (additive) | `api-incubator-os/api-nodes/gps-target-tasks/{create,update,delete}.php` |
+| Phase 3 constraints + auto-complete review note | `api-incubator-os/migrations/README.md` |
+
+### Validation evidence
+
+* **Model-level (transactional, rolled back)** — every case passed:
+  * add tasks → parent unchanged; aggregate `0/2 = 0%`
+  * complete 1 → `1/2 = 50%`; parent unchanged
+  * **complete all → `2/2 = 100%`; parent stays `in_progress`, `completed_at` NULL, `manual_progress_percentage` 42** (the core requirement)
+  * reopen → `1/2 = 50%`; parent unchanged
+  * delete → aggregate recalculated; parent unchanged; no tasks → `0/0/0.0`
+  * target with no tasks → `0/0/0.0`
+  * manual-mode target untouched by task activity; explicit progress update still works
+* **Endpoint-level (real POST through guard, SA session)** — `create` → task row + `task_progress {1,0,0}`; `update` (complete) → task row + `task_progress {1,1,100}` and parent still `in_progress / 42.00 / NULL`; `delete` → `{success,id}` + `task_progress {0,0,0}`. Temp target cleaned up.
+* **`php -l`** clean on both models + all 5 task endpoints. **`ng build`** passes.
+
+### Previously auto-completed targets (documented, not changed)
+
+* Audit of the local DB: **1** target uses `progress_mode='tasks'` (id 49, company 10) — `status='in_progress'`, `completed_at` NULL, `manual_progress_percentage` 75, 4 tasks / 3 done. **No target is currently in an auto-completed state.**
+* Detection query for other environments (manual review; do **not** auto-repair):
+  ```sql
+  SELECT id, company_id, status, completed_at, manual_progress_percentage
+  FROM gps_targets
+  WHERE progress_mode = 'tasks' AND status = 'completed';
+  ```
+* Historical `status`/`completed_at` values are **left unchanged** — this phase stops future mutation only.
+
+### Compatibility notes
+
+* Task endpoint responses are **strictly additive**: the task object is unchanged plus a new `task_progress` key; `delete.php` keeps `{success,id}` and adds `task_progress`. `reorder.php` is unchanged (returns the ordered array; it does not affect completion).
+* `GpsTarget::getById()` (and therefore `gps-targets/get.php`, and `add()`'s return) now includes `task_progress` — additive, ignored by the current Angular interfaces.
+* **[Intentional behaviour change]** For a `tasks`-mode target, the parent's `manual_progress_percentage` / `status` no longer follow task completion, so the workspace's **Progress** column no longer updates when tasks are ticked. This is the decoupling requested; the two-figure display split (Task progress vs Outcome progress) is **Phase 7**. No frontend code was changed this phase.
+
+### Remaining issues / notes
+
+* `config/headers.php:26` CLI-only `REQUEST_METHOD` warning persists (test harness); harmless over Apache, pre-existing.
+* Production migration **not** applied (Phase 2 review gate).

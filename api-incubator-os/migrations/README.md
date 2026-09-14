@@ -97,4 +97,17 @@ Do NOT run `migrate-all` or `clear` from HTTP — they are CLI-only (`normalized
 - `account_id` is **nullable and often absent**: 105 of 179 revenue rows have `account_id = NULL`. Account resolution therefore cannot rely on `account_id`; use `company_accounts` **per company** (by `account_type`), and only use a pinned `account_id` where present.
 - `company_accounts.account_type` in live data is almost entirely `domestic_revenue` (91 rows) plus 1 `other`; **no `export_revenue` or `expense` accounts exist yet** — so `export_revenue` bindings resolve to zero accounts and must surface as `no_accounts`, never as 0.
 
-Implication for Phase 3: derive `complete` / `incomplete` / `no_accounts` from **row presence per (account, financial_year)**, honour any NULL month as incomplete, and never treat a missing row/binding as zero.
+**Phase 3 constraints (recorded 2026-09-15).**
+
+1. **A row existing proves a record exists — not that every month was captured.** With zero-filled months (`DEFAULT 0.00`) an all-zero row is indistinguishable from a genuine zero, so **completeness remains unknown unless another field or workflow confirms it**. Month-nullness cannot be used as the completeness signal while every month is zero-filled.
+2. **An account type alone cannot identify a financial row whose `account_id` is null.** 105 of 179 revenue rows have `account_id = NULL`. Those rows **need a demonstrable link or an explicit reconciliation** before they can be attributed to a measure; otherwise **exclude them and report the count of unresolved rows** rather than silently folding them into a total.
+
+Resulting rules for Phase 3: derive `complete` / `incomplete` / `no_accounts` from **row presence per (account, financial_year)** *plus* an explicit confirmation of captured months; honour any NULL month as incomplete; exclude unresolved (null-`account_id`) rows and report them; and never treat a missing row or binding as zero. **Do not use the generated `total_amount`** for completeness — it `COALESCE`s NULL → 0.
+
+**Sprint 007 Phase 2 — task/outcome decoupling (2026-09-15).** Task create/update/delete no longer mutate the parent target's `status`, `completed_at`, or `manual_progress_percentage`; task completion is exposed **read-only** via `GpsTarget::taskProgress()` and included in task endpoint responses as `task_progress`. Targets that were **previously auto-completed** by the old `recalcTaskProgress` behaviour are **left unchanged** — no historical status was rewritten. Manual-review query for any environment:
+
+```sql
+SELECT id, company_id, status, completed_at, manual_progress_percentage
+FROM gps_targets
+WHERE progress_mode = 'tasks' AND status = 'completed';
+```
