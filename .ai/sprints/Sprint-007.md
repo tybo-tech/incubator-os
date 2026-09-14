@@ -1145,3 +1145,49 @@ Proof doc §9.2 quantifies the remaining data limitations (local reference datas
 
 Release-readiness amendment complete; **no production migration or deployment executed.** The next decision is the explicit production authorization already required by the §7.9 hold point.
 
+---
+
+## Production Deployment — 2026-09-16 (session 025)
+
+**Authorization:** explicit, Sprint-007 at commit `2fa0052`.
+**Target:** `https://app.rbttacesd.co.za` · API `.../api/api-nodes/` · DB `rbttaces_api` · server root `/app.rbttacesd.co.za`.
+
+### Configuration verification
+
+- Deployed `Constants` (`chunk-LHXZHLLH.js`) is **identical** to `src/services/service.ts`: `ApiBase = https://app.rbttacesd.co.za/api/` on non-localhost; `http://localhost:8080/` only on localhost (0 occurrences in the deployed bundle).
+- Web path `/api/api-nodes/...` resolves; `config/*.php` are executed (not leaked); CORS echoes the allowed origin with credentials and preflight returns 200.
+- Path mapping: repo `api-incubator-os/*` → web `/api/*`; within `/api` the subfolders are `api-nodes/…`, `models/…`, `services/…`, `helpers/…` (no `/api/api/` nesting).
+
+### Pre-deploy state (found the blocker)
+
+Production code (backend **and** frontend) had already been deployed by a whole-folder drop, but the DB was **pre-Sprint-007**:
+
+```
+SQLSTATE[42S02]: Table 'rbttaces_api.metric_type_accounts' doesn't exist
+SQLSTATE[42S02]: Table 'rbttaces_api.achievements' doesn't exist
+```
+
+### Migrations executed (operator, in order)
+
+1. `api-incubator-os/migrations/2026-09-15-results-achievements.sql`
+2. `api-incubator-os/migrations/2026-09-16-achievements-snapshot-guard.sql`
+
+### Post-migration verification (live, authenticated SA)
+
+| Check | Result |
+| --- | --- |
+| `measures.php` | `200` — 3 measures |
+| `measures.php?company_id=99` | `200` — `{account_count:0, usable:false}` per measure |
+| `metric-type-accounts/list.php` | `200` — **5 seed bindings** verified |
+| `achievements/counts.php?company_id=99` | `200` — `{total:0, by_status{…}, decisions:0}` |
+| `achievements/list.php?company_id=99` | `200 []` |
+| `measure-preview.php` (REVENUE_TOTAL/EXPORT) | `200` — full contract, `calculation_version:"rev1"`, `status:"no_accounts"` |
+| `verify.php` id 999999 | `404` (DB reachable, no 500) |
+| Companies / financial years | 131 / 10 (active FY 2024/2025) |
+
+### Status
+
+**Backend production deployment: complete and verified.** Schema gap closed; all Sprint-007 endpoints serve valid data. **Remaining:** production browser smoke (both entry paths + Results/Awaiting Review/target popup/modal/persistence, zero unexpected console errors), serve one consistent Angular build (clear cache), and clean up the non-production artifacts the whole-folder drop placed in the web root.
+
+**Stop point:** browser smoke on production.
+
