@@ -62,4 +62,20 @@ export class SwotService {
   setCurrent(analysisId: number): Observable<any> {
     return this.http.post(`${this.base}/set-current.php`, { id: analysisId }, { withCredentials: true });
   }
+
+  createAnalysis(data: { company_id: number; analysis_date?: string; summary?: string; status?: string; is_current?: boolean }): Observable<SwotAnalysis> {
+    return this.http.post<SwotAnalysis>(`${this.base}/create.php`, data, { withCredentials: true });
+  }
+
+  createItem(data: Partial<SwotItem> & { swot_analysis_id: number; description: string }): Observable<SwotItem> {
+    return this.http.post<SwotItem>(`${this.itemBase}/create.php`, data, { withCredentials: true });
+  }
+
+  updateItem(id: number, data: Partial<SwotItem>): Observable<SwotItem> {
+    return this.http.post<SwotItem>(`${this.itemBase}/update.php`, { id, ...data }, { withCredentials: true });
+  }
+
+  deleteItem(id: number): Observable<{ success: boolean; id: number }> {
+    return this.http.post<{ success: boolean; id: number }>(`${this.itemBase}/delete.php`, { id }, { withCredentials: true });
+  }
 }

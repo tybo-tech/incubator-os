@@ -168,3 +168,32 @@ Findings closed in `7e59bc4`:
 
 **Outstanding:** rotate SA password (`mrnnmthembu@gmail.com`) · decide on 2 empty analyses (Co 120, 123) · apply token patch to any other deployment showing drift · confirm prod `nodes` count (expected 3319) in phpMyAdmin · users perform real linking on prod.
 
+## SWOT Workspace UX Redesign — 2026-09-14 (session 011)
+
+**Status: SWOT workspace converted from a card list to a Notion-style data table. Full CRUD on findings verified.**
+
+**Delivered:**
+- Shared **`app-icon`** component introduced (`ICON_PATHS`, 18 outline icons) — first consumer of the platform icon standard; exported from `shared/components`.
+- `SwotService` gained `createAnalysis` / `createItem` / `updateItem` / `deleteItem`.
+- **Table view:** toolbar (Table/Grouped toggle, search, Filter + active count, Refresh, GPS Targets link, Add finding); collapsible filter panel (Type / Priority / Impact / Status / Targets=All|Has|No); 11 columns incl. **Targets count** and **Tasks count**; sortable headers; row expansion retaining the full linked-GPS-target + task management; multi-select with bulk set-priority / delete.
+- **Grouped view:** the same table rendered once per type via `ngTemplateOutlet`, each group collapsible with its own totals; Type column hidden.
+- **Add/Edit finding modal** (all fields) with auto-create of the current analysis; confirm-guarded delete.
+- `angular.json` `anyComponentStyle` budget raised 4 kB/8 kB → **8 kB/16 kB** (component is 12.84 kB; old error threshold would fail prod).
+
+**Verified (Playwright, Company 10 / Analysis #13):** 8 findings render with badges/pills/counts; sort by Targets works; grouped = Strengths 2 / Weaknesses 3 / Opportunities 2 / Threats 1; Weakness filter → 3 rows + empty state + Clear all; row expansion shows “Secure R500k bridge finance…” (In progress 75%) with 3 completed + 1 open task; **create → update (priority→critical) → delete** round-trip succeeded and restored 8 findings; **0 console errors**; dev + production builds pass.
+
+**Outstanding:** bulk actions are N-request loops · targets/tasks counts need a list-by-company sources endpoint · `editTask` still uses `prompt()` · 12.84 kB component CSS still warns (migrate to Tailwind utilities to restore the original budget) · verify redesign on prod after next frontend deploy.
+
+## GPS Targets UX Redesign + Shared Workspace Styles — 2026-09-14 (session 012)
+
+**Status: GPS Targets now matches the SWOT table, with detail moved into a view/edit popup. Both pages share one stylesheet; original component-style budget restored.**
+
+**Delivered:**
+- Shared `.sw-*` workspace UI extracted to a global `@layer components` block in `src/styles.scss`; SWOT component styles reduced to `:host` tokens only. `angular.json` `anyComponentStyle` **reverted to 4 kB/8 kB** (no net config change) — the budget warning is gone.
+- GPS page rebuilt like SWOT: toolbar (Table/Grouped, search, Filter + count, Refresh, SWOT Workspace link, Add target), filters (Category / Priority / Status / **Source**), 11 sortable columns incl. **Source** (Linked / Not linked), **Tasks count**, **Progress** (bar + %), multi-select bulk status/delete, grouped-by-category view with avg%/tasks totals.
+- **Left expand chevrons removed.** Row click opens a **popup**: view mode (description, progress, KV grid, **Linked SWOT findings** provenance, Tasks, Progress updates) with a footer Edit that switches the same popup to **edit mode** (full form). Create uses the same popup.
+
+**Verified (Playwright, Company 10):** 6 targets render correctly (`Total 6 · Overdue 2 · At risk 0 · Due this month 3`); popup shows target #49 @ 75% with **SWOT weakness #51** provenance + 4 tasks; edit prefill + Cancel→view; grouped = Finance 2 (38%) / Strategy·General 2 (20%) / Sales & Marketing 1 (15%) / Personal Development 1 (0%); **create → delete round-trip** succeeded and restored 6 targets; SWOT unchanged after extraction; 0 post-login console errors; dev + production builds pass on the original budget.
+
+**Outstanding:** bulk actions are N-request loops · Tasks/Source columns load one request per target (needs a list-by-company sources endpoint) · `editTask` still uses `prompt()` on both pages · verify both pages on prod after next deploy.
+
