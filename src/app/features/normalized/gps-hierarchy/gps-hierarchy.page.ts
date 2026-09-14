@@ -3,9 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { GpsService, GpsTarget, GpsTask, GpsUpdate, GpsTargetSource } from '../services/gps.service';
+import { GpsService, GpsTarget, GpsTask, GpsUpdate, GpsTargetSource, GpsTargetMetric, MeasureOption } from '../services/gps.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
 import { ViewStateService } from '../../../../services/view-state.service';
+import { AchievementsService, Achievement } from '../services/achievements.service';
+import { AuthService } from '../../../auth/auth.service';
+import { FinancialYearService } from '../../../../services/financial-year.service';
 
 type View = 'table' | 'grouped';
 type PopupMode = 'view' | 'edit';
@@ -259,9 +262,38 @@ type PopupMode = 'view' | 'edit';
           @if (popupMode() === 'view' && popupTarget(); as t) {
             <div class="sw-detail-text">{{ t.description || '—' }}</div>
 
-            <div class="sw-progress-row" style="margin-top:12px;">
-              <div class="sw-progress" [attr.aria-label]="'Progress ' + t.manual_progress_percentage + ' percent'"><span [style.width.%]="t.manual_progress_percentage"></span></div>
-              <span class="sw-progress-value">{{ t.manual_progress_percentage }}% · {{ t.progress_mode }}</span>
+            <div class="sw-section">
+              <div class="sw-section-title">Progress <span>activity and outcome are kept separate</span></div>
+              <div class="sw-kv">
+                <div>
+                  <span>Task progress</span>
+                  <strong>{{ t.task_progress?.completed ?? 0 }}/{{ t.task_progress?.total ?? 0 }} · {{ t.task_progress?.percent ?? 0 }}%</strong>
+                </div>
+                @if (t.progress_mode === 'manual') {
+                  <div><span>Manual progress</span><strong>{{ t.manual_progress_percentage }}%</strong></div>
+                }
+                @if (t.progress_mode === 'metric') {
+                  <div><span>Outcome progress</span><strong>{{ outcomeProgressLabel() }}</strong></div>
+                }
+              </div>
+              @if (t.progress_mode === 'manual') {
+                <div class="sw-progress-row" style="margin-top:10px;">
+                  <div class="sw-progress" [attr.aria-label]="'Manual progress ' + t.manual_progress_percentage + ' percent'"><span [style.width.%]="t.manual_progress_percentage"></span></div>
+                  <span class="sw-progress-value">Manual</span>
+                </div>
+              }
+              @if (t.progress_mode === 'tasks') {
+                <div class="sw-progress-row" style="margin-top:10px;">
+                  <div class="sw-progress" [attr.aria-label]="'Task progress ' + (t.task_progress?.percent ?? 0) + ' percent'"><span [style.width.%]="(t.task_progress?.percent ?? 0)"></span></div>
+                  <span class="sw-progress-value">Tasks</span>
+                </div>
+              }
+              @if (t.progress_mode === 'metric') {
+                <div class="sw-progress-row" style="margin-top:10px;">
+                  <div class="sw-progress" [attr.aria-label]="'Outcome progress ' + (actual()?.progress?.percent_display ?? 0) + ' percent'"><span [style.width.%]="(actual()?.progress?.percent_display ?? 0)"></span></div>
+                  <span class="sw-progress-value">Outcome</span>
+                </div>
+              }
             </div>
 
             <div class="sw-section">
@@ -273,6 +305,121 @@ type PopupMode = 'view' | 'edit';
                 <div><span>Progress mode</span><strong>{{ t.progress_mode }}</strong></div>
                 <div><span>Record</span><strong>{{ t.legacy_node_id ? 'legacy #' + t.legacy_node_id : 'native' }}</strong></div>
               </div>
+            </div>
+
+            @if (t.progress_mode === 'metric') {
+              <div class="sw-section">
+                <div class="sw-section-title">Actual <span>derived from financial data · read-only</span></div>
+                @if (actualLoading()) { <div class="sw-footnote" style="margin:0;">Calculating…</div> }
+                @else if (actualError()) { <div class="sw-alert error" style="margin:0;">{{ actualError() }}</div> }
+                @else {
+                  @if (actual(); as m) {
+                  @if (!m.configured) {
+                    <div class="sw-alert" style="margin:0;">Not measurable — {{ statusLabel(m.reason || m.progress?.status) }}. Bind a measure in edit mode.</div>
+                  } @else {
+                    <div class="sw-trio" style="font-size:16px;">
+                      {{ m.baseline?.subtotal ?? '—' }}<span class="arrow">→</span><span class="goal">{{ m.measure?.target_value ?? '—' }}</span><span class="arrow">→</span><span class="actual">{{ m.target?.subtotal ?? '—' }}</span>
+                      @if (m.measure?.unit) { <span class="unit">{{ m.measure.unit }}</span> }
+                    </div>
+                    <div class="sw-kv" style="margin-top:10px;">
+                      <div><span>Measure</span><strong>{{ m.measure?.metric_name }} ({{ m.measure?.metric_code }})</strong></div>
+                      <div><span>Direction</span><strong>{{ m.measure?.direction }}</strong></div>
+                      <div><span>Calculation</span><strong>{{ m.measure?.calculation_method }}</strong></div>
+                      <div><span>Calculation version</span><strong>{{ m.calculation_version }}</strong></div>
+                      <div><span>Baseline period</span><strong>{{ m.baseline?.period?.label || '—' }}</strong></div>
+                      <div><span>Target period</span><strong>{{ m.target?.period?.label || '—' }}</strong></div>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+                      <span class="sw-pill">baseline: {{ statusLabel(m.baseline?.status) }}</span>
+                      <span class="sw-pill">target: {{ statusLabel(m.target?.status) }}</span>
+                      <span class="sw-pill" [class.status-verified]="m.authoritative" [class.status-rejected]="!m.authoritative">{{ m.authoritative ? 'authoritative' : 'not authoritative' }}</span>
+                      <span class="sw-pill" [class.status-verified]="m.eligible_for_achievement" [class.status-unverified]="!m.eligible_for_achievement">{{ m.eligible_for_achievement ? 'eligible for achievement' : 'not eligible for achievement' }}</span>
+                    </div>
+                    @if (m.baseline?.subtotal_is_partial || m.target?.subtotal_is_partial) {
+                      <div class="sw-footnote" style="margin:8px 0 0; color:var(--ios-red);">Subtotals are partial — do not read these as achieved revenue.</div>
+                    }
+                    <div class="sw-kv" style="margin-top:10px;">
+                      <div><span>Baseline coverage</span><strong>{{ coverageLabel(m.baseline) }}</strong></div>
+                      <div><span>Target coverage</span><strong>{{ coverageLabel(m.target) }}</strong></div>
+                      <div><span>Baseline missing</span><strong>{{ missingLabel(m.baseline) }}</strong></div>
+                      <div><span>Target missing</span><strong>{{ missingLabel(m.target) }}</strong></div>
+                      <div><span>Baseline unresolved rows</span><strong>{{ m.baseline?.unresolved_rows ?? 0 }}</strong></div>
+                      <div><span>Target unresolved rows</span><strong>{{ m.target?.unresolved_rows ?? 0 }}</strong></div>
+                    </div>
+                    @if (m.progress?.status && m.progress.status !== 'computed') {
+                      <div class="sw-alert" style="margin:10px 0 0;">Outcome progress: {{ statusLabel(m.progress.status) }} — {{ m.progress.reason }}</div>
+                    }
+                    @if (m.warnings?.length) {
+                      <ul style="margin:8px 0 0; padding-left:16px;">
+                        @for (w of m.warnings; track w) { <li class="sw-footnote" style="margin:0;">{{ w }}</li> }
+                      </ul>
+                    }
+                    }
+                  }
+                }
+              </div>
+            }
+
+            <div class="sw-section">
+              <div class="sw-section-title">
+                <span>Results &amp; achievements ({{ achievementOutcomes().length }})</span>
+                <button class="sw-btn sm" type="button" (click)="openAchievementForm()"><app-icon name="plus"></app-icon> Add</button>
+              </div>
+              @if (achievementsLoading()) { <div class="sw-footnote" style="margin:0;">Loading…</div> }
+              @else if (targetAchievements().length === 0) { <div class="sw-footnote" style="margin:0;">No results, achievements or decisions linked to this target yet.</div> }
+              @else {
+                @for (a of targetAchievements(); track a.id) {
+                  <div class="sw-source-row">
+                    <span class="sw-source-kind">
+                      <span class="sw-badge {{ a.kind }}">{{ a.kind === 'achievement' ? 'Achievement' : a.kind === 'decision' ? 'Decision' : 'Result' }}</span>
+                      @if (a.kind === 'decision') { <span class="sw-pill">Event · excluded from counts</span> }
+                      @else { <span class="sw-pill status-{{ a.verification_status }}">{{ statusLabel(a.verification_status) }}</span> }
+                      <span class="sw-pill">{{ a.evidence_count ?? 0 }} evidence</span>
+                    </span>
+                    <div style="font-weight:600; color:var(--ios-ink);">{{ a.title }}</div>
+                    <div class="sw-mini" style="color:var(--ios-muted);">Achieved {{ a.achieved_on || '—' }}{{ a.verified_by ? ' · verified by ' + a.verified_by : '' }}</div>
+                    @if (a.kind !== 'decision' && (canVerifyAchievement(a) || canRevokeAchievement(a))) {
+                      <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
+                        @if (canVerifyAchievement(a)) {
+                          <button class="sw-btn sm" type="button" (click)="rejectAchievement(a)">Reject</button>
+                          <button class="sw-btn sm primary" type="button" (click)="verifyAchievement(a)">Verify</button>
+                        }
+                        @if (canRevokeAchievement(a)) {
+                          @if (revokingId() === a.id) {
+                            <input class="sw-input" [(ngModel)]="revokeReason" placeholder="Revocation reason (required)" (keyup.enter)="confirmRevoke(a)">
+                            <button class="sw-btn sm danger" type="button" (click)="confirmRevoke(a)">Confirm revoke</button>
+                            <button class="sw-btn sm" type="button" (click)="cancelRevoke()">Cancel</button>
+                            @if (revokeError()) { <span style="color:var(--ios-red); font-size:10px;">{{ revokeError() }}</span> }
+                          } @else {
+                            <button class="sw-btn sm danger" type="button" (click)="revokeAchievement(a)">Revoke…</button>
+                            <button class="sw-btn sm" type="button" (click)="supersedeAchievement(a)">Supersede</button>
+                          }
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              }
+              @if (achOpen()) {
+                <div class="sw-form-grid" style="margin-top:8px; border-top:1px solid var(--ios-line); padding-top:10px;">
+                  <label class="sw-field span2"><span>Title *</span><input class="sw-input" [(ngModel)]="achTitle" placeholder="e.g. Q4 domestic revenue exceeded target"></label>
+                  <label class="sw-field"><span>Kind</span>
+                    <select class="sw-select" [(ngModel)]="achKind">
+                      <option value="result">Result</option>
+                      <option value="achievement">Achievement</option>
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Achieved on</span><input class="sw-input" type="date" [(ngModel)]="achAchievedOn"></label>
+                  <label class="sw-field span2"><span>Description</span><textarea class="sw-textarea" [(ngModel)]="achDescription" placeholder="What happened, and how do you know?"></textarea></label>
+                  <label class="sw-field span2"><span>Evidence summary</span><textarea class="sw-textarea" [(ngModel)]="achEvidenceSummary" placeholder="Optional — supporting evidence summary"></textarea></label>
+                </div>
+                @if (achError()) { <div class="sw-alert error" style="margin-top:8px;">{{ achError() }}</div> }
+                <div class="sw-inline-row" style="margin-top:8px;">
+                  <button class="sw-btn" type="button" (click)="cancelAchievementForm()">Cancel</button>
+                  <button class="sw-btn primary" type="button" [disabled]="achSaving()" (click)="createAchievementDraft()">{{ achSaving() ? 'Creating…' : 'Create draft' }}</button>
+                </div>
+                <div class="sw-footnote" style="margin:6px 0 0;">Verification captures the authoritative financial snapshot at review time; only a System Administrator can verify, reject, revoke or supersede.</div>
+              }
             </div>
 
             <div class="sw-section">
@@ -299,13 +446,24 @@ type PopupMode = 'view' | 'edit';
                     @for (task of tasks()[t.id]; track task.id) {
                       <div class="sw-task" [class.done]="task.status === 'completed'">
                         <input type="checkbox" [checked]="task.status === 'completed'" (change)="toggleTask(task)" [attr.aria-label]="'Toggle task ' + task.title">
-                        <span class="sw-task-name">{{ task.title }} <span style="color:var(--ios-muted); font-size:10px;">· {{ statusLabel(task.status) }} · due {{ task.due_date || '—' }}</span></span>
-                        <span class="sw-task-owner">
-                          <button class="sw-link" (click)="editTask(task)">Edit</button>
-                          <button class="sw-link" style="color:var(--ios-red)" (click)="deleteTask(task)">Delete</button>
-                          <button class="sw-link" (click)="moveTask(task, -1)" aria-label="Move task up">↑</button>
-                          <button class="sw-link" (click)="moveTask(task, 1)" aria-label="Move task down">↓</button>
-                        </span>
+                        @if (taskEditing() === task.id) {
+                          <span class="sw-task-name">
+                            <input class="sw-input" [(ngModel)]="taskEditTitle" (keyup.enter)="saveTaskEdit(task)" (keyup.escape)="cancelTaskEditor()" aria-label="Edit task title">
+                          </span>
+                          <span class="sw-task-owner">
+                            @if (taskEditError()) { <span style="color:var(--ios-red); font-size:10px;">{{ taskEditError() }}</span> }
+                            <button class="sw-link" (click)="saveTaskEdit(task)">Save</button>
+                            <button class="sw-link" (click)="cancelTaskEditor()">Cancel</button>
+                          </span>
+                        } @else {
+                          <span class="sw-task-name">{{ task.title }} <span style="color:var(--ios-muted); font-size:10px;">· {{ statusLabel(task.status) }} · due {{ task.due_date || '—' }}</span></span>
+                          <span class="sw-task-owner">
+                            <button class="sw-link" (click)="openTaskEditor(task)">Edit</button>
+                            <button class="sw-link" style="color:var(--ios-red)" (click)="deleteTask(task)">Delete</button>
+                            <button class="sw-link" (click)="moveTask(task, -1)" aria-label="Move task up">↑</button>
+                            <button class="sw-link" (click)="moveTask(task, 1)" aria-label="Move task down">↓</button>
+                          </span>
+                        }
                       </div>
                     }
                   </div>
@@ -370,6 +528,69 @@ type PopupMode = 'view' | 'edit';
               </label>
               <label class="sw-field span2"><span>Manual progress %</span><input class="sw-input" type="number" min="0" max="100" [(ngModel)]="formProgress"></label>
             </div>
+            @if (!popupIsCreate()) {
+              <div class="sw-section" style="border-top:1px solid var(--ios-line); padding-top:12px;">
+                <div class="sw-section-title">
+                  <span>Measure binding</span>
+                  <span class="sw-pill">{{ bindings().length ? 'bound' : 'not bound' }}</span>
+                </div>
+                @if (!measures().length) {
+                  <div class="sw-footnote" style="margin:0 0 8px;">No measures with account bindings are available.</div>
+                }
+                <div class="sw-form-grid">
+                  <label class="sw-field"><span>Measure</span>
+                    <select class="sw-select" [(ngModel)]="bindMetricTypeId">
+                      @for (m of measures(); track m.id) { <option [ngValue]="m.id">{{ m.name }} ({{ m.code }})</option> }
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Direction</span>
+                    <select class="sw-select" [(ngModel)]="bindDirection">
+                      <option value="increase">Increase</option>
+                      <option value="decrease">Decrease</option>
+                      <option value="maintain">Maintain</option>
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Baseline FY</span>
+                    <select class="sw-select" [(ngModel)]="bindBaselineYearId">
+                      <option [ngValue]="0">—</option>
+                      @for (y of financialYears(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Baseline period</span>
+                    <select class="sw-select" [(ngModel)]="bindBaselineQuarter">
+                      <option value="FY">Full year</option><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option>
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Target FY</span>
+                    <select class="sw-select" [(ngModel)]="bindTargetYearId">
+                      <option [ngValue]="0">—</option>
+                      @for (y of financialYears(); track y.id) { <option [ngValue]="y.id">{{ y.name }}</option> }
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Target period</span>
+                    <select class="sw-select" [(ngModel)]="bindTargetQuarter">
+                      <option value="FY">Full year</option><option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option>
+                    </select>
+                  </label>
+                  <label class="sw-field"><span>Goal ({{ measureUnit() }}) *</span><input class="sw-input" type="number" [(ngModel)]="bindGoal"></label>
+                  <label class="sw-field"><span>Calculation method</span><input class="sw-input" value="period_total" disabled></label>
+                  @if (bindDirection === 'maintain') {
+                    <label class="sw-field"><span>Tolerance</span><input class="sw-input" type="number" [(ngModel)]="bindToleranceValue"></label>
+                    <label class="sw-field"><span>Tolerance unit</span>
+                      <select class="sw-select" [(ngModel)]="bindToleranceUnit">
+                        <option value="absolute">Absolute</option><option value="percent">Percent</option>
+                      </select>
+                    </label>
+                  }
+                </div>
+                @if (bindError()) { <div class="sw-alert error" style="margin-top:8px;">{{ bindError() }}</div> }
+                <div class="sw-inline-row" style="margin-top:8px;">
+                  @if (bindings().length) { <button class="sw-btn danger" type="button" [disabled]="bindSaving()" (click)="removeBinding()">Remove binding</button> }
+                  <button class="sw-btn primary" type="button" [disabled]="bindSaving()" (click)="saveBinding()">{{ bindSaving() ? 'Saving…' : (bindings().length ? 'Update binding' : 'Bind measure') }}</button>
+                </div>
+                <div class="sw-footnote" style="margin:6px 0 0;">Only the implemented <strong>period_total</strong> method is available. Saving reloads the binding and derived actual from the server.</div>
+              </div>
+            }
             @if (formError()) { <div class="sw-alert error" style="margin-top:10px;">{{ formError() }}</div> }
           }
         </div>
@@ -393,6 +614,9 @@ export class GpsHierarchyPage {
   private route = inject(ActivatedRoute);
   private gps = inject(GpsService);
   private ui = inject(ViewStateService);
+  private achievementsApi = inject(AchievementsService);
+  private auth = inject(AuthService);
+  private yearsApi = inject(FinancialYearService);
   private viewStateRestored = false;
 
   constructor() {
@@ -454,6 +678,47 @@ export class GpsHierarchyPage {
   formProgress: number | null = 0;
   formError = signal<string | null>(null);
   formLoading = signal(false);
+
+  // ---- Phase 7: actual measurement, measure binding, achievements, task editor ----
+  isSA = computed(() => this.auth.isSystemAdministrator());
+  actual = signal<any | null>(null);
+  actualLoading = signal(false);
+  actualError = signal<string | null>(null);
+
+  bindings = signal<GpsTargetMetric[]>([]);
+  measures = signal<MeasureOption[]>([]);
+  financialYears = signal<{ id: number; name: string }[]>([]);
+
+  bindMetricTypeId: number | null = null;
+  bindDirection: 'increase' | 'decrease' | 'maintain' = 'increase';
+  bindBaselineYearId = 0;
+  bindBaselineQuarter: 'FY' | '1' | '2' | '3' | '4' = 'FY';
+  bindTargetYearId = 0;
+  bindTargetQuarter: 'FY' | '1' | '2' | '3' | '4' = 'FY';
+  bindGoal: number | null = null;
+  bindToleranceValue: number | null = null;
+  bindToleranceUnit: 'absolute' | 'percent' = 'absolute';
+  bindError = signal<string | null>(null);
+  bindSaving = signal(false);
+
+  targetAchievements = signal<Achievement[]>([]);
+  achievementsLoading = signal(false);
+  revokingId = signal<number | null>(null);
+  revokeReason = '';
+  revokeError = signal<string | null>(null);
+
+  taskEditing = signal<number | null>(null);
+  taskEditTitle = '';
+  taskEditError = signal<string | null>(null);
+
+  achOpen = signal(false);
+  achSaving = signal(false);
+  achError = signal<string | null>(null);
+  achTitle = '';
+  achKind: 'result' | 'achievement' = 'result';
+  achAchievedOn = '';
+  achDescription = '';
+  achEvidenceSummary = '';
 
   readonly categories = [
     { key: 'finance', label: 'Finance' },
@@ -546,6 +811,8 @@ export class GpsHierarchyPage {
 
   // ---------- lifecycle ----------
   ngOnInit(): void {
+    this.loadMeasures();
+    this.loadFinancialYears();
     this.route.paramMap.subscribe(pm => {
       const v = Number(pm.get('id') || 0);
       if (v) { this.companyId.set(v); this.load(); }
@@ -700,9 +967,16 @@ export class GpsHierarchyPage {
     this.popupMode.set('view');
     this.popupOpen.set(true);
     this.formError.set(null);
+    this.achOpen.set(false);
+    this.taskEditing.set(null);
+    this.actual.set(null); this.actualError.set(null);
     if (this.tasks()[t.id] === undefined) this.loadTasks(t.id);
     if (this.updates()[t.id] === undefined) this.loadUpdates(t.id);
     if (this.sources()[t.id] === undefined) this.loadSources(t.id);
+    this.refreshTarget(t.id);
+    this.loadActual(t.id);
+    this.loadBindings(t.id);
+    this.loadAchievements(t.id);
   }
 
   openCreate(): void {
@@ -722,6 +996,7 @@ export class GpsHierarchyPage {
     this.formPriority = t.priority; this.formStatus = t.status; this.formDueDate = t.due_date || '';
     this.formOwner = t.owner_label || ''; this.formProgressMode = t.progress_mode;
     this.formProgress = t.manual_progress_percentage; this.formError.set(null);
+    this.initBindingForm();
     this.popupMode.set('edit');
   }
 
@@ -800,11 +1075,8 @@ export class GpsHierarchyPage {
   }
 
   editTask(task: GpsTask): void {
-    const next = prompt('Edit task title', task.title);
-    if (next === null) return;
-    const trimmed = next.trim();
-    if (!trimmed || trimmed === task.title) return;
-    this.gps.updateTask(task.id, { title: trimmed }).subscribe({ next: () => this.loadTasks(task.gps_target_id), error: e => this.error.set(e.error?.error || e.message) });
+    // Kept for compatibility — task title editing now uses the inline editor (Phase 7).
+    this.openTaskEditor(task);
   }
 
   deleteTask(task: GpsTask): void {
@@ -819,6 +1091,255 @@ export class GpsHierarchyPage {
     if (nIdx < 0 || nIdx >= list.length) return;
     const tmp = list[idx]; list[idx] = list[nIdx]; list[nIdx] = tmp;
     this.gps.reorderTasks(task.gps_target_id, list.map(t => t.id)).subscribe({ next: rows => this.tasks.update(m => ({ ...m, [task.gps_target_id]: rows })), error: e => this.error.set(e.error?.error || e.message) });
+  }
+
+  // ---------- Phase 7: actual / measure binding / achievements ----------
+  loadMeasures(): void {
+    this.gps.measures().subscribe({ next: rows => this.measures.set(rows || []), error: () => this.measures.set([]) });
+  }
+
+  loadFinancialYears(): void {
+    this.yearsApi.getAllFinancialYears().subscribe({
+      next: years => this.financialYears.set((years || []).map(y => ({ id: y.id, name: y.name }))),
+      error: () => this.financialYears.set([]),
+    });
+  }
+
+  loadActual(targetId: number): void {
+    this.actualLoading.set(true); this.actualError.set(null);
+    this.gps.actual(targetId).subscribe({
+      next: m => { this.actual.set(m); this.actualLoading.set(false); },
+      error: e => { this.actualLoading.set(false); this.actualError.set(e.error?.error || e.message); },
+    });
+  }
+
+  loadBindings(targetId: number): void {
+    this.gps.metrics(targetId).subscribe({
+      next: rows => { this.bindings.set(rows || []); this.initBindingForm(); },
+      error: () => { this.bindings.set([]); this.initBindingForm(); },
+    });
+  }
+
+  loadAchievements(targetId: number): void {
+    this.achievementsLoading.set(true);
+    this.achievementsApi.byTarget(targetId).subscribe({
+      next: rows => { this.targetAchievements.set(rows || []); this.achievementsLoading.set(false); },
+      error: () => { this.targetAchievements.set([]); this.achievementsLoading.set(false); },
+    });
+  }
+
+  /** Non-decision records only — decisions are events and are excluded from counts. */
+  achievementOutcomes = computed(() => this.targetAchievements().filter(a => a.kind !== 'decision'));
+  achievementDecisions = computed(() => this.targetAchievements().filter(a => a.kind === 'decision'));
+
+  /** Outcome progress label from the measurement response (metric targets only). */
+  outcomeProgressLabel(): string {
+    const p = this.actual()?.progress;
+    if (!p) return '—';
+    if (p.status === 'computed') return (p.percent_display ?? p.percent ?? '—') + '%' + (p.met === true ? ' · met' : p.met === false ? ' · not met' : '');
+    return this.statusLabel(p.status);
+  }
+
+  canVerifyAchievement(a: Achievement): boolean { return this.isSA() && a.kind !== 'decision' && a.verification_status === 'unverified'; }
+  canRevokeAchievement(a: Achievement): boolean { return this.isSA() && a.verification_status === 'verified'; }
+
+  private parsePeriodRef(type: string | null, ref: string | null): { yearId: number; quarter: 'FY' | '1' | '2' | '3' | '4' } {
+    const t = (type || 'financial_year').toLowerCase();
+    const r = String(ref || '');
+    if (t === 'quarter') {
+      const m = r.match(/^(\d+):Q([1-4])$/i);
+      if (m) return { yearId: Number(m[1]), quarter: m[2] as '1' | '2' | '3' | '4' };
+    }
+    return { yearId: /^\d+$/.test(r) ? Number(r) : 0, quarter: 'FY' };
+  }
+
+  private periodPayload(yearId: number, quarter: string): { period_type: string; period_ref: string } {
+    if (quarter === 'FY') return { period_type: 'financial_year', period_ref: String(yearId) };
+    return { period_type: 'quarter', period_ref: `${yearId}:Q${quarter}` };
+  }
+
+  initBindingForm(): void {
+    const b = this.bindings()[0] || null;
+    const firstYear = this.financialYears()[0]?.id ?? 0;
+    if (b) {
+      this.bindMetricTypeId = b.metric_type_id;
+      this.bindDirection = (b.direction || 'increase') as 'increase' | 'decrease' | 'maintain';
+      const bp = this.parsePeriodRef(b.baseline_period_type, b.baseline_period_ref);
+      const tp = this.parsePeriodRef(b.target_period_type, b.target_period_ref);
+      this.bindBaselineYearId = bp.yearId; this.bindBaselineQuarter = bp.quarter;
+      this.bindTargetYearId = tp.yearId; this.bindTargetQuarter = tp.quarter;
+      this.bindGoal = b.target_value;
+      this.bindToleranceValue = b.maintain_tolerance_value;
+      this.bindToleranceUnit = (b.maintain_tolerance_unit || 'absolute') as 'absolute' | 'percent';
+    } else {
+      this.bindMetricTypeId = this.measures()[0]?.id ?? null;
+      this.bindDirection = 'increase';
+      this.bindBaselineYearId = firstYear; this.bindBaselineQuarter = 'FY';
+      this.bindTargetYearId = firstYear; this.bindTargetQuarter = 'FY';
+      this.bindGoal = null; this.bindToleranceValue = null; this.bindToleranceUnit = 'absolute';
+    }
+    this.bindError.set(null);
+  }
+
+  saveBinding(): void {
+    const t = this.popupTarget();
+    if (!t) return;
+    if (!this.bindMetricTypeId) { this.bindError.set('Select a measure.'); return; }
+    if (!this.bindBaselineYearId || !this.bindTargetYearId) { this.bindError.set('Baseline and target periods require a financial year.'); return; }
+    if (this.bindGoal === null || this.bindGoal === undefined || String(this.bindGoal) === '') { this.bindError.set('A goal value is required.'); return; }
+    if (this.bindDirection === 'maintain' && (this.bindToleranceValue === null || this.bindToleranceValue === undefined)) {
+      this.bindError.set('A tolerance value is required when direction is maintain.'); return;
+    }
+
+    const bp = this.periodPayload(this.bindBaselineYearId, this.bindBaselineQuarter);
+    const tp = this.periodPayload(this.bindTargetYearId, this.bindTargetQuarter);
+    const payload: Record<string, unknown> = {
+      gps_target_id: t.id,
+      metric_type_id: this.bindMetricTypeId,
+      target_value: this.bindGoal,
+      direction: this.bindDirection,
+      calculation_method: 'period_total',
+      baseline_period_type: bp.period_type, baseline_period_ref: bp.period_ref,
+      target_period_type: tp.period_type, target_period_ref: tp.period_ref,
+    };
+    if (this.bindDirection === 'maintain') {
+      payload['maintain_tolerance_value'] = this.bindToleranceValue;
+      payload['maintain_tolerance_unit'] = this.bindToleranceUnit;
+    }
+
+    this.bindSaving.set(true); this.bindError.set(null);
+    this.gps.attachMetric(payload).subscribe({
+      next: () => {
+        this.bindSaving.set(false);
+        this.successMsg.set('Measure bound');
+        // Reload target, binding and derived actual from the backend — no optimistic state.
+        this.refreshTarget(t.id);
+        this.loadBindings(t.id);
+        this.loadActual(t.id);
+        this.gps.dashboardCounts(this.companyId()).subscribe({ next: c => this.counts.set(c) });
+      },
+      error: e => { this.bindSaving.set(false); this.bindError.set(e.error?.error || e.message); },
+    });
+  }
+
+  removeBinding(): void {
+    const t = this.popupTarget();
+    const b = this.bindings()[0];
+    if (!t || !b) return;
+    if (!confirm('Remove the measure binding? The target reverts to manual progress if no measure remains.')) return;
+    this.bindSaving.set(true); this.bindError.set(null);
+    this.gps.detachMetric(b.id).subscribe({
+      next: () => {
+        this.bindSaving.set(false);
+        this.successMsg.set('Measure removed');
+        this.refreshTarget(t.id);
+        this.loadBindings(t.id);
+        this.loadActual(t.id);
+      },
+      error: e => { this.bindSaving.set(false); this.bindError.set(e.error?.error || e.message); },
+    });
+  }
+
+  // ---------- task inline editor (replaces prompt()) ----------
+  openTaskEditor(task: GpsTask): void {
+    this.taskEditing.set(task.id);
+    this.taskEditTitle = task.title;
+    this.taskEditError.set(null);
+  }
+
+  cancelTaskEditor(): void {
+    this.taskEditing.set(null);
+    this.taskEditTitle = '';
+    this.taskEditError.set(null);
+  }
+
+  saveTaskEdit(task: GpsTask): void {
+    const trimmed = (this.taskEditTitle || '').trim();
+    if (!trimmed) { this.taskEditError.set('Task title is required.'); return; }
+    if (trimmed === task.title) { this.cancelTaskEditor(); return; }
+    this.gps.updateTask(task.id, { title: trimmed }).subscribe({
+      next: () => { this.cancelTaskEditor(); this.loadTasks(task.gps_target_id); this.refreshTarget(task.gps_target_id); },
+      error: e => this.taskEditError.set(e.error?.error || e.message),
+    });
+  }
+
+  // ---------- target-linked achievement draft ----------
+  openAchievementForm(): void {
+    this.achOpen.set(true);
+    this.achError.set(null);
+    this.achTitle = '';
+    this.achKind = 'result';
+    this.achAchievedOn = new Date().toISOString().slice(0, 10);
+    this.achDescription = '';
+    this.achEvidenceSummary = '';
+  }
+
+  cancelAchievementForm(): void { this.achOpen.set(false); this.achError.set(null); }
+
+  createAchievementDraft(): void {
+    const t = this.popupTarget();
+    if (!t) return;
+    if (!this.achTitle.trim()) { this.achError.set('Title is required.'); return; }
+    this.achSaving.set(true); this.achError.set(null);
+    this.achievementsApi.create({
+      company_id: this.companyId(),
+      gps_target_id: t.id,
+      kind: this.achKind,
+      category: t.category,
+      title: this.achTitle.trim(),
+      description: this.achDescription || null,
+      achieved_on: this.achAchievedOn || null,
+      evidence_summary: this.achEvidenceSummary || null,
+    } as any).subscribe({
+      next: () => { this.achSaving.set(false); this.achOpen.set(false); this.successMsg.set('Draft achievement created'); this.loadAchievements(t.id); },
+      // A 409/400 leaves local state unchanged and surfaces the server message.
+      error: e => { this.achSaving.set(false); this.achError.set(e.error?.error || e.message); },
+    });
+  }
+
+  verifyAchievement(a: Achievement): void {
+    if (!confirm('Verify "' + a.title + '"? Verification captures the authoritative financial snapshot; if the measurement is not eligible the record stays unchanged.')) return;
+    this.achievementsApi.verify(a.id).subscribe({
+      next: () => { this.successMsg.set('Verified'); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+      error: e => { this.error.set(e.error?.error || e.message); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+    });
+  }
+
+  rejectAchievement(a: Achievement): void {
+    if (!confirm('Reject "' + a.title + '"? No measurement snapshot is taken.')) return;
+    this.achievementsApi.reject(a.id).subscribe({
+      next: () => { this.successMsg.set('Rejected'); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+      error: e => { this.error.set(e.error?.error || e.message); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+    });
+  }
+
+  revokeAchievement(a: Achievement): void {
+    this.revokingId.set(a.id);
+    this.revokeReason = '';
+    this.revokeError.set(null);
+  }
+
+  cancelRevoke(): void {
+    this.revokingId.set(null);
+    this.revokeReason = '';
+    this.revokeError.set(null);
+  }
+
+  confirmRevoke(a: Achievement): void {
+    const reason = (this.revokeReason || '').trim();
+    if (!reason) { this.revokeError.set('A reason is required to revoke an achievement.'); return; }
+    this.achievementsApi.revoke(a.id, reason).subscribe({
+      next: () => { this.cancelRevoke(); this.successMsg.set('Revoked'); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+      error: e => { this.revokeError.set(e.error?.error || e.message); },
+    });
+  }
+
+  supersedeAchievement(a: Achievement): void {
+    if (!confirm('Create a superseding draft for "' + a.title + '"? The original and its evidence are preserved.')) return;
+    this.achievementsApi.supersede(a.id, {}).subscribe({
+      next: () => { this.successMsg.set('Superseding draft created'); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+      error: e => { this.error.set(e.error?.error || e.message); this.loadAchievements(a.gps_target_id || this.popupTarget()?.id || 0); },
+    });
   }
 
   // ---------- updates ----------
@@ -845,6 +1366,21 @@ export class GpsHierarchyPage {
   categoryLabel(key: string): string { return this.categories.find(c => c.key === key)?.label ?? key; }
   statusLabel(status: string): string { return (status || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()); }
   pillClass(v: string): string { return this.rank[v] !== undefined ? v : ''; }
+
+  coverageLabel(p: any): string {
+    if (!p?.coverage) return '—';
+    return p.coverage.resolved_bindings + '/' + p.coverage.required_bindings + ' bindings';
+  }
+
+  missingLabel(p: any): string {
+    if (!p) return '—';
+    const parts: string[] = [];
+    if (p.missing_accounts?.length) parts.push(p.missing_accounts.length + ' account(s)');
+    if (p.missing_months?.length) parts.push('months ' + p.missing_months.join(', '));
+    return parts.length ? parts.join(' · ') : 'none';
+  }
+
+  measureUnit(): string { return this.measures().find(m => m.id === this.bindMetricTypeId)?.unit || 'value'; }
 
   taskCount(targetId: number): number { return (this.tasks()[targetId] || []).length; }
   groupTasks(rows: GpsTarget[]): number { return rows.reduce((s, r) => s + this.taskCount(r.id), 0); }

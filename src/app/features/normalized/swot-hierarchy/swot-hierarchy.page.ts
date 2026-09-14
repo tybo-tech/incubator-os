@@ -330,14 +330,25 @@ type View = 'table' | 'grouped';
                           @for (task of tasks()[displayTargetId(t)]; track task.id) {
                             <div class="sw-task" [class.done]="task.status === 'completed'">
                               <input type="checkbox" [checked]="task.status === 'completed'" (change)="toggleTask(task)" [attr.aria-label]="'Toggle task ' + task.title">
-                              <span class="sw-task-name">{{ task.title }}</span>
-                              <span class="sw-task-owner">
-                                {{ task.owner_label || '' }}
-                                <button class="sw-link" type="button" (click)="editTask(task)">Edit</button>
-                                <button class="sw-link" type="button" style="color:var(--ios-red)" (click)="deleteTask(task)">Delete</button>
-                                <button class="sw-link" type="button" aria-label="Move task up" (click)="moveTask(task, -1)">↑</button>
-                                <button class="sw-link" type="button" aria-label="Move task down" (click)="moveTask(task, 1)">↓</button>
-                              </span>
+                              @if (taskEditing() === task.id) {
+                                <span class="sw-task-name">
+                                  <input class="sw-input" [(ngModel)]="taskEditTitle" (keyup.enter)="saveTaskEdit(task)" (keyup.escape)="cancelTaskEditor()" aria-label="Edit task title">
+                                </span>
+                                <span class="sw-task-owner">
+                                  @if (taskEditError()) { <span style="color:var(--ios-red); font-size:10px;">{{ taskEditError() }}</span> }
+                                  <button class="sw-link" type="button" (click)="saveTaskEdit(task)">Save</button>
+                                  <button class="sw-link" type="button" (click)="cancelTaskEditor()">Cancel</button>
+                                </span>
+                              } @else {
+                                <span class="sw-task-name">{{ task.title }}</span>
+                                <span class="sw-task-owner">
+                                  {{ task.owner_label || '' }}
+                                  <button class="sw-link" type="button" (click)="openTaskEditor(task)">Edit</button>
+                                  <button class="sw-link" type="button" style="color:var(--ios-red)" (click)="deleteTask(task)">Delete</button>
+                                  <button class="sw-link" type="button" aria-label="Move task up" (click)="moveTask(task, -1)">↑</button>
+                                  <button class="sw-link" type="button" aria-label="Move task down" (click)="moveTask(task, 1)">↓</button>
+                                </span>
+                              }
                             </div>
                           }
                           @if (tasks()[displayTargetId(t)].length === 0) { <span class="sw-footnote">No tasks yet.</span> }
@@ -434,6 +445,11 @@ export class SwotHierarchyPage {
   linked = signal<Record<number, any[]>>({});
   tasks = signal<Record<number, GpsTask[]>>({});
   newTaskTitle: Record<number, string> = {};
+
+  // task inline editor (replaces prompt())
+  taskEditing = signal<number | null>(null);
+  taskEditTitle = '';
+  taskEditError = signal<string | null>(null);
 
   allTargets = signal<GpsTarget[]>([]);
 
@@ -1012,14 +1028,25 @@ export class SwotHierarchyPage {
     });
   }
 
-  editTask(task: GpsTask): void {
-    const next = prompt('Edit task title', task.title);
-    if (next === null) return;
-    const trimmed = next.trim();
-    if (!trimmed || trimmed === task.title) return;
+  openTaskEditor(task: GpsTask): void {
+    this.taskEditing.set(task.id);
+    this.taskEditTitle = task.title;
+    this.taskEditError.set(null);
+  }
+
+  cancelTaskEditor(): void {
+    this.taskEditing.set(null);
+    this.taskEditTitle = '';
+    this.taskEditError.set(null);
+  }
+
+  saveTaskEdit(task: GpsTask): void {
+    const trimmed = (this.taskEditTitle || '').trim();
+    if (!trimmed) { this.taskEditError.set('Task title is required.'); return; }
+    if (trimmed === task.title) { this.cancelTaskEditor(); return; }
     this.gps.updateTask(task.id, { title: trimmed }).subscribe({
-      next: () => this.loadTasks(task.gps_target_id),
-      error: e => this.error.set(e.error?.error || e.message)
+      next: () => { this.cancelTaskEditor(); this.loadTasks(task.gps_target_id); this.refreshTarget(task.gps_target_id); },
+      error: e => this.taskEditError.set(e.error?.error || e.message)
     });
   }
 

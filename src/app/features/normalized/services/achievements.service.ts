@@ -113,6 +113,11 @@ export class AchievementsService {
     return this.http.get<AwaitingReview[]>(`${this.base}/awaiting-review.php`, { params, withCredentials: true });
   }
 
+  byTarget(targetId: number): Observable<Achievement[]> {
+    const params = new HttpParams().set('gps_target_id', String(targetId));
+    return this.http.get<Achievement[]>(`${this.base}/by-target.php`, { params, withCredentials: true });
+  }
+
   evidence(achievementId: number): Observable<AchievementEvidence[]> {
     const params = new HttpParams().set('achievement_id', String(achievementId));
     return this.http.get<AchievementEvidence[]>(`${this.evidenceBase}/list.php`, { params, withCredentials: true });

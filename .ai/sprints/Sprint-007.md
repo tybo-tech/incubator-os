@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 6 complete + cross-cutting UX hardening (2026-09-16); ready for Phase 7
+> **Status**: Locked — Phase 7 complete (2026-09-16); ready for Phase 8
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -388,22 +388,24 @@ Let entrepreneurs create targets directly from financial management.
 
 Bring measurement and achievement into the existing target detail.
 
+**Status: ✅ Complete — 2026-09-16 (session 022). See the Phase 7 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **7.1** Extend the `gps-targets-v2` popup view with an **Actual** section for `metric`-mode targets (derived actual, baseline → target, period, `completeness`).
-- [ ] **7.2** Add an **Achievements** section in the popup — list + add, reusing Phase 4 endpoints.
-- [ ] **7.3** Measure-binding UI in popup edit mode: select `metric_type` + baseline/target period + direction + calculation method (`period_total`) + maintain tolerance when applicable.
-- [ ] **7.4** Display **Task progress** and **Outcome progress** as two clearly-labelled figures (never merged into one bar).
-- [ ] **7.5** Replace the remaining `prompt()` task editing on both workspaces with the inline popup editor (carried debt from Sprint 006).
+- [x] **7.1** Extend the `gps-targets-v2` popup view with an **Actual** section for `metric`-mode targets (derived actual, baseline → target, period, `completeness`).
+- [x] **7.2** Add an **Achievements** section in the popup — list + add, reusing Phase 4 endpoints.
+- [x] **7.3** Measure-binding UI in popup edit mode: select `metric_type` + baseline/target period + direction + calculation method (`period_total`) + maintain tolerance when applicable.
+- [x] **7.4** Display **Task progress** and **Outcome progress** as two clearly-labelled figures (never merged into one bar).
+- [x] **7.5** Replace the remaining `prompt()` task editing on both workspaces with the inline popup editor (carried debt from Sprint 006).
 
 #### Exit Criteria
 
-- [ ] Popup shows separate task % and outcome % for the same target
-- [ ] A metric-mode target displays a derived actual + completeness
-- [ ] Binding a measure creates/extends `gps_target_metrics` and sets `progress_mode='metric'`; `maintain` requires a tolerance
-- [ ] Achievements can be added and listed from the target popup
-- [ ] No `prompt()` remains in `swot-hierarchy.page.ts` or `gps-hierarchy.page.ts`
-- [ ] `ng build` passes; **0 console errors**
+- [x] Popup shows separate task % and outcome % for the same target
+- [x] A metric-mode target displays a derived actual + completeness
+- [x] Binding a measure creates/extends `gps_target_metrics` and sets `progress_mode='metric'`; `maintain` requires a tolerance
+- [x] Achievements can be added and listed from the target popup
+- [x] No `prompt()` remains in `swot-hierarchy.page.ts` or `gps-hierarchy.page.ts`
+- [x] `ng build` passes; **0 console errors**
 
 ---
 
@@ -1030,3 +1032,49 @@ Verified after restoration: co11 = 1 analysis · 8 items · 12 targets · 12 sou
 
 * The shared `.sw-modal` fix repaired the normalized Results/Targets/SWOT popups with no template changes.
 * A structural `app-modal` wrapper component remains an optional future improvement.
+
+---
+
+## Phase 7 Completion — 2026-09-16 (session 022)
+
+**Status: ✅ Complete. All Phase 7 tasks and exit criteria satisfied. Stopped at the Phase 7 review gate — no production deployment.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Measures with account bindings (read-only) | `api-incubator-os/api-nodes/gps-targets/measures.php` (new) |
+| `actual` / `measures` / `metrics` / `attachMetric` / `detachMetric`; `task_progress` type | `src/app/features/normalized/services/gps.service.ts` |
+| `byTarget` for target-linked records | `src/app/features/normalized/services/achievements.service.ts` |
+| **Actual** section (metric) + separate progress + measure-binding editor + achievements + task editor | `src/app/features/normalized/gps-hierarchy/gps-hierarchy.page.ts` |
+| Inline task editor (replaces `prompt()`) | `src/app/features/normalized/swot-hierarchy/swot-hierarchy.page.ts` |
+
+No schema change. Reuses `gps-target-metrics/{attach,detach,list}.php`, `achievements/*`, `TargetMeasurementService`.
+
+### Behaviour (verified)
+
+**Progress kept separate** — Task progress (from `task_progress`) always shown; Outcome progress (measurement) for metric; Manual for manual. Tasks-mode target `#134` with 1/2 tasks → **1/2 · 50%** while `status` stayed `not_started` and `manual=0`; manual target `#118` → Manual 0% only, no Actual.
+
+**Actual measurement** (metric `#132`, controlled fixture): `75,838 → 200,000 → 125,125 ZAR`, measure/direction/method/version, both period labels, `baseline: Complete`, `target: Complete`, `authoritative`, `eligible for achievement`, `2/2 bindings`, no missing/unresolved, Outcome `39.7% · not met`.
+
+**All completeness states verified through the backend:** `complete`/authoritative; `unknown` (zero-only row, no notes) → not authoritative; `incomplete` (missing account); `partial_coverage` (unresolved export binding); `no_accounts` (REVENUE_EXPORT on a company without export accounts); `unconfigured` (no binding); `invalid_definition` — both the **equal baseline/goal** (division by zero) and **zero-baseline percentage tolerance** cases. Partial subtotals are labelled "do not read these as achieved revenue"; unknown/partial never shown as an achieved outcome.
+
+**Measure binding** (edit mode): measure + direction + baseline/target FY + period + goal + fixed `period_total` + tolerance only for `maintain`. Save reloads the target, binding and derived actual from the server (goal changed 200,000 → 250,000 and reloaded); no optimistic state. `attach` 400 for `maintain` without tolerance; `removeBinding` detaches and reverts to manual.
+
+**Achievements** (popup): target-linked draft created and listed with kind badge, verification pill and evidence count; **SA** sees Verify/Reject (unverified) and Revoke/Supersede (verified); **Director** sees Add only. A **409** eligibility failure left the record `Unverified` and displayed the server message ("Verification failed — measurement is not eligible … Reason: not_computed"). Successful verify captured a `metric_snapshot` evidence row. Decisions render distinctly and are excluded from the section count.
+
+**Task editing:** inline editor in both Targets and SWOT; create/complete/reopen/delete/order preserved; no `prompt()` remains in either page. **Financial Indicators → Create target** created target `#135`, which opened in Targets with a derived Actual.
+
+**UX:** backdrop click keeps dialogs open; header/footer fixed at 620px with only the body scrolling; grouped view persisted across reload; 0 unexpected post-login console errors (only pre-auth 401s and the intentional 409).
+
+### API contract adjustments
+
+* Added `GET api-nodes/gps-targets/measures.php` → `[{id, code, name, unit}]` (metric types that have `metric_type_accounts` bindings), authenticated. No other contract changes; the popup consumes the existing `actual.php`, `gps-target-metrics/*`, `achievements/*` contracts.
+
+### Fixtures
+
+A controlled company-11 fixture (deactivated the empty `Secondary` account, added a temporary `export_revenue` account with complete FY1/FY7 rows; targets `#132`–`#135`) produced the authoritative and non-authoritative states, then was fully removed. Company 11 restored to 12 targets · 2 active accounts · 2 stats.
+
+### Remaining Phase 8 work
+
+End-to-end slice through both entry points (SWOT and financial) with screenshots, a qualitative achievement + a decision demonstration, `awaiting review` before achievement, `php -l` sweep, migration README update, the reusable-pattern write-up, and the (non-executed) production deployment plan.

@@ -19,6 +19,38 @@ export interface GpsTarget {
   success_evidence_required: string | null;
   legacy_node_id: number | null;
   legacy_path: string | null;
+  /** Read-only activity aggregate (Sprint 007 Phase 2); never mutates the target. */
+  task_progress?: { total: number; completed: number; percent: number };
+}
+
+export interface GpsTargetMetric {
+  id: number;
+  gps_target_id: number;
+  metric_type_id: number;
+  metric_name?: string | null;
+  code?: string | null;
+  unit?: string | null;
+  baseline_value: number | null;
+  target_value: number | null;
+  current_value: number | null;
+  baseline_period_type: string | null;
+  baseline_period_ref: string | null;
+  target_period_type: string | null;
+  target_period_ref: string | null;
+  direction: 'increase' | 'decrease' | 'maintain' | null;
+  calculation_method: string | null;
+  maintain_tolerance_value: number | null;
+  maintain_tolerance_unit: 'absolute' | 'percent' | null;
+  calculation_version: string | null;
+  /** Derived measurement (read-only) embedded by gps-target-metrics/list.php. */
+  actual?: any;
+}
+
+export interface MeasureOption {
+  id: number;
+  code: string;
+  name: string;
+  unit: string | null;
 }
 
 export interface GpsTargetSource {
@@ -70,6 +102,7 @@ export class GpsService {
   private sourceBase = `${Constants.ApiBase}api-nodes/gps-target-sources`;
   private taskBase = `${Constants.ApiBase}api-nodes/gps-target-tasks`;
   private updateBase = `${Constants.ApiBase}api-nodes/gps-target-updates`;
+  private metricBase = `${Constants.ApiBase}api-nodes/gps-target-metrics`;
 
   listTargets(companyId: number): Observable<GpsTarget[]> {
     const params = new HttpParams().set('company_id', String(companyId));
@@ -172,5 +205,32 @@ export class GpsService {
 
   linkMeasure(data: Record<string, unknown>): Observable<any> {
     return this.http.post<any>(`${this.base}/link-measure.php`, data, { withCredentials: true });
+  }
+
+  // ---- Target popup integration (Sprint 007 Phase 7) ----
+
+  /** Derived, read-only measurement for a target (Phase 3 endpoint). */
+  actual(targetId: number): Observable<any> {
+    const params = new HttpParams().set('gps_target_id', String(targetId));
+    return this.http.get<any>(`${this.base}/actual.php`, { params, withCredentials: true });
+  }
+
+  /** Measures (metric types) with account bindings — for the measure-binding UI. */
+  measures(): Observable<MeasureOption[]> {
+    return this.http.get<MeasureOption[]>(`${this.base}/measures.php`, { withCredentials: true });
+  }
+
+  /** Measure bindings for a target (each row carries the embedded derived actual). */
+  metrics(targetId: number): Observable<GpsTargetMetric[]> {
+    const params = new HttpParams().set('gps_target_id', String(targetId));
+    return this.http.get<GpsTargetMetric[]>(`${this.metricBase}/list.php`, { params, withCredentials: true });
+  }
+
+  attachMetric(data: Record<string, unknown>): Observable<GpsTargetMetric> {
+    return this.http.post<GpsTargetMetric>(`${this.metricBase}/attach.php`, data, { withCredentials: true });
+  }
+
+  detachMetric(id: number): Observable<any> {
+    return this.http.post<any>(`${this.metricBase}/detach.php`, { id }, { withCredentials: true });
   }
 }
