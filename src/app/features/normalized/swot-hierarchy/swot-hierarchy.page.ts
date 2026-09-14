@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, WritableSignal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { SwotService, SwotItem } from '../services/swot.service';
 import { GpsService, GpsTarget, GpsTask } from '../services/gps.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
+import { ViewStateService } from '../../../../services/view-state.service';
 
 type Category = SwotItem['category'];
 type View = 'table' | 'grouped';
@@ -361,7 +362,7 @@ type View = 'table' | 'grouped';
   </ng-template>
 
   @if (editorOpen()) {
-    <div class="sw-modal" (click)="editorOpen.set(false)">
+    <div class="sw-modal">
       <div class="sw-modal-card" (click)="$event.stopPropagation()">
         <div class="sw-modal-head">
           <h3>{{ editorMode() === 'create' ? 'Add SWOT finding' : 'Edit SWOT finding' }}</h3>
@@ -409,6 +410,19 @@ export class SwotHierarchyPage {
   private route = inject(ActivatedRoute);
   private swot = inject(SwotService);
   private gps = inject(GpsService);
+  private ui = inject(ViewStateService);
+  private viewStateRestored = false;
+
+  constructor() {
+    // Persist view settings (view mode, filters, sort, grouping, expansion) so a
+    // refresh or returning to the page keeps the user's layout. See AGENTS.md.
+    effect(() => {
+      const cid = this.companyId();
+      const state = this.captureViewState();
+      if (!cid || !this.viewStateRestored) return;
+      this.ui.save(`swot-hierarchy-view:${cid}`, state);
+    });
+  }
 
   companyId = signal<number>(0);
   loading = signal(false);
@@ -590,6 +604,7 @@ export class SwotHierarchyPage {
   load(): void {
     const cid = this.companyId();
     if (!cid) { this.error.set('Missing company id'); return; }
+    if (!this.viewStateRestored) this.restoreViewState(cid);
     this.loading.set(true); this.error.set(null);
     this.swot.listAnalyses(cid).subscribe({
       next: analyses => {
@@ -637,6 +652,39 @@ export class SwotHierarchyPage {
       },
       error: () => {}
     });
+  }
+
+  // ---------- view persistence ----------
+  private captureViewState() {
+    return {
+      view: this.view(),
+      search: this.search(),
+      cat: [...this.catFilter()],
+      prio: [...this.prioFilter()],
+      impact: [...this.impactFilter()],
+      status: [...this.statusFilter()],
+      link: this.linkFilter(),
+      sortKey: this.sortKey(),
+      sortDir: this.sortDir(),
+      collapsed: [...this.collapsedGroups()],
+      expanded: [...this.expanded()],
+    };
+  }
+
+  private restoreViewState(cid: number): void {
+    const s = this.ui.load(`swot-hierarchy-view:${cid}`, this.captureViewState());
+    this.view.set(s.view === 'grouped' ? 'grouped' : 'table');
+    this.search.set(typeof s.search === 'string' ? s.search : '');
+    this.catFilter.set(new Set(this.ui.array<Category>(s.cat)));
+    this.prioFilter.set(new Set(this.ui.array<string>(s.prio)));
+    this.impactFilter.set(new Set(this.ui.array<string>(s.impact)));
+    this.statusFilter.set(new Set(this.ui.array<string>(s.status)));
+    this.linkFilter.set((['all', 'linked', 'unlinked'].includes(s.link) ? s.link : 'all') as 'all' | 'linked' | 'unlinked');
+    this.sortKey.set(typeof s.sortKey === 'string' ? s.sortKey : 'category');
+    this.sortDir.set(s.sortDir === 'desc' ? 'desc' : 'asc');
+    this.collapsedGroups.set(new Set(this.ui.array<string>(s.collapsed)));
+    this.expanded.set(new Set(this.ui.array<number>(s.expanded)));
+    this.viewStateRestored = true;
   }
 
   // ---------- filters / sort / view ----------

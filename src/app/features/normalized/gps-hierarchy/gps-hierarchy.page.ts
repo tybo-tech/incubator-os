@@ -1,10 +1,11 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, WritableSignal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { GpsService, GpsTarget, GpsTask, GpsUpdate, GpsTargetSource } from '../services/gps.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
+import { ViewStateService } from '../../../../services/view-state.service';
 
 type View = 'table' | 'grouped';
 type PopupMode = 'view' | 'edit';
@@ -239,7 +240,7 @@ type PopupMode = 'view' | 'edit';
   </ng-template>
 
   @if (popupOpen()) {
-    <div class="sw-modal" (click)="closePopup()">
+    <div class="sw-modal">
       <div class="sw-modal-card wide" (click)="$event.stopPropagation()">
         <div class="sw-modal-head">
           <div>
@@ -391,6 +392,19 @@ type PopupMode = 'view' | 'edit';
 export class GpsHierarchyPage {
   private route = inject(ActivatedRoute);
   private gps = inject(GpsService);
+  private ui = inject(ViewStateService);
+  private viewStateRestored = false;
+
+  constructor() {
+    // Persist view settings (view mode, filters, sort, grouping) so a refresh or
+    // returning to the page keeps the user's layout. See AGENTS.md.
+    effect(() => {
+      const cid = this.companyId();
+      const state = this.captureViewState();
+      if (!cid || !this.viewStateRestored) return;
+      this.ui.save(`gps-hierarchy-view:${cid}`, state);
+    });
+  }
 
   companyId = signal<number>(0);
   loading = signal(false);
@@ -551,6 +565,7 @@ export class GpsHierarchyPage {
   load(): void {
     const cid = this.companyId();
     if (!cid) { this.error.set('Missing company id'); return; }
+    if (!this.viewStateRestored) this.restoreViewState(cid);
     this.loading.set(true); this.error.set(null);
     this.gps.grouped(cid).subscribe({
       next: g => {
@@ -569,6 +584,35 @@ export class GpsHierarchyPage {
   loadTasks(id: number): void { this.gps.tasks(id).subscribe({ next: rows => this.tasks.update(m => ({ ...m, [id]: rows })), error: () => this.tasks.update(m => ({ ...m, [id]: [] })) }); }
   loadUpdates(id: number): void { this.gps.updates(id).subscribe({ next: rows => this.updates.update(m => ({ ...m, [id]: rows })), error: () => this.updates.update(m => ({ ...m, [id]: [] })) }); }
   loadSources(id: number): void { this.gps.listByTarget(id).subscribe({ next: rows => this.sources.update(m => ({ ...m, [id]: rows as any })), error: () => this.sources.update(m => ({ ...m, [id]: [] })) }); }
+
+  // ---------- view persistence ----------
+  private captureViewState() {
+    return {
+      view: this.view(),
+      search: this.search(),
+      cat: [...this.catFilter()],
+      prio: [...this.prioFilter()],
+      status: [...this.statusFilter()],
+      source: this.sourceFilter(),
+      sortKey: this.sortKey(),
+      sortDir: this.sortDir(),
+      collapsed: [...this.collapsedGroups()],
+    };
+  }
+
+  private restoreViewState(cid: number): void {
+    const s = this.ui.load(`gps-hierarchy-view:${cid}`, this.captureViewState());
+    this.view.set(s.view === 'grouped' ? 'grouped' : 'table');
+    this.search.set(typeof s.search === 'string' ? s.search : '');
+    this.catFilter.set(new Set(this.ui.array<string>(s.cat)));
+    this.prioFilter.set(new Set(this.ui.array<string>(s.prio)));
+    this.statusFilter.set(new Set(this.ui.array<string>(s.status)));
+    this.sourceFilter.set((['all', 'linked', 'independent'].includes(s.source) ? s.source : 'all') as 'all' | 'linked' | 'independent');
+    this.sortKey.set(typeof s.sortKey === 'string' ? s.sortKey : 'category');
+    this.sortDir.set(s.sortDir === 'desc' ? 'desc' : 'asc');
+    this.collapsedGroups.set(new Set(this.ui.array<string>(s.collapsed)));
+    this.viewStateRestored = true;
+  }
 
   // ---------- filters / sort / view ----------
   toggleSort(key: string): void {

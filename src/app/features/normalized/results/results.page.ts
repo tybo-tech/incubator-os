@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, WritableSignal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { AchievementsService, Achievement, AchievementEvidence, AchievementCount
 import { GpsService, GpsTarget } from '../services/gps.service';
 import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
 import { AuthService } from '../../../auth/auth.service';
+import { ViewStateService } from '../../../../services/view-state.service';
 
 type View = 'table' | 'grouped';
 type PopupMode = 'view' | 'edit';
@@ -252,7 +253,7 @@ type Scope = 'outcomes' | 'decisions' | 'awaiting';
   </ng-template>
 
   @if (popupOpen()) {
-    <div class="sw-modal" (click)="closePopup()">
+    <div class="sw-modal">
       <div class="sw-modal-card wide" (click)="$event.stopPropagation()">
         <div class="sw-modal-head">
           <div>
@@ -420,6 +421,19 @@ export class ResultsPage {
   private api = inject(AchievementsService);
   private gps = inject(GpsService);
   private auth = inject(AuthService);
+  private ui = inject(ViewStateService);
+  private viewStateRestored = false;
+
+  constructor() {
+    // Persist view settings (scope, view mode, filters, sort, grouping) so a
+    // refresh or returning to the page keeps the user's layout. See AGENTS.md.
+    effect(() => {
+      const cid = this.companyId();
+      const state = this.captureViewState();
+      if (!cid || !this.viewStateRestored) return;
+      this.ui.save(`results-view:${cid}`, state);
+    });
+  }
 
   companyId = signal<number>(0);
   loading = signal(false);
@@ -574,6 +588,7 @@ export class ResultsPage {
   load(): void {
     const cid = this.companyId();
     if (!cid) { this.error.set('Missing company id'); return; }
+    if (!this.viewStateRestored) this.restoreViewState(cid);
     this.loading.set(true); this.error.set(null);
     forkJoin({
       records: this.api.list(cid),
@@ -623,6 +638,37 @@ export class ResultsPage {
 
   // ---------- capability gating ----------
   canEdit(r: Achievement): boolean { return r.verification_status === 'unverified'; }
+
+  // ---------- view persistence ----------
+  private captureViewState() {
+    return {
+      scope: this.scope(),
+      view: this.view(),
+      search: this.search(),
+      kind: [...this.kindFilter()],
+      status: [...this.statusFilter()],
+      category: [...this.categoryFilter()],
+      target: this.targetFilter(),
+      sortKey: this.sortKey(),
+      sortDir: this.sortDir(),
+      collapsed: [...this.collapsedGroups()],
+    };
+  }
+
+  private restoreViewState(cid: number): void {
+    const s = this.ui.load(`results-view:${cid}`, this.captureViewState());
+    this.scope.set((['outcomes', 'decisions', 'awaiting'].includes(s.scope) ? s.scope : 'outcomes') as Scope);
+    this.view.set(s.view === 'grouped' ? 'grouped' : 'table');
+    this.search.set(typeof s.search === 'string' ? s.search : '');
+    this.kindFilter.set(new Set(this.ui.array<string>(s.kind)));
+    this.statusFilter.set(new Set(this.ui.array<string>(s.status)));
+    this.categoryFilter.set(new Set(this.ui.array<string>(s.category)));
+    this.targetFilter.set((['all', 'linked', 'unlinked'].includes(s.target) ? s.target : 'all') as 'all' | 'linked' | 'unlinked');
+    this.sortKey.set(typeof s.sortKey === 'string' ? s.sortKey : 'achieved_on');
+    this.sortDir.set(s.sortDir === 'asc' ? 'asc' : 'desc');
+    this.collapsedGroups.set(new Set(this.ui.array<string>(s.collapsed)));
+    this.viewStateRestored = true;
+  }
 
   // ---------- filters / sort / view ----------
   toggleSet(target: WritableSignal<Set<string>>, value: string): void {

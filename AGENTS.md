@@ -60,6 +60,28 @@ api-incubator-os/  PHP 8.1 backend (custom MVC, Docker-based)
 - **snake_case** for DB columns, **camelCase** for TS/PHP methods, **PascalCase** for PHP models
 - No ESLint, Prettier, or CI/CD config present
 
+### Financial screens — legacy vs current
+
+- **`financial-indicators`** (route `company/:id/financial-indicators`, `src/app/components/company-shell/financial-indicators/`) is the **current, client-aligned** financial surface. New financial features belong here (or in the normalized Targets/Results/SWOT features).
+- **`src/app/components/company-shell/financial-shell/`** (route `company/:id/financials/*`, nav label **"Financial (Legacy)"**) is **legacy**. The UI also flags `swot` as **"SWOT (Legacy)"**.
+- **Do not make further changes to the legacy financial screens unless the user explicitly insists.**
+- **Never delete legacy screen code.** Additive changes needed only to keep a shared component working (e.g. the popup/persistence rules below) are allowed; feature work is not.
+- Recognise which surface you are editing before touching it, and default new work to the current screen.
+
+### Popups / modals — never close on outside click
+
+- A modal must **not** close when the user clicks the backdrop/outside area. It closes only via an explicit **Cancel / Close / X** (or on successful submit).
+- Rationale: users lose partially filled forms when a stray click dismisses the dialog.
+- Implementation: put `.sw-modal` / dialog wrapper elements in the template with **no** `(click)="close()"` on the backdrop. Keep `(click)="$event.stopPropagation()"` on the dialog card. Applies to all new dialogs (the financial-indicators dialogs and the normalized SWOT/Targets/Results popups already follow this).
+- Destructive confirmation remains allowed to use `confirm()` where already present.
+
+### View persistence (localStorage)
+
+- Every list/table screen must **persist its view settings to `localStorage`** so a refresh, or navigating away and back, keeps the user's layout: view mode (table/grouped), filter chips, sort key/direction, group collapse state, and row expansion.
+- Use `ViewStateService` (`src/services/view-state.service.ts`) — `load(key, defaults)` / `save(key, state)` — keyed by feature **and company**, e.g. `gps-hierarchy-view:${companyId}`, `swot-hierarchy-view:${companyId}`, `results-view:${companyId}`.
+- Implement it with a constructor `effect()` that captures the view signals and saves whenever they change, guarded until the company is resolved and the state has been restored once in `load()`. See `gps-hierarchy.page.ts`, `swot-hierarchy.page.ts` and `results.page.ts` for the reference pattern.
+- Do **not** persist transient state (bulk selection, open popups, loading/error).
+
 ---
 
 # AI Development Workflow

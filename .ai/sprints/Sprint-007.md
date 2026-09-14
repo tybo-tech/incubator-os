@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 6 complete (2026-09-16); ready for Phase 7
+> **Status**: Locked — Phase 6 complete + cross-cutting UX hardening (2026-09-16); ready for Phase 7
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -973,3 +973,34 @@ Verified after restoration: co11 = 1 analysis · 8 items · 12 targets · 12 sou
 * Local revenue remains `partial_coverage` for Combined revenue (no `export_revenue` accounts in any company), so the combined subtotal is explicitly partial.
 * The financial target-entry popup currently offers per-period (FY/quarter) selection from the years present on the revenue screen; a dedicated quarter-level entry point could be added later.
 * Production changes remain out of scope (review gate).
+
+---
+
+## Cross-cutting UX hardening — 2026-09-16 (session 020)
+
+**Status: ✅ Complete. Client-requested standards applied to the current surfaces and written into `AGENTS.md`.**
+
+### Delivered
+
+| Item | Where |
+| --- | --- |
+| Shared view-state persistence helper (`ios:view:` keys, safe load/save) | `src/services/view-state.service.ts` (new) |
+| Persist view mode / filters / sort / grouping / expansion (SWOT) | `swot-hierarchy.page.ts` — key `swot-hierarchy-view:${cid}` |
+| Persist view mode / filters / sort / grouping (Targets) | `gps-hierarchy.page.ts` — key `gps-hierarchy-view:${cid}` |
+| Persist scope / view mode / filters / sort / grouping (Results) | `results.page.ts` — key `results-view:${cid}` |
+| Popups no longer close on backdrop click | Results, Targets, SWOT `.sw-modal` + `financial-target-entry` |
+| Revenue target entry surfaced on the client-aligned screen | `financial-indicators-page.component.ts` (legacy entry retained) |
+| Conventions documented | `AGENTS.md` — legacy financials freeze, popup rule, view persistence |
+
+### Behaviour (verified)
+
+* Backdrop click keeps the **financial target-entry** dialog, the **Results** create dialog, the **Targets** create dialog and the **SWOT** editor open; each closes only via Cancel/Close/X.
+* Switching **Targets → Grouped**, **SWOT → Grouped** and **Results → Grouped** then reloading restores Grouped (`aria-selected=true`); the corresponding `ios:view:*` keys are written and re-read.
+* `financial-indicators` (company 10) renders **Create revenue target** / **Link existing target**; financial-year options come from `FinancialYearService`.
+* Legacy revenue screen keeps its target-entry (decision: **keep both**); no legacy financial screen code was modified or deleted.
+* `ng build` passes; 0 post-login runtime console errors.
+
+### Notes
+
+* The `financial-indicators` dialogs already required an explicit close — no change was needed there.
+* Legacy financial-shell dialogs were deliberately left untouched (freeze); apply the popup rule there only on explicit request.

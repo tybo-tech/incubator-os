@@ -13,6 +13,8 @@ import { AnnualReportComponent } from '../components/annual-report/annual-report
 import { RequestDialogComponent } from '../components/request-dialog/request-dialog.component';
 import { ViewDialogComponent } from '../components/view-dialog/view-dialog.component';
 import { ImportDialogComponent } from '../components/import-dialog/import-dialog.component';
+import { FinancialTargetEntryComponent, RevenueYearOption } from '../../financial-shell/components/financial-target-entry.component';
+import { FinancialYearService } from '../../../../../services/financial-year.service';
 
 @Component({
   selector: 'app-financial-indicators-page',
@@ -26,6 +28,7 @@ import { ImportDialogComponent } from '../components/import-dialog/import-dialog
     RequestDialogComponent,
     ViewDialogComponent,
     ImportDialogComponent,
+    FinancialTargetEntryComponent,
   ],
   providers: [FinancialIndicatorsFacade],
   template: `
@@ -66,6 +69,9 @@ import { ImportDialogComponent } from '../components/import-dialog/import-dialog
             Export
           </button>
         </div>
+
+        <!-- Revenue target entry — creates/links a GPS target bound to a revenue measure (Sprint 007 Phase 6) -->
+        <app-financial-target-entry [companyId]="companyId()" [years]="yearOptions()" />
 
         <!-- Loading overlay -->
         <div *ngIf="loading()" class="flex items-center justify-center py-12">
@@ -135,6 +141,7 @@ export class FinancialIndicatorsPageComponent implements OnInit {
     private facade: FinancialIndicatorsFacade,
     private exportService: FinancialIndicatorExportService,
     private companyService: CompanyService,
+    private financialYearService: FinancialYearService,
   ) {}
 
   companyId = signal<number>(0);
@@ -142,6 +149,7 @@ export class FinancialIndicatorsPageComponent implements OnInit {
   loading = signal(false);
   saving = signal(false);
   error = signal<string | null>(null);
+  yearOptions = signal<RevenueYearOption[]>([]);
 
   summary = signal<FinancialIndicatorSummaryResponse | null>(null);
   records = signal<FinancialIndicatorSummary[]>([]);
@@ -159,6 +167,7 @@ export class FinancialIndicatorsPageComponent implements OnInit {
   showImport = signal(false);
 
   ngOnInit(): void {
+    this.loadFinancialYears();
     this.route.parent?.params.subscribe(params => {
       const id = parseInt(params['id'], 10);
       if (id) {
@@ -166,6 +175,14 @@ export class FinancialIndicatorsPageComponent implements OnInit {
         this.loadCompanyName(id);
         this.loadAll();
       }
+    });
+  }
+
+  /** Financial-year options for the revenue target-entry component (measure periods). */
+  loadFinancialYears(): void {
+    this.financialYearService.getAllFinancialYears().subscribe({
+      next: (years) => this.yearOptions.set((years || []).map(y => ({ id: y.id, name: y.name }))),
+      error: () => {},
     });
   }
 
