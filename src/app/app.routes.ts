@@ -148,6 +148,11 @@ export const routes: Routes = [
             canActivate: [authGuard],
           },
           {
+            path: 'results',
+            loadComponent: () => import('./features/normalized/results/results.page').then(m => m.ResultsPage),
+            canActivate: [authGuard],
+          },
+          {
             path: 'swot',
             // component: SwotComponent,
             component: SwotTabComponent,

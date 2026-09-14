@@ -1,7 +1,7 @@
 # Sprint 007 — Results & Achievements
 
 > **Program**: Incubator OS — Business Growth Tracking (Assessment → Target → Action → Result → Achievement)
-> **Status**: Locked — Phase 4 complete (2026-09-16); ready for Phase 5
+> **Status**: Locked — Phase 5 complete (2026-09-16); ready for Phase 6
 > **Duration**: Multi-phase (8 phases, sequential execution)
 > **Previous work**: Sprint 002–006 — normalized SWOT/GPS hierarchy (`swot_analyses`, `swot_items`, `gps_targets`, `gps_target_sources`, `gps_target_tasks`, `gps_target_updates`, `gps_target_metrics`, `normalized_migration_audits`), 33 endpoints, dashboard cards, admin data-migration screen, production deployment, Notion-style SWOT/GPS workspaces with shared `.sw-*` styles and `app-icon`.
 
@@ -331,28 +331,30 @@ Make outcomes first-class, dated, attributable, verifiable and correctable witho
 
 A company-level view of what actually changed — including what is **awaiting review**.
 
+**Status: ✅ Complete — 2026-09-16 (session 018). See the Phase 5 Completion section at the end of this document.**
+
 #### Tasks
 
-- [ ] **5.1** Add route `company/:id/results` — lazy-loaded `ResultsPage` (standalone, OnPush, signals, `inject()`).
-- [ ] **5.2** Render measurable achievements as **baseline → target → actual** with period, `completeness`, and evidence reference; render qualitative achievements as a dated outcome with supporting evidence.
-- [ ] **5.3** Add **Measured targets awaiting review** (`achievements/awaiting-review.php`) as a first-class section, so entrepreneurs appear here **before** anyone manually creates an achievement. Show target, measure, period, computed actual, and completeness.
-- [ ] **5.4** Keep **Decisions** visually separate from achievements (own section/filter) with an **event-date label** ("Decision date", not "Achieved on"); decisions never appear in achievement counts.
-- [ ] **5.5** Toolbar + filter panel (Kind / Category / Verification / Period), search, Table ⇄ Grouped toggle (group by category or verification) — reuse `.sw-*` and `app-icon`.
-- [ ] **5.6** Create / Edit achievement popup (view ⇄ edit): title, description, `achieved_on` (or event date for decisions), optional target link, kind, category, direction/unit for measurable, evidence attach/list.
-- [ ] **5.7** Verify / Reject / Revoke actions with a `unverified` / `verified` / `rejected` / `revoked` badge; Revoke requires a reason.
-- [ ] **5.8** `CompanyShell` nav: rename `GPS Targets` → `Targets`, add `Results`; confirm tab overflow still works.
-- [ ] **5.9** Extend `DashboardNormalizedCardsComponent` with an Achievements/Results card and an awaiting-review count (non-destructive, same props/pattern).
+- [x] **5.1** Add route `company/:id/results` — lazy-loaded `ResultsPage` (standalone, OnPush, signals, `inject()`).
+- [x] **5.2** Render measurable records as **baseline → goal → actual** with unit, direction and the measurement `completeness` from the snapshot; render qualitative records as a dated outcome with evidence (no empty financial fields — they show "Qualitative").
+- [x] **5.3** Add **Measured targets awaiting review** (`achievements/awaiting-review.php`) as its own scope, showing the target, computed baseline → goal → actual and completeness, with a "Record outcome" action — before any achievement is created.
+- [x] **5.4** Keep **Decisions** visually separate (own scope) with an **event-date label** ("Decision date"); decisions show an "Event" state and are excluded from achievement counts.
+- [x] **5.5** Toolbar + filter panel (Kind / Verification / Category / Target), search, Table ⇄ Grouped toggle (grouped by category) — reuses `.sw-*` and `app-icon`.
+- [x] **5.6** Create / Edit record popup (view ⇄ edit): title, kind, category, achieved/event date, description, optional target link, optional measurement fields, evidence summary; evidence attach/list.
+- [x] **5.7** Verify / Reject / Revoke / Supersede actions with `unverified` / `verified` / `rejected` / `revoked` badges; Revoke requires a reason.
+- [x] **5.8** `CompanyShell` nav: renamed `GPS Targets` → `Targets`, added `Results`; tab overflow (`More`) intact.
+- [x] **5.9** Extended `DashboardNormalizedCardsComponent` with a **Results & achievements** card (total + verified + decisions, via `counts.php`) and an "Open Results →" link.
 
 #### Exit Criteria
 
-- [ ] `company/:id/results` renders from normalized endpoints only
-- [ ] Measured targets **awaiting review** appear without any manually-created achievement
-- [ ] Measurable achievements show baseline → target → actual; qualitative achievements render without a target
-- [ ] A target with missing financial periods renders `incomplete`, not a false achievement
-- [ ] Decisions are visually distinct, labelled with an event date, and excluded from achievement counts
-- [ ] Create → verify → revoke/delete round-trip behaves per the access rules
-- [ ] `Results` tab present, `Targets` renamed, overflow intact, **0 console errors**
-- [ ] Components are standalone/OnPush/signals with `@if`/`@for`; `ng build` passes
+- [x] `company/:id/results` renders from normalized endpoints only
+- [x] Measured targets **awaiting review** appear without any manually-created achievement
+- [x] Measurable records show baseline → goal → actual; qualitative records render without financial fields or a target
+- [x] A target with missing financial periods renders `incomplete`, not a false achievement
+- [x] Decisions are visually distinct, event-date labelled, and excluded from achievement counts
+- [x] Create → verify → revoke/delete round-trip behaves per the access rules
+- [x] `Results` tab present, `Targets` renamed, overflow intact, **0 runtime console errors**
+- [x] Components are standalone/OnPush/signals with `@if`/`@for`; `ng build` passes
 
 ---
 
@@ -864,3 +866,61 @@ The sprint's original Phase 4 exit criterion referenced an "authorized coach". *
 * Supersede/revoke are SA-only (approval-style). Allowing a company user to draft a correction that SA then verifies is a possible future relaxation.
 * Frontend not yet wired to the achievements endpoints (Phase 5 UI).
 * Production changes remain out of scope (Phase 4 review gate).
+
+---
+
+## Phase 5 Completion — 2026-09-16 (session 018)
+
+**Status: ✅ Complete. All Phase 5 tasks and exit criteria satisfied. Stopped at the Phase 5 review gate — no production deployment; UI fixtures created and removed.**
+
+### Delivered
+
+| Item | File |
+| --- | --- |
+| Results workspace (table/grouped, filters, search, scopes, popup, evidence, lifecycle) | `src/app/features/normalized/results/results.page.ts` (new) |
+| Achievements/evaluations API client | `src/app/features/normalized/services/achievements.service.ts` (new) |
+| Route `company/:id/results` | `src/app/app.routes.ts` |
+| Nav: `GPS Targets` → **`Targets`**, added **`Results`** | `src/app/components/company-shell/company-shell.component.ts` |
+| Results dashboard card (counts, decisions excluded) | `src/app/features/normalized/dashboard-cards/dashboard-cards.component.ts` |
+| Shared status/kind styles (`.sw-badge.result/achievement/decision`, `.sw-pill.status-*`, `.sw-trio`, `.sw-snapshot`, `.sw-await-row`) | `src/styles.scss` |
+
+No migration was required for this phase (UI only) — the Phase 1/4 schema already covered every state.
+
+### Workspace structure
+
+Three clearly separated scopes: **Results & achievements** (`kind` result/achievement), **Decisions** (separate scope, "Event" state, excluded from totals), and **Awaiting review** (eligible measured targets with no decided outcome). Table and Grouped views (grouped by category), toolbar with Table/Grouped, search, filter panel (Kind / State / Category / Target), refresh, Targets cross-link and Add result. Row click opens the view popup; drafts show inline Edit/Delete.
+
+### Lifecycle behaviour (verified in-browser on a fixture company)
+
+* **Measurable verified record** renders `100 → 200 → 150 ZAR`, direction, unit, linked target and an evidence list containing the **measurement snapshot** (`calc rev1 · authoritative`, baseline/target periods + subtotals + completeness). Footer shows **Revoke… / Supersede**, no Edit (immutable).
+* **Qualitative records** render "Qualitative" with no empty financial fields and work with no target.
+* **Draft popup**: Edit + Delete draft + evidence add form (Note / Link / Financial statement / Asset reference; `metric_snapshot` is automatic and not manually addable; `file` references an asset ID or URL only — no binary upload). Evidence add and delete both verified.
+* **Create → edit → delete** round-trip verified through the UI (count 5 → 6 → edit → delete → 5).
+* **Rejected** and **Revoked** states render their badges; **Decision** renders the "Event" pill and is excluded from counts.
+* **Verify (SA)** prompts that verification captures the current authoritative financial snapshot; an ineligible measurement surfaces the backend `409` message and the record is reloaded unchanged (no local mutation).
+
+### Authorization behaviour
+
+* **SA** (System Administrator): Verify / Reject on drafts, Revoke / Supersede on verified records.
+* **Director** (company user): draft authoring only — Edit / Delete on drafts and Add/Delete evidence; **no** Verify / Reject / Revoke / Supersede controls.
+* **Cross-company**: a Director opening another company's Results shows the `403` message in the alert without crashing (empty state renders). Unauthenticated → `401`.
+
+### Browser evidence (Playwright)
+
+* Empty state (company 10) · full table with all states · verified measurable snapshot popup · decisions scope · grouped view · mobile (640px) grouped view · Director controls.
+* **Filter**: 5 rows → 2 with the "Verified" chip (badge `1`), Clear all works. **Search**: "export" → 1 row.
+* **Nav**: `Targets` + `Results` present; `More` overflow intact; mobile tabs scroll horizontally.
+* **Console**: 0 post-login runtime errors (only the pre-auth `401` and the intentional cross-company `403`).
+* Fixtures (company 900201 + company-11 drafts) created for authoritative/rejected/revoked/decision states and **removed after verification** (0 achievements / 0 evidence remained). The local Director password was set to a known test value to exercise the non-SA path (local only).
+
+### API/UI contract corrections
+
+1. **Decisions show an "Event" state** rather than a verification state (they are never verified), and are excluded from counts — the model's `unverified` status is not meaningful for them.
+2. **Evidence add is UI-gated to drafts** (per the Phase 5 lifecycle), even though the Phase 4 backend permits appending evidence to verified records; the UI treats verified records as immutable for evidence.
+3. **Manual numeric entry** on drafts is allowed only as a fallback for records without a configured measure; measurable records linked to a configured target are populated from the authoritative snapshot at verification.
+
+### Remaining issues / notes
+
+* `awaiting-review` and measurable snapshots remain empty on un-fixtured local data (revenue is only `partial_coverage`), so demoing the measurable path requires the controlled fixture (as done here).
+* Numeric inputs bind to `number | null` but accept raw strings from the DOM; the backend casts — a typed form control would be tidier.
+* No production changes (review gate).

@@ -109,9 +109,14 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-layer-group'
     },
     {
-      label: 'GPS Targets',
+      label: 'Targets',
       route: 'gps-targets-v2',
       icon: 'fas fa-bullseye'
+    },
+    {
+      label: 'Results',
+      route: 'results',
+      icon: 'fas fa-award'
     },
     {
       label: 'Assessment',

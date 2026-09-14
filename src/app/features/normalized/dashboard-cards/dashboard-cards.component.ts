@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { GpsService } from '../services/gps.service';
 import { SwotService } from '../services/swot.service';
+import { AchievementsService } from '../services/achievements.service';
 
 @Component({
   selector: 'app-dashboard-normalized-cards',
@@ -17,16 +18,21 @@ import { SwotService } from '../services/swot.service';
     </div>
     @if (loading()) { <div class="text-xs text-gray-400">Loading…</div> }
     @else {
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <a [routerLink]="['/company', companyId, 'swot-v2']" class="border rounded-lg p-3 hover:border-blue-500 transition-colors">
           <div class="text-xs text-gray-500">SWOT findings</div>
           <div class="text-xl font-bold text-gray-900">{{ swotTotal() }}</div>
           <div class="text-xs text-gray-400">{{ swotBreakdown() }}</div>
         </a>
         <a [routerLink]="['/company', companyId, 'gps-targets-v2']" class="border rounded-lg p-3 hover:border-purple-500 transition-colors">
-          <div class="text-xs text-gray-500">GPS targets</div>
+          <div class="text-xs text-gray-500">Targets</div>
           <div class="text-xl font-bold text-gray-900">{{ gpsTotal() }}</div>
           <div class="text-xs text-gray-400">{{ gpsCategoryBreakdown() }}</div>
+        </a>
+        <a [routerLink]="['/company', companyId, 'results']" class="border rounded-lg p-3 hover:border-emerald-500 transition-colors">
+          <div class="text-xs text-gray-500">Results &amp; achievements</div>
+          <div class="text-xl font-bold text-gray-900">{{ resultsTotal() }}</div>
+          <div class="text-xs text-gray-400">Verified {{ resultsVerified() }} · decisions {{ decisionsCount() }}</div>
         </a>
         <a [routerLink]="['/company', companyId, 'gps-targets-v2']" class="border rounded-lg p-3 hover:border-orange-500 transition-colors">
           <div class="text-xs text-gray-500">Overdue · At risk</div>
@@ -41,7 +47,8 @@ import { SwotService } from '../services/swot.service';
       </div>
       <div class="flex gap-2 mt-3 text-xs">
         <a [routerLink]="['/company', companyId, 'swot-v2']" class="px-3 py-1.5 rounded bg-blue-600 text-white">Open SWOT Workspace →</a>
-        <a [routerLink]="['/company', companyId, 'gps-targets-v2']" class="px-3 py-1.5 rounded border bg-white">Open GPS Targets →</a>
+        <a [routerLink]="['/company', companyId, 'gps-targets-v2']" class="px-3 py-1.5 rounded border bg-white">Open Targets →</a>
+        <a [routerLink]="['/company', companyId, 'results']" class="px-3 py-1.5 rounded border bg-white">Open Results →</a>
       </div>
     }
   </div>
@@ -52,9 +59,13 @@ export class DashboardNormalizedCardsComponent {
 
   private gps = inject(GpsService);
   private swot = inject(SwotService);
+  private results = inject(AchievementsService);
 
   loading = signal(true);
   gpsTotal = signal(0);
+  resultsTotal = signal(0);
+  resultsVerified = signal(0);
+  decisionsCount = signal(0);
   overdue = signal(0);
   atRisk = signal(0);
   due30 = signal(0);
@@ -118,6 +129,15 @@ export class DashboardNormalizedCardsComponent {
         });
       },
       error: () => this.loading.set(false)
+    });
+    // results & achievements (counts exclude decisions)
+    this.results.counts(cid).subscribe({
+      next: c => {
+        this.resultsTotal.set(c?.total || 0);
+        this.resultsVerified.set(c?.by_status?.['verified'] || 0);
+        this.decisionsCount.set(c?.decisions || 0);
+      },
+      error: () => {}
     });
   }
 }
