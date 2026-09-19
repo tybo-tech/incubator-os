@@ -1,7 +1,7 @@
 # Sprint 008 — Calendar & Appointments
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: 🚧 In progress — Phase 1 (mock-data visual calendar) delivered (session 026).
+> **Status**: 🚧 In progress — Phase 1 (mock-data visual calendar) delivered (session 026); Phase 2 (real PHP/MySQL persistence) delivered (session 027).
 > **Duration**: Multi-phase.
 > **Previous work**: Sprint 002–007 — normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement).
 
@@ -103,12 +103,39 @@ Must **NOT** be redesigned. Reuse as-is.
 * Routes, global sidebar item, company shell tab.
 * Verified: dev + production build clean, unit tests green, browser E2E CRUD confirmed.
 
-### Phase 2 — Backend persistence (planned)
+### Phase 2 — Backend persistence ✅ (session 027)
 
-* Migration: `calendar_events` table (same shape as the mock, `company_id` nullable FK).
-* Models + endpoints under `api-nodes/calendar-events/` (list, list-all, get, create, update, delete).
-* `CalendarService` swaps localStorage for HTTP; component contract unchanged.
-* Company isolation via `auth_require_company_access`; system-wide events SA-authored.
+Full contract, endpoint inventory, authorization matrix, date/time storage
+contract, deployment order and rollback: **`docs/calendar-api.md`**.
+
+* **Migration** `2026-09-19-calendar-events.sql` — `calendar_events` (`tenant_id`,
+  nullable `company_id`, creator, optional assignee, category, status, all-day
+  flag, IANA timezone, location, DATE columns for all-day, UTC DATETIME columns
+  for timed, `version`, `client_token`, soft-delete columns) + `calendar_event_links`
+  (six canonical entity types) with range/status/soft-delete/link indexes and a
+  `CHECK` enforcing the time shape. Idempotent; re-run is a no-op.
+* **Capability layer** `capabilities/calendar/` — Contracts (category, status,
+  link types, request/response DTOs, mapper, error responder, typed exceptions),
+  Repository (range queries + optimistic update + links), Services (validator,
+  access policy, writer), Application (2 queries, 3 commands), `feature.json`.
+* **Endpoints** `api/calendar/{queries,commands}/` — list, get, create, update,
+  soft-delete. Actor/tenant/scope server-derived via `helpers/AuthGuard.php`;
+  no browser-supplied identity is trusted.
+* **Angular** `CalendarService` now uses `HttpClient` (bounded range, DTO mapping,
+  `withCredentials`, safe structured-error rendering); the page loads the visible
+  grid + 120-day agenda horizon and reloads on month navigation. localStorage and
+  mock generation were **removed** from production code.
+* **Verified**: backend integration **65/65**, browser E2E **23/23**, production
+  build clean.
+
+**Domain boundary (explicit):** this phase persists generic calendar events. No
+coaching sessions, agendas, meeting notes, decisions, attendance, OAuth, Google
+Calendar, Outlook, recurrence, reminders, webhooks or external sync. A later
+phase introduces first-class Sessions and may associate a meeting-category event
+with one.
+
+**Deferred:** nothing was migrated from the Phase 1 browser mock data; it was
+discarded, not silently imported.
 
 ### Phase 3 — Notifications & integration (planned)
 
@@ -126,6 +153,61 @@ Must **NOT** be redesigned. Reuse as-is.
 * Drag-and-drop rescheduling.
 * External calendar sync (Google/Outlook).
 * Attendance/RSVP.
+
+---
+
+## Backend inventory (Phase 2)
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `api/calendar/queries/list.php` | Bounded-range listing (overlapping events) |
+| GET | `api/calendar/queries/get.php` | One event (auth repeated) |
+| POST | `api/calendar/commands/create.php` | Create (idempotent via `client_token`) |
+| POST | `api/calendar/commands/update.php` | Update (optimistic concurrency) |
+| POST | `api/calendar/commands/delete.php` | Soft delete (≠ cancel) |
+
+## Authorization matrix (Phase 2)
+
+| Action | SA / Coordinator | Director / Judge |
+| --- | --- | --- |
+| List own company + system-wide | ✅ | ✅ |
+| List every company (global) | ✅ tenant-wide | ❌ own company only |
+| Modify a company event | ✅ | ✅ own company |
+| Create/update system-wide (`company_id = NULL`) | ✅ | ❌ 403 |
+| Cross-company link | ❌ 403 | ❌ 403 |
+| Other-tenant read | ❌ 404 | ❌ 404 |
+
+## Date/time storage contract (Phase 2)
+
+| Kind | Stored | Returned |
+| --- | --- | --- |
+| All-day | `start_date`/`end_date` DATE (inclusive) | `YYYY-MM-DD` (never shifted) |
+| Timed | `start_at`/`end_at` UTC DATETIME + IANA `timezone` | ISO-8601 `...Z` + `timezone` |
+
+Enforced in three places: the DB `CHECK` (`chk_cal_time_shape`), the PHP
+`CalendarValidator`, and the Angular mapper.
+
+---
+
+## Definition of Done (Phase 2)
+
+* [x] Idempotent migration creating both tables with all required columns and indexes.
+* [x] Applies cleanly and remains safe on a second run (proven locally).
+* [x] Create/read/update/soft-delete lifecycle.
+* [x] Timed-event UTC + timezone round-trip.
+* [x] All-day events do not shift dates.
+* [x] Month-boundary and year-boundary range queries.
+* [x] Overlapping events returned (not only start-inside-range).
+* [x] Company-scoped listing, global listing, system-wide visibility.
+* [x] SA vs Director access; unauthorized get/update/delete.
+* [x] Cross-company event creation and cross-company links blocked for every type.
+* [x] Invalid/deleted linked records rejected.
+* [x] Stale updates rejected (optimistic concurrency).
+* [x] Tenant isolation proven; nullable company scope cannot bypass it.
+* [x] Structured validation errors render safely in the UI.
+* [x] Angular uses the existing API base + `withCredentials`; localStorage mock removed.
+* [x] Popup behaviour unchanged (no outside-click close, fixed header/footer, scrollable body).
+* [x] Backend integration 65/65; browser E2E 23/23; production build clean, no budget warnings.
 
 ---
 

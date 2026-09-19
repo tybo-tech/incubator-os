@@ -28,7 +28,7 @@ export interface CalendarEvent {
   /** Local calendar date, `YYYY-MM-DD`. */
   date: string;
   all_day: boolean;
-  /** `HH:mm`, ignored when `all_day` is true. */
+  /** `HH:mm` in the browser timezone, ignored when `all_day` is true. */
   start_time: string | null;
   end_time: string | null;
   location: string | null;
@@ -39,6 +39,12 @@ export interface CalendarEvent {
   status: CalendarStatus;
   created_by: string | null;
   created_at: string;
+  /** Inclusive end date for multi-day all-day events (`YYYY-MM-DD`). */
+  end_date?: string | null;
+  /** IANA zone for timed events; set by the backend. */
+  timezone?: string | null;
+  /** Optimistic-concurrency counter; sent back on update/delete. */
+  version?: number;
 }
 
 export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'created_at'> & {

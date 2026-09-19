@@ -20,7 +20,7 @@ import {
   CALENDAR_CATEGORIES, MONTH_LABELS,
 } from './models/calendar.models';
 import {
-  addMonths, sameMonth, formatTime, compareEvents, toIsoDate,
+  addMonths, addDays, sameMonth, formatTime, compareEvents, toIsoDate, monthGrid,
 } from './calendar.utils';
 
 type View = 'month' | 'agenda';
@@ -248,14 +248,29 @@ export class CalendarPageComponent implements OnInit {
     return this.global() ? 'calendar-view:global' : `calendar-view:${this.companyId()}`;
   }
 
+  /**
+   * The API requires a bounded range, so load the visible month grid plus an
+   * agenda horizon (today + 120 days) so the agenda works when browsing.
+   */
+  private loadRange(): { start: string; end: string } {
+    const c = this.cursor();
+    const cells = monthGrid(c.year, c.month);
+    const gridStart = cells[0];
+    const gridEnd = cells[cells.length - 1];
+    const horizon = addDays(this.todayIso, 120);
+    const start = gridStart < this.todayIso ? gridStart : this.todayIso;
+    const end = gridEnd > horizon ? gridEnd : horizon;
+    return { start, end };
+  }
+
   load(): void {
     const key = this.persistKey();
     if (!this.viewStateRestored) this.restoreViewState(key);
 
     this.loading.set(true);
     this.error.set(null);
-    const request = this.global() ? this.api.listGlobal() : this.api.listForCompany(this.companyId());
-    request.subscribe({
+    const companyId = this.global() ? null : this.companyId();
+    this.api.list(this.loadRange(), companyId).subscribe({
       next: events => {
         this.events.set(events);
         const names = new Set(events.filter(e => e.company_id !== null).map(e => e.company_id));
@@ -263,8 +278,8 @@ export class CalendarPageComponent implements OnInit {
         this.resolveCompanyName();
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('Could not load calendar events.');
+      error: err => {
+        this.error.set(this.api.errorMessage(err));
         this.loading.set(false);
       },
     });
@@ -333,12 +348,14 @@ export class CalendarPageComponent implements OnInit {
   shift(delta: number): void {
     const c = this.cursor();
     this.cursor.set(addMonths(c.year, c.month, delta));
+    this.load();
   }
 
   goToday(): void {
     const now = new Date();
     this.cursor.set({ year: now.getFullYear(), month: now.getMonth() });
     this.view.set('month');
+    this.load();
   }
 
   openDay(iso: string): void {
@@ -369,12 +386,15 @@ export class CalendarPageComponent implements OnInit {
     this.error.set(null);
     const id = payload.id;
     const { id: _omit, ...rest } = payload;
+    // Carry the version so the backend can reject a stale write.
+    const editing = this.editing();
+    const body = { ...rest, version: editing?.version } as CalendarEventInput;
     const request = id
-      ? this.api.update(id, rest)
-      : this.api.create(rest as CalendarEventInput);
+      ? this.api.update(id, body)
+      : this.api.create(body);
     request.subscribe({
-      next: () => { this.saving.set(false); this.closeForm(); this.load(); },
-      error: () => { this.saving.set(false); this.error.set('Could not save the appointment.'); },
+      next: () => { this.saving.set(false); this.closeForm(); this.reloadAndKeepView(); },
+      error: err => { this.saving.set(false); this.error.set(this.api.errorMessage(err)); },
     });
   }
 
@@ -383,8 +403,24 @@ export class CalendarPageComponent implements OnInit {
     if (!ev) return;
     if (!confirm(`Delete "${ev.title}"?`)) return;
     this.api.remove(ev.id).subscribe({
-      next: () => { this.closeForm(); this.load(); },
-      error: () => this.error.set('Could not delete the appointment.'),
+      next: () => { this.closeForm(); this.reloadAndKeepView(); },
+      error: err => this.error.set(this.api.errorMessage(err)),
+    });
+  }
+
+  /** Re-fetch the visible window without resetting the restored view state. */
+  private reloadAndKeepView(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    const companyId = this.global() ? null : this.companyId();
+    this.api.list(this.loadRange(), companyId).subscribe({
+      next: events => {
+        this.events.set(events);
+        const names = new Set(events.filter(e => e.company_id !== null).map(e => e.company_id));
+        this.companyCount.set(names.size);
+        this.loading.set(false);
+      },
+      error: err => { this.error.set(this.api.errorMessage(err)); this.loading.set(false); },
     });
   }
 

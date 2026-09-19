@@ -1,292 +1,260 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { AuthService } from '../../../auth/auth.service';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
+import { Constants } from '../../../../services/service';
 import {
   CalendarCategory,
   CalendarEvent,
   CalendarEventInput,
   CalendarLinkType,
 } from '../models/calendar.models';
-import { addDays, addMonths, toIsoDate } from '../calendar.utils';
 
-const STORAGE_KEY = 'ios:calendar:events';
-const SEEDED_KEY = 'ios:calendar:seeded-companies';
+/** Bounded window a caller must supply — the API rejects an unbounded range. */
+export interface CalendarRange {
+  start: string;
+  end: string;
+}
+
+/** Canonical link types on the backend (frontend labels map to these). */
+const LINK_TYPE_TO_API: Record<CalendarLinkType, string> = {
+  target: 'gps_target',
+  swot: 'swot_item',
+  task: 'gps_target_task',
+  financial: 'financial_indicator',
+  result: 'achievement',
+  evidence: 'achievement_evidence',
+};
+
+const API_TO_LINK_TYPE: Record<string, CalendarLinkType> = {
+  gps_target: 'target',
+  swot_item: 'swot',
+  gps_target_task: 'task',
+  financial_indicator: 'financial',
+  achievement: 'result',
+  achievement_evidence: 'evidence',
+};
+
+/** Shape returned by the PHP capability (camelCase). */
+interface ApiCalendarEvent {
+  id: number;
+  companyId: number | null;
+  companyName: string | null;
+  title: string;
+  description: string | null;
+  category: string;
+  status: string;
+  allDay: boolean;
+  timezone: string | null;
+  location: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  assigneeLabel: string | null;
+  assigneeUserId: number | null;
+  createdBy: number;
+  createdByName: string | null;
+  version: number;
+  links: { entityType: string; entityId: number; label: string | null }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiCommandResult {
+  success: boolean;
+  message: string;
+  data?: ApiCalendarEvent;
+  warnings?: string[];
+}
 
 /**
- * Demo companies used to populate the global calendar before real company data
- * is wired in. Ids/names are made up and never written anywhere but localStorage.
- */
-const DEMO_COMPANIES: { id: number; name: string }[] = [
-  { id: 9001, name: 'Ubuntu Agri Processing' },
-  { id: 9002, name: 'Thabo Logistics' },
-  { id: 9003, name: 'Khanya Textiles' },
-  { id: 9004, name: 'Moloi Construction' },
-  { id: 9005, name: 'Zanele Foods' },
-];
-
-/**
- * Mock calendar data layer.
+ * Calendar data layer.
  *
- * Sprint-007's measurement / achievement work is backed by real endpoints; the
- * calendar has no backend yet, so this service is deliberately local-only:
- * events are generated once per company, persisted to localStorage and then
- * mutated there. The public surface mirrors the REST services
- * (`list/create/update/remove`) so swapping in PHP endpoints later is a
- * drop-in change — no component edits required.
+ * Talks to the PHP capability (`api/calendar/...`) over the app's API base.
+ * Every read is bounded by an explicit date range — the backend rejects
+ * unbounded requests. The public surface (`list`/`create`/`update`/`remove`)
+ * is shape-compatible with the previous local mock so the page component did
+ * not need rewriting.
+ *
+ * DATE/TIME MAPPING:
+ *  - all-day events round-trip as `YYYY-MM-DD` (never UTC-shifted).
+ *  - timed events carry ISO-8601 UTC `startAt`/`endAt` + an IANA `timezone`;
+ *    they are converted to/from the local wall-clock `HH:mm` the UI edits.
  */
 @Injectable({ providedIn: 'root' })
 export class CalendarService {
-  private auth = inject(AuthService);
-
-  /** All events for the global calendar (every company + system-wide). */
-  listGlobal(): Observable<CalendarEvent[]> {
-    this.ensureSeeded();
-    return of(this.all().sort((a, b) => a.date.localeCompare(b.date)));
-  }
+  private http = inject(HttpClient);
+  private readonly base = `${Constants.ApiBase}api/calendar`;
 
   /**
-   * Events for one company: its own events plus system-wide ones
-   * (`company_id === null`), which appear in every company calendar.
+   * Events for a bounded range.
+   *  - `companyId` set  -> that company's events + system-wide events.
+   *  - `companyId` null -> every company the actor may access + system-wide.
    */
-  listForCompany(companyId: number): Observable<CalendarEvent[]> {
-    this.ensureSeeded();
-    if (!companyId) return of([]);
-    this.ensureCompanySeeded(companyId, `Company ${companyId}`);
-    const events = this.all()
-      .filter(e => e.company_id === companyId || e.company_id === null)
-      .sort((a, b) => a.date.localeCompare(b.date));
-    return of(events);
+  list(range: CalendarRange, companyId: number | null): Observable<CalendarEvent[]> {
+    let params = new HttpParams().set('start', range.start).set('end', range.end);
+    if (companyId && companyId > 0) params = params.set('company_id', String(companyId));
+
+    return this.http
+      .get<ApiCalendarEvent[]>(`${this.base}/queries/list.php`, { params, withCredentials: true })
+      .pipe(map(list => (list ?? []).map(e => this.fromApi(e))));
   }
 
   create(input: CalendarEventInput): Observable<CalendarEvent> {
-    this.ensureSeeded();
-    const events = this.all();
-    const event: CalendarEvent = {
-      ...input,
-      id: this.newId(),
-      created_by: this.currentUserName(),
-      created_at: new Date().toISOString(),
-    };
-    events.push(event);
-    this.write(events);
-    return of(event);
+    return this.http
+      .post<ApiCommandResult>(`${this.base}/commands/create.php`, this.toApi(input), { withCredentials: true })
+      .pipe(
+        map(res => res?.data ? this.fromApi(res.data) : this.fromApi(input as never)),
+        catchError(err => throwError(() => err)),
+      );
   }
 
   update(id: string, patch: Partial<CalendarEventInput>): Observable<CalendarEvent> {
-    this.ensureSeeded();
-    const events = this.all();
-    const index = events.findIndex(e => e.id === id);
-    if (index === -1) throw new Error(`Calendar event ${id} not found`);
-    events[index] = { ...events[index], ...patch, id: events[index].id };
-    this.write(events);
-    return of(events[index]);
+    return this.http
+      .post<ApiCommandResult>(`${this.base}/commands/update.php?id=${encodeURIComponent(id)}`, this.toApi(patch), { withCredentials: true })
+      .pipe(map(res => this.fromApi(res.data as ApiCalendarEvent)));
   }
 
   remove(id: string): Observable<void> {
-    this.ensureSeeded();
-    this.write(this.all().filter(e => e.id !== id));
-    return of(void 0);
-  }
-
-  /** Wipes all mock events and re-seeds on next read (handy while prototyping). */
-  resetDemoData(): Observable<void> {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(SEEDED_KEY);
-    } catch { /* ignore */ }
-    return of(void 0);
-  }
-
-  private newId(): string {
-    const rand = Math.random().toString(36).slice(2, 8);
-    return `cal_${Date.now().toString(36)}_${rand}`;
-  }
-
-  private currentUserName(): string {
-    const user = this.auth.getUser();
-    return user?.full_name || user?.username || 'System';
-  }
-
-  private all(): CalendarEvent[] {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? (parsed as CalendarEvent[]) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private write(events: CalendarEvent[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
-    } catch { /* storage unavailable — mock data is best-effort */ }
+    return this.http
+      .post<ApiCommandResult>(`${this.base}/commands/delete.php?id=${encodeURIComponent(id)}`, {}, { withCredentials: true })
+      .pipe(map(() => void 0));
   }
 
   /**
-   * Seeds a deterministic set of demo events the first time a company is
-   * viewed, plus a couple of system-wide events. Repeated calls are cheap.
+   * Extracts a safe, human-readable message from an API error response.
+   * Reads the body shape rather than relying on `instanceof HttpErrorResponse`,
+   * so it also works with plain error objects surfaced by interceptors/tests.
    */
-  private ensureSeeded(): void {
-    const seeded = this.seededCompanies();
-    const events = this.all();
-    let changed = false;
+  errorMessage(err: unknown): string {
+    const e = err as Partial<HttpErrorResponse> | null;
+    if (!e || typeof e !== 'object') return 'Something went wrong.';
 
-    if (!seeded.includes(0)) {
-      events.push(...this.systemEvents());
-      // Demo companies keep the global view meaningful while the calendar is
-      // still mock-data only.
-      for (const co of DEMO_COMPANIES) {
-        events.push(...this.companyEvents(co.id, co.name));
+    const body = (e.error ?? null) as { error?: unknown; errors?: Record<string, string> } | null;
+    if (body && typeof body === 'object') {
+      if (body.errors && typeof body.errors === 'object') {
+        const first = Object.values(body.errors)[0];
+        if (typeof first === 'string' && first) return first;
       }
-      seeded.push(0);
-      changed = true;
+      if (typeof body.error === 'string' && body.error) return body.error;
     }
 
-    if (changed) {
-      this.write(events);
-      this.writeSeeded(seeded);
+    switch (e.status) {
+      case 401: return 'Your session has expired. Please log in again.';
+      case 403: return 'You do not have access to this company.';
+      case 404: return 'That appointment no longer exists.';
+      case 409: return 'This appointment was changed by someone else. Reload and try again.';
+      case 422: return 'Please check the appointment details and try again.';
     }
+    return e.status ? 'Could not complete the request.' : 'Something went wrong.';
   }
 
-  /** Seeds a company's own demo events the first time its calendar is opened. */
-  private ensureCompanySeeded(companyId: number, name: string): void {
-    const seeded = this.seededCompanies();
-    if (seeded.includes(companyId)) return;
-    const events = this.all();
-    events.push(...this.companyEvents(companyId, name));
-    seeded.push(companyId);
-    this.write(events);
-    this.writeSeeded(seeded);
-  }
+  // ---------- mapping ----------
 
-  private seededCompanies(): number[] {
-    try {
-      const raw = localStorage.getItem(SEEDED_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed.map(Number) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private writeSeeded(ids: number[]): void {
-    try {
-      localStorage.setItem(SEEDED_KEY, JSON.stringify(ids));
-    } catch { /* ignore */ }
-  }
-
-  private base(companyId: number): { anchor: string; year: number; month: number } {
-    // Anchor demo events around "today" but vary by company so each company
-    // calendar looks distinct.
-    const today = new Date();
-    const shift = (companyId % 5) - 2;
-    const { year, month } = addMonths(today.getFullYear(), today.getMonth(), shift);
-    const anchor = toIsoDate(new Date(year, month, 8));
-    return { anchor, year, month };
-  }
-
-  private systemEvents(): CalendarEvent[] {
-    const today = new Date();
-    const monthStart = toIsoDate(new Date(today.getFullYear(), today.getMonth(), 3));
-    const monthEnd = toIsoDate(new Date(today.getFullYear(), today.getMonth(), 26));
-    return [
-      this.seed({
-        id: 'cal_seed_sys_1',
-        company_id: null,
-        company_name: null,
-        title: 'Quarterly programme check-in (all companies)',
-        description: 'System-wide review of incubatee progress for the quarter.',
-        category: 'review',
-        date: monthStart,
-        all_day: true,
-        start_time: null,
-        end_time: null,
-        location: 'Online',
-        assignee: 'Programme Office',
-        link_type: null,
-        link_id: null,
-        link_label: null,
-      }),
-      this.seed({
-        id: 'cal_seed_sys_2',
-        company_id: null,
-        company_name: null,
-        title: 'Reporting submissions close',
-        description: 'Deadline for all companies to submit quarterly reporting.',
-        category: 'deadline',
-        date: monthEnd,
-        all_day: true,
-        start_time: null,
-        end_time: null,
-        location: null,
-        assignee: null,
-        link_type: null,
-        link_id: null,
-        link_label: null,
-      }),
-    ];
-  }
-
-  private companyEvents(companyId: number, name: string): CalendarEvent[] {
-    const { anchor } = this.base(companyId);
-    const mk = (
-      idx: number,
-      dayOffset: number,
-      title: string,
-      category: CalendarCategory,
-      extra: Partial<CalendarEvent> = {},
-    ): CalendarEvent => this.seed({
-      id: `cal_seed_${companyId}_${idx}`,
-      company_id: companyId,
-      company_name: name,
-      title,
-      description: null,
-      category,
-      date: addDays(anchor, dayOffset),
-      all_day: false,
-      start_time: '09:00',
-      end_time: '10:00',
-      location: null,
-      assignee: null,
-      link_type: null,
-      link_id: null,
-      link_label: null,
-      ...extra,
-    });
-
-    return [
-      mk(1, 0, 'Board meeting', 'meeting', {
-        start_time: '08:30', end_time: '10:00', location: 'Boardroom', assignee: 'Executive team',
-      }),
-      mk(2, 2, 'Financial indicators due', 'deadline', {
-        start_time: '17:00', end_time: null, link_type: 'financial', link_id: null, link_label: 'Monthly financial indicators',
-      }),
-      mk(3, 4, 'Mentorship session', 'check_in', {
-        start_time: '11:00', end_time: '12:00', location: 'Online', assignee: 'Coach', link_type: 'task', link_id: null, link_label: 'Mentorship logbook',
-      }),
-      mk(4, 7, 'Revenue target review', 'review', {
-        start_time: '14:00', end_time: '15:00', link_type: 'target', link_id: null, link_label: 'Revenue growth target',
-      }),
-      mk(5, 9, 'SWOT refresh workshop', 'milestone', {
-        all_day: true, start_time: null, end_time: null, link_type: 'swot', link_id: null, link_label: 'SWOT analysis',
-      }),
-      mk(6, 12, 'Submit grant application', 'deadline', {
-        start_time: '12:00', end_time: null, link_type: 'task', link_id: null, link_label: 'Grant funding application',
-      }),
-      mk(7, 15, 'Results & achievements capture', 'check_in', {
-        start_time: '10:00', end_time: '11:00', link_type: 'result', link_id: null, link_label: 'Verified results',
-      }),
-    ];
-  }
-
-  private seed(event: Omit<CalendarEvent, 'status' | 'created_by' | 'created_at'> & Partial<CalendarEvent>): CalendarEvent {
+  private fromApi(e: ApiCalendarEvent): CalendarEvent {
+    const link = e.links && e.links.length ? e.links[0] : null;
     return {
-      status: 'scheduled',
-      created_by: 'Demo data',
-      created_at: '2026-09-01T08:00:00.000Z',
-      ...event,
-    } as CalendarEvent;
+      id: String(e.id),
+      company_id: e.companyId,
+      company_name: e.companyName,
+      title: e.title,
+      description: e.description,
+      category: e.category as CalendarCategory,
+      date: e.allDay ? (e.startDate ?? '') : this.utcToLocalDate(e.startAt),
+      all_day: e.allDay,
+      start_time: e.allDay ? null : this.utcToLocalTime(e.startAt),
+      end_time: e.allDay ? null : this.utcToLocalTime(e.endAt),
+      location: e.location,
+      assignee: e.assigneeLabel,
+      link_type: link ? (API_TO_LINK_TYPE[link.entityType] ?? null) : null,
+      link_id: link ? link.entityId : null,
+      link_label: link ? link.label : null,
+      status: e.status as CalendarEvent['status'],
+      created_by: e.createdByName,
+      created_at: e.createdAt,
+      // Backend-only fields, preserved for optimistic concurrency.
+      version: e.version,
+      timezone: e.timezone,
+      end_date: e.endDate,
+    };
+  }
+
+  private toApi(input: Partial<CalendarEventInput>): Record<string, unknown> {
+    const tz = input.timezone || this.localTimezone();
+    const allDay = !!input.all_day;
+
+    const body: Record<string, unknown> = {
+      companyId: input.company_id ?? null,
+      title: input.title ?? '',
+      description: input.description ?? null,
+      category: input.category ?? 'other',
+      status: input.status ?? 'scheduled',
+      allDay,
+      timezone: allDay ? null : tz,
+      location: input.location ?? null,
+      assigneeLabel: input.assignee ?? null,
+    };
+
+    if (allDay) {
+      body['startDate'] = input.date ?? null;
+      body['endDate'] = input.end_date ?? input.date ?? null;
+    } else {
+      body['startAt'] = this.localToUtcIso(input.date ?? '', input.start_time ?? null);
+      body['endAt'] = this.localToUtcIso(input.date ?? '', input.end_time ?? input.start_time ?? null);
+    }
+
+    if (input.version != null) body['version'] = input.version;
+
+    if (input.link_type) {
+      body['links'] = [{
+        entityType: LINK_TYPE_TO_API[input.link_type] ?? input.link_type,
+        entityId: input.link_id ?? 0,
+        label: input.link_label ?? null,
+      }];
+    }
+
+    return body;
+  }
+
+  // ---------- local <-> UTC helpers ----------
+
+  private localTimezone(): string {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Johannesburg';
+    } catch {
+      return 'Africa/Johannesburg';
+    }
+  }
+
+  /**
+   * `YYYY-MM-DD` + `HH:mm` in the browser's timezone -> ISO-8601 UTC (`...Z`).
+   * Uses the host's real offset so DST is handled by the platform.
+   */
+  private localToUtcIso(dateIso: string, hhmm: string | null): string | null {
+    if (!dateIso) return null;
+    const [y, m, d] = dateIso.split('-').map(Number);
+    const [hh, mm] = (hhmm ?? '00:00').split(':').map(Number);
+    const local = new Date(y, (m || 1) - 1, d || 1, hh || 0, mm || 0, 0, 0);
+    return this.toUtcIso(local);
+  }
+
+  /** UTC ISO string in the browser's timezone -> local `YYYY-MM-DD`. */
+  private utcToLocalDate(iso: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso.slice(0, 10);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  /** UTC ISO string in the browser's timezone -> local `HH:mm`. */
+  private utcToLocalTime(iso: string | null): string | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private toUtcIso(d: Date): string {
+    return d.toISOString().replace(/\.\d{3}Z$/, 'Z');
   }
 }

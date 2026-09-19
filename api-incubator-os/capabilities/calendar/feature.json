@@ -1,0 +1,14 @@
+{
+  "name": "Calendar",
+  "description": "Company-scoped and system-wide dated calendar events (appointments, deadlines, reviews, check-ins) with optional links to existing domain records",
+  "queries": [
+    { "name": "listCalendarEvents", "returns": "CalendarEventResponse[]" },
+    { "name": "getCalendarEvent", "returns": "CalendarEventResponse" }
+  ],
+  "commands": [
+    { "name": "createCalendarEvent", "input": "CalendarEventRequest", "returns": "CommandResult" },
+    { "name": "updateCalendarEvent", "input": "CalendarEventRequest", "returns": "CommandResult" },
+    { "name": "deleteCalendarEvent", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Companies", "Nodes"]
+}
