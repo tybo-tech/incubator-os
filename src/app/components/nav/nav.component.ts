@@ -33,6 +33,7 @@ export class NavComponent implements OnInit {
     { icon: 'fa-hand-holding-dollar', label: 'Grant Funding', route: '/admin/grant-funding' },
     { icon: 'fa-building', label: 'All Companies', route: '/companies' },
     { icon: 'fa-list-check', label: 'Tasks', route: '/tasks' },
+    { icon: 'fa-calendar-days', label: 'Calendar', route: '/calendar' },
     { icon: 'fa-industry', label: 'Industries', route: '/industries' },
     { icon: 'fa-users', label: 'Users', route: '/users' },
     { icon: 'fa-file-invoice', label: 'Form Templates', route: '/admin/form-templates' },

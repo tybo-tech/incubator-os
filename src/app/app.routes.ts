@@ -153,6 +153,11 @@ export const routes: Routes = [
             canActivate: [authGuard],
           },
           {
+            path: 'calendar',
+            loadComponent: () => import('./features/calendar/calendar-page.component').then(m => m.CalendarPageComponent),
+            canActivate: [authGuard],
+          },
+          {
             path: 'swot',
             // component: SwotComponent,
             component: SwotTabComponent,
@@ -315,6 +320,11 @@ export const routes: Routes = [
       {
         path: 'tasks',
         component: TasksListComponent,
+      },
+      {
+        path: 'calendar',
+        loadComponent: () => import('./features/calendar/calendar-page.component').then(m => m.CalendarPageComponent),
+        canActivate: [authGuard],
       },
       {
         path: 'data',
