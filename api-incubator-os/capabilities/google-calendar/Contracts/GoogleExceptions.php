@@ -1,0 +1,68 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Typed exceptions for the Google Calendar capability (Sprint 010 Phase 1).
+ *
+ * Co-located and always loaded together, mirroring `CalendarExceptions.php`.
+ * Each type maps to a distinct HTTP status in `GoogleErrorResponder`.
+ */
+
+/**
+ * The Google provider is present but unusable (missing/invalid local
+ * credentials). Endpoints map this to 503 GOOGLE_NOT_CONFIGURED.
+ * Declared in config/google.php as well (guarded) so the config layer can throw
+ * it without depending on a capability file.
+ */
+if (!class_exists('GoogleConfigurationException', false)) {
+    final class GoogleConfigurationException extends RuntimeException {}
+}
+
+/**
+ * Token decryption failed: wrong key, tampered ciphertext, unknown key version
+ * or malformed payload. ALWAYS fails closed — no plaintext is ever returned.
+ */
+final class GoogleDecryptionException extends RuntimeException {}
+
+/**
+ * A remote Google API call failed, timed out, returned a malformed body, or
+ * responded with an error status. `reason()` is a stable machine code so callers
+ * never string-match a message.
+ */
+final class GoogleApiException extends RuntimeException
+{
+    public const REASON_INVALID_GRANT = 'invalid_grant';
+    public const REASON_UNAUTHORIZED = 'unauthorized';
+    public const REASON_FORBIDDEN = 'forbidden';
+    public const REASON_CONFLICT = 'conflict';
+    public const REASON_RATE_LIMITED = 'rate_limited';
+    public const REASON_SERVER_ERROR = 'server_error';
+    public const REASON_MALFORMED = 'malformed_response';
+    public const REASON_TIMEOUT = 'timeout';
+    public const REASON_NETWORK = 'network';
+
+    public function __construct(
+        string $message,
+        private readonly string $reason = self::REASON_NETWORK,
+        private readonly int $status = 0,
+    ) {
+        parent::__construct($message);
+    }
+
+    public function reason(): string
+    {
+        return $this->reason;
+    }
+
+    public function status(): int
+    {
+        return $this->status;
+    }
+
+    /** True when the caller must reconnect (token can no longer be refreshed). */
+    public function requiresReconnect(): bool
+    {
+        return $this->reason === self::REASON_INVALID_GRANT
+            || $this->reason === self::REASON_UNAUTHORIZED;
+    }
+}

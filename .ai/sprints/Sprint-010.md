@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: Locked — ready for implementation.
+> **Status**: In progress — **Phase 1 delivered and verified** (session 030). Phases 2–6 locked, awaiting implementation.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -226,22 +226,35 @@ Build the configuration loader, the token cipher, the `GoogleApiClient` interfac
 
 #### Tasks
 
-- [ ] **1.1** Add `config/google.php` — a committed loader that reads client id, client secret, encryption key and default calendar id, from `getenv()` with an optional gitignored `config/google.local.php` override. Expose `google_configured(): bool` and `google_config(): array`. Never echo values.
-- [ ] **1.2** Document the `config/google.local.php` contract (exact array keys) and add it to `.gitignore`; add it to the deployment "must be created on the server, never committed" list.
-- [ ] **1.3** Add `capabilities/google-calendar/Services/TokenCipher.php` — AES-256-GCM `encrypt()`/`decrypt()` using the configured 32-byte key, random 12-byte IV, tag stored with ciphertext; `decrypt()` throws on tag failure.
-- [ ] **1.4** Add `capabilities/google-calendar/Contracts/GoogleApiClient.php` — interface for `exchangeCode`, `refreshToken`, `userInfoEmail`, `revoke`, `insertEvent`, `patchEvent`, `deleteEvent`.
-- [ ] **1.5** Add `capabilities/google-calendar/Services/CurlGoogleApiClient.php` — cURL implementation with connect/read timeouts, TLS verification on, `application/json`, and normalised error mapping (`invalid_grant`, `rateLimitExceeded`, `412`, network failure).
-- [ ] **1.6** Add `capabilities/google-calendar/Services/FakeGoogleApiClient.php` — deterministic in-memory implementation for tests (configurable to return `pending`/`success`, `412`, `invalid_grant`), selected when `GOOGLE_FAKE=1`.
-- [ ] **1.7** Add migration `api-incubator-os/migrations/2026-09-24-google-calendar.sql` — run order **#22**, `IF NOT EXISTS`, creates `google_calendar_connections` and `google_event_sync` with the FK/UNIQUE set in the Domain Model; no `ALTER` of any existing table. Add the header, local-run command and rollback notes.
-- [ ] **1.8** Add the run-order #22 row to `api-incubator-os/migrations/README.md`.
+- [x] **1.1** Add `config/google.php` — a committed loader that reads client id, client secret, encryption key and default calendar id, from `getenv()` with an optional gitignored `config/google.local.php` override. Expose `google_configured(): bool` and `google_config(): array`. Never echo values.
+- [x] **1.2** Document the `config/google.local.php` contract (exact array keys) and add it to `.gitignore`; add it to the deployment "must be created on the server, never committed" list.
+- [x] **1.3** Add `capabilities/google-calendar/Services/TokenCipher.php` — AES-256-GCM `encrypt()`/`decrypt()` using the configured 32-byte key, random 12-byte IV, tag stored with ciphertext; `decrypt()` throws on tag failure.
+- [x] **1.4** Add `capabilities/google-calendar/Contracts/GoogleApiClient.php` — interface for `exchangeCode`, `refreshToken`, `userInfoEmail`, `revoke`, `insertEvent`, `patchEvent`, `deleteEvent`.
+- [x] **1.5** Add `capabilities/google-calendar/Services/CurlGoogleApiClient.php` — cURL implementation with connect/read timeouts, TLS verification on, `application/json`, and normalised error mapping (`invalid_grant`, `rateLimitExceeded`, `412`, network failure).
+- [x] **1.6** Add `capabilities/google-calendar/Services/FakeGoogleApiClient.php` — deterministic in-memory implementation for tests (configurable to return `pending`/`success`, `412`, `invalid_grant`), selected when `GOOGLE_FAKE=1`.
+- [x] **1.7** Add migration `api-incubator-os/migrations/2026-09-24-google-calendar.sql` — run order **#22**, `IF NOT EXISTS`, creates `google_calendar_connections` and `google_event_sync` with the FK/UNIQUE set in the Domain Model; no `ALTER` of any existing table. Add the header, local-run command and rollback notes.
+- [x] **1.8** Add the run-order #22 row to `api-incubator-os/migrations/README.md`.
 
 #### Exit Criteria
 
-- [ ] `config/google.php` reports **not configured** cleanly when `config/google.local.php` is absent; no fatal error, no secret in output.
-- [ ] `TokenCipher` round-trips a UTF-8 token; a tampered ciphertext throws; two encryptions of the same token differ (random IV).
-- [ ] `GoogleApiClient` has exactly one production implementation and one fake; no caller references cURL directly.
-- [ ] Migration #22 applies twice safely (`IF NOT EXISTS`), creating 2 tables, 4 FKs and the 2 UNIQUE keys; no existing table is altered.
-- [ ] `php -l` passes on every new file.
+- [x] `config/google.php` reports **not configured** cleanly when `config/google.local.php` is absent; no fatal error, no secret in output.
+- [x] `TokenCipher` round-trips a UTF-8 token; a tampered ciphertext throws; two encryptions of the same token differ (random IV).
+- [x] `GoogleApiClient` has exactly one production implementation and one fake; no caller references cURL directly.
+- [x] Migration #22 applies twice safely (`IF NOT EXISTS`), creating 2 tables, 3 FKs and the 2 UNIQUE keys; no existing table is altered.
+- [x] `php -l` passes on every new file.
+
+#### Phase 1 completion — 2026-09-24 (session 030)
+
+| Area | Result |
+| --- | --- |
+| Foundation test suite | `api-incubator-os/tests/GoogleCalendarPhase1.php` — **62/62** |
+| PHP lint | **17/17** new files clean |
+| Migration #22 | applied **twice** locally; 2 tables / 3 FKs / 2 UNIQUE / 5 secondary indexes; 0 rows; no existing table altered |
+| Calendar regression | **65/65** |
+| Sessions regression | **105/105** |
+| Network / DB in tests | none — fully offline |
+
+Hardening beyond the task list, per the Phase 1 guardrails: separate `nonce`/`tag`/`key_version` columns (not a concatenated blob); AAD binds each ciphertext to `tenant|user|provider|purpose`; `SecretRedactor` + `GoogleLog` make secret-free logging the only logging path; the cURL client bounds connect/read time and response size and classifies every failure into `GoogleApiException`; the fake client covers success, timeout, malformed JSON, 401, 403, 409/etag conflict, 429, 5xx and `invalid_grant`.
 
 ---
 
@@ -426,11 +439,15 @@ api-incubator-os/
 │   │       └── GetGoogleEventSync.php
 │   ├── Contracts/
 │   │   ├── GoogleApiClient.php
+│   │   ├── GoogleApiClientFactory.php
 │   │   ├── GoogleConnectionResponse.php
 │   │   ├── GoogleErrorResponder.php
+│   │   ├── GoogleEventRef.php
 │   │   ├── GoogleEventSyncResponse.php
 │   │   ├── GoogleExceptions.php
 │   │   ├── GoogleScopes.php
+│   │   ├── GoogleTokenSet.php
+│   │   ├── EncryptedPayload.php
 │   │   └── Responses/CommandResult.php
 │   ├── Repository/
 │   │   ├── GoogleConnectionRepository.php
@@ -439,12 +456,15 @@ api-incubator-os/
 │       ├── CurlGoogleApiClient.php
 │       ├── FakeGoogleApiClient.php
 │       ├── GoogleAccessPolicy.php
+│       ├── GoogleApiErrorMapper.php
 │       ├── GoogleAttendeeResolver.php
 │       ├── GoogleCancelHook.php
 │       ├── GoogleEventMapper.php
 │       ├── GoogleEventSyncService.php
+│       ├── GoogleLog.php
 │       ├── OAuthService.php
 │       ├── OAuthStateSigner.php
+│       ├── SecretRedactor.php
 │       └── TokenCipher.php
 ├── capabilities/calendar/Contracts/
 │   └── GoogleEventSyncHook.php                     # interface only (no-op default)
@@ -462,7 +482,8 @@ api-incubator-os/
 ├── migrations/
 │   └── 2026-09-24-google-calendar.sql              # run order #22
 └── tests/
-    └── GoogleCalendar.ps1
+    ├── GoogleCalendar.ps1                          # endpoint suite (Phases 2+)
+    └── GoogleCalendarPhase1.php                    # foundation suite (delivered)
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts

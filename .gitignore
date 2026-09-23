@@ -50,3 +50,6 @@ Thumbs.db
 # Ad-hoc notes that may hold credentials/secrets - never commit
 /docs/*notes.md
 /notes*.md
+
+# Google integration secrets (Sprint 010) - commit only the .example contract
+/api-incubator-os/config/google.local.php
