@@ -48,6 +48,9 @@ final class CalendarEventMapper
             links: $linkRefs,
             createdAt: self::toIsoUtc($row['created_at']) ?? (string)$row['created_at'],
             updatedAt: self::toIsoUtc($row['updated_at']) ?? (string)$row['updated_at'],
+            // Present only when the Sessions capability is deployed and the query
+            // joined `sessions`; null otherwise.
+            sessionId: isset($row['session_id']) && $row['session_id'] !== null ? (int)$row['session_id'] : null,
         );
     }
 

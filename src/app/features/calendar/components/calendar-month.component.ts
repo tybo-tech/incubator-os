@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
 import { CalendarEvent, CalendarCategory, WEEKDAY_LABELS } from '../models/calendar.models';
 import { monthGrid, sameMonth, formatTime, compareEvents, toIsoDate } from '../calendar.utils';
 
@@ -17,7 +18,7 @@ const MAX_CHIPS = 3;
 @Component({
   selector: 'app-calendar-month',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AppIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="cal-grid">
@@ -34,9 +35,10 @@ const MAX_CHIPS = 3;
               [class.status-cancelled]="ev.status === 'cancelled'"
               [class.status-completed]="ev.status === 'completed'"
               (click)="eventClick.emit(ev)"
-              [title]="ev.title">
+              [title]="ev.session_id ? ev.title + ' (has a Session)' : ev.title">
               @if (!ev.all_day && ev.start_time) { <span class="cal-ev-time">{{ time(ev.start_time) }}</span> }
               <span class="cal-ev-title">{{ ev.title }}</span>
+              @if (ev.session_id) { <span class="cal-ev-session" title="This appointment has a Session"><app-icon name="list-bullet"></app-icon></span> }
             </button>
           }
           @if (cell.overflow > 0) {

@@ -14,6 +14,9 @@ declare(strict_types=1);
  */
 final class CalendarEventRepository
 {
+    /** @var array<string,bool> */
+    private array $tableCache = [];
+
     public function __construct(private PDO $db) {}
 
     /**
@@ -194,6 +197,81 @@ final class CalendarEventRepository
             'version' => $expectedVersion,
         ]);
         return $stmt->rowCount();
+    }
+
+    /**
+     * Set an event's status (used by the Sessions capability to cancel the linked
+     * event when its Session is cancelled). Optimistic-concurrency guarded.
+     */
+    public function setStatus(int $id, int $tenantId, string $status, int $updatedBy, int $expectedVersion): int
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE calendar_events
+             SET status = :status, updated_by = :updated_by, version = version + 1
+             WHERE id = :id AND tenant_id = :tenant AND deleted_at IS NULL AND version = :version"
+        );
+        $stmt->execute([
+            'status' => $status,
+            'updated_by' => $updatedBy,
+            'id' => $id,
+            'tenant' => $tenantId,
+            'version' => $expectedVersion,
+        ]);
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Map event id -> linked session id, for the given event ids.
+     *
+     * The `sessions` table belongs to the Sessions capability. When it is not
+     * present (calendar deployed alone) this returns an empty map, so the calendar
+     * works unchanged and simply never shows a Session indicator.
+     *
+     * @param int[] $eventIds
+     * @return array<int,int>
+     */
+    public function sessionIdsForEvents(array $eventIds): array
+    {
+        if (!$eventIds || !$this->tableExists('sessions')) {
+            return [];
+        }
+        $ids = array_values(array_unique(array_map('intval', $eventIds)));
+        $placeholders = [];
+        $params = [];
+        foreach ($ids as $i => $id) {
+            $placeholders[] = ":e$i";
+            $params["e$i"] = $id;
+        }
+        $stmt = $this->db->prepare(
+            "SELECT calendar_event_id, id FROM sessions
+             WHERE calendar_event_id IN (" . implode(',', $placeholders) . ") AND deleted_at IS NULL"
+        );
+        $stmt->execute($params);
+        $map = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+            $map[(int)$row['calendar_event_id']] = (int)$row['id'];
+        }
+        return $map;
+    }
+
+    /** Cached table existence check (one query per request). */
+    private function tableExists(string $table): bool
+    {
+        if (array_key_exists($table, $this->tableCache)) {
+            return $this->tableCache[$table];
+        }
+        try {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) FROM information_schema.TABLES
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :t"
+            );
+            $stmt->execute(['t' => $table]);
+            $exists = (int)$stmt->fetchColumn() > 0;
+        } catch (Throwable) {
+            $exists = false;
+        }
+        $this->tableCache[$table] = $exists;
+        return $exists;
     }
 
     // ---------- links ----------

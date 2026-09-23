@@ -60,6 +60,14 @@ api-incubator-os/  PHP 8.1 backend (custom MVC, Docker-based)
 - **snake_case** for DB columns, **camelCase** for TS/PHP methods, **PascalCase** for PHP models
 - No ESLint, Prettier, or CI/CD config present
 
+### Calendar vs Sessions
+
+- **Calendar** (`company/:id/calendar`, `src/app/features/calendar/`) is the **scheduling layer**: generic dated events (company or system-wide) with all-day vs timed storage and links to existing records. See `docs/calendar-api.md`.
+- **Sessions** (`company/:id/sessions`, `src/app/features/sessions/`) is the **workspace layer**: why we meet, what to review, what was discussed/decided, which records were involved, and what execution work came out. See `docs/session-api.md`.
+- A Session belongs to one company and links to **at most one** company `meeting` calendar event (nullable UNIQUE). **Sessions store no schedule** — rescheduling happens through the calendar event.
+- Do not duplicate domain logic in Sessions: Targets/tasks, financial measurements and Achievements are always created through their own APIs; the Session only adds a `CREATED` link.
+- Backend is the `capabilities/sessions/` + `api/sessions/` capability pair (run order #21), reusing `helpers/AuthGuard.php`.
+
 ### Financial screens — legacy vs current
 
 - **`financial-indicators`** (route `company/:id/financial-indicators`, `src/app/components/company-shell/financial-indicators/`) is the **current, client-aligned** financial surface. New financial features belong here (or in the normalized Targets/Results/SWOT features).

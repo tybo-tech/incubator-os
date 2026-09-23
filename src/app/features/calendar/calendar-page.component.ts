@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon';
 import { CompanyService } from '../../../services/company.service';
 import { ViewStateService } from '../../../services/view-state.service';
@@ -165,13 +165,15 @@ type View = 'month' | 'agenda';
       [saving]="saving()"
       (close)="closeForm()"
       (save)="save($event)"
-      (delete)="deleteCurrent()">
+      (delete)="deleteCurrent()"
+      (openSession)="openSessionWorkspace($event)">
     </app-calendar-event-modal>
   }
   `,
 })
 export class CalendarPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private api = inject(CalendarService);
   private companyService = inject(CompanyService);
   private ui = inject(ViewStateService);
@@ -405,6 +407,17 @@ export class CalendarPageComponent implements OnInit {
     this.api.remove(ev.id).subscribe({
       next: () => { this.closeForm(); this.reloadAndKeepView(); },
       error: err => this.error.set(this.api.errorMessage(err)),
+    });
+  }
+
+  /**
+   * An event that backs a Session cannot be managed from the calendar alone, so
+   * jump to the Session workspace in the Sessions tab.
+   */
+  openSessionWorkspace(sessionId: number): void {
+    this.closeForm();
+    this.router.navigate(['/company', this.companyId(), 'sessions'], {
+      queryParams: { session: sessionId },
     });
   }
 

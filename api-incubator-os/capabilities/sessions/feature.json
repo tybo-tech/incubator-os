@@ -1,0 +1,26 @@
+{
+  "name": "Sessions",
+  "description": "First-class company Session workspaces integrated with the calendar: preparation, agenda, notes, decisions, entity links, lifecycle and a server-built preparation brief",
+  "queries": [
+    { "name": "listCompanySessions", "returns": "SessionSummary[]" },
+    { "name": "listUpcomingSessions", "returns": "SessionSummary[]" },
+    { "name": "getSession", "returns": "SessionResponse" },
+    { "name": "getSessionBrief", "returns": "PreparationBrief" },
+    { "name": "listSessionBacklinks", "returns": "SessionSummary[]" },
+    { "name": "listEligibleEvents", "returns": "CalendarEventProjection[]" }
+  ],
+  "commands": [
+    { "name": "createSession", "input": "SessionRequest", "returns": "CommandResult" },
+    { "name": "convertCalendarEventToSession", "input": "SessionRequest", "returns": "CommandResult" },
+    { "name": "updateSession", "input": "SessionRequest", "returns": "CommandResult" },
+    { "name": "manageSessionAgenda", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "manageSessionNotes", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "manageSessionDecisions", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "manageSessionLinks", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "manageSessionParticipants", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "startSession", "returns": "CommandResult" },
+    { "name": "completeSession", "returns": "CommandResult" },
+    { "name": "cancelSession", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Companies", "Calendar", "GpsTargets", "SwotItems", "Achievements", "Nodes"]
+}

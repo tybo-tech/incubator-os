@@ -158,6 +158,11 @@ export const routes: Routes = [
             canActivate: [authGuard],
           },
           {
+            path: 'sessions',
+            loadComponent: () => import('./features/sessions/sessions-page.component').then(m => m.SessionsPageComponent),
+            canActivate: [authGuard],
+          },
+          {
             path: 'swot',
             // component: SwotComponent,
             component: SwotTabComponent,

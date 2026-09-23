@@ -30,11 +30,27 @@ final class CalendarErrorResponder
         }
         if ($e instanceof CalendarConflictException) {
             http_response_code(409);
-            echo json_encode(['error' => $e->getMessage()]);
+            echo json_encode(self::conflictBody($e->getMessage()));
             return;
         }
         http_response_code(400);
         echo json_encode(['error' => $e->getMessage()]);
+    }
+
+    /**
+     * Conflict messages may carry a machine-readable code as `CODE: message`
+     * (e.g. `SESSION_LINKED`). Emit it alongside `error` so callers can branch
+     * without string matching.
+     *
+     * @return array<string,string>
+     */
+    private static function conflictBody(string $message): array
+    {
+        $body = ['error' => $message];
+        if (preg_match('/^([A-Z][A-Z0-9_]+):\s/', $message, $m) === 1) {
+            $body['code'] = $m[1];
+        }
+        return $body;
     }
 
     private static function emitValidation(string $message): void

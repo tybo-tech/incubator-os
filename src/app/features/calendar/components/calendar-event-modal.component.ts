@@ -133,6 +133,18 @@ export interface EventFormContext {
             <span>Description</span>
             <textarea class="sw-textarea" [(ngModel)]="description" placeholder="Optional notes"></textarea>
           </div>
+
+          @if (sessionId()) {
+            <div class="sw-snapshot" style="margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div>
+                <div><strong>This appointment has a Session</strong></div>
+                <div class="sw-mini">Preparation, agenda, notes and decisions live in the Session workspace.</div>
+              </div>
+              <button type="button" class="sw-btn sm" (click)="openSession.emit(sessionId()!)">
+                <app-icon name="arrow-right"></app-icon> Open session workspace
+              </button>
+            </div>
+          }
         </div>
 
         <div class="sw-modal-foot">
@@ -158,6 +170,11 @@ export class CalendarEventModalComponent implements OnChanges {
   readonly close = output<void>();
   readonly save = output<CalendarEventInput & { id?: string }>();
   readonly delete = output<void>();
+  /** Emitted with the Session id when the user opens the linked workspace. */
+  readonly openSession = output<number>();
+
+  /** Linked Session id for the event being edited, if any. */
+  readonly sessionId = computed(() => this.event()?.session_id ?? null);
 
   readonly categories = CALENDAR_CATEGORIES;
   readonly linkTypes = CALENDAR_LINK_TYPES;

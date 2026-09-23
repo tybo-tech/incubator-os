@@ -51,9 +51,20 @@ final class ListCalendarEvents
             'assigneeUserId' => $assigneeUserId,
         ]);
 
+        // Attach the linked Session id when the Sessions capability is deployed,
+        // so the calendar can show a Session indicator. Absent -> no join.
+        $sessionsByEvent = $this->repo->sessionIdsForEvents(array_map(
+            static fn(array $r): int => (int)$r['id'],
+            $rows
+        ));
+
         $out = [];
         foreach ($rows as $row) {
-            $links = $this->repo->linksForEvent((int)$row['id']);
+            $eventId = (int)$row['id'];
+            if (isset($sessionsByEvent[$eventId])) {
+                $row['session_id'] = $sessionsByEvent[$eventId];
+            }
+            $links = $this->repo->linksForEvent($eventId);
             $out[] = CalendarEventMapper::toResponse($row, $links);
         }
         return $out;

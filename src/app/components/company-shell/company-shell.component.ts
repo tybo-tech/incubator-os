@@ -124,6 +124,11 @@ export class CompanyShellComponent implements OnInit {
       icon: 'fas fa-calendar-days'
     },
     {
+      label: 'Sessions',
+      route: 'sessions',
+      icon: 'fas fa-people-group'
+    },
+    {
       label: 'Assessment',
       route: 'assessment',
       icon: 'fas fa-check-circle'

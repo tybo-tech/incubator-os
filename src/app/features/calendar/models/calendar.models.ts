@@ -45,6 +45,8 @@ export interface CalendarEvent {
   timezone?: string | null;
   /** Optimistic-concurrency counter; sent back on update/delete. */
   version?: number;
+  /** Linked Session id, when this event backs a Session workspace (Sprint 009). */
+  session_id?: number | null;
 }
 
 export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'created_at'> & {

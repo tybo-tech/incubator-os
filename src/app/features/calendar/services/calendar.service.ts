@@ -58,6 +58,7 @@ interface ApiCalendarEvent {
   links: { entityType: string; entityId: number; label: string | null }[];
   createdAt: string;
   updatedAt: string;
+  sessionId?: number | null;
 }
 
 interface ApiCommandResult {
@@ -176,6 +177,7 @@ export class CalendarService {
       version: e.version,
       timezone: e.timezone,
       end_date: e.endDate,
+      session_id: e.sessionId ?? null,
     };
   }
 

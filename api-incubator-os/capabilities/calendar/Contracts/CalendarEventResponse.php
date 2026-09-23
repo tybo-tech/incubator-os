@@ -39,6 +39,8 @@ final class CalendarEventResponse implements JsonSerializable
         public readonly array $links,
         public readonly string $createdAt,
         public readonly string $updatedAt,
+        /** Session linked to this event, when the Sessions capability is deployed. */
+        public readonly ?int $sessionId = null,
     ) {}
 
     public function jsonSerialize(): mixed
@@ -66,6 +68,7 @@ final class CalendarEventResponse implements JsonSerializable
             'links' => $this->links,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
+            'sessionId' => $this->sessionId,
         ];
     }
 }

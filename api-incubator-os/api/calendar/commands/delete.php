@@ -13,10 +13,20 @@ include_once '../../../core/Infrastructure/TransactionManager.php';
 include_once '../../../helpers/AuthGuard.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarExceptions.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarErrorResponder.php';
+include_once '../../../capabilities/calendar/Contracts/CalendarSessionGuard.php';
 include_once '../../../capabilities/calendar/Contracts/Responses/CommandResult.php';
 include_once '../../../capabilities/calendar/Services/CalendarAccessPolicy.php';
 include_once '../../../capabilities/calendar/Repository/CalendarEventRepository.php';
 include_once '../../../capabilities/calendar/Application/Commands/DeleteCalendarEvent.php';
+
+// When the Sessions capability is deployed, a linked event must not be deleted.
+// Loaded defensively (the two capabilities can be deployed independently).
+$sessionGuard = null;
+$guardFile = __DIR__ . '/../../../capabilities/sessions/Services/SessionCalendarGuard.php';
+if (is_file($guardFile)) {
+    include_once $guardFile;
+    $sessionGuard = 'SessionCalendarGuard';
+}
 
 $id = (int)($_GET['id'] ?? 0);
 $input = json_decode(file_get_contents('php://input'), true);
@@ -38,6 +48,7 @@ try {
         new CalendarEventRepository($db),
         new CalendarAccessPolicy($actor),
         new TransactionManager($db),
+        $sessionGuard !== null ? new $sessionGuard($db) : null,
     ))->execute($id, $version);
 
     echo json_encode($result);
