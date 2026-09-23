@@ -27,13 +27,26 @@ final class GoogleApiErrorMapper
         return match (true) {
             $status === 401 => new GoogleApiException('Google rejected the request (unauthorised).', GoogleApiException::REASON_UNAUTHORIZED, $status),
             $status === 403 => self::forbidden($googleReason, $status),
-            $status === 404 => new GoogleApiException('The Google resource was not found.', GoogleApiException::REASON_CONFLICT, $status),
-            $status === 409 => new GoogleApiException('The Google resource was modified by someone else.', GoogleApiException::REASON_CONFLICT, $status),
+            $status === 404 => new GoogleApiException('The Google resource was not found.', GoogleApiException::REASON_NOT_FOUND, $status),
+            $status === 409 => self::conflictOrDuplicate($googleReason, $status),
             $status === 412 => new GoogleApiException('The Google event changed since it was last synced.', GoogleApiException::REASON_CONFLICT, $status),
             $status === 429 => new GoogleApiException('Google rate limit reached.', GoogleApiException::REASON_RATE_LIMITED, $status),
             $status >= 500 => new GoogleApiException('Google returned a server error.', GoogleApiException::REASON_SERVER_ERROR, $status),
             default => new GoogleApiException('Google rejected the request.', GoogleApiException::REASON_NETWORK, $status),
         };
+    }
+
+    /**
+     * A 409 on INSERT with our deterministic id means the event already exists —
+     * that is the idempotent-recovery signal, not a generic conflict. A 409 on a
+     * PATCH stays a conflict.
+     */
+    private static function conflictOrDuplicate(string $googleReason, int $status): GoogleApiException
+    {
+        if ($googleReason === 'duplicate' || $googleReason === 'alreadyExists') {
+            return new GoogleApiException('A Google event with this id already exists.', GoogleApiException::REASON_DUPLICATE, $status);
+        }
+        return new GoogleApiException('The Google resource was modified by someone else.', GoogleApiException::REASON_CONFLICT, $status);
     }
 
     public static function malformed(): GoogleApiException

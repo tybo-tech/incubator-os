@@ -61,6 +61,27 @@ final class GoogleErrorResponder
             return;
         }
 
+        if ($e instanceof GoogleNotConnectedException) {
+            // No usable connection: publishing is refused without contacting Google.
+            http_response_code(409);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'code' => 'GOOGLE_NOT_CONNECTED',
+                'connectionStatus' => $e->connectionStatus(),
+            ]);
+            return;
+        }
+
+        if ($e instanceof GooglePublishInProgressException) {
+            // A concurrent publish holds the lease; Google was not contacted.
+            http_response_code(409);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'code' => 'GOOGLE_PUBLISH_IN_PROGRESS',
+            ]);
+            return;
+        }
+
         if ($e instanceof GoogleScopeException) {
             http_response_code(422);
             echo json_encode([

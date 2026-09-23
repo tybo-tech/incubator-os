@@ -45,23 +45,40 @@ interface GoogleApiClient
     /**
      * Insert a calendar event, optionally requesting a Meet conference.
      *
+     * Implementations SHOULD support a deterministic id in `$event['id']`; when
+     * Google already holds that id it answers 409, which the mapper surfaces as
+     * `GoogleApiException::REASON_DUPLICATE` so the caller can recover instead of
+     * creating a duplicate.
+     *
      * @param array<string,mixed> $event Google Calendar event resource
      * @param array<string,mixed> $options e.g. conferenceDataVersion, sendUpdates
+     * @param string|null $accessToken Bearer token; required by the real transport
+     *                                  and ignored by the offline fake.
      * @throws GoogleApiException
      */
-    public function insertEvent(string $calendarId, array $event, array $options = []): GoogleEventRef;
+    public function insertEvent(string $calendarId, array $event, array $options = [], ?string $accessToken = null): GoogleEventRef;
+
+    /**
+     * Read a single calendar event.
+     *
+     * Used to recover an event a previous publish created but did not persist,
+     * and to promote an asynchronous `pending` conference once it is `success`.
+     *
+     * @throws GoogleApiException (reason not_found when the event is gone)
+     */
+    public function getEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): GoogleEventRef;
 
     /**
      * Patch a calendar event (partial update), guarded by an optional etag.
      *
      * @throws GoogleApiException (reason conflict on etag mismatch)
      */
-    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null): GoogleEventRef;
+    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null, ?string $accessToken = null): GoogleEventRef;
 
     /**
      * Delete a calendar event.
      *
      * @throws GoogleApiException
      */
-    public function deleteEvent(string $calendarId, string $eventId, array $options = []): void;
+    public function deleteEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): void;
 }

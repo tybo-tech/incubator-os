@@ -46,4 +46,50 @@ final class GoogleAccessPolicy
             throw new GoogleForbiddenException('A Google connection may only be managed by its owner.');
         }
     }
+
+    /**
+     * Publishing to Google requires the SAME authorization as editing the local
+     * event, plus the event, its Session and the connection must agree on company.
+     *
+     * Mirrors `CalendarAccessPolicy::assertCanModifyEvent`:
+     *   * company-scoped event -> the actor must have access to that company;
+     *   * system-wide event (company_id NULL) -> administrators only.
+     *
+     * @param array<string,mixed> $eventRow
+     * @throws GoogleForbiddenException
+     */
+    public function assertCanPublishEvent(array $eventRow): void
+    {
+        $companyId = $eventRow['company_id'] ?? null;
+        if ($companyId === null) {
+            if (!$this->isAdmin()) {
+                throw new GoogleForbiddenException('Only administrators may publish system-wide events.');
+            }
+            return;
+        }
+        if ($this->isAdmin()) {
+            return;
+        }
+        if ($this->homeCompanyId() !== (int) $companyId) {
+            throw new GoogleForbiddenException('You do not have access to this company.');
+        }
+    }
+
+    /**
+     * The linked Session (when present) must belong to the same company as the
+     * event, so a mismatch can never leak another company's participants to
+     * Google. A null company on either side is treated as system-wide and must
+     * match on both sides.
+     *
+     * @throws GoogleForbiddenException
+     */
+    public function assertSessionMatchesEvent(?int $eventCompanyId, ?int $sessionCompanyId): void
+    {
+        if ($sessionCompanyId === null) {
+            return; // no linked Session
+        }
+        if ($eventCompanyId !== $sessionCompanyId) {
+            throw new GoogleForbiddenException('The linked Session belongs to a different company.');
+        }
+    }
 }

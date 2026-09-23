@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: In progress — **Phase 1 and Phase 2 delivered and verified** (sessions 030, 031). Phases 3–6 locked, awaiting implementation.
+> **Status**: In progress — **Phases 1, 2 and 3 delivered and verified** (sessions 030, 031, 032). Phases 4–6 locked, awaiting implementation.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -308,24 +308,43 @@ Build the outbound create path and the local↔Google event mapping.
 
 #### Tasks
 
-- [ ] **3.1** Add `Services/GoogleEventMapper.php` — local event → Google event payload. All-day: `start.date` / `end.date` with **`end.date` = local `end_date` + 1 day** (Google end is exclusive); no `timeZone`. Timed: `dateTime` as RFC3339 **with the IANA-zone offset** (via `DateTime`/`DateTimeZone`, DST-correct) **plus** `timeZone` = stored IANA zone.
-- [ ] **3.2** Add `Services/GoogleAttendeeResolver.php` — attendees from the linked Session's participants (internal users with an email + external attendees with an email, deduped), else the event `assignee` when it resolves to an email; never invent an attendee.
-- [ ] **3.3** Add `Services/GoogleEventSyncService.php` — `publish()`: require an active connection, insert the Google event with `conferenceDataVersion=1`, `sendUpdates=all`, a **stable** `meet_request_id` (UUID v4, generated once and stored) in `conferenceData.createRequest.requestId` + `conferenceSolutionKey.type = hangoutsMeet` for `meeting` category; persist the sync row.
-- [ ] **3.4** Handle a `pending` conference: store `sync_status='pending'` with the returned identifiers; a later `sync` re-reads the event and promotes to `synced` when the conference is `success`.
-- [ ] **3.5** Make `publish` idempotent — an existing sync row with a `google_event_id` returns the existing identifiers (`200`, no second Google event, no second conference).
-- [ ] **3.6** Add `Application/Commands/PublishCalendarEventToGoogle.php` and endpoint `api/google-calendar/commands/publish.php?id=`.
-- [ ] **3.7** Refresh the access token transparently before any Google call when `token_expires_at` has passed; on `invalid_grant`, mark `needs_reconnect` and return `401`.
+- [x] **3.1** Add `Services/GoogleEventMapper.php` — local event → Google event payload. All-day: `start.date` / `end.date` with **`end.date` = local `end_date` + 1 day** (Google end is exclusive); no `timeZone`. Timed: `dateTime` as RFC3339 **with the IANA-zone offset** (via `DateTime`/`DateTimeZone`, DST-correct) **plus** `timeZone` = stored IANA zone. Also derives the **deterministic** Google event id (`idFor(tenant, event)`) and builds a content-safe description.
+- [x] **3.2** Add `Services/GoogleAttendeeResolver.php` — attendees from the linked Session's participants only (internal users with a live email + external attendees with an email), trimmed/normalised, case-insensitively deduped, organiser excluded, invalid/missing/inactive excluded, deterministic order. A generic event with no Session publishes with no attendees.
+- [x] **3.3** Add `Services/GoogleEventSyncService.php` — `publish()`: require the actor's own active connection, reserve a short local lease, refresh once if needed, insert with `conferenceDataVersion=1`, `sendUpdates=all` only when there are attendees, a **stable** `meet_request_id` (UUID v4, generated once and stored) in `conferenceData.createRequest.requestId` + `conferenceSolutionKey.type = hangoutsMeet` for the `meeting` category, and the **deterministic** Google event id. Persist the sync row.
+- [x] **3.4** Handle a `pending` conference: store `sync_status='pending'` + `conference_status='pending'` with the returned identifiers; a later `publish` re-reads the event and promotes to `synced`/`success` when the conference is ready.
+- [x] **3.5** Make `publish` idempotent — an existing sync row with a `google_event_id` returns the existing identifiers (`200`, no second Google event, no second conference).
+- [x] **3.6** Add `Application/Commands/PublishCalendarEventToGoogle.php` and endpoints `api/google-calendar/commands/publish.php?id=` and `api/google-calendar/queries/event.php?id=` + `GoogleEventSyncResponse`.
+- [x] **3.7** Refresh the access token at most once before any Google call when `token_expires_at` has passed; on `invalid_grant` mark `needs_reconnect` and return `401`; a `401` after that one refresh stops immediately (no loop).
 
 #### Exit Criteria
 
-- [ ] A timed `meeting` event published to Google returns a `meet_url` and a Google event URL; the Meet request used a unique, stored `requestId`.
-- [ ] A timed event round-trips: a 09:30 `Africa/Johannesburg` event appears in Google at 09:30 local (not shifted), including across a DST boundary.
-- [ ] An all-day event keeps its inclusive local dates after round-trip (Google shows the last day, not the day after).
-- [ ] Publishing the same event twice yields **one** Google event and **one** conference.
-- [ ] A `pending` conference is stored as `pending` and promoted to `synced` on a subsequent sync.
-- [ ] A non-`meeting` event publishes **without** a conference and without a Meet URL.
-- [ ] Attendees are sent (`sendUpdates=all`); a Session-backed event includes the Session participants with emails.
-- [ ] With no active connection, publish returns `409 NOT_CONNECTED` (or the documented equivalent) without calling Google.
+- [x] A timed `meeting` event published to Google returns a `meet_url` and a Google event URL; the Meet request used a unique, stored `requestId`.
+- [x] A timed event round-trips: a 09:30 `Africa/Johannesburg` event appears in Google at 09:30 local (not shifted), including across a DST boundary (`America/New_York` EST vs EDT).
+- [x] An all-day event keeps its inclusive local dates after round-trip (Google shows the last day, not the day after); month-end and year-end roll correctly.
+- [x] Publishing the same event twice yields **one** Google event and **one** conference.
+- [x] A `pending` conference is stored as `pending` and promoted to `synced` on a subsequent publish.
+- [x] A non-`meeting` event publishes **without** a conference and without a Meet URL.
+- [x] Attendees are sent (`sendUpdates=all`); a Session-backed event includes the Session participants with emails.
+- [x] With no active connection, publish returns `409 NOT_CONNECTED` (as `GOOGLE_NOT_CONNECTED`) without calling Google.
+
+#### Phase 3 completion — 2026-09-24 (session 032)
+
+| Area | Result |
+| --- | --- |
+| Service suite | `api-incubator-os/tests/GoogleCalendarPhase3.php` — **108/108** |
+| HTTP endpoint suite | `api-incubator-os/tests/GoogleCalendarPhase3Http.ps1` — **26/26** |
+| PHP lint | all new/changed files clean |
+| Migration #24 | applied **twice** locally; enum + 2 columns + index; idempotent |
+| Phase 1 / Phase 2 service / Phase 2 HTTP | **62/62** / **73/73** / **23/23** |
+| Calendar regression | **65/65** |
+| Sessions regression | **106/106** |
+| Network | none — offline fake only |
+
+Failure-recovery scenarios proven: (1) Google fails before creation → mapping stays retryable with the lease released; (2) Google creates the event but the response is lost → retry recovers the existing event by deterministic id, no duplicate; (3) Google succeeds but local persistence fails → the lease is released and the retry recovers; (4) two concurrent publishes → the lease admits exactly one, Google called once; (5) conference stays `pending` → promoted to `synced` and never reported `fullySynced` while pending; (6) conference `failure` → event synced, no Meet URL, not fully synced; (7) retry recovers without duplication; (8) `sendUpdates=none` when there are no attendees, so no email is sent unnecessarily.
+
+Concurrency and integrity boundaries: a short local lease (`publish_claim_token` + `publish_claimed_at`, TTL 120s, stale-takeover) guards double-publishing; **no transaction is held across a Google call**; the Google event id is deterministic so remote success + local failure cannot duplicate; the conference request id is stable and stored once; the Google description carries only the Session subject and an authenticated Incubator OS link (never notes/SWOT/financial/decisions); attendee source is the linked Session only. New statuses: `conference_status` (`none|pending|success|failure`) tracked separately from `sync_status`, and `fullySynced()` is false while a conference is pending or failed.
+
+**Amendment to Architecture Decision 6.** The brief allowed the event `assignee` as an attendee fallback for Session-less events. Locked to the linked Session's participants ONLY — the resolver never infers attendees from unrelated users or the assignee, so a generic event publishes with no attendees.
 
 ---
 
@@ -480,6 +499,7 @@ api-incubator-os/
 │       ├── GoogleEventMapper.php
 │       ├── GoogleEventSyncService.php
 │       ├── GoogleLog.php
+│       ├── GoogleSessionContext.php
 │       ├── OAuthService.php
 │       ├── ReturnPathValidator.php
 │       ├── SecretRedactor.php
@@ -487,6 +507,7 @@ api-incubator-os/
 ├── capabilities/calendar/Contracts/
 │   └── GoogleEventSyncHook.php                     # interface only (no-op default)
 ├── api/google-calendar/
+│   ├── _bootstrap.php
 │   ├── queries/
 │   │   ├── connection.php
 │   │   └── event.php
@@ -499,12 +520,15 @@ api-incubator-os/
 │       └── unpublish.php
 ├── migrations/
 │   ├── 2026-09-24-google-calendar.sql              # run order #22
-│   └── 2026-09-24-google-calendar-phase2.sql       # run order #23
+│   ├── 2026-09-24-google-calendar-phase2.sql       # run order #23
+│   └── 2026-09-24-google-calendar-phase3.sql       # run order #24
 └── tests/
     ├── GoogleCalendar.ps1                          # endpoint suite (Phases 2+)
     ├── GoogleCalendarPhase1.php                    # foundation suite (delivered)
     ├── GoogleCalendarPhase2.php                    # OAuth service suite (delivered)
-    └── GoogleCalendarPhase2Http.ps1                # OAuth endpoint suite (delivered)
+    ├── GoogleCalendarPhase2Http.ps1                # OAuth endpoint suite (delivered)
+    ├── GoogleCalendarPhase3.php                    # publish service suite (delivered)
+    └── GoogleCalendarPhase3Http.ps1                # publish endpoint suite (delivered)
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts

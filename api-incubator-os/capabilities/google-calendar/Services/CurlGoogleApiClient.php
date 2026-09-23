@@ -91,15 +91,23 @@ final class CurlGoogleApiClient implements GoogleApiClient
         }
     }
 
-    public function insertEvent(string $calendarId, array $event, array $options = []): GoogleEventRef
+    public function insertEvent(string $calendarId, array $event, array $options = [], ?string $accessToken = null): GoogleEventRef
     {
         $query = $this->eventQuery($options, true);
         $url = self::CALENDAR_BASE . '/calendars/' . rawurlencode($calendarId) . '/events' . $query;
-        $body = $this->request('POST', $url, $event);
+        $body = $this->request('POST', $url, $event, $accessToken);
         return GoogleEventRef::fromArray($this->decode($body));
     }
 
-    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null): GoogleEventRef
+    public function getEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): GoogleEventRef
+    {
+        $query = $this->eventQuery($options, true);
+        $url = self::CALENDAR_BASE . '/calendars/' . rawurlencode($calendarId) . '/events/' . rawurlencode($eventId) . $query;
+        $body = $this->request('GET', $url, null, $accessToken);
+        return GoogleEventRef::fromArray($this->decode($body));
+    }
+
+    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null, ?string $accessToken = null): GoogleEventRef
     {
         $query = $this->eventQuery($options, true);
         $url = self::CALENDAR_BASE . '/calendars/' . rawurlencode($calendarId) . '/events/' . rawurlencode($eventId) . $query;
@@ -108,16 +116,16 @@ final class CurlGoogleApiClient implements GoogleApiClient
             // Optimistic concurrency: Google answers 412 when the event moved on.
             $headers[] = 'If-Match: ' . $etag;
         }
-        $body = $this->request('PATCH', $url, $event, null, $headers);
+        $body = $this->request('PATCH', $url, $event, $accessToken, $headers);
         return GoogleEventRef::fromArray($this->decode($body));
     }
 
-    public function deleteEvent(string $calendarId, string $eventId, array $options = []): void
+    public function deleteEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): void
     {
         $sendUpdates = (string) ($options['sendUpdates'] ?? 'none');
         $query = '?sendUpdates=' . rawurlencode($sendUpdates);
         $url = self::CALENDAR_BASE . '/calendars/' . rawurlencode($calendarId) . '/events/' . rawurlencode($eventId) . $query;
-        $this->request('DELETE', $url);
+        $this->request('DELETE', $url, null, $accessToken);
     }
 
     /**

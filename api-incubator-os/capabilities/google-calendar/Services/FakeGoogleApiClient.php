@@ -24,6 +24,17 @@ final class FakeGoogleApiClient implements GoogleApiClient
     public const RATE_LIMITED = 'rate_limited';
     public const SERVER_ERROR = 'server_error';
     public const INVALID_GRANT = 'invalid_grant';
+    /** 404 — the event id does not exist (used by getEvent). */
+    public const NOT_FOUND = 'not_found';
+    /** 409 duplicate — an insert used an id Google already holds. */
+    public const DUPLICATE = 'duplicate';
+    /**
+     * Google CREATES the event and then the response is lost (timeout). This is
+     * the "succeeded remotely but we never saw the answer" failure: the event is
+     * recorded, then a timeout is thrown so the caller must recover rather than
+     * create a duplicate.
+     */
+    public const CREATE_THEN_TIMEOUT = 'create_then_timeout';
 
     /** @var string[] queued outcomes for the next calls */
     private array $queue = [];
@@ -34,6 +45,8 @@ final class FakeGoogleApiClient implements GoogleApiClient
     private string $eventId;
     private int $etagCounter = 1;
     private bool $meetPending;
+    /** When true, a requested conference reports `failure` (event still created). */
+    private bool $meetFailure = false;
 
     /** Override the granted scope string returned by exchangeCode (test knob). */
     private ?string $scopeOverride = null;
@@ -42,10 +55,21 @@ final class FakeGoogleApiClient implements GoogleApiClient
 
     /** @var array<int,array<string,mixed>> recorded insert payloads */
     public array $inserted = [];
+    /** @var array<int,array<string,mixed>> recorded insert options (per call) */
+    public array $insertOptions = [];
     /** @var array<int,array<string,mixed>> recorded patch payloads */
     public array $patched = [];
     /** @var string[] recorded deleted event ids */
     public array $deleted = [];
+    /**
+     * Persisted events keyed by id, so getEvent can recompute an event a previous
+     * insert created (the fake is stateful within a single test process).
+     *
+     * @var array<string,array<string,mixed>>
+     */
+    public array $eventPayloads = [];
+    /** Number of insert calls that reached Google (before any thrown error). */
+    public int $insertCalls = 0;
     public int $revokeCalls = 0;
     public int $refreshCalls = 0;
     public int $exchangeCalls = 0;
@@ -83,6 +107,13 @@ final class FakeGoogleApiClient implements GoogleApiClient
         return $this;
     }
 
+    /** Test knob: a requested conference reports failure (the event is still created). */
+    public function setMeetFailure(bool $failure): self
+    {
+        $this->meetFailure = $failure;
+        return $this;
+    }
+
     /** Test knob: change the account email returned by userInfoEmail(). */
     public function setEmail(string $email): self
     {
@@ -114,6 +145,10 @@ final class FakeGoogleApiClient implements GoogleApiClient
                 throw GoogleApiErrorMapper::fromResponse(503, '');
             case self::INVALID_GRANT:
                 throw GoogleApiErrorMapper::fromResponse(400, '{"error":"invalid_grant"}');
+            case self::NOT_FOUND:
+                throw GoogleApiErrorMapper::fromResponse(404, '');
+            case self::DUPLICATE:
+                throw GoogleApiErrorMapper::fromResponse(409, '{"error":{"errors":[{"reason":"duplicate"}]}}');
         }
     }
 
@@ -166,47 +201,101 @@ final class FakeGoogleApiClient implements GoogleApiClient
         return true;
     }
 
-    public function insertEvent(string $calendarId, array $event, array $options = []): GoogleEventRef
+    public function insertEvent(string $calendarId, array $event, array $options = [], ?string $accessToken = null): GoogleEventRef
     {
+        $this->insertCalls++;
+        // Honour a deterministic id supplied by the caller, so a retried publish
+        // targets the SAME Google event rather than creating a second one.
+        $id = isset($event['id']) && (string) $event['id'] !== '' ? (string) $event['id'] : $this->eventId;
         $outcome = $this->shift();
+
+        // Faithful Google behaviour: inserting an id that already exists is a
+        // duplicate (409), regardless of the queue. This is what makes a retried
+        // publish recover instead of creating a second event.
+        if ($outcome === self::SUCCESS && isset($this->eventPayloads[$id])) {
+            $this->throwFor(self::DUPLICATE);
+        }
+
+        // A duplicate outcome means Google already holds this id: the caller must
+        // recover the existing event instead of creating a second one.
+        if ($outcome === self::DUPLICATE) {
+            $this->throwFor($outcome);
+        }
+
+        // CREATE_THEN_TIMEOUT: Google creates the event, then the response is lost.
+        // Record the event BEFORE throwing so a later getEvent/insert can recover it.
+        if ($outcome === self::CREATE_THEN_TIMEOUT) {
+            $this->eventPayloads[$id] = $event;
+            throw GoogleApiErrorMapper::timeout();
+        }
+
         if ($outcome !== self::SUCCESS) {
             $this->throwFor($outcome);
         }
+
         $this->inserted[] = $event;
-
-        $meet = null;
-        $conferenceId = null;
-        $status = 'success';
-        if (isset($event['conferenceData']['createRequest'])) {
-            if ($this->meetPending) {
-                $status = 'pending';
-            } else {
-                $meet = 'https://meet.google.com/fake-' . $this->eventId;
-                $conferenceId = 'fake-conference-' . $this->eventId;
-            }
-        }
-
-        return new GoogleEventRef(
-            eventId: $this->eventId,
-            etag: $this->nextEtag(),
-            htmlLink: 'https://calendar.google.com/event?eid=' . $this->eventId,
-            meetUrl: $meet,
-            conferenceId: $conferenceId,
-            conferenceStatus: $status,
-        );
+        $this->insertOptions[] = $options;
+        $this->eventPayloads[$id] = $event;
+        return $this->makeRef($id, $event);
     }
 
-    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null): GoogleEventRef
+    public function getEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): GoogleEventRef
     {
         $outcome = $this->shift();
         if ($outcome !== self::SUCCESS) {
             $this->throwFor($outcome);
         }
-        $this->patched[] = $event;
+        if (!isset($this->eventPayloads[$eventId])) {
+            throw GoogleApiErrorMapper::fromResponse(404, '');
+        }
+        // Recompute from the stored payload so a test can flip `meetPending` off
+        // between the insert and the read to simulate async conference success.
+        return $this->makeRef($eventId, $this->eventPayloads[$eventId]);
+    }
 
-        // A conflicting etag is only reported when the caller supplied one.
-        if ($etag !== null && $etag !== '' && $etag === '__stale__') {
-            throw GoogleApiErrorMapper::fromResponse(412, '');
+    /**
+     * Build the normalised ref for an event, honouring the meet knobs. A requested
+     * conference yields `pending`, `failure` or `success`; without a request the
+     * status is `none`. Pure: recomputed from the stored payload + current knobs,
+     * so a test can clear `meetPending` and a later read reports `success`.
+     *
+     * @param array<string,mixed> $event
+     */
+    private function makeRef(string $eventId, array $event): GoogleEventRef
+    {
+        $requested = isset($event['conferenceData']['createRequest']);
+
+        if (!$requested) {
+            return new GoogleEventRef(
+                eventId: $eventId,
+                etag: $this->nextEtag(),
+                htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
+                meetUrl: null,
+                conferenceId: null,
+                conferenceStatus: 'none',
+            );
+        }
+
+        if ($this->meetFailure) {
+            return new GoogleEventRef(
+                eventId: $eventId,
+                etag: $this->nextEtag(),
+                htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
+                meetUrl: null,
+                conferenceId: null,
+                conferenceStatus: 'failure',
+            );
+        }
+
+        if ($this->meetPending) {
+            return new GoogleEventRef(
+                eventId: $eventId,
+                etag: $this->nextEtag(),
+                htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
+                meetUrl: null,
+                conferenceId: null,
+                conferenceStatus: 'pending',
+            );
         }
 
         return new GoogleEventRef(
@@ -219,7 +308,40 @@ final class FakeGoogleApiClient implements GoogleApiClient
         );
     }
 
-    public function deleteEvent(string $calendarId, string $eventId, array $options = []): void
+    /** Test knob: stop treating requested conferences as pending (async promotion). */
+    public function setMeetPending(bool $pending): self
+    {
+        $this->meetPending = $pending;
+        return $this;
+    }
+
+    public function patchEvent(string $calendarId, string $eventId, array $event, array $options = [], ?string $etag = null, ?string $accessToken = null): GoogleEventRef
+    {
+        $outcome = $this->shift();
+        if ($outcome !== self::SUCCESS) {
+            $this->throwFor($outcome);
+        }
+        $this->patched[] = $event;
+
+        // A conflicting etag is only reported when the caller supplied one.
+        if ($etag !== null && $etag !== '' && $etag === '__stale__') {
+            throw GoogleApiErrorMapper::fromResponse(412, '');
+        }
+
+        // Merge the patch so a subsequent getEvent reflects the update.
+        $this->eventPayloads[$eventId] = array_merge($this->eventPayloads[$eventId] ?? [], $event);
+
+        return new GoogleEventRef(
+            eventId: $eventId,
+            etag: $this->nextEtag(),
+            htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
+            meetUrl: 'https://meet.google.com/fake-' . $eventId,
+            conferenceId: 'fake-conference-' . $eventId,
+            conferenceStatus: 'success',
+        );
+    }
+
+    public function deleteEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): void
     {
         $outcome = $this->shift();
         if ($outcome !== self::SUCCESS) {

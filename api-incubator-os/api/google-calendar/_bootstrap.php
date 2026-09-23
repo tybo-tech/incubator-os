@@ -24,6 +24,7 @@ include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/EncryptedP
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleTokenSet.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleEventRef.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleConnectionResponse.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleEventSyncResponse.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleApiClient.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleApiClientFactory.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleErrorResponder.php';
@@ -37,10 +38,16 @@ include_once __DIR__ . '/../../capabilities/google-calendar/Services/FakeGoogleA
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/ReturnPathValidator.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleAccessPolicy.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/OAuthService.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleEventMapper.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleSessionContext.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleAttendeeResolver.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleEventSyncService.php';
 
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleConnectionRepository.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleEventSyncRepository.php';
+
+include_once __DIR__ . '/../../capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php';
 
 /**
  * Decode a JSON request body into an array (never throws).

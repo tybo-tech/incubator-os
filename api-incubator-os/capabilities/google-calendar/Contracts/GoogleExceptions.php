@@ -40,6 +40,15 @@ final class GoogleApiException extends RuntimeException
     public const REASON_MALFORMED = 'malformed_response';
     public const REASON_TIMEOUT = 'timeout';
     public const REASON_NETWORK = 'network';
+    /** The Google resource does not exist (e.g. an event id we tried to recover). */
+    public const REASON_NOT_FOUND = 'not_found';
+    /**
+     * Google refused to create a resource because the deterministic id already
+     * exists. This is the RECOVERY signal: a previous publish reached Google but
+     * did not persist locally, so the existing event must be read back instead of
+     * creating a duplicate.
+     */
+    public const REASON_DUPLICATE = 'duplicate';
 
     public function __construct(
         string $message,
@@ -113,5 +122,34 @@ final class GoogleAccountMismatchException extends RuntimeException
     public function pendingEmail(): string
     {
         return $this->pendingEmail;
+    }
+}
+
+/**
+ * The acting user has no usable Google connection (none, or one that requires
+ * reconnecting). Publishing is refused without contacting Google.
+ */
+final class GoogleNotConnectedException extends RuntimeException
+{
+    public function __construct(string $message = 'Connect your Google Calendar before publishing.', private readonly string $connectionStatus = 'disconnected')
+    {
+        parent::__construct($message);
+    }
+
+    public function connectionStatus(): string
+    {
+        return $this->connectionStatus;
+    }
+}
+
+/**
+ * A publish is already in flight for this event (another caller holds the lease).
+ * The caller should retry shortly; Google was NOT contacted.
+ */
+final class GooglePublishInProgressException extends RuntimeException
+{
+    public function __construct(string $message = 'This event is already being published to Google. Try again in a moment.')
+    {
+        parent::__construct($message);
     }
 }
