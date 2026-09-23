@@ -46,3 +46,7 @@ Thumbs.db
 
 # Root-level QA screenshots
 /*.png
+
+# Ad-hoc notes that may hold credentials/secrets - never commit
+/docs/*notes.md
+/notes*.md

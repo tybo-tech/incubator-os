@@ -1,5 +1,10 @@
 # Sprint-007 — Production Deployment Verification
 
+> **Superseded for deployment purposes by [`sprint-007-009-production-deployment.md`](sprint-007-009-production-deployment.md)**
+> (the consolidated 007/008/009 package). This file remains the historical record of the 2026-09-14/16
+> Sprint-007 deployment; **do not assume those migrations are still applied** — the consolidated
+> preflight re-measures live state.
+
 **Date:** 2026-09-16 (session 025)
 **Commit deployed:** `2fa0052`
 **Target:** `https://app.rbttacesd.co.za` · API `https://app.rbttacesd.co.za/api/api-nodes/` · DB `rbttaces_api` · server root `/app.rbttacesd.co.za`

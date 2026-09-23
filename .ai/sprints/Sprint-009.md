@@ -19,6 +19,7 @@
 | Browser E2E | All flows verified, **zero console errors** |
 | Production build | Clean, no budget warnings |
 | Docs | `docs/session-api.md`, `.ai/sessions/028-2026-09-23.md` |
+| Deployment package | `docs/sprint-007-009-production-deployment.md` + `docs/deployment/` (preflight, integrity, manifests, smoke tests, rollback) — prepared, **not executed**; hold-point at production preflight |
 
 Deferred (unchanged from plan): Google/Outlook OAuth, external sync, webhooks,
 recurrence, reminders, transcription, AI summaries, email notifications,
