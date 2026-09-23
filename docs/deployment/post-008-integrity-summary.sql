@@ -21,6 +21,7 @@
 -- READ-ONLY. Writes nothing.
 -- =====================================================================
 
+SELECT * FROM (
 SELECT 'A. STRUCTURE (expect 1)' AS section, 'metric_type_accounts' AS item,
   (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='metric_type_accounts') AS value
 UNION ALL SELECT 'A. STRUCTURE (expect 1)', 'achievements',
@@ -79,4 +80,5 @@ UNION ALL SELECT 'D. ROW COUNTS (approx)', 'achievement_evidence',
 UNION ALL SELECT 'D. ROW COUNTS (approx)', 'calendar_events',
   IFNULL((SELECT MAX(TABLE_ROWS) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='calendar_events'), -1)
 UNION ALL SELECT 'D. ROW COUNTS (approx)', 'calendar_event_links',
-  IFNULL((SELECT MAX(TABLE_ROWS) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='calendar_event_links'), -1);
+  IFNULL((SELECT MAX(TABLE_ROWS) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='calendar_event_links'), -1)
+) AS incubator_report;

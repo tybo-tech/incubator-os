@@ -265,11 +265,14 @@ In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do 
 > statements. A benign warning *"#1681 Integer display width is deprecated"* may also appear on
 > MySQL 8; it is informational, not an error. Only a red `#NNNN` error matters.
 
-> **If a `-summary.sql` file "returns no results":** phpMyAdmin shows only the **last** statement's
-> grid. These files are deliberately a **single** `UNION ALL` statement, so a stray `;` anywhere -
-> including inside a `--` comment - splits them into fragments and the visible grid is the empty
-> tail. The files are audited to contain exactly one semicolon (the terminator) and none in comments.
-> If you edit one, keep that invariant.
+> **If a `-summary.sql` file "returns no results" or a blank grid:** phpMyAdmin shows only the **last**
+> statement's grid, and its row counter cannot handle a bare `UNION ALL` whose SELECT list contains
+> subqueries (it reports `Showing rows 0 - -1 (0 total)`, which renders blank on some phpMyAdmin
+> versions). These files are therefore **one** statement, wrapped as
+> `SELECT * FROM ( … UNION ALL … ) AS incubator_report;` so phpMyAdmin sees an ordinary select and
+> paginates normally. Two invariants keep this working: exactly **one** semicolon (the terminator), and
+> **none** inside `--` comments. If you edit one, preserve the wrapper, the single terminator and the
+> absence of comment semicolons.
 
 ### Step 8 - Verify each migration before continuing
 

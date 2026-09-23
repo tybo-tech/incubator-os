@@ -14,6 +14,7 @@
 -- READ-ONLY. Writes nothing. Reads no protected file.
 -- =====================================================================
 
+SELECT * FROM (
 SELECT 'A. ENVIRONMENT' AS section, 'database' AS item, DATABASE() AS value
 UNION ALL SELECT 'A. ENVIRONMENT', 'mysql_version', VERSION()
 UNION ALL SELECT 'A. ENVIRONMENT', 'default_engine', @@default_storage_engine
@@ -197,4 +198,5 @@ UNION ALL SELECT 'J. VERDICT', 'any_partial_blocker',
                                 'session_decisions','session_entity_links','session_activities')) BETWEEN 1 AND 6)
       THEN 'YES - STOP AND REPORT'
     ELSE 'NO'
-  END;
+  END
+) AS incubator_report;
