@@ -71,7 +71,7 @@ UNION ALL SELECT 'C. 007 READINESS', 'unresolved_account_rows',
 UNION ALL SELECT 'C. 007 READINESS', 'companies_with_export_accounts',
   (SELECT COUNT(DISTINCT company_id) FROM company_accounts WHERE account_type='export_revenue' AND is_active=1)
 
--- ---- Row counts (evidence; -1 = table absent) ----
+-- ---- Row counts (evidence). -1 means the table is absent. ----
 UNION ALL SELECT 'D. ROW COUNTS (approx)', 'achievements',
   IFNULL((SELECT MAX(TABLE_ROWS) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='achievements'), -1)
 UNION ALL SELECT 'D. ROW COUNTS (approx)', 'achievement_evidence',

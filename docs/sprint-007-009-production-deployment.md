@@ -265,6 +265,12 @@ In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do 
 > statements. A benign warning *"#1681 Integer display width is deprecated"* may also appear on
 > MySQL 8; it is informational, not an error. Only a red `#NNNN` error matters.
 
+> **If a `-summary.sql` file "returns no results":** phpMyAdmin shows only the **last** statement's
+> grid. These files are deliberately a **single** `UNION ALL` statement, so a stray `;` anywhere -
+> including inside a `--` comment - splits them into fragments and the visible grid is the empty
+> tail. The files are audited to contain exactly one semicolon (the terminator) and none in comments.
+> If you edit one, keep that invariant.
+
 ### Step 8 - Verify each migration before continuing
 
 Run the integrity checker **for the stage you are at** (both are single-grid `UNION ALL` files; every

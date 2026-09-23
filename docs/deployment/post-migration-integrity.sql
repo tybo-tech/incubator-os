@@ -9,7 +9,7 @@
 --
 -- Interpret the output:
 --   * "EXPECTED: 0 rows" queries  -> any returned row is a defect. STOP and
---     report it; do NOT deploy code on top of a broken schema.
+--     report it, and do NOT deploy code on top of a broken schema.
 --   * "INFO" queries -> record the numbers as evidence of the deployed state.
 -- =====================================================================
 

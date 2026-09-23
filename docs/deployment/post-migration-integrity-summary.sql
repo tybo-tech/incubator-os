@@ -10,7 +10,7 @@
 --   2. SQL tab -> paste this whole file -> Go.
 --   3. One grid appears: section | item | value.
 --   4. Any item whose name ends in "(expect 0)" must be 0. Anything else is a
---      defect - STOP and report; do not deploy code on a broken schema.
+--      defect - STOP and report, then do not deploy code on a broken schema.
 --
 -- NOTE: run this AFTER **both** migrations. It reads the session tables
 -- directly, so it requires 008 AND 009 to be applied.

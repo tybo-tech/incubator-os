@@ -21,7 +21,7 @@
 --   4. Record every result grid verbatim and hand it back for review.
 --
 -- HARD RULE: a migration classified PARTIAL - STOP or PRESENT BUT INVALID -
--- STOP must NOT be re-run blindly. Stop and report; a partial schema needs a
+-- STOP must NOT be re-run blindly. Stop and report - a partial schema needs a
 -- decision (reconcile or restore), never a blind import.
 --
 -- This file never writes, never drops, never alters and never reads a
@@ -47,7 +47,7 @@ SELECT
 -- =====================================================================
 -- SECTION B - Migration classification matrix
 --   MISSING | PARTIAL - STOP | PRESENT | PRESENT BUT INVALID - STOP
---   exp_* are the object counts this preflight EXPECTS; got_* are live.
+--   exp_* are the object counts this preflight EXPECTS and got_* are live.
 -- =====================================================================
 SELECT '007a-results-achievements' AS migration,
   3 AS exp_tables,
@@ -320,4 +320,4 @@ WHERE TABLE_SCHEMA=@db AND TABLE_NAME='gps_target_metrics'
     'direction','calculation_method','maintain_tolerance_value','maintain_tolerance_unit',
     'calculation_version')
 ORDER BY COLUMN_NAME;
--- Expect 9 rows when 007a is PRESENT; fewer when MISSING/PARTIAL.
+-- Expect 9 rows when 007a is PRESENT, fewer when MISSING/PARTIAL.
