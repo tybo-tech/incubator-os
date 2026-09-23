@@ -498,20 +498,63 @@ the manual steps in section 4.
 | 009 `2026-09-23-sessions.sql` | ✅ **APPLIED to production** (7 tables created; normal "empty result set" per DDL; `FOREIGN_KEY_CHECKS` restored; no red errors) |
 | 009 verification | ✅ **VERIFIED**: `x009_sessions=1`, `x009_child_tables=6`, `x009_fk_company=1`, `x009_fk_event=1`; **all `inv_*` = 0** (`inv_dup_snapshot`, `inv_orphan_evidence`, `inv_cross_company`, `inv_bad_time_shape`, `inv_sessions_missing_tenant`, `inv_orphan_agenda/notes/decisions/links/activities`); `info_unresolved_rows=100`, `info_export_account_companies=0` |
 | **All migrations** | ✅ **COMPLETE** - 007 present, 008 applied+verified, 009 applied+verified. No partial blocker. |
-| Backend upload (Layers 1-7) | ⏳ **NEXT** - see section 5 + [`backend-manifest-sha256.md`](deployment/backend-manifest-sha256.md) |
-| Auth/Calendar/Sessions smoke tests | ⏳ pending (after backend upload) |
-| Angular deploy | ⏳ pending (last) |
-| Full smoke + evidence | ⏳ pending |
+| Backend upload (Layers 1-7) | ✅ **DONE (operator, 2026-09-23)** - proven by proxy: new endpoints answer `401` when logged out (not `404`), and return correct payloads when authenticated (section 11.2) |
+| Auth/Calendar/Sessions smoke tests | ✅ **PASSED on production** (section 11.2) - API A1-A6, Calendar C3-C9, Sessions D1-D10 |
+| Angular deploy | ✅ **DONE, byte-verified** - live `dist/` matches the production build 73/73 by SHA-256 (section 11.2) |
+| UI render (Sessions + Calendar) | ✅ **PASSED** - both pages render with live data |
+| Full smoke + evidence | ✅ **COMPLETE** (section 11.2); screenshot in `deployment/evidence/` |
 
-**Next action for the operator:** all migrations are done. Proceed to the **backend file upload**.
+### 11.2 Production verification (2026-09-23, Playwright against `https://app.rbttacesd.co.za`)
 
-1. **Back up** the production files that will be replaced (section 4, Step 3): the affected
-   `api/api-nodes/` subfolders, `api/models/`, `api/services/`, `api/helpers/`, and `api/capabilities/`.
-2. Upload the backend files in Layer 1 → Layer 7 order per
-   [`backend-manifest-sha256.md`](deployment/backend-manifest-sha256.md), into the production `/api/`
-   folder (path mapping in section 5). Do **not** overwrite the files in the never-upload list.
-3. Run the authentication smoke tests in [`smoke-tests.md`](deployment/smoke-tests.md) before touching
-   the frontend.
+**Frontend - byte-level proof.** All **73** files of `dist/nodes/browser/` were fetched from the live
+site and hashed in-browser: **73/73 match the build**, zero missing, zero extra.
+
+- `main-SNF5PEQD.js` = `dc839cd9…0d6264` ✅
+- `chunk-ZEVSRBDO.js` (Sessions, 009) = `9553ed7f…0208ae` ✅
+- `chunk-43JXXTII.js` (Calendar, 008/009) = `58320f70…1fb1a5` ✅
+- `index.html` = `aecbc510…0da0b2b`, `styles-XAC6LFX5.css` = `85f9d50d…4e9a343ab` ✅
+  (the shipped build is a later rebuild than the original manifest doc; prod matches the current `dist/`)
+
+**Backend - deployment proof.** New 007/008/009 routes answer `401` (deployed) rather than `404` (absent)
+when logged out, and return correct data when authenticated. No response body leaked a SQLSTATE or stack
+trace.
+
+| # | Check | Result |
+|---|---|---|
+| A1 | calendar list logged out | `401` ✅ |
+| A2 | sessions list logged out | `401` ✅ |
+| A3 | sessions list, no `company_id` | `422` "A company is required." ✅ |
+| A5 | sessions upcoming, no range | `422` ✅ |
+| A6 | no SQLSTATE / stack trace | clean JSON ✅ |
+| C3 | create timed meeting event | `201`, event persisted ✅ |
+| C4 | edit event | `200`, `version` 1→2 ✅ |
+| C5 | delete then re-delete | `200`, then `404` ✅ |
+| C6 | all-day event on the 15th, reload | still `2026-09-15` (no off-by-one) ✅ |
+| C7 | timed event timezone, reload | `09:30` + `Africa/Johannesburg` preserved ✅ |
+| C9 | SA creates system-wide event | `201`, `companyId = null` ✅ |
+| D1 | create Session (atomic w/ event) | `201`, `PREPARING`, `calendarEventId = 6` ✅ |
+| D2 | invalid schedule | `422`, **no Session and no orphan event** ✅ |
+| D3/D4 | start then complete | `IN_PROGRESS` → `COMPLETED`, timestamps set ✅ |
+| D5 | mutate a COMPLETED Session | `409 SESSION_FROZEN` (agenda + notes) ✅ |
+| D6 | delete a linked event | `409 SESSION_LINKED`; event survives ✅ |
+| D7 | cancel a Session with reason | `CANCELLED`; linked event became `cancelled` ✅ |
+| D10 | `PREPARING → COMPLETED` | `409 SESSION_INVALID_TRANSITION` ✅ |
+
+**UI render.** `/company/99/sessions` renders (nav link, stat cards, tabs, 1 Completed) and
+`/company/99/calendar` renders September 2026 with the linked Session event.
+
+**Cleanup.** All disposable `ZZ-DEPLOY-CHECK-*` calendar events were deleted. The two Session-linked
+events (`6`, `7`) correctly refuse deletion (`409 SESSION_LINKED`) and remain, as designed. Two
+disposable Sessions remain in terminal states (`1` COMPLETED, `2` CANCELLED) - Sessions have no delete
+endpoint by design.
+
+**Not covered in this run (needs a non-admin production account):** A4/C8/D8/D9 cross-company and
+Director-only checks (`403` / note isolation). The local dev accounts are local-only; provide a real
+non-admin production account to complete these.
+
+> **phpMyAdmin note discovered in production:** if a query reports "empty result set" (even `SELECT 1`),
+> **refresh the phpMyAdmin page** and re-run - the SQL editor's hidden field sometimes fails to sync,
+> which makes it submit nothing. This is an editor glitch, not a MySQL or data problem.
 
 > **phpMyAdmin note discovered in production:** if a query reports "empty result set" (even `SELECT 1`),
 > **refresh the phpMyAdmin page** and re-run - the SQL editor's hidden field sometimes fails to sync,
