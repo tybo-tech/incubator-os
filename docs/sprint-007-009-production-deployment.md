@@ -494,7 +494,7 @@ the manual steps in section 4.
 | Preflight | ✅ accepted (section 3.2b) |
 | 007a / 007b | ✅ skipped (already PRESENT) |
 | **008 `2026-09-19-calendar-events.sql`** | ✅ **APPLIED to production** (DDL reported the normal "empty result set"; benign `#1681` deprecation warning) |
-| 008 verification | ⏳ pending. Earlier attempts failed: (a) the *full* checker reads session tables before 009 exists (`#1146`), and (b) long `UNION ALL` grids render blank on the production phpMyAdmin 5.2.3 / long pastes get mangled. **Fixed** - use the compact single-row [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql) for this stage. |
+| 008 verification | ✅ **VERIFIED on production** via [`preflight-compact.sql`](deployment/preflight-compact.sql): `t_007a=3`, `c_007a=1`, `i_007b=1`, `t_008=2`, `chk_008=1`, `t_009=0`, `fk_009=0`, `unresolved_rows=100`, `export_account_companies=0`, MySQL `8.0.46-cll-lve`. Note: the earlier "empty result" failures were a phpMyAdmin tab/session glitch, resolved by refreshing the page. |
 | 009 `2026-09-23-sessions.sql` | ⏳ pending (after the 008 verification passes) |
 | 009 verification | ⏳ pending ([`verify-all-compact.sql`](deployment/verify-all-compact.sql)) |
 | Backend upload (Layers 1-7) | ⏳ pending |
@@ -502,7 +502,11 @@ the manual steps in section 4.
 | Angular deploy | ⏳ pending |
 | Full smoke + evidence | ⏳ pending |
 
-**Next action for the operator:** run [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql)
-(compact, single row). All `x…` columns must be `1` and all `inv_…` columns `0`. If clean, apply
-`2026-09-23-sessions.sql`, then run [`verify-all-compact.sql`](deployment/verify-all-compact.sql).
+**Next action for the operator:** apply `2026-09-23-sessions.sql`, then run
+[`verify-all-compact.sql`](deployment/verify-all-compact.sql) (compact, single row). All `x…`
+columns must be `1`, `x009_child_tables` must be `6`, and all `inv_…` columns must be `0`.
+
+> **phpMyAdmin note discovered in production:** if a query reports "empty result set" (even `SELECT 1`),
+> **refresh the phpMyAdmin page** and re-run - the SQL editor's hidden field sometimes fails to sync,
+> which makes it submit nothing. This is an editor glitch, not a MySQL or data problem.
 
