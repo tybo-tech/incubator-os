@@ -147,39 +147,55 @@ It reports, in order:
 | 007 already deployed | PRESENT | PRESENT | MISSING | MISSING |
 | Fully current | PRESENT | PRESENT | PRESENT | PRESENT |
 
-### 3.2a CONFIRMED live state (from the operator's 2026-09-23 export)
+### 3.2a DRY RUN against a copy of the production data (local)
 
-The operator exported the production database (`rbttaces_api (14).sql`, MySQL **8.0.46-cll-lve**)
-and it was inspected **locally in a throwaway scratch database** - no production server was
-contacted. Findings:
+Before the live preflight, the operator exported the production database
+(`rbttaces_api (14).sql`, MySQL 8.0.46) and it was inspected **locally in throwaway scratch
+databases** - no production server was contacted. Migrations **008 and 009 were applied to the
+scratch copy**, succeeded with exit 0, were idempotent on the second run, and every post-migration
+integrity invariant returned **0**. This proved the two pending migrations are safe against the real
+production data shapes before touching production.
 
-| Migration | Live production classification | Action |
+### 3.2b LIVE PREFLIGHT RESULT (operator, phpMyAdmin, 2026-09-23) - the binding record
+
+The operator ran [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql)
+against **production `rbttaces_api`** in phpMyAdmin. It returned 39 rows, one grid. The decisive rows:
+
+| Section | Item | Value |
 |---|---|---|
-| 007a `results-achievements` | **PRESENT** (3 tables, 25 columns, 3 FKs, 9 `gps_target_metrics` columns) | **SKIP** |
-| 007b `achievements-snapshot-guard` | **PRESENT** (`uq_evidence_metric_snapshot`) | **SKIP** |
-| 008 `calendar-events` | **MISSING** | **APPLY** |
-| 009 `sessions` | **MISSING** | **APPLY (after 008)** |
+| A. ENVIRONMENT | database | `rbttaces_api` |
+| A. ENVIRONMENT | mysql_version | `8.0.46-cll-lve` |
+| A. ENVIRONMENT | mysql_8_0_16_ok | **YES** |
+| B. 007a RESULTS/ACHIEVEMENTS | status | **PRESENT - skip 007a** |
+| C. 007b SNAPSHOT GUARD | status | **PRESENT - skip 007b** |
+| D. 008 CALENDAR | status | **MISSING - safe to apply 008** |
+| E. 009 SESSIONS | status | **MISSING - safe to apply 009 (AFTER 008)** |
+| E. 009 SESSIONS | calendar_before_sessions | **OK** |
+| F. PREREQUISITES | companies / users / gps_targets / metric_types / company_accounts / company_financial_yearly_stats | 131 / 106 / 63 / 20 / 91 / 173 |
+| G. 007 READINESS | unresolved_account_rows | **100** |
+| G. 007 READINESS | companies_with_unresolved_rows | **62** |
+| G. 007 READINESS | export_account_rows | **0** |
+| G. 007 READINESS | companies_with_export_accounts | **0** |
+| H. EXISTING NEW-TABLE DATA | achievements | **0** |
+| H. EXISTING NEW-TABLE DATA | achievement_evidence | **0** |
+| H. EXISTING NEW-TABLE DATA | metric_type_accounts | 5 |
+| H. EXISTING NEW-TABLE DATA | calendar_events / sessions | **-1 (do not exist)** |
+| I. COLLISIONS | non_innodb_or_non_table_objects | **0** |
+| J. VERDICT | any_partial_blocker | **NO** |
 
-Additional verified facts:
+**Verdict accepted.** The live grid matches the export inspection exactly, with one benign drift:
 
-* MySQL **8.0.46** on production â†’ meets the 8.0.16+ requirement **YES**.
-* Prerequisites: companies 131, users 106, gps_targets 63, metric_types 20, company_accounts 91,
-  company_financial_yearly_stats 173.
-* **Sprint 007 readiness (measured live):** `unresolved_account_rows` = **100** across
-  **62** companies; `export_account_rows` = **0** â†’ **0** companies with export accounts.
-  (The historical record said ~105; production now measures 100. The ~105 figure is confirmed as
-  approximate. Revenue stays non-authoritative for combined `REVENUE_TOTAL` where export accounts
-  are absent - nothing is repaired.)
-* Seeded bindings present: **5** (REVENUE_TOTAL Ã—2, REVENUE_EXPORT Ã—1, REVENUE_ANNUAL Ã—2).
-* Existing data: `achievements` = 1 row (company 120, `unverified`, id 1, target 149),
-  `achievement_evidence` = 0. **No verified snapshot exists** â†’ rollback of 007 is still clean.
-* No collisions; all canonical objects are InnoDB base tables.
-* The production 007 DDL matches the migration exactly (no drift).
+> **Drift noted:** the export showed `achievements` = 1 (company 120, `unverified`, no evidence);
+> the live preflight shows **0**. The single unverified achievement was removed between export and
+> preflight (normal application use). It had **no verified snapshot**, so this changes nothing:
+> there is still **no verified achievement or evidence in production**. Rollback of 007 remains clean.
 
-**Migrations were then applied to the scratch copy of the production data** (local, throwaway) and
-both 008 and 009 succeeded with exit 0, were idempotent on the second run, and the post-migration
-integrity invariants all returned **0**. This is a dry run against real production data shapes, not
-a production action.
+**Result: the hold-point is cleared for the approved actions below - but nothing has been executed.**
+No migration has been applied to production and no file has been uploaded. Execution is the manual
+operator step (section 4).
+
+> **Approved actions:** apply `008` then `009` (run order #20, #21). **Skip** `007a` and `007b`
+> (already PRESENT). Proceed to backend upload only after both migrations verify.
 
 > **Do not rely on the historical record.** The 007 tables were counted live here; the historical
 > record is only corroboration.
@@ -233,13 +249,13 @@ a production action.
 - Otherwise continue with the migrations classified `MISSING`, in locked order.
 
 ### Step 7 - Apply only the missing migrations, in locked order
-For each migration whose preflight classification is `MISSING`:
+**For the confirmed production state (section 3.2b), the required actions are exactly:**
 
 ```
-1. 2026-09-15-results-achievements.sql         -> only if 007a = MISSING
-2. 2026-09-16-achievements-snapshot-guard.sql  -> only if 007b = MISSING (never before 007a PRESENT)
-3. 2026-09-19-calendar-events.sql              -> only if 008 = MISSING
-4. 2026-09-23-sessions.sql                     -> only if 009 = MISSING (after 008 PRESENT)
+1. 2026-09-15-results-achievements.sql         -> SKIP (007a already PRESENT)
+2. 2026-09-16-achievements-snapshot-guard.sql  -> SKIP (007b already PRESENT)
+3. 2026-09-19-calendar-events.sql              -> APPLY  (run order #20)
+4. 2026-09-23-sessions.sql                     -> APPLY  (run order #21, only after #20 PRESENT)
 ```
 
 In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do one at a time.
@@ -408,10 +424,23 @@ Stop immediately and report if any of these occur:
 
 ---
 
-## 11. Remaining production hold-point
+## 11. Production hold-point status
 
-**Awaiting user-provided production preflight results.**
+**Preflight: RECEIVED AND ACCEPTED (2026-09-23).** See section 3.2b. Verdict: `any_partial_blocker = NO`.
 
-Until the preflight grids from section 3 are returned and reviewed, no migration is approved and no file
-is approved for upload.
+| Migration | Decision |
+|---|---|
+| 007a `results-achievements` | **SKIP** (already PRESENT) |
+| 007b `achievements-snapshot-guard` | **SKIP** (already PRESENT) |
+| 008 `calendar-events` | **APPLY** |
+| 009 `sessions` | **APPLY (after 008)** |
+
+**Nothing has been executed.** No migration has been applied to production and no file has been
+uploaded. The remaining hold-point is **the operator's go-ahead to execute the manual steps in
+section 4** (backup → apply 008 → verify → apply 009 → verify → upload backend → auth smoke tests →
+deploy Angular → full smoke tests).
+
+> Prerequisite before applying 008: back up `rbttaces_api` and every file that will be replaced.
+> Then apply only 008 and 009, in that order, verifying each with
+> [`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql).
 
