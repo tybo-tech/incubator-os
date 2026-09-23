@@ -1,0 +1,10 @@
+SELECT DATABASE() AS db, VERSION() AS mysql_version,
+ (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('metric_type_accounts','achievements','achievement_evidence')) AS t_007a,
+ (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='gps_target_metrics' AND COLUMN_NAME='calculation_version') AS c_007a,
+ (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='achievement_evidence' AND INDEX_NAME='uq_evidence_metric_snapshot') AS i_007b,
+ (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('calendar_events','calendar_event_links')) AS t_008,
+ (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='chk_cal_time_shape') AS chk_008,
+ (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('sessions','session_participants','session_agenda_items','session_notes','session_decisions','session_entity_links','session_activities')) AS t_009,
+ (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_sessions_event') AS fk_009,
+ (SELECT COUNT(*) FROM company_financial_yearly_stats WHERE account_id IS NULL) AS unresolved_rows,
+ (SELECT COUNT(DISTINCT company_id) FROM company_accounts WHERE account_type='export_revenue' AND is_active=1) AS export_account_companies;

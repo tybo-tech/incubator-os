@@ -105,19 +105,41 @@ because the Calendar and Sessions screens call the new endpoints immediately. Se
 
 ## 3. Read-only production preflight
 
-**Primary file (use this one):** [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql)
-**Full-detail file:** [`preflight-readonly.sql`](deployment/preflight-readonly.sql)
+**Preflight was already run and ACCEPTED on 2026-09-23** (see section 3.2b) - verdict
+`any_partial_blocker = NO`. The files below remain for re-running or for a fresh environment.
 
-> **phpMyAdmin shows only the last statement's result grid in the SQL tab.** If you paste a
-> multi-statement script you may see nothing. `preflight-summary-readonly.sql` is therefore a
-> **single `UNION ALL` statement** that always renders one grid (`section | item | value`), with a
-> final `J. VERDICT` block that gives the action per migration. Use it.
-> The full-detail file is for operators who can run each statement separately.
+| File | Use |
+|---|---|
+| [`preflight-compact.sql`](deployment/preflight-compact.sql) | **MOST RELIABLE on the production phpMyAdmin** - a single-line result row (one `SELECT`, no `UNION ALL`). Use this. |
+| [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql) | Longer single-`UNION ALL` grid (`section | item | value`); works, but the long paste is easier to corrupt. |
+| [`preflight-readonly.sql`](deployment/preflight-readonly.sql) | Full-detail, multi-statement (run each statement separately). |
 
-Run it in phpMyAdmin against `rbttaces_api` **before any change**. It is entirely read-only and
-self-guarded (reads of not-yet-created tables degrade to a "missing" note instead of erroring).
+> **phpMyAdmin paste reliability - read this.** The production phpMyAdmin (5.2.3) is fragile with
+> long multi-row `UNION ALL` scripts, and pasting a long file from a chat message can truncate or
+> mangle it. The **single-row** files (`preflight-compact.sql`, `verify-007-008-compact.sql`,
+> `verify-all-compact.sql`) are one short `SELECT` that renders as one horizontal row - they are the
+> primary path. If a long grid still shows nothing:
+> 1. Make sure the file is the **whole** statement (ends with exactly one `;`) and no line was lost.
+> 2. Prefer the compact file.
+> 3. On phpMyAdmin, "SQL" tab -> paste -> **Go**; the result appears under *"Showing rows ..."*.
+>    A blank area with "Query executed successfully" but no grid usually means the statement was
+>    truncated or split.
 
-It reports, in order:
+### 3.0 The compact files
+
+| File | When | Expect |
+|---|---|---|
+| [`preflight-compact.sql`](deployment/preflight-compact.sql) | Before any change | `t_007a=3`, `c_007a=1`, `i_007b=1`, `t_008=2`, `chk_008=1`, `t_009=7/0`, `fk_009=1/0` |
+| [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql) | After applying **008**, before 009 | `x007a_*=1`, `x007b=1`, `x008_*=1`, all `inv_*=0` |
+| [`verify-all-compact.sql`](deployment/verify-all-compact.sql) | After **009** | all `x…=1`, `x009_child_tables=6`, all `inv_*=0` |
+
+Each returns **one row** with columns whose prefixes are self-describing (`x…` = object exists,
+`inv_…` = an invariant that must be 0, `info_…` = informational).
+
+#### Full preflight detail (the long grid)
+
+Run the long form against `rbttaces_api` **before any change**. It is read-only and self-guarded
+(reads of not-yet-created tables degrade to a note instead of erroring). It reports:
 
 | Section | Reports |
 |---|---|
@@ -238,9 +260,8 @@ operator step (section 4).
 - Record the preflight output (section 3) verbatim.
 
 ### Step 5 - Run the read-only preflight
-- Run [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql) in phpMyAdmin
-  (one grid; the `J. VERDICT` rows give the action per migration).
-- Save the grid.
+- Run [`preflight-compact.sql`](deployment/preflight-compact.sql) in phpMyAdmin (one result row).
+- Save the row.
 
 ### Step 6 - Decide (HARD HOLD-POINT)
 - If MySQL version < 8.0.16 â†’ **STOP.**
@@ -268,21 +289,24 @@ In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do 
 > **If a `-summary.sql` file "returns no results" or a blank grid:** phpMyAdmin shows only the **last**
 > statement's grid, and its row counter cannot handle a bare `UNION ALL` whose SELECT list contains
 > subqueries (it reports `Showing rows 0 - -1 (0 total)`, which renders blank on some phpMyAdmin
-> versions). These files are therefore **one** statement, wrapped as
-> `SELECT * FROM ( … UNION ALL … ) AS incubator_report;` so phpMyAdmin sees an ordinary select and
-> paginates normally. Two invariants keep this working: exactly **one** semicolon (the terminator), and
-> **none** inside `--` comments. If you edit one, preserve the wrapper, the single terminator and the
-> absence of comment semicolons.
+> versions). **Use the compact single-row files instead** (`verify-007-008-compact.sql`,
+> `verify-all-compact.sql`) - they are one short `SELECT` with no `UNION ALL` and always render.
+> (The `-summary.sql` files are also wrapped as `SELECT * FROM ( … ) AS incubator_report;`; if you
+> edit them, keep exactly **one** semicolon, none in comments, and the wrapper.)
 
 ### Step 8 - Verify each migration before continuing
 
-Run the integrity checker **for the stage you are at** (both are single-grid `UNION ALL` files; every
-`(expect 0)` row must be 0, every `(expect 1)` row must be 1):
+Run the **compact** verifier for the stage you are at (single result row; every `inv_…` column must
+be `0`, every `x…` column must be `1`):
 
 | After applying | Run this file | Why |
 |---|---|---|
-| **008** (calendar), before 009 | [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql) | The full checker reads the session tables, which 009 has not created yet - it would fail with `#1146`. Stage 1 checks only the 007 + 008 objects. |
-| **009** (sessions), after both | [`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql) | Adds the session structure + invariants. |
+| **008** (calendar), before 009 | [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql) | Covers only 007 + 008. The all-in-one checker reads the session tables, which 009 has not created yet (would fail `#1146`). |
+| **009** (sessions), after both | [`verify-all-compact.sql`](deployment/verify-all-compact.sql) | Adds the session structure + invariants. |
+
+Longer-grid alternatives (if you prefer the `section | item | value` layout):
+[`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql) and
+[`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql).
 
 Do not proceed to the next migration until the current stage verifies. You can also re-run
 [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql) - the applied migration
@@ -413,8 +437,11 @@ Stop immediately and report if any of these occur:
 | Deliverable | Path |
 |---|---|
 | This deployment document | `docs/sprint-007-009-production-deployment.md` |
-| Read-only preflight SQL (single grid) | `docs/deployment/preflight-summary-readonly.sql` |
+| Read-only preflight SQL - compact single row | `docs/deployment/preflight-compact.sql` |
+| Read-only preflight SQL (union grid) | `docs/deployment/preflight-summary-readonly.sql` |
 | Read-only preflight SQL (full detail) | `docs/deployment/preflight-readonly.sql` |
+| Post-008 verify - compact single row | `docs/deployment/verify-007-008-compact.sql` |
+| Post-009 verify - compact single row | `docs/deployment/verify-all-compact.sql` |
 | Post-migration integrity SQL - stage 1 (after 008) | `docs/deployment/post-008-integrity-summary.sql` |
 | Post-migration integrity SQL - stage 2 (after 009, single grid) | `docs/deployment/post-migration-integrity-summary.sql` |
 | Post-migration integrity SQL (full detail) | `docs/deployment/post-migration-integrity.sql` |
@@ -467,15 +494,15 @@ the manual steps in section 4.
 | Preflight | ✅ accepted (section 3.2b) |
 | 007a / 007b | ✅ skipped (already PRESENT) |
 | **008 `2026-09-19-calendar-events.sql`** | ✅ **APPLIED to production** (DDL reported the normal "empty result set"; benign `#1681` deprecation warning) |
-| 008 verification | ⏳ attempt failed: the *full* integrity checker was run and errored `#1146 Table 'rbttaces_api.sessions' doesn't exist` because it reads session tables before 009 exists. **Fixed** - use [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql) for this stage. |
+| 008 verification | ⏳ pending. Earlier attempts failed: (a) the *full* checker reads session tables before 009 exists (`#1146`), and (b) long `UNION ALL` grids render blank on the production phpMyAdmin 5.2.3 / long pastes get mangled. **Fixed** - use the compact single-row [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql) for this stage. |
 | 009 `2026-09-23-sessions.sql` | ⏳ pending (after the 008 verification passes) |
-| 009 verification | ⏳ pending ([`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql)) |
+| 009 verification | ⏳ pending ([`verify-all-compact.sql`](deployment/verify-all-compact.sql)) |
 | Backend upload (Layers 1-7) | ⏳ pending |
 | Auth/Calendar/Sessions smoke tests | ⏳ pending |
 | Angular deploy | ⏳ pending |
 | Full smoke + evidence | ⏳ pending |
 
-**Next action for the operator:** run [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql)
-(stage 1). If it is clean, apply `2026-09-23-sessions.sql`, then run
-[`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql) (stage 2).
+**Next action for the operator:** run [`verify-007-008-compact.sql`](deployment/verify-007-008-compact.sql)
+(compact, single row). All `x…` columns must be `1` and all `inv_…` columns `0`. If clean, apply
+`2026-09-23-sessions.sql`, then run [`verify-all-compact.sql`](deployment/verify-all-compact.sql).
 
