@@ -512,8 +512,10 @@ site and hashed in-browser: **73/73 match the build**, zero missing, zero extra.
 - `main-SNF5PEQD.js` = `dc839cd9…0d6264` ✅
 - `chunk-ZEVSRBDO.js` (Sessions, 009) = `9553ed7f…0208ae` ✅
 - `chunk-43JXXTII.js` (Calendar, 008/009) = `58320f70…1fb1a5` ✅
-- `index.html` = `aecbc510…0da0b2b`, `styles-XAC6LFX5.css` = `85f9d50d…4e9a343ab` ✅
-  (the shipped build is a later rebuild than the original manifest doc; prod matches the current `dist/`)
+- `index.html` = `aecbc510…cda0b2b`, `styles-XAC6LFX5.css` = `85f9d50d…e9a343ab` ✅
+  (the shipped build is a later rebuild than the original manifest doc; prod matches the current `dist/`.
+  [`angular-manifest-sha256.md`](deployment/angular-manifest-sha256.md) was **regenerated** on 2026-09-23
+  to describe this exact live build.)
 
 **Backend - deployment proof.** New 007/008/009 routes answer `401` (deployed) rather than `404` (absent)
 when logged out, and return correct data when authenticated. No response body leaked a SQLSTATE or stack

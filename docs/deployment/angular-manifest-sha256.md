@@ -1,5 +1,10 @@
 ﻿# Incubator OS - Sprint 007/008/009 Angular Deployment Manifest (SHA-256)
 
+> **Regenerated 2026-09-23 after the production deploy.** This manifest describes the build that is
+> actually live on production (verified 73/73 by SHA-256 against the served files). It supersedes the
+> earlier manifest, which described an earlier rebuild. The application JS is unchanged - only the CSS
+> filename hash and `index.html` reference differ.
+
 ## What is deployed
 
 The Angular app is deployed as a **production build**, not as source files. The build command is:
@@ -13,9 +18,15 @@ Upload **the entire contents of `dist/nodes/browser/`** into the production Angu
 
 - Output root: `dist/nodes/browser/`
 - File count: 73
-- Total size: 4.82 MB
-- Entry document: `index.html` (SHA-256 `d2f18c726e2c353ff6b21ecd2d17880dca32a87bbe153838dadc05fb51f75bb1`)
+- Total size: 4.82 MB (5054529 bytes)
+- Entry document: `index.html` (SHA-256 `aecbc510c10377a63192d166b491fdde88398d030a9d4dec0bebf7052cda0b2b`)
 - Main bundle: `main-SNF5PEQD.js` (SHA-256 `dc839cd960edd501e5f9f63abaaf1401d47227c7fb91d2533d72a7820d0d6264`)
+- Stylesheet: `styles-XAC6LFX5.css` (SHA-256 `85f9d50d4d53f6cca1fea7ca4b952e79844f1cde4448d53cb458c35e99a343ab`)
+
+## Verification status (2026-09-23)
+
+All 73 files were fetched from `https://app.rbttacesd.co.za` and hashed in-browser:
+**73/73 match this manifest**, 0 missing, 0 extra. The frontend deploy is byte-verified.
 
 ## Feature chunks that must be present (proves 007/008/009 shipped)
 
@@ -97,11 +108,11 @@ and by checking the browser network tab loads these chunks without 404.
 | `chunk-ZKUGTHSC.js` | 160854 | `a1f04e5732e499a8e179c3820de70633e051192ea4bb735ffa527159140f67fa` |
 | `chunk-ZW6BXC45.js` | 5290 | `d4d1abacbcda5e1fbf39a60004b323ec0829a8fdb54deb5649266fd284564800` |
 | `favicon.ico` | 28087 | `caefd1a09d98031378f2262501eab1b0d232fc4600c598281ec73e04d07ca29d` |
-| `index.html` | 18421 | `d2f18c726e2c353ff6b21ecd2d17880dca32a87bbe153838dadc05fb51f75bb1` |
+| `index.html` | 18421 | `aecbc510c10377a63192d166b491fdde88398d030a9d4dec0bebf7052cda0b2b` |
 | `main-SNF5PEQD.js` | 1832185 | `dc839cd960edd501e5f9f63abaaf1401d47227c7fb91d2533d72a7820d0d6264` |
 | `monthly-revenue-preview.html` | 7675 | `d8a284a3b306eb6352bbf325eef49069f9f96d642c338de5938bfdd195af73b9` |
 | `polyfills-B6TNHZQ6.js` | 34579 | `e58411db71b908616c5c212d2373e7b5ab79055c7987e0836e64b259da72507f` |
-| `styles-CFDDERMT.css` | 148071 | `391c2f2166ee22f33d278824c4ecc765ee70d7e2eb522ecda8f6491ba88eb512` |
+| `styles-XAC6LFX5.css` | 148098 | `85f9d50d4d53f6cca1fea7ca4b952e79844f1cde4448d53cb458c35e99a343ab` |
 | `tableConvert.com_f92q5m.json` | 128537 | `f4080cc46fd48e411a6a48d5d282a17e36d61ee354df8a15c830bbb1e314ec63` |
 | `test-integration.html` | 4552 | `7f679132612ff97a26368c5a3d99d72f8920878525773407e6220fdd1b315e9c` |
 
