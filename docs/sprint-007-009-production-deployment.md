@@ -260,12 +260,24 @@ operator step (section 4).
 
 In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do one at a time.
 
+> **Expected phpMyAdmin output for a migration:** the DDL statements each report *"MySQL returned an
+> empty result set (i.e. zero rows)"* - that is **normal and correct** for `CREATE TABLE` / `SET`
+> statements. A benign warning *"#1681 Integer display width is deprecated"* may also appear on
+> MySQL 8; it is informational, not an error. Only a red `#NNNN` error matters.
+
 ### Step 8 - Verify each migration before continuing
-After each migration, run
-[`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql)
-(single grid; the `B. INVARIANTS (expect 0)` rows must all be 0). Do not proceed to the next
-migration until the previous one verifies.
-Re-run the preflight Section B; the applied migration must now read `PRESENT`.
+
+Run the integrity checker **for the stage you are at** (both are single-grid `UNION ALL` files; every
+`(expect 0)` row must be 0, every `(expect 1)` row must be 1):
+
+| After applying | Run this file | Why |
+|---|---|---|
+| **008** (calendar), before 009 | [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql) | The full checker reads the session tables, which 009 has not created yet - it would fail with `#1146`. Stage 1 checks only the 007 + 008 objects. |
+| **009** (sessions), after both | [`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql) | Adds the session structure + invariants. |
+
+Do not proceed to the next migration until the current stage verifies. You can also re-run
+[`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql) - the applied migration
+must now read `PRESENT`.
 
 ### Step 9 - Upload backend files in dependency order
 Using FileZilla, upload the files in [`backend-manifest-sha256.md`](backend-manifest-sha256.md) in
@@ -394,7 +406,8 @@ Stop immediately and report if any of these occur:
 | This deployment document | `docs/sprint-007-009-production-deployment.md` |
 | Read-only preflight SQL (single grid) | `docs/deployment/preflight-summary-readonly.sql` |
 | Read-only preflight SQL (full detail) | `docs/deployment/preflight-readonly.sql` |
-| Post-migration integrity SQL (single grid) | `docs/deployment/post-migration-integrity-summary.sql` |
+| Post-migration integrity SQL - stage 1 (after 008) | `docs/deployment/post-008-integrity-summary.sql` |
+| Post-migration integrity SQL - stage 2 (after 009, single grid) | `docs/deployment/post-migration-integrity-summary.sql` |
 | Post-migration integrity SQL (full detail) | `docs/deployment/post-migration-integrity.sql` |
 | Backend SHA-256 manifest | `docs/deployment/backend-manifest-sha256.md` |
 | Angular SHA-256 manifest | `docs/deployment/angular-manifest-sha256.md` |
@@ -435,12 +448,25 @@ Stop immediately and report if any of these occur:
 | 008 `calendar-events` | **APPLY** |
 | 009 `sessions` | **APPLY (after 008)** |
 
-**Nothing has been executed.** No migration has been applied to production and no file has been
-uploaded. The remaining hold-point is **the operator's go-ahead to execute the manual steps in
-section 4** (backup → apply 008 → verify → apply 009 → verify → upload backend → auth smoke tests →
-deploy Angular → full smoke tests).
+**Nothing has been executed by the agent.** The remaining hold-point is the operator's continuation of
+the manual steps in section 4.
 
-> Prerequisite before applying 008: back up `rbttaces_api` and every file that will be replaced.
-> Then apply only 008 and 009, in that order, verifying each with
-> [`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql).
+### 11.1 Execution progress log (operator)
+
+| Step | Status |
+|---|---|
+| Preflight | ✅ accepted (section 3.2b) |
+| 007a / 007b | ✅ skipped (already PRESENT) |
+| **008 `2026-09-19-calendar-events.sql`** | ✅ **APPLIED to production** (DDL reported the normal "empty result set"; benign `#1681` deprecation warning) |
+| 008 verification | ⏳ attempt failed: the *full* integrity checker was run and errored `#1146 Table 'rbttaces_api.sessions' doesn't exist` because it reads session tables before 009 exists. **Fixed** - use [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql) for this stage. |
+| 009 `2026-09-23-sessions.sql` | ⏳ pending (after the 008 verification passes) |
+| 009 verification | ⏳ pending ([`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql)) |
+| Backend upload (Layers 1-7) | ⏳ pending |
+| Auth/Calendar/Sessions smoke tests | ⏳ pending |
+| Angular deploy | ⏳ pending |
+| Full smoke + evidence | ⏳ pending |
+
+**Next action for the operator:** run [`post-008-integrity-summary.sql`](deployment/post-008-integrity-summary.sql)
+(stage 1). If it is clean, apply `2026-09-23-sessions.sql`, then run
+[`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql) (stage 2).
 

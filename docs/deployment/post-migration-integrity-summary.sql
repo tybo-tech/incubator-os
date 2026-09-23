@@ -12,9 +12,10 @@
 --   4. Any item whose name ends in "(expect 0)" must be 0. Anything else is a
 --      defect - STOP and report; do not deploy code on a broken schema.
 --
--- NOTE: run this AFTER the migrations. It reads the deployed tables directly,
--- so it requires 007 (and, for the session checks, 008+009) to be applied. Use
--- `preflight-summary-readonly.sql` for the pre-migration check.
+-- NOTE: run this AFTER **both** migrations. It reads the session tables
+-- directly, so it requires 008 AND 009 to be applied.
+--   * After 008, before 009  -> run `post-008-integrity-summary.sql` (stage 1).
+--   * Before any migration   -> run `preflight-summary-readonly.sql`.
 --
 -- READ-ONLY. Writes nothing.
 -- =====================================================================
