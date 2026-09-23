@@ -1,0 +1,17 @@
+{
+  "name": "GoogleCalendar",
+  "description": "Server-side Google Calendar OAuth connection and outbound event synchronization with automatic Google Meet links. Google is a projection of a local calendar event; Incubator OS remains the source of truth.",
+  "queries": [
+    { "name": "getGoogleConnection", "returns": "GoogleConnectionResponse" },
+    { "name": "getGoogleEventSync", "returns": "GoogleEventSyncResponse" }
+  ],
+  "commands": [
+    { "name": "connectGoogleCalendar", "returns": "authUrl" },
+    { "name": "oauthCallback", "returns": "redirect" },
+    { "name": "disconnectGoogleCalendar", "returns": "CommandResult" },
+    { "name": "publishCalendarEventToGoogle", "returns": "CommandResult" },
+    { "name": "syncCalendarEventToGoogle", "returns": "CommandResult" },
+    { "name": "unpublishCalendarEventFromGoogle", "returns": "CommandResult" }
+  ],
+  "dependsOn": ["Calendar", "Companies", "Users"]
+}

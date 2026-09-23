@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: In progress — **Phase 1 delivered and verified** (session 030). Phases 2–6 locked, awaiting implementation.
+> **Status**: In progress — **Phase 1 and Phase 2 delivered and verified** (sessions 030, 031). Phases 3–6 locked, awaiting implementation.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -135,7 +135,7 @@ Both tables carry `tenant_id INT NOT NULL DEFAULT 1` (server-derived) and `creat
 7. **Meet conference only for `meeting` category events.** Any accessible, non-deleted event may be published to Google Calendar, but `conferenceData.createRequest` is added only when `category = meeting`. `conferenceSolutionKey.type = hangoutsMeet`.
 8. **Secrets live in a gitignored `config/google.local.php`**, loaded by a committed `config/google.php`. If the provider is present but the local file is missing/incomplete, the capability **fails closed** — every endpoint returns `503` `GOOGLE_NOT_CONFIGURED` and the UI shows a clear message. No Google secret is ever committed or added to the deployment upload manifest.
 9. **Outbound only.** There is no inbound Google → Incubator synchronization, no watch channels and no webhooks in this sprint. A Google-side edit surfaces as a `conflict` (etag mismatch), never as an overwrite.
-10. **Signed, stateless OAuth `state`.** The state is an HMAC-signed, time-limited, actor-bound token (no database table). The callback requires the state's `userId` to match the session's user, which prevents login-CSRF. Google's `code` is single-use.
+10. **Opaque, single-use OAuth `state`.** (Amended in Phase 2.) The state is a 256-bit random value stored server-side in `google_oauth_states` and consumed atomically, so it is one-time by construction; it is short-lived (10 minutes) and bound to the authenticated tenant and user. The callback requires a live application session AND a matching, unconsumed state. The brief's original stateless HMAC design was replaced because a signature cannot enforce one-time consumption.
 11. **A `GoogleEventSyncHook` interface** is declared in `capabilities/calendar` (no-op default) and implemented by `capabilities/google-calendar`; the **calendar cancel/delete endpoints** wire the real implementation. `capabilities/calendar` therefore never includes a google-calendar file.
 12. **The Google client is an interface** (`GoogleApiClient`) with `CurlGoogleApiClient` (production) and `FakeGoogleApiClient` (local tests, selected by `GOOGLE_FAKE=1`). All backend tests are deterministic and never touch the network.
 
@@ -264,25 +264,41 @@ Build the capability skeleton and the full OAuth lifecycle.
 
 #### Tasks
 
-- [ ] **2.1** Add `capabilities/google-calendar/feature.json` (`GoogleCalendar`, queries/commands, `dependsOn: ["Calendar", "Companies", "Users"]`).
-- [ ] **2.2** Add `Contracts/GoogleExceptions.php`, `Contracts/GoogleErrorResponder.php` (map to the HTTP outcomes table), `Contracts/GoogleConnectionResponse.php`, `Contracts/GoogleEventSyncResponse.php`, `Contracts/Responses/CommandResult.php` reuse, and `Contracts/GoogleScopes.php` (the locked scope set).
-- [ ] **2.3** Add `Repository/GoogleConnectionRepository.php` — `findForUser`, `upsertForUser`, `markNeedsReconnect`, `markRevoked`, `deleteForUser`, `touchRefreshed`.
-- [ ] **2.4** Add `Repository/GoogleEventSyncRepository.php` — `findByCalendarEvent`, `create`, `update`, `markDetached`, `findByConnection`.
-- [ ] **2.5** Add `Services/GoogleAccessPolicy.php` — wraps the actor row and `CalendarAccessPolicy`; `actorId()`, `tenantId()`, `assertCanManageEvent()`, `assertOwnConnection()`.
-- [ ] **2.6** Add `Services/OAuthStateSigner.php` — HMAC-signed `{ userId, returnTo, exp }`; `sign()` and `verify()` (rejects bad signature, expiry, and user mismatch).
-- [ ] **2.7** Add `Services/OAuthService.php` — `authorizationUrl(returnTo)`, `handleCallback(code, state)` (exchange → email → encrypt → upsert), `disconnect()` (revoke → delete).
-- [ ] **2.8** Add `Application/Queries/GetGoogleConnection.php` and `Application/Commands/ConnectGoogleCalendar.php`, `DisconnectGoogleCalendar.php`.
-- [ ] **2.9** Add endpoints `api/google-calendar/queries/connection.php`, `api/google-calendar/queries/event.php`, `api/google-calendar/commands/callback.php`, `api/google-calendar/commands/connect.php`, `api/google-calendar/commands/disconnect.php`, following the `include_once` + `auth_require_user` + manual DI pattern.
+- [x] **2.1** Add `capabilities/google-calendar/feature.json` (`GoogleCalendar`, queries/commands, `dependsOn: ["Calendar", "Companies", "Users"]`).
+- [x] **2.2** Add `Contracts/GoogleExceptions.php`, `Contracts/GoogleErrorResponder.php` (map to the HTTP outcomes table), `Contracts/GoogleConnectionResponse.php`, `Contracts/GoogleEventSyncResponse.php` (deferred to Phase 3), `Contracts/Responses/CommandResult.php` reuse, and `Contracts/GoogleScopes.php` (the locked scope set).
+- [x] **2.3** Add `Repository/GoogleConnectionRepository.php` — `findForUser`, `upsertConnected`, `markNeedsReconnect`, `markAccountMismatch`, `updateAccessToken`, `disconnect`, `clearTokens`, `isReferenced`.
+- [x] **2.4** Add `Repository/GoogleEventSyncRepository.php` — `findByCalendarEvent`, `countForConnection`, `countPublishedForConnection` (Phase 3 write paths).
+- [x] **2.5** Add `Services/GoogleAccessPolicy.php` — wraps the actor row; `actorId()`, `tenantId()`, `assertOwnConnection()`.
+- [x] **2.6** Add `Services/OAuthStateSigner.php` — **replaced** by `Repository/GoogleOAuthStateRepository.php`: an opaque 256-bit single-use, short-lived, tenant/user-bound state (see Architecture Decision 10 amendment).
+- [x] **2.7** Add `Services/OAuthService.php` — `authorizationUrl()`, `handleCallback()` (validate state → exchange → email → scope check → encrypt+upsert), `disconnect()` (best-effort revoke → always clear tokens), `freshAccessToken()` (`invalid_grant` → `needs_reconnect`).
+- [x] **2.8** Add `Services/ReturnPathValidator.php` (open-redirect defence) and `Contracts/GoogleOAuthResult.php` (safe redirect vocabulary).
+- [x] **2.9** Add endpoints `api/google-calendar/queries/connection.php`, `api/google-calendar/commands/{callback,connect,disconnect}.php` + `_bootstrap.php`, following the `include_once` + `auth_require_user` + manual DI pattern.
 
 #### Exit Criteria
 
-- [ ] `connect.php` returns an authorization URL containing the locked scopes, `access_type=offline`, `prompt=consent`, the exact redirect URI and a signed `state`; **no** client secret appears in the response or the logs.
-- [ ] Callback rejects a missing/tampered/expired `state` and a state whose `userId` differs from the session; it never exchanges a rejected code.
-- [ ] A successful callback stores an encrypted access **and** refresh token and the Google account email; the plaintext token never appears in the database or any response.
-- [ ] `connection.php` reports `disconnected` / `connected` / `needs_reconnect` correctly and never includes a token.
-- [ ] `disconnect.php` calls revoke and deletes the row; a second disconnect is a clean no-op.
-- [ ] With the local credentials absent, all four endpoints return `503 GOOGLE_NOT_CONFIGURED`.
-- [ ] With `GOOGLE_FAKE=1`, the full connect → callback → disconnect cycle passes without network access.
+- [x] `connect.php` returns an authorization URL containing the locked scopes, `access_type=offline`, `prompt=consent`, the exact redirect URI and a signed/opaque state; **no** client secret appears in the response or the logs.
+- [x] Callback rejects a missing/expired/reused/cross-user/cross-tenant state; it never exchanges a rejected code.
+- [x] A successful callback stores an encrypted access **and** refresh token and the Google account email; the plaintext token never appears in the database or any response.
+- [x] `connection.php` reports `disconnected` / `connected` / `needs_reconnect` correctly and never includes a token or expiry internals.
+- [x] `disconnect.php` calls revoke (best effort) and always clears local tokens; a second disconnect is a clean no-op.
+- [x] With the local credentials absent, all endpoints return `503 GOOGLE_NOT_CONFIGURED`.
+- [x] With the fake client enabled (`use_fake` / `GOOGLE_FAKE=1`), the full connect → callback → disconnect cycle passes without network access.
+
+#### Phase 2 completion — 2026-09-24 (session 031)
+
+| Area | Result |
+| --- | --- |
+| HTTP endpoint suite | `api-incubator-os/tests/GoogleCalendarPhase2Http.ps1` — **23/23** |
+| Service suite | `api-incubator-os/tests/GoogleCalendarPhase2.php` — **73/73** |
+| PHP lint | **30/30** new/changed files clean |
+| Migration #23 | applied **twice** locally; enum + column + `google_oauth_states`; idempotent |
+| Calendar regression | **65/65** |
+| Sessions regression | **105/105** |
+| Network | none — offline fake only |
+
+Boundaries verified beyond the task list: AES key separate from the client secret (Phase 1); one-time state consumption; cross-user + cross-tenant state rejection; offline+consent+fixed-redirect scope request; required-scope enforcement; refresh-token preservation on silent-consent reconnect; `invalid_grant` → `needs_reconnect`; disconnect clears tokens even when revoke fails; disconnect preserves audit identity when mappings reference it; account-mismatch guard (no silent reassignment); safe redirect codes only; no secrets in status responses; open-redirect allowlist.
+
+**Amendment to Architecture Decision 10.** The originally specified stateless HMAC `state` was replaced by a server-side single-use record (`google_oauth_states`). A stateless signature cannot enforce one-time consumption, which the locked Phase 2 boundary requires.
 
 ---
 
@@ -445,13 +461,15 @@ api-incubator-os/
 │   │   ├── GoogleEventRef.php
 │   │   ├── GoogleEventSyncResponse.php
 │   │   ├── GoogleExceptions.php
+│   │   ├── GoogleOAuthResult.php
 │   │   ├── GoogleScopes.php
 │   │   ├── GoogleTokenSet.php
 │   │   ├── EncryptedPayload.php
 │   │   └── Responses/CommandResult.php
 │   ├── Repository/
 │   │   ├── GoogleConnectionRepository.php
-│   │   └── GoogleEventSyncRepository.php
+│   │   ├── GoogleEventSyncRepository.php
+│   │   └── GoogleOAuthStateRepository.php
 │   └── Services/
 │       ├── CurlGoogleApiClient.php
 │       ├── FakeGoogleApiClient.php
@@ -463,7 +481,7 @@ api-incubator-os/
 │       ├── GoogleEventSyncService.php
 │       ├── GoogleLog.php
 │       ├── OAuthService.php
-│       ├── OAuthStateSigner.php
+│       ├── ReturnPathValidator.php
 │       ├── SecretRedactor.php
 │       └── TokenCipher.php
 ├── capabilities/calendar/Contracts/
@@ -480,10 +498,13 @@ api-incubator-os/
 │       ├── sync.php
 │       └── unpublish.php
 ├── migrations/
-│   └── 2026-09-24-google-calendar.sql              # run order #22
+│   ├── 2026-09-24-google-calendar.sql              # run order #22
+│   └── 2026-09-24-google-calendar-phase2.sql       # run order #23
 └── tests/
     ├── GoogleCalendar.ps1                          # endpoint suite (Phases 2+)
-    └── GoogleCalendarPhase1.php                    # foundation suite (delivered)
+    ├── GoogleCalendarPhase1.php                    # foundation suite (delivered)
+    ├── GoogleCalendarPhase2.php                    # OAuth service suite (delivered)
+    └── GoogleCalendarPhase2Http.ps1                # OAuth endpoint suite (delivered)
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts

@@ -14,7 +14,11 @@ final class GoogleApiClientFactory
 {
     public static function create(): GoogleApiClient
     {
-        if (getenv('GOOGLE_FAKE') === '1') {
+        // Honour both the GOOGLE_FAKE environment variable and the gitignored
+        // local config flag (`use_fake`), so the offline fake can be enabled
+        // without mutating the container environment. It can only ever SELECT the
+        // fake; it can never cause a real call.
+        if (google_use_fake()) {
             return new FakeGoogleApiClient();
         }
 

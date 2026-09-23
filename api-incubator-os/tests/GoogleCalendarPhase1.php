@@ -96,6 +96,7 @@ $t = new TestRunner();
 
 // A known-good 32-byte key, base64-encoded, distinct from any client secret.
 $testKey = base64_encode(str_repeat("\x11", 32));
+putenv('GOOGLE_SKIP_LOCAL_CONFIG=1'); // hermetic: ignore any gitignored local config
 putenv('GOOGLE_CLIENT_ID=test-client-id');
 putenv('GOOGLE_CLIENT_SECRET=test-client-secret-value');
 putenv('GOOGLE_ENCRYPTION_KEY=' . $testKey);

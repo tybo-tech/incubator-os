@@ -37,6 +37,39 @@ final class GoogleErrorResponder
             return;
         }
 
+        if ($e instanceof GoogleForbiddenException) {
+            http_response_code(403);
+            echo json_encode(['error' => $e->getMessage()]);
+            return;
+        }
+
+        if ($e instanceof GoogleOAuthStateException || $e instanceof GoogleOAuthCallbackException) {
+            http_response_code(422);
+            echo json_encode([
+                'error' => 'The Google authorisation request could not be verified. Please start again.',
+                'code' => 'GOOGLE_OAUTH_STATE',
+            ]);
+            return;
+        }
+
+        if ($e instanceof GoogleAccountMismatchException) {
+            http_response_code(409);
+            echo json_encode([
+                'error' => 'A different Google account was used while existing published mappings reference the previous account.',
+                'code' => 'GOOGLE_ACCOUNT_MISMATCH',
+            ]);
+            return;
+        }
+
+        if ($e instanceof GoogleScopeException) {
+            http_response_code(422);
+            echo json_encode([
+                'error' => 'The required Google Calendar permission was not granted.',
+                'code' => 'GOOGLE_SCOPE_MISSING',
+            ]);
+            return;
+        }
+
         http_response_code(400);
         echo json_encode(['error' => $e->getMessage()]);
     }

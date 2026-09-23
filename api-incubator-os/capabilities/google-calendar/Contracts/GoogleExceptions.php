@@ -66,3 +66,52 @@ final class GoogleApiException extends RuntimeException
             || $this->reason === self::REASON_UNAUTHORIZED;
     }
 }
+
+/**
+ * The OAuth `state` was missing, malformed, expired, already consumed, or bound
+ * to a different user/tenant than the current session. Always rejected BEFORE a
+ * code is exchanged or any connection is written.
+ */
+final class GoogleOAuthStateException extends RuntimeException {}
+
+/**
+ * The actor may not perform the requested Google action (e.g. managing another
+ * user's connection).
+ */
+final class GoogleForbiddenException extends RuntimeException {}
+
+/**
+ * The callback lacked a code, carried an unknown result, or otherwise could not
+ * be processed. No connection is written.
+ */
+final class GoogleOAuthCallbackException extends RuntimeException {}
+
+/**
+ * The user denied consent (Google returned an error such as `access_denied`).
+ * Treated as a normal, safe outcome — no connection is written.
+ */
+final class GoogleConsentDeniedException extends RuntimeException {}
+
+/**
+ * The required Calendar scope was not granted, so the connection is unusable and
+ * is not stored.
+ */
+final class GoogleScopeException extends RuntimeException {}
+
+/**
+ * The reconnect used a different Google account while published event mappings
+ * already exist. Mappings must NOT be silently reassigned; reconciliation is a
+ * later, explicit action.
+ */
+final class GoogleAccountMismatchException extends RuntimeException
+{
+    public function __construct(private readonly string $pendingEmail = '')
+    {
+        parent::__construct('A different Google account was used while existing published mappings reference the previous account.');
+    }
+
+    public function pendingEmail(): string
+    {
+        return $this->pendingEmail;
+    }
+}

@@ -35,6 +35,11 @@ final class FakeGoogleApiClient implements GoogleApiClient
     private int $etagCounter = 1;
     private bool $meetPending;
 
+    /** Override the granted scope string returned by exchangeCode (test knob). */
+    private ?string $scopeOverride = null;
+    /** When true, exchangeCode returns NO refresh token (test knob). */
+    private bool $omitRefreshToken = false;
+
     /** @var array<int,array<string,mixed>> recorded insert payloads */
     public array $inserted = [];
     /** @var array<int,array<string,mixed>> recorded patch payloads */
@@ -61,6 +66,27 @@ final class FakeGoogleApiClient implements GoogleApiClient
         foreach ($outcomes as $outcome) {
             $this->queue[] = $outcome;
         }
+        return $this;
+    }
+
+    /** Test knob: force the scope string returned by exchangeCode. */
+    public function setScopeOverride(?string $scope): self
+    {
+        $this->scopeOverride = $scope;
+        return $this;
+    }
+
+    /** Test knob: make exchangeCode omit the refresh token. */
+    public function setOmitRefreshToken(bool $omit): self
+    {
+        $this->omitRefreshToken = $omit;
+        return $this;
+    }
+
+    /** Test knob: change the account email returned by userInfoEmail(). */
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
         return $this;
     }
 
@@ -100,9 +126,9 @@ final class FakeGoogleApiClient implements GoogleApiClient
         }
         return new GoogleTokenSet(
             accessToken: 'ya29.fake-access-' . $this->exchangeCalls,
-            refreshToken: '1//fake-refresh-' . $this->exchangeCalls,
+            refreshToken: $this->omitRefreshToken ? null : '1//fake-refresh-' . $this->exchangeCalls,
             expiresIn: 3600,
-            scope: implode(' ', GoogleScopes::all()),
+            scope: $this->scopeOverride ?? implode(' ', GoogleScopes::all()),
         );
     }
 

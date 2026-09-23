@@ -43,6 +43,7 @@ if (!function_exists('google_config')) {
             'encryption_key' => '',
             'key_version' => 1,
             'default_calendar_id' => 'primary',
+            'use_fake' => false,
         ];
     }
 }
@@ -60,8 +61,14 @@ if (!function_exists('google_config')) {
     {
         $config = google_config_defaults();
 
+        // Test-only escape hatch: `GOOGLE_SKIP_LOCAL_CONFIG=1` ignores the local
+        // credentials file so the fail-closed logic can be exercised hermetically.
+        // It can only ever REDUCE configuration; it never adds a secret and has no
+        // effect in production (where the variable is unset).
+        $skipLocal = getenv('GOOGLE_SKIP_LOCAL_CONFIG') === '1';
+
         $localPath = __DIR__ . DIRECTORY_SEPARATOR . 'google.local.php';
-        if (is_file($localPath)) {
+        if (!$skipLocal && is_file($localPath)) {
             $loaded = require $localPath;
             if (is_array($loaded)) {
                 foreach (array_keys($config) as $key) {
@@ -94,7 +101,29 @@ if (!function_exists('google_config')) {
             : 'primary';
         $config['key_version'] = max(1, (int) $config['key_version']);
 
+        // `use_fake` is a boolean convenience. It can be set in the gitignored
+        // google.local.php or via GOOGLE_FAKE=1. It only ever enables an OFFLINE
+        // fake client; it can never cause a real network call.
+        $envFake = getenv('GOOGLE_FAKE');
+        if ($envFake !== false && $envFake !== '') {
+            $config['use_fake'] = $envFake === '1' || strtolower($envFake) === 'true';
+        } else {
+            $config['use_fake'] = (bool) $config['use_fake'];
+        }
+
         return $config;
+    }
+}
+
+if (!function_exists('google_use_fake')) {
+    /**
+     * Whether the deterministic offline fake client must be used. Kept beside the
+     * provider availability gate so the fake can be exercised with a valid
+     * encryption key but NO real Google credentials.
+     */
+    function google_use_fake(): bool
+    {
+        return (bool) (google_config()['use_fake'] ?? false);
     }
 }
 
@@ -120,6 +149,24 @@ if (!function_exists('google_encryption_key_bytes')) {
     }
 }
 
+if (!function_exists('google_validate_encryption_key')) {
+    /**
+     * Shared encryption-key validation. Returns a secret-free error, or null when
+     * the key is present and decodes to exactly 32 bytes (AES-256).
+     */
+    function google_validate_encryption_key(string $encoded): ?string
+    {
+        if ($encoded === '') {
+            return 'Google encryption key is not configured.';
+        }
+        $decoded = base64_decode($encoded, true);
+        if ($decoded === false || strlen($decoded) !== 32) {
+            return 'Google encryption key must be a base64-encoded 32-byte value.';
+        }
+        return null;
+    }
+}
+
 if (!function_exists('google_config_error')) {
     /**
      * A safe (secret-free) reason the provider is not usable, or null when it is.
@@ -128,19 +175,23 @@ if (!function_exists('google_config_error')) {
     {
         $config = google_config();
 
+        // In fake mode (local tests only) the provider is considered usable with
+        // the encryption key alone: no real Google credentials are required and
+        // no network call can occur.
+        if (google_use_fake()) {
+            return google_validate_encryption_key((string) $config['encryption_key']);
+        }
+
         if ($config['client_id'] === '') {
             return 'Google client id is not configured.';
         }
         if ($config['client_secret'] === '') {
             return 'Google client secret is not configured.';
         }
-        if ($config['encryption_key'] === '') {
-            return 'Google encryption key is not configured.';
-        }
 
-        $decoded = base64_decode((string) $config['encryption_key'], true);
-        if ($decoded === false || strlen($decoded) !== 32) {
-            return 'Google encryption key must be a base64-encoded 32-byte value.';
+        $keyError = google_validate_encryption_key((string) $config['encryption_key']);
+        if ($keyError !== null) {
+            return $keyError;
         }
 
         // The AES key must be a separate secret from the Google client secret.
