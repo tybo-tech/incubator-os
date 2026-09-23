@@ -495,16 +495,23 @@ the manual steps in section 4.
 | 007a / 007b | ✅ skipped (already PRESENT) |
 | **008 `2026-09-19-calendar-events.sql`** | ✅ **APPLIED to production** (DDL reported the normal "empty result set"; benign `#1681` deprecation warning) |
 | 008 verification | ✅ **VERIFIED on production** via [`preflight-compact.sql`](deployment/preflight-compact.sql): `t_007a=3`, `c_007a=1`, `i_007b=1`, `t_008=2`, `chk_008=1`, `t_009=0`, `fk_009=0`, `unresolved_rows=100`, `export_account_companies=0`, MySQL `8.0.46-cll-lve`. Note: the earlier "empty result" failures were a phpMyAdmin tab/session glitch, resolved by refreshing the page. |
-| 009 `2026-09-23-sessions.sql` | ⏳ pending (after the 008 verification passes) |
-| 009 verification | ⏳ pending ([`verify-all-compact.sql`](deployment/verify-all-compact.sql)) |
-| Backend upload (Layers 1-7) | ⏳ pending |
-| Auth/Calendar/Sessions smoke tests | ⏳ pending |
-| Angular deploy | ⏳ pending |
+| 009 `2026-09-23-sessions.sql` | ✅ **APPLIED to production** (7 tables created; normal "empty result set" per DDL; `FOREIGN_KEY_CHECKS` restored; no red errors) |
+| 009 verification | ✅ **VERIFIED**: `x009_sessions=1`, `x009_child_tables=6`, `x009_fk_company=1`, `x009_fk_event=1`; **all `inv_*` = 0** (`inv_dup_snapshot`, `inv_orphan_evidence`, `inv_cross_company`, `inv_bad_time_shape`, `inv_sessions_missing_tenant`, `inv_orphan_agenda/notes/decisions/links/activities`); `info_unresolved_rows=100`, `info_export_account_companies=0` |
+| **All migrations** | ✅ **COMPLETE** - 007 present, 008 applied+verified, 009 applied+verified. No partial blocker. |
+| Backend upload (Layers 1-7) | ⏳ **NEXT** - see section 5 + [`backend-manifest-sha256.md`](deployment/backend-manifest-sha256.md) |
+| Auth/Calendar/Sessions smoke tests | ⏳ pending (after backend upload) |
+| Angular deploy | ⏳ pending (last) |
 | Full smoke + evidence | ⏳ pending |
 
-**Next action for the operator:** apply `2026-09-23-sessions.sql`, then run
-[`verify-all-compact.sql`](deployment/verify-all-compact.sql) (compact, single row). All `x…`
-columns must be `1`, `x009_child_tables` must be `6`, and all `inv_…` columns must be `0`.
+**Next action for the operator:** all migrations are done. Proceed to the **backend file upload**.
+
+1. **Back up** the production files that will be replaced (section 4, Step 3): the affected
+   `api/api-nodes/` subfolders, `api/models/`, `api/services/`, `api/helpers/`, and `api/capabilities/`.
+2. Upload the backend files in Layer 1 → Layer 7 order per
+   [`backend-manifest-sha256.md`](deployment/backend-manifest-sha256.md), into the production `/api/`
+   folder (path mapping in section 5). Do **not** overwrite the files in the never-upload list.
+3. Run the authentication smoke tests in [`smoke-tests.md`](deployment/smoke-tests.md) before touching
+   the frontend.
 
 > **phpMyAdmin note discovered in production:** if a query reports "empty result set" (even `SELECT 1`),
 > **refresh the phpMyAdmin page** and re-run - the SQL editor's hidden field sometimes fails to sync,
