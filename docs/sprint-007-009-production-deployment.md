@@ -1,4 +1,4 @@
-# Incubator OS - Sprint 007/008/009 Production Deployment Package
+﻿# Incubator OS - Sprint 007/008/009 Production Deployment Package
 
 **Status: PREPARED AND VERIFIED LOCALLY - NOT DEPLOYED.**
 No production action has been taken or authorised. Deployment halts at a hard hold-point until the
@@ -68,11 +68,11 @@ Verified by SQL inspection:
 
 | Feature used | Minimum version | Local verified |
 |---|---|---|
-| Functional (expression) unique index `uq_evidence_metric_snapshot` | 8.0.13 | 8.0.43 ✅ |
-| `CHECK` constraint `chk_cal_time_shape` | 8.0.16 | 8.0.43 ✅ |
-| Generated stored columns (`account_id_key`, `dedupe_key`) | 5.7 | 8.0.43 ✅ |
-| `JSON` columns (`snapshot_json`, `payload`) | 5.7 | 8.0.43 ✅ |
-| Functional index over a FK column (InnoDB workaround) | 8.0.13 | 8.0.43 ✅ |
+| Functional (expression) unique index `uq_evidence_metric_snapshot` | 8.0.13 | 8.0.43 âœ… |
+| `CHECK` constraint `chk_cal_time_shape` | 8.0.16 | 8.0.43 âœ… |
+| Generated stored columns (`account_id_key`, `dedupe_key`) | 5.7 | 8.0.43 âœ… |
+| `JSON` columns (`snapshot_json`, `payload`) | 5.7 | 8.0.43 âœ… |
+| Functional index over a FK column (InnoDB workaround) | 8.0.13 | 8.0.43 âœ… |
 
 **Hard stop if production MySQL < 8.0.16.** The preflight (Section A) reports `VERSION()`; confirm it is
 8.0.16 or newer before applying anything.
@@ -105,7 +105,14 @@ because the Calendar and Sessions screens call the new endpoints immediately. Se
 
 ## 3. Read-only production preflight
 
-**File:** [`preflight-readonly.sql`](preflight-readonly.sql)
+**Primary file (use this one):** [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql)
+**Full-detail file:** [`preflight-readonly.sql`](deployment/preflight-readonly.sql)
+
+> **phpMyAdmin shows only the last statement's result grid in the SQL tab.** If you paste a
+> multi-statement script you may see nothing. `preflight-summary-readonly.sql` is therefore a
+> **single `UNION ALL` statement** that always renders one grid (`section | item | value`), with a
+> final `J. VERDICT` block that gives the action per migration. Use it.
+> The full-detail file is for operators who can run each statement separately.
 
 Run it in phpMyAdmin against `rbttaces_api` **before any change**. It is entirely read-only and
 self-guarded (reads of not-yet-created tables degrade to a "missing" note instead of erroring).
@@ -137,12 +144,45 @@ It reports, in order:
 | Production state | 007a | 007b | 008 | 009 |
 |---|---|---|---|---|
 | Untouched (pre-007) | MISSING | MISSING (blocked) | MISSING | MISSING |
-| 007 already deployed (per `sprint-007-production-verification.md`) | PRESENT | PRESENT | MISSING | MISSING |
+| 007 already deployed | PRESENT | PRESENT | MISSING | MISSING |
 | Fully current | PRESENT | PRESENT | PRESENT | PRESENT |
 
-> The repository records that Sprint 007 migrations were applied to production on 2026-09-14/16
-> (`docs/sprint-007-production-verification.md`). **Do not rely on that record.** The 007 tables are
-> counted again here so the current live state, not the historical claim, drives the decision.
+### 3.2a CONFIRMED live state (from the operator's 2026-09-23 export)
+
+The operator exported the production database (`rbttaces_api (14).sql`, MySQL **8.0.46-cll-lve**)
+and it was inspected **locally in a throwaway scratch database** - no production server was
+contacted. Findings:
+
+| Migration | Live production classification | Action |
+|---|---|---|
+| 007a `results-achievements` | **PRESENT** (3 tables, 25 columns, 3 FKs, 9 `gps_target_metrics` columns) | **SKIP** |
+| 007b `achievements-snapshot-guard` | **PRESENT** (`uq_evidence_metric_snapshot`) | **SKIP** |
+| 008 `calendar-events` | **MISSING** | **APPLY** |
+| 009 `sessions` | **MISSING** | **APPLY (after 008)** |
+
+Additional verified facts:
+
+* MySQL **8.0.46** on production â†’ meets the 8.0.16+ requirement **YES**.
+* Prerequisites: companies 131, users 106, gps_targets 63, metric_types 20, company_accounts 91,
+  company_financial_yearly_stats 173.
+* **Sprint 007 readiness (measured live):** `unresolved_account_rows` = **100** across
+  **62** companies; `export_account_rows` = **0** â†’ **0** companies with export accounts.
+  (The historical record said ~105; production now measures 100. The ~105 figure is confirmed as
+  approximate. Revenue stays non-authoritative for combined `REVENUE_TOTAL` where export accounts
+  are absent - nothing is repaired.)
+* Seeded bindings present: **5** (REVENUE_TOTAL Ã—2, REVENUE_EXPORT Ã—1, REVENUE_ANNUAL Ã—2).
+* Existing data: `achievements` = 1 row (company 120, `unverified`, id 1, target 149),
+  `achievement_evidence` = 0. **No verified snapshot exists** â†’ rollback of 007 is still clean.
+* No collisions; all canonical objects are InnoDB base tables.
+* The production 007 DDL matches the migration exactly (no drift).
+
+**Migrations were then applied to the scratch copy of the production data** (local, throwaway) and
+both 008 and 009 succeeded with exit 0, were idempotent on the second run, and the post-migration
+integrity invariants all returned **0**. This is a dry run against real production data shapes, not
+a production action.
+
+> **Do not rely on the historical record.** The 007 tables were counted live here; the historical
+> record is only corroboration.
 
 ### 3.3 Sprint 007 known production limitations to carry forward (measure, do not assume)
 
@@ -167,7 +207,7 @@ It reports, in order:
 - Notify users; confirm no active data entry. Note the start time.
 
 ### Step 2 - Back up the database
-- phpMyAdmin → `rbttaces_api` → Export → SQL → save `rbttaces_api-pre-007009-<date>.sql`.
+- phpMyAdmin â†’ `rbttaces_api` â†’ Export â†’ SQL â†’ save `rbttaces_api-pre-007009-<date>.sql`.
 - Confirm the file exists and is non-trivial in size; confirm it is restorable (open the first lines).
 
 ### Step 3 - Back up every production file that will be replaced or deleted
@@ -182,13 +222,14 @@ It reports, in order:
 - Record the preflight output (section 3) verbatim.
 
 ### Step 5 - Run the read-only preflight
-- Run [`preflight-readonly.sql`](preflight-readonly.sql) in phpMyAdmin.
-- Save every grid.
+- Run [`preflight-summary-readonly.sql`](deployment/preflight-summary-readonly.sql) in phpMyAdmin
+  (one grid; the `J. VERDICT` rows give the action per migration).
+- Save the grid.
 
 ### Step 6 - Decide (HARD HOLD-POINT)
-- If MySQL version < 8.0.16 → **STOP.**
-- If any migration is `PARTIAL - STOP` or `PRESENT BUT INVALID - STOP` → **STOP** and report.
-- If Section C is `VIOLATED` → **STOP.**
+- If MySQL version < 8.0.16 â†’ **STOP.**
+- If any migration is `PARTIAL - STOP` or `PRESENT BUT INVALID - STOP` â†’ **STOP** and report.
+- If Section C is `VIOLATED` â†’ **STOP.**
 - Otherwise continue with the migrations classified `MISSING`, in locked order.
 
 ### Step 7 - Apply only the missing migrations, in locked order
@@ -204,14 +245,15 @@ For each migration whose preflight classification is `MISSING`:
 In phpMyAdmin: select `rbttaces_api`, SQL tab, paste the migration file, Go. Do one at a time.
 
 ### Step 8 - Verify each migration before continuing
-After each migration, run the matching checks from
-[`post-migration-integrity.sql`](post-migration-integrity.sql) (Section A plus the relevant
-"EXPECTED: 0 rows" queries). Do not proceed to the next migration until the previous one verifies.
+After each migration, run
+[`post-migration-integrity-summary.sql`](deployment/post-migration-integrity-summary.sql)
+(single grid; the `B. INVARIANTS (expect 0)` rows must all be 0). Do not proceed to the next
+migration until the previous one verifies.
 Re-run the preflight Section B; the applied migration must now read `PRESENT`.
 
 ### Step 9 - Upload backend files in dependency order
 Using FileZilla, upload the files in [`backend-manifest-sha256.md`](backend-manifest-sha256.md) in
-Layer 1 → Layer 7 order, into the production `/api/` folder (see path mapping in section 5).
+Layer 1 â†’ Layer 7 order, into the production `/api/` folder (see path mapping in section 5).
 
 **Must NOT be overwritten** (production-specific settings differ from local). This is the documented
 never-upload list and **none of these appear in the manifest** - confirm before any bulk upload:
@@ -261,9 +303,9 @@ Path mapping (verified against the deployed capability features `api/company`, `
 
 | Repository | Production | Example |
 |---|---|---|
-| `api-incubator-os/api/...` | `/api/api/...` | `api-incubator-os/api/sessions/queries/list.php` → `/api/api/sessions/queries/list.php` |
-| `api-incubator-os/capabilities/...` | `/api/capabilities/...` | `.../capabilities/sessions/Services/...` → `/api/capabilities/sessions/Services/...` |
-| `api-incubator-os/api-nodes/...` | `/api/api-nodes/...` | `.../api-nodes/achievements/create.php` → `/api/api-nodes/achievements/create.php` |
+| `api-incubator-os/api/...` | `/api/api/...` | `api-incubator-os/api/sessions/queries/list.php` â†’ `/api/api/sessions/queries/list.php` |
+| `api-incubator-os/capabilities/...` | `/api/capabilities/...` | `.../capabilities/sessions/Services/...` â†’ `/api/capabilities/sessions/Services/...` |
+| `api-incubator-os/api-nodes/...` | `/api/api-nodes/...` | `.../api-nodes/achievements/create.php` â†’ `/api/api-nodes/achievements/create.php` |
 | `api-incubator-os/models/`, `services/`, `helpers/` | `/api/models/`, `/api/services/`, `/api/helpers/` | |
 
 > **Preventing accidental `/api/api/` nesting:** the double `api` is correct **only** for repository paths
@@ -272,18 +314,18 @@ Path mapping (verified against the deployed capability features `api/company`, `
 > `api-nodes/`, `models/`, `services/`, `helpers/` as subfolders. Uploading `api-incubator-os` into `/api/`
 > would create `/api/api-incubator-os/` and break every include path and every frontend URL.
 
-The exact repository→destination pairs, with per-file SHA-256, are in
+The exact repositoryâ†’destination pairs, with per-file SHA-256, are in
 [`backend-manifest-sha256.md`](backend-manifest-sha256.md).
 
 ### 5.1 Deletions (only after consumer proof)
 Two files are deleted in Sprint 007:
-- `api-incubator-os/models/MetricRecord.php` → `/api/models/MetricRecord.php`
-- `api-incubator-os/api-nodes/enhanced-metrics.php` → `/api/api-nodes/enhanced-metrics.php`
+- `api-incubator-os/models/MetricRecord.php` â†’ `/api/models/MetricRecord.php`
+- `api-incubator-os/api-nodes/enhanced-metrics.php` â†’ `/api/api-nodes/enhanced-metrics.php`
 
 **Consumer search (performed, no executable consumer found):** `MetricRecord` was dead, schema-incompatible
 code whose only instantiator was `enhanced-metrics.php`, which had zero references from `src/`. Remaining
 hits are documentation and an unrelated TypeScript interface `IMetricRecord` (the live `metric_records`
-`q1…q4` shape). **Delete these two production files only after confirming the same with a fresh search on
+`q1â€¦q4` shape). **Delete these two production files only after confirming the same with a fresh search on
 the deployed tree.** Deletion is optional for correctness (they are unreachable), so if unsure, leave them.
 
 ---
@@ -334,8 +376,10 @@ Stop immediately and report if any of these occur:
 | Deliverable | Path |
 |---|---|
 | This deployment document | `docs/sprint-007-009-production-deployment.md` |
-| Read-only preflight SQL | `docs/deployment/preflight-readonly.sql` |
-| Post-migration integrity SQL | `docs/deployment/post-migration-integrity.sql` |
+| Read-only preflight SQL (single grid) | `docs/deployment/preflight-summary-readonly.sql` |
+| Read-only preflight SQL (full detail) | `docs/deployment/preflight-readonly.sql` |
+| Post-migration integrity SQL (single grid) | `docs/deployment/post-migration-integrity-summary.sql` |
+| Post-migration integrity SQL (full detail) | `docs/deployment/post-migration-integrity.sql` |
 | Backend SHA-256 manifest | `docs/deployment/backend-manifest-sha256.md` |
 | Angular SHA-256 manifest | `docs/deployment/angular-manifest-sha256.md` |
 | Smoke-test checklist | `docs/deployment/smoke-tests.md` |
@@ -370,3 +414,4 @@ Stop immediately and report if any of these occur:
 
 Until the preflight grids from section 3 are returned and reviewed, no migration is approved and no file
 is approved for upload.
+

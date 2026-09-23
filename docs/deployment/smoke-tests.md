@@ -87,7 +87,8 @@ Unlinked disposable calendar events you created may be deleted.
 
 ## E. Post-deployment integrity
 
-Run [`post-migration-integrity.sql`](post-migration-integrity.sql). Record the output.
+Run [`post-migration-integrity-summary.sql`](post-migration-integrity-summary.sql) (single result grid).
+Record the output.
 
 | # | Check | Expected |
 |---|---|---|
