@@ -33,6 +33,27 @@ final class GoogleEventSyncResponse implements JsonSerializable
         public readonly ?string $lastSyncedAt = null,
         public readonly ?string $lastError = null,
         public readonly int $version = 1,
+        // ---- Presentation context (Phase 5) -------------------------------
+        // These describe the LOCAL event and the ACTING viewer; they never
+        // reveal a connection id, an etag, a claim token or a remote error.
+        /** True once this event has ever been published (even if later removed). */
+        public readonly bool $everPublished = false,
+        /** True when the local event's category is `meeting`. */
+        public readonly bool $isMeeting = false,
+        /** How many attendees Google would notify (deterministic; organisers excluded). */
+        public readonly int $attendeeCount = 0,
+        /** True when publishing/syncing will email invitation updates. */
+        public readonly bool $willSendInvitations = false,
+        /**
+         * True when the ACTING viewer owns the connection backing this mapping and
+         * may therefore sync or unpublish it. An event may be viewed (and its Meet
+         * link used) without being owned.
+         */
+        public readonly bool $ownedByViewer = false,
+        /** The local event version the projection currently reflects, if any. */
+        public readonly ?int $syncedEventVersion = null,
+        /** True when the projection reflects the local event's current version (no pending change). */
+        public readonly bool $upToDate = false,
     ) {}
 
     /** No Google projection exists for this event yet. */
@@ -43,6 +64,41 @@ final class GoogleEventSyncResponse implements JsonSerializable
             syncStatus: 'detached',
             conferenceStatus: 'none',
             published: false,
+        );
+    }
+
+    /**
+     * Attach presentation context (Phase 5). Returns a new value; the projection
+     * status itself is unchanged.
+     */
+    public function withPresentation(
+        bool $everPublished,
+        bool $isMeeting,
+        int $attendeeCount,
+        bool $willSendInvitations,
+        bool $ownedByViewer,
+        ?int $syncedEventVersion,
+        ?int $eventVersion,
+    ): self {
+        return new self(
+            calendarEventId: $this->calendarEventId,
+            syncStatus: $this->syncStatus,
+            conferenceStatus: $this->conferenceStatus,
+            published: $this->published,
+            googleEventId: $this->googleEventId,
+            googleCalendarId: $this->googleCalendarId,
+            googleEventUrl: $this->googleEventUrl,
+            meetUrl: $this->meetUrl,
+            lastSyncedAt: $this->lastSyncedAt,
+            lastError: $this->lastError,
+            version: $this->version,
+            everPublished: $everPublished,
+            isMeeting: $isMeeting,
+            attendeeCount: $attendeeCount,
+            willSendInvitations: $willSendInvitations,
+            ownedByViewer: $ownedByViewer,
+            syncedEventVersion: $syncedEventVersion,
+            upToDate: $syncedEventVersion !== null && $eventVersion !== null && $syncedEventVersion === $eventVersion,
         );
     }
 
@@ -77,6 +133,13 @@ final class GoogleEventSyncResponse implements JsonSerializable
             'lastSyncedAt' => $this->lastSyncedAt,
             'lastError' => $this->lastError,
             'version' => $this->version,
+            'everPublished' => $this->everPublished,
+            'isMeeting' => $this->isMeeting,
+            'attendeeCount' => $this->attendeeCount,
+            'willSendInvitations' => $this->willSendInvitations,
+            'ownedByViewer' => $this->ownedByViewer,
+            'syncedEventVersion' => $this->syncedEventVersion,
+            'upToDate' => $this->upToDate,
         ];
     }
 

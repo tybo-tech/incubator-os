@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: In progress — **Phases 1, 2, 3 and 4 delivered and verified** (sessions 030, 031, 032, 033). Phases 5–6 locked, awaiting implementation.
+> **Status**: In progress — **Phases 1, 2, 3, 4 and 5 delivered and verified** (sessions 030, 031, 032, 033, 034). Phase 6 locked, awaiting implementation.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -399,24 +399,45 @@ Build the frontend surface.
 
 #### Tasks
 
-- [ ] **5.1** Add `src/app/features/calendar/models/google-calendar.models.ts` — `GoogleConnection`, `GoogleEventSync`, status unions.
-- [ ] **5.2** Add `src/app/features/calendar/services/google-calendar.service.ts` — `getConnection()`, `beginConnect(returnTo)` (returns `authUrl`; the caller navigates), `disconnect()`, `getEventSync(id)`, `publish(id, version)`, `sync(id, version)`, `unpublish(id, version)`. `withCredentials` on every call.
-- [ ] **5.3** Add a connection chip to the calendar page header (`calendar-page.component.ts`, reused by the company and global calendars): `Connect Google Calendar` → `Connected as {email}` → `Reconnect required` (with a `Reconnect` action) and a `Disconnect` action.
-- [ ] **5.4** Add the Google section to `calendar-event-modal.component.ts`: hidden until the event exists; then a status row (`Not published` / `Pending` / `Synced` / `Conflict` / `Failed`) with actions **Publish to Google**, **Sync now**, **Remove from Google**, plus a **Join Google Meet** link and a **Open in Google Calendar** link when present; show `lastError` on `failed`/`conflict`.
-- [ ] **5.5** Read `?google=connected|error` on calendar page load: refresh connection state, show a toast, and strip the query param from the URL (no `ViewStateService` usage — connection is server state).
-- [ ] **5.6** Handle `version` conflicts (`409`) by reloading the event before retrying, consistent with the existing optimistic-concurrency UX.
-- [ ] **5.7** Respect the popup contract (no outside-click close, fixed head/foot, scrollable body) and reuse `app-icon` for the new controls.
+- [x] **5.1** Add `src/app/features/calendar/models/google-calendar.models.ts` — `GoogleConnection`, `GoogleEventSync`, `GoogleEventUiState`, `GoogleChipState`, `GooglePublishIntent`, status unions.
+- [x] **5.2** Add `src/app/features/calendar/services/google-calendar.service.ts` — `getConnection()`, `beginConnect(returnTo)`, `disconnect()`, `getEventSync(id)`, `publish(id, version)`, `sync(id, version)`, `unpublish(id, version)`, plus safe error/OAuth-code mapping. `withCredentials` on every call.
+- [x] **5.3** Add `components/google-connection-chip.component.ts` (**Your Google Calendar**): `Connect Google Calendar` → `Google Calendar connected` → `Reconnect Google Calendar` / `Connection needs attention`, with an account menu (email, Reconnect, Disconnect) and the exact disconnect warning. No outside-click close.
+- [x] **5.4** Add `components/google-event-section.component.ts` inside the event modal: the full state matrix (`Not published` / `Add to Google Calendar` / `Adding…` / `Creating Google Meet link…` / `In Google Calendar` / `Changes not yet synced` / `Retry sync` / `Changed externally in Google Calendar` / `Reconnect Google Calendar` / `Removed from Google Calendar` / `Published by another organiser`), a **Join Google Meet** primary link, a secondary **Open in Google Calendar**, and explicit **Remove from Google Calendar**. Icon + text on every state, never colour alone.
+- [x] **5.5** Add `components/google-publish-confirm.component.ts`: a confirmation dialog stating the connected organiser, attendee count, invitation-email behaviour and Meet creation; a generic event states no attendees will be invited. Escape cancels; the confirm action is focused on open.
+- [x] **5.6** Read `?google=<code>` on calendar load: recognise only the six safe result codes, refresh the connection, toast, and strip the parameter with URL replacement. Unknown codes fall back to a generic message; no raw Google error or token is shown.
+- [x] **5.7** Respect the popup contract (no outside-click close, fixed head/foot, scrollable body, focus handling) and reuse `app-icon` for every new control.
+- [x] **5.8** Show the Meet link in the **Session workspace header** (`session-workspace.component.ts`, wired from `sessions-page.component.ts`), with `Meet link is being created` / `Meet link unavailable` states. Read-only — no management controls from the workspace.
+- [x] **5.9** Backend support: extend `GoogleEventSyncResponse` with the safe presentation context (`everPublished`, `isMeeting`, `attendeeCount`, `willSendInvitations`, `ownedByViewer`, `syncedEventVersion`, `upToDate`) via `withPresentation()`, a `GoogleEventSyncService::present()` pure read, and `queries/event.php` using it. Enforce **owner-only** sync and unpublish (`assertOwnConnection`).
 
 #### Exit Criteria
 
-- [ ] Connect redirects to Google and returns to the calendar with a success toast and a `Connected as …` chip.
-- [ ] `Reconnect required` is shown when the backend reports `needs_reconnect`, and `Reconnect` restarts the flow.
-- [ ] Publishing a `meeting` event shows the Join-Meet and Open-in-Google links; publishing a non-meeting event shows no Meet link.
-- [ ] `Sync now` reflects a reschedule; `Remove from Google` clears the section back to `Not published`.
-- [ ] A `conflict` and a `failed` state render their `lastError` and offer the correct recovery action.
-- [ ] No network response contains a token, client secret or refresh token (verified in the browser network log).
-- [ ] Every new popup keeps the fixed-header/footer + scrollable-body contract at a 620px-tall viewport.
-- [ ] Zero console errors on the connect → publish → sync → cancel flows.
+- [x] Connect redirects to Google and returns to the calendar with a success toast and a `Google Calendar connected` chip.
+- [x] `Reconnect required` is shown when the backend reports `needs_reconnect`, and `Reconnect` restarts the flow.
+- [x] Publishing a `meeting` event shows the Join-Meet and Open-in-Google links; publishing a non-meeting event shows no Meet link.
+- [x] `Sync changes` reflects a reschedule; `Remove from Google Calendar` clears the section to `Removed from Google Calendar` (and offers `Add to Google Calendar again`).
+- [x] `conflict`, `retry` and `needs_reconnect` render their `lastError` and offer the correct recovery action — conflict offers **no** fake Retry and **no** Overwrite.
+- [x] No network response contains a token, client secret or refresh token (verified: connection + projection payloads carry no `etag`/`connectionId`/`claimToken`/ciphertext).
+- [x] Every new popup keeps the fixed-header/footer + scrollable-body contract at a 620px-tall viewport.
+- [x] Zero console errors on the connect → publish → sync → conflict → remove → republish flows.
+
+#### Phase 5 completion — 2026-09-24 (session 034)
+
+| Area | Result |
+| --- | --- |
+| Phase 5 service suite | `api-incubator-os/tests/GoogleCalendarPhase5.php` — **34/34** |
+| Phase 5 HTTP contract suite | `api-incubator-os/tests/GoogleCalendarPhase5Http.ps1` — **37/37** |
+| Angular unit tests (calendar/page/service) | all green (added 8 Google specs) |
+| Production build | clean, **no new budget warning** |
+| PHP lint | **620/620** across the backend |
+| Phase 1 / 2 service / 2 HTTP / 3 service / 3 HTTP / 4 service / 4 HTTP | **62/62** / **73/73** / **23/23** / **108/108** / **26/26** / **92/92** / **33/33** |
+| Calendar / Sessions regression | **65/65** / **106/106** |
+| Network | none — offline fake only; **zero console errors** in the browser |
+
+Three surfaces communicate three separate things: the **connection** (header chip), whether **this event is published**, and whether the **Google copy matches** Incubator OS. The per-event state is derived from connection + projection + the acting viewer's ownership, so authorization is presented correctly: a mapping owned by another organiser is read-only (it shows the projection and the Meet link but no Sync/Remove), and the backend independently refuses a non-owner's sync/unpublish with `403`.
+
+Presentation context lives in the DTO only because a browser cannot otherwise know the event's current version or the viewer's ownership. It is derived (a pure read, no Google call), it never exposes a connection id/etag/claim token/remote error, and `upToDate` is the honest answer to "does the Google copy match?" — a local edit flips it false without pretending the sync happened. Publishing is never automatic; a generic (non-Session) event states plainly that no attendees will be invited.
+
+Defect found and fixed during Phase 5 browser verification: a `412 → conflict` write nulled the known `google_event_url`/`meet_url`, so the conflict UI could not offer `Open in Google Calendar` (and could not show the Join link). The conflict write now preserves the last known links; a regression assertion was added to Phase 4 (`92/92`). A second defect: management controls were gated on `ownedByViewer`, which is false before anything is published — the gate now keys off the ACTIVE mapping, so `Add to Google Calendar` is offered (with a unit test).
 
 ---
 
@@ -549,13 +570,22 @@ api-incubator-os/
     ├── GoogleCalendarPhase3.php                    # publish service suite (delivered)
     ├── GoogleCalendarPhase3Http.ps1                # publish endpoint suite (delivered)
     ├── GoogleCalendarPhase4.php                    # sync/cancel/unpublish service suite (delivered)
-    └── GoogleCalendarPhase4Http.ps1                # sync/cancel/unpublish endpoint suite (delivered)
+    ├── GoogleCalendarPhase4Http.ps1                # sync/cancel/unpublish endpoint suite (delivered)
+    ├── GoogleCalendarPhase5.php                    # presentation + ownership service suite (delivered)
+    └── GoogleCalendarPhase5Http.ps1                # Angular-consumed endpoint contract suite (delivered)
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts
 ├── services/google-calendar.service.ts
+├── components/google-connection-chip.component.ts          # NEW — Your Google Calendar chip
+├── components/google-event-section.component.ts            # NEW — per-event state matrix
+├── components/google-publish-confirm.component.ts          # NEW — publish confirmation dialog
 ├── calendar-page.component.ts                     # MODIFY — connection chip + query param
 └── components/calendar-event-modal.component.ts   # MODIFY — Google sync section
+
+src/app/features/sessions/
+├── sessions-page.component.ts                     # MODIFY — load the linked event's projection
+└── components/session-workspace.component.ts      # MODIFY — Join-Meet link in the header
 ```
 
 ---

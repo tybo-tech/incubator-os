@@ -10,6 +10,8 @@ import { CompanyService } from '../../../services/company.service';
 import { ViewStateService } from '../../../services/view-state.service';
 import { AuthService } from '../../auth/auth.service';
 import { SessionService, EligibleEvent } from './services/session.service';
+import { GoogleCalendarService } from '../calendar/services/google-calendar.service';
+import { GoogleEventSync } from '../calendar/models/google-calendar.models';
 import { SessionWorkspaceComponent } from './components/session-workspace.component';
 import { SessionScheduleModalComponent } from './components/session-schedule-modal.component';
 import {
@@ -146,6 +148,7 @@ type Tab = 'upcoming' | 'previous';
       [brief]="brief()"
       [isAdmin]="isAdmin()"
       [saving]="saving()"
+      [googleSync]="googleSync()"
       (close)="closeWorkspace()"
       (refresh)="reloadCurrent()"
       (start)="startSession()"
@@ -164,6 +167,7 @@ type Tab = 'upcoming' | 'previous';
 export class SessionsPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(SessionService);
+  private google = inject(GoogleCalendarService);
   private companyService = inject(CompanyService);
   private auth = inject(AuthService);
   private ui = inject(ViewStateService);
@@ -182,6 +186,8 @@ export class SessionsPageComponent implements OnInit {
   session = signal<SessionDetail | null>(null);
   brief = signal<PreparationBrief | null>(null);
   eligibleEvents = signal<EligibleEvent[]>([]);
+  /** The Google projection of the open Session's linked event (read-only Meet link). */
+  googleSync = signal<GoogleEventSync | null>(null);
 
   tab = signal<Tab>('upcoming');
   search = signal('');
@@ -311,8 +317,24 @@ export class SessionsPageComponent implements OnInit {
         this.session.set(detail);
         this.workspaceOpen.set(true);
         this.loadBrief(detail.id);
+        this.loadGoogleSync(detail);
       },
       error: err => this.error.set(this.api.errorMessage(err)),
+    });
+  }
+
+  /**
+   * Load the Google projection of the Session's linked event so the workspace
+   * header can offer the Meet link. Read-only and best-effort: a missing
+   * projection, a disconnected connection or any error simply shows nothing.
+   */
+  private loadGoogleSync(detail: SessionDetail): void {
+    this.googleSync.set(null);
+    const eventId = detail.calendarEventId ?? detail.event?.id ?? null;
+    if (!eventId) return;
+    this.google.getEventSync(eventId).subscribe({
+      next: g => this.googleSync.set(g),
+      error: () => this.googleSync.set(null),
     });
   }
 
@@ -327,7 +349,7 @@ export class SessionsPageComponent implements OnInit {
     const s = this.session();
     if (!s) return;
     this.api.get(s.id).subscribe({
-      next: detail => { this.session.set(detail); this.loadBrief(detail.id); },
+      next: detail => { this.session.set(detail); this.loadBrief(detail.id); this.loadGoogleSync(detail); },
       error: err => this.error.set(this.api.errorMessage(err)),
     });
     this.load();
@@ -337,6 +359,7 @@ export class SessionsPageComponent implements OnInit {
     this.workspaceOpen.set(false);
     this.session.set(null);
     this.brief.set(null);
+    this.googleSync.set(null);
     this.load();
   }
 

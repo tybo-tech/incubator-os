@@ -10,6 +10,7 @@ import {
   ATTENDANCE_LABELS, RELATIONSHIP_LABELS, SESSION_LINK_LABELS,
   SESSION_STATUS_LABELS, SESSION_TYPES,
 } from '../models/session.models';
+import { GoogleEventSync } from '../../calendar/models/google-calendar.models';
 
 type Tab = 'prepare' | 'run' | 'close' | 'history';
 
@@ -34,6 +35,15 @@ type Tab = 'prepare' | 'run' | 'close' | 'history';
               <span class="sw-pill" [class]="'sess-st-' + session().status">{{ statusLabel() }}</span>
               {{ typeLabel() }}
               @if (scheduleLabel(); as when) { · {{ when }} }
+              @if (meetUrl()) {
+                <a class="sess-meet-link" [href]="meetUrl()" target="_blank" rel="noopener noreferrer">
+                  <app-icon name="video-camera"></app-icon> Join Google Meet
+                </a>
+              } @else if (meetPending()) {
+                <span class="sess-meet-note"><app-icon name="clock"></app-icon> Meet link is being created</span>
+              } @else if (meetFailed()) {
+                <span class="sess-meet-note warn"><app-icon name="exclamation-triangle"></app-icon> Meet link unavailable</span>
+              }
             </div>
           </div>
           <button type="button" class="sw-icon-btn" aria-label="Close" title="Close" (click)="close.emit()">
@@ -426,6 +436,10 @@ type Tab = 'prepare' | 'run' | 'close' | 'history';
     .sess-block { margin-bottom: 16px; }
     .sess-order { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:#eef2f8; color:var(--ios-copy); font-size:10px; font-weight:700; flex:0 0 auto; }
     .sw-badge { display:inline-flex; align-items:center; border-radius:999px; padding:2px 8px; font-size:10px; font-weight:700; background:var(--ios-purple-soft); color:var(--ios-purple); }
+    .sess-meet-link { display:inline-flex; align-items:center; gap:5px; margin-left:8px; color:#fff; background:var(--ios-blue); border-radius:999px; padding:3px 10px; font-size:10px; font-weight:700; text-decoration:none; }
+    .sess-meet-link:hover { background:#0f55e0; }
+    .sess-meet-note { display:inline-flex; align-items:center; gap:5px; margin-left:8px; color:var(--ios-muted); font-size:10px; font-weight:600; }
+    .sess-meet-note.warn { color:var(--ios-orange); }
   `],
 })
 export class SessionWorkspaceComponent {
@@ -433,6 +447,12 @@ export class SessionWorkspaceComponent {
   readonly brief = input<PreparationBrief | null>(null);
   readonly isAdmin = input<boolean>(false);
   readonly saving = input<boolean>(false);
+  /**
+   * The Google projection of the Session's linked calendar event (Sprint 010
+   * Phase 5). Read-only: the workspace surfaces the Meet link but never manages
+   * the mapping. Company users with Session access may use the Join link.
+   */
+  readonly googleSync = input<GoogleEventSync | null>(null);
 
   readonly close = output<void>();
   readonly refresh = output<void>();
@@ -448,6 +468,23 @@ export class SessionWorkspaceComponent {
 
   readonly tab = signal<Tab>('prepare');
   readonly cancelPrompt = signal(false);
+
+  /** A usable Meet link for the linked event, if the conference succeeded. */
+  readonly meetUrl = computed(() => {
+    const g = this.googleSync();
+    if (!g?.published || !g.meetUrl) return null;
+    return g.conferenceStatus === 'success' || g.conferenceStatus === 'none' ? g.meetUrl : null;
+  });
+
+  readonly meetPending = computed(() => {
+    const g = this.googleSync();
+    return !!g?.published && g.conferenceStatus === 'pending';
+  });
+
+  readonly meetFailed = computed(() => {
+    const g = this.googleSync();
+    return !!g?.published && g.conferenceStatus === 'failure';
+  });
 
   readonly linkTypes: SessionLinkEntityType[] = ['target', 'swot', 'task', 'financial', 'result', 'evidence'];
   readonly relationships: SessionRelationship[] = ['AGENDA', 'DISCUSSED', 'CREATED', 'UPDATED', 'REVIEWED', 'EVIDENCE'];

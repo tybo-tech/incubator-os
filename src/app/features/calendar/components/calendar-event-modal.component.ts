@@ -9,6 +9,11 @@ import {
   CalendarEvent, CalendarEventInput, CalendarCategory, CalendarStatus,
   CalendarLinkType, CALENDAR_CATEGORIES, CALENDAR_LINK_TYPES,
 } from '../models/calendar.models';
+import {
+  GoogleConnection, GoogleEventSync, GooglePublishIntent,
+} from '../models/google-calendar.models';
+import { GoogleEventSectionComponent } from './google-event-section.component';
+import { GooglePublishConfirmComponent } from './google-publish-confirm.component';
 import { toIsoDate } from '../calendar.utils';
 
 export interface EventFormContext {
@@ -24,7 +29,7 @@ export interface EventFormContext {
 @Component({
   selector: 'app-calendar-event-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppIconComponent],
+  imports: [CommonModule, FormsModule, AppIconComponent, GoogleEventSectionComponent, GooglePublishConfirmComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="sw-modal" role="dialog" aria-modal="true">
@@ -145,6 +150,18 @@ export interface EventFormContext {
               </button>
             </div>
           }
+
+          @if (editing()) {
+            <app-google-event-section
+              [connection]="googleConnection()"
+              [projection]="googleProjection()"
+              [busy]="googleBusy()"
+              (requestPublish)="confirmPublish.set(true)"
+              (requestSync)="syncRequested.emit()"
+              (requestRemove)="removeRequested.emit()"
+              (reconnect)="reconnectRequested.emit()">
+            </app-google-event-section>
+          }
         </div>
 
         <div class="sw-modal-foot">
@@ -160,18 +177,46 @@ export interface EventFormContext {
         </div>
       </div>
     </div>
+
+    @if (confirmPublish()) {
+      <app-google-publish-confirm
+        [intent]="publishIntent()"
+        [busy]="googleBusy()"
+        (cancel)="confirmPublish.set(false)"
+        (confirm)="confirmPublish.set(false); confirmPublishAction.emit()">
+      </app-google-publish-confirm>
+    }
   `,
 })
 export class CalendarEventModalComponent implements OnChanges {
   readonly ctx = input.required<EventFormContext>();
   readonly event = input<CalendarEvent | null>(null);
   readonly saving = input<boolean>(false);
+  /** The acting user's Google connection, for the per-event Google section. */
+  readonly googleConnection = input<GoogleConnection | null>(null);
+  /** The event's Google projection (null until loaded). */
+  readonly googleProjection = input<GoogleEventSync | null>(null);
+  /** A Google request is in flight: disable repeat actions. */
+  readonly googleBusy = input<boolean>(false);
+  /** The publish confirmation details (organiser, attendees, invitations, Meet). */
+  readonly publishIntent = input<GooglePublishIntent>({
+    organiserEmail: null, attendeeCount: 0, willSendInvitations: false, isMeeting: false,
+  });
 
   readonly close = output<void>();
   readonly save = output<CalendarEventInput & { id?: string }>();
   readonly delete = output<void>();
   /** Emitted with the Session id when the user opens the linked workspace. */
   readonly openSession = output<number>();
+  /** Google intents, handled by the page (which owns the API calls). */
+  readonly syncRequested = output<void>();
+  readonly removeRequested = output<void>();
+  readonly reconnectRequested = output<void>();
+  /** The user confirmed publishing in the confirmation dialog. */
+  readonly confirmPublishAction = output<void>();
+
+  /** The publish confirmation dialog is owned here and only appears on request. */
+  readonly confirmPublish = signal(false);
 
   /** Linked Session id for the event being edited, if any. */
   readonly sessionId = computed(() => this.event()?.session_id ?? null);

@@ -190,6 +190,8 @@ final class GoogleEventSyncService
         }
 
         $connection = $this->loadStoredConnection($existing, $tenantId);
+        // Only the owner of the publishing connection may push changes to it.
+        $this->policy->assertOwnConnection((int) $connection['user_id']);
         $session = $this->sessions->forEvent($calendarEventId);
         $organiserEmail = (string) ($connection['google_account_email'] ?? '');
 
@@ -328,6 +330,8 @@ final class GoogleEventSyncService
         }
 
         $connection = $this->loadStoredConnection($existing, $tenantId);
+        // Only the owner of the publishing connection may remove it from Google.
+        $this->policy->assertOwnConnection((int) $connection['user_id']);
         $organiserEmail = (string) ($connection['google_account_email'] ?? '');
 
         $lease = $this->sync->acquireLease(
@@ -366,6 +370,67 @@ final class GoogleEventSyncService
             $this->sync->releaseLease($calendarEventId, $lease, $tenantId);
             throw $e;
         }
+    }
+
+    // ================================================================== present
+
+    /**
+     * The projection of an event enriched with the presentation context the UI
+     * needs (Phase 5): whether it was ever published, whether it is a meeting, how
+     * many attendees would be notified, and whether the ACTING viewer owns the
+     * connection (and may therefore sync/unpublish).
+     *
+     * Never touches Google and never exposes a connection id, etag or remote error.
+     * Authorization to VIEW the event is the caller's responsibility (the endpoint
+     * already enforces it); here a non-owner simply gets `ownedByViewer = false`.
+     *
+     * @param array<string,mixed> $eventRow a live `calendar_events` row
+     */
+    public function present(array $eventRow): GoogleEventSyncResponse
+    {
+        $tenantId = $this->policy->tenantId();
+        $calendarEventId = (int) $eventRow['id'];
+
+        $existing = $this->sync->findByCalendarEvent($calendarEventId, $tenantId);
+        $response = $existing !== null
+            ? GoogleEventSyncResponse::fromRow($existing)
+            : GoogleEventSyncResponse::notPublished($calendarEventId);
+
+        $isMeeting = ((string) ($eventRow['category'] ?? '')) === self::CATEGORY_MEETING;
+
+        // Who owns the publishing connection (if any)? Read-only; no status gate.
+        $ownedByViewer = false;
+        if ($existing !== null && ($existing['connection_id'] ?? null) !== null) {
+            $connection = $this->connections->findById((int) $existing['connection_id']);
+            if ($connection !== null) {
+                $ownedByViewer = (int) ($connection['user_id'] ?? 0) === $this->policy->actorId();
+            }
+        }
+
+        // Attendee count follows the exact list Google would be sent.
+        $organiserEmail = null;
+        if ($existing !== null && ($existing['connection_id'] ?? null) !== null) {
+            $connection = $this->connections->findById((int) $existing['connection_id']);
+            $organiserEmail = $connection['google_account_email'] ?? null;
+        }
+        $attendeeCount = count($this->attendees->resolve($eventRow, $organiserEmail));
+        $willSendInvitations = $isMeeting && $attendeeCount > 0;
+
+        $everPublished = $existing !== null && (
+            ($existing['google_event_id'] ?? null) !== null
+            || ($existing['last_google_event_id'] ?? null) !== null
+            || ($existing['unpublished_at'] ?? null) !== null
+        );
+
+        return $response->withPresentation(
+            everPublished: $everPublished,
+            isMeeting: $isMeeting,
+            attendeeCount: $attendeeCount,
+            willSendInvitations: $willSendInvitations,
+            ownedByViewer: $ownedByViewer,
+            syncedEventVersion: isset($existing['synced_event_version']) ? (int) $existing['synced_event_version'] : null,
+            eventVersion: (int) ($eventRow['version'] ?? 1),
+        );
     }
 
     // ================================================================ internals
@@ -555,6 +620,9 @@ final class GoogleEventSyncService
 
             $this->sync->markResult($calendarEventId, $lease, $tenantId, [
                 'google_event_id' => $existing['google_event_id'],
+                'google_event_url' => $existing['google_event_url'] ?? null,
+                'meet_url' => $existing['meet_url'] ?? null,
+                'meet_conference_id' => $existing['meet_conference_id'] ?? null,
                 'etag' => $existing['etag'] ?? null,
                 'remote_etag' => $remoteEtag,
                 'generation' => (int) ($existing['generation'] ?? 1),

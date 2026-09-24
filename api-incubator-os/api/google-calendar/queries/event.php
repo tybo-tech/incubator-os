@@ -37,10 +37,11 @@ try {
     // Viewing the projection follows the same authorization as viewing the event.
     $policy->assertCanAccessCompany($event['company_id'] !== null ? (int) $event['company_id'] : null);
 
-    $row = (new GoogleEventSyncRepository($db))->findByCalendarEvent($id, $policy->tenantId());
-    $response = $row !== null
-        ? GoogleEventSyncResponse::fromRow($row)
-        : GoogleEventSyncResponse::notPublished($id);
+    // Enrich with presentation context: whether the viewer may manage this
+    // mapping, whether it is a meeting, and how many attendees would be notified.
+    // Never contacts Google and never exposes a connection id, etag or token.
+    $response = GoogleEventSyncService::fromConfig($db, new GoogleAccessPolicy($actor))
+        ->present($event);
 
     echo json_encode([
         'success' => true,

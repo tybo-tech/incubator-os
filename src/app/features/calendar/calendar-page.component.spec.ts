@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ActivatedRoute } from '@angular/router';
 import { CalendarPageComponent } from './calendar-page.component';
 import { CalendarService } from './services/calendar.service';
+import { GoogleCalendarService } from './services/google-calendar.service';
 import { AuthService } from '../../auth/auth.service';
 import { of } from 'rxjs';
 
@@ -41,12 +42,27 @@ describe('CalendarPageComponent', () => {
   let httpMock: HttpTestingController;
 
   function routeStub(): any {
+    const emptyMap = { get: () => null };
     return {
       snapshot: { paramMap: { get: () => null }, params: {} },
-      paramMap: of({ get: () => null }),
+      paramMap: of(emptyMap),
+      queryParamMap: of(emptyMap),
       params: of({}),
       parent: null,
     };
+  }
+
+  function flushConnection() {
+    const reqs = httpMock.match(r => r.url.includes('/api/google-calendar/queries/connection.php'));
+    reqs.forEach(r => r.flush({
+      status: 'connected',
+      googleAccountEmail: 'organiser@example.test',
+      calendarId: 'primary',
+      connectedAt: '2026-09-24T08:00:00Z',
+      lastSyncedAt: null,
+      needsReconnect: false,
+      pendingAccountEmail: null,
+    }));
   }
 
   beforeEach(async () => {
@@ -68,6 +84,8 @@ describe('CalendarPageComponent', () => {
     fixture.detectChanges();
     // Flush the initial bounded-range request.
     httpMock.expectOne(req => req.url.includes('/api/calendar/queries/list.php')).flush([]);
+    // Flush the connection status read.
+    flushConnection();
     fixture.detectChanges();
   });
 
@@ -123,6 +141,80 @@ describe('CalendarPageComponent', () => {
     page.closeForm();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-calendar-event-modal')).toBeFalsy();
+  });
+
+  it('renders the "Your Google Calendar" connection chip with the connected account', () => {
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent || '';
+    expect(text).toContain('Google Calendar connected');
+    expect(fixture.nativeElement.querySelector('app-google-connection-chip')).toBeTruthy();
+  });
+
+  it('does not offer Google management controls purely because the event is visible', () => {
+    const page = fixture.componentInstance;
+    // A projection owned by another organiser must be read-only.
+    page.editing.set({
+      id: '5', company_id: 11, company_name: 'Acme', title: 'External meeting',
+      description: null, category: 'meeting', date: '2026-09-25', all_day: false,
+      start_time: '09:00', end_time: '10:00', location: null, assignee: null,
+      link_type: null, link_id: null, link_label: null, status: 'scheduled',
+      created_by: null, created_at: '2026-09-24T08:00:00Z', version: 1,
+    });
+    page.openEdit(page.editing()!);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne(r => r.url.includes('/api/google-calendar/queries/event.php'));
+    req.flush({
+      success: true,
+      data: {
+        calendarEventId: 5, syncStatus: 'synced', conferenceStatus: 'success', published: true,
+        fullySynced: true, googleEventId: 'abc', googleCalendarId: 'primary',
+        googleEventUrl: 'https://calendar.google.com/event?eid=abc', meetUrl: 'https://meet.google.com/xyz',
+        lastSyncedAt: '2026-09-24T08:00:00Z', lastError: null, version: 2,
+        everPublished: true, isMeeting: true, attendeeCount: 2, willSendInvitations: true,
+        ownedByViewer: false, syncedEventVersion: 1, upToDate: true,
+      },
+    });
+    fixture.detectChanges();
+
+    expect(page.googleProjection()?.ownedByViewer).toBe(false);
+    const text = fixture.nativeElement.textContent || '';
+    expect(text).toContain('Published by another organiser');
+    expect(text).toContain('Read-only');
+  });
+
+  it('offers publishing for an event with no Google mapping yet', () => {
+    const page = fixture.componentInstance;
+    // Before publishing there is no mapping, so ownedByViewer is false by
+    // construction; publishing must still be offered.
+    page.editing.set({
+      id: '9', company_id: 11, company_name: 'Acme', title: 'Fresh meeting',
+      description: null, category: 'meeting', date: '2026-09-25', all_day: false,
+      start_time: '09:00', end_time: '10:00', location: null, assignee: null,
+      link_type: null, link_id: null, link_label: null, status: 'scheduled',
+      created_by: null, created_at: '2026-09-24T08:00:00Z', version: 1,
+    });
+    page.openEdit(page.editing()!);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne(r => r.url.includes('/api/google-calendar/queries/event.php'));
+    req.flush({
+      success: true,
+      data: {
+        calendarEventId: 9, syncStatus: 'detached', conferenceStatus: 'none', published: false,
+        fullySynced: false, googleEventId: null, googleCalendarId: null,
+        googleEventUrl: null, meetUrl: null,
+        lastSyncedAt: null, lastError: null, version: 1,
+        everPublished: false, isMeeting: true, attendeeCount: 0, willSendInvitations: false,
+        ownedByViewer: false, syncedEventVersion: null, upToDate: false,
+      },
+    });
+    fixture.detectChanges();
+
+    const section = fixture.nativeElement.querySelector('app-google-event-section') as HTMLElement;
+    expect(section.textContent).toContain('Not in Google Calendar');
+    const buttons = Array.from(section.querySelectorAll('button')).map(b => b.textContent?.trim());
+    expect(buttons.some(t => t?.includes('Add to Google Calendar'))).toBe(true);
   });
 });
 
@@ -230,5 +322,84 @@ describe('CalendarService', () => {
       error: { error: 'Validation failed', errors: { title: 'A title is required.' } },
     } as any);
     expect(message).toBe('A title is required.');
+  });
+});
+
+describe('GoogleCalendarService', () => {
+  let service: GoogleCalendarService;
+  let httpMock: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    service = TestBed.inject(GoogleCalendarService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpMock.verify());
+
+  it('reads the connection with credentials', () => {
+    let result: any;
+    service.getConnection().subscribe(c => (result = c));
+
+    const req = httpMock.expectOne(r => r.url.includes('/api/google-calendar/queries/connection.php'));
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({
+      status: 'connected', googleAccountEmail: 'a@b.test', calendarId: 'primary',
+      connectedAt: null, lastSyncedAt: null, needsReconnect: false, pendingAccountEmail: null,
+    });
+
+    expect(result.status).toBe('connected');
+    expect(result.googleAccountEmail).toBe('a@b.test');
+  });
+
+  it('publishes with credentials and maps the projection', () => {
+    let result: any;
+    service.publish(7, 3).subscribe(p => (result = p));
+
+    const req = httpMock.expectOne(r => r.url.includes('/api/google-calendar/commands/publish.php?id=7'));
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({
+      success: true, message: 'ok',
+      data: {
+        calendarEventId: 7, syncStatus: 'synced', conferenceStatus: 'success', published: true,
+        fullySynced: true, googleEventId: 'g', googleCalendarId: 'primary',
+        googleEventUrl: 'https://calendar.google.com/e', meetUrl: 'https://meet.google.com/x',
+        lastSyncedAt: null, lastError: null, version: 1, everPublished: true,
+        isMeeting: true, attendeeCount: 4, willSendInvitations: true, ownedByViewer: true,
+        syncedEventVersion: 3, upToDate: true,
+      },
+    });
+
+    expect(result.published).toBe(true);
+    expect(result.attendeeCount).toBe(4);
+    expect(result.ownedByViewer).toBe(true);
+  });
+
+  it('maps a sync conflict without leaking a raw error', () => {
+    const err = service.toError({
+      status: 409,
+      error: { error: 'The Google event was changed externally. Review the conflict before syncing again.', code: 'GOOGLE_SYNC_CONFLICT' },
+    } as any);
+    expect(err.code).toBe('GOOGLE_SYNC_CONFLICT');
+    expect(service.isConflict({ status: 409, error: { code: 'GOOGLE_SYNC_CONFLICT' } } as any)).toBe(true);
+  });
+
+  it('recognises only safe OAuth result codes', () => {
+    expect(service.isKnownResultCode('connected')).toBe(true);
+    expect(service.isKnownResultCode('denied')).toBe(true);
+    expect(service.isKnownResultCode('access_denied')).toBe(false);
+    expect(service.isKnownResultCode('<script>')).toBe(false);
+    expect(service.oauthResultMessage('connected').type).toBe('success');
+    expect(service.oauthResultMessage('scope_missing').message).toContain('permission');
+  });
+
+  it('treats an unknown OAuth code as a generic failure', () => {
+    const { message, type } = service.oauthResultMessage('token=abc123');
+    expect(type).toBe('error');
+    expect(message).not.toContain('abc123');
   });
 });

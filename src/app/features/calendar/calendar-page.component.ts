@@ -8,10 +8,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppIconComponent } from '../../shared/components/app-icon/app-icon';
 import { CompanyService } from '../../../services/company.service';
 import { ViewStateService } from '../../../services/view-state.service';
+import { ToastService } from '../../services/toast.service';
 import { CalendarService } from './services/calendar.service';
+import { GoogleCalendarService } from './services/google-calendar.service';
 import { CalendarMonthComponent } from './components/calendar-month.component';
 import { CalendarAgendaComponent } from './components/calendar-agenda.component';
 import { CalendarDayModalComponent } from './components/calendar-day-modal.component';
+import { GoogleConnectionChipComponent } from './components/google-connection-chip.component';
 import {
   CalendarEventModalComponent, EventFormContext,
 } from './components/calendar-event-modal.component';
@@ -19,6 +22,9 @@ import {
   CalendarEvent, CalendarEventInput, CalendarCategory,
   CALENDAR_CATEGORIES, MONTH_LABELS,
 } from './models/calendar.models';
+import {
+  GoogleConnection, GoogleEventSync, GoogleChipState, GooglePublishIntent,
+} from './models/google-calendar.models';
 import {
   addMonths, addDays, sameMonth, formatTime, compareEvents, toIsoDate, monthGrid,
 } from './calendar.utils';
@@ -32,6 +38,7 @@ type View = 'month' | 'agenda';
     CommonModule, FormsModule, AppIconComponent,
     CalendarMonthComponent, CalendarAgendaComponent,
     CalendarDayModalComponent, CalendarEventModalComponent,
+    GoogleConnectionChipComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
@@ -50,6 +57,14 @@ type View = 'month' | 'agenda';
       <div class="sw-legend">
         @if (global()) { <span class="cal-global-strip"><app-icon name="globe-alt"></app-icon> Global view</span> }
         @else { <span class="cal-global-strip"><app-icon name="building-office"></app-icon> Company view</span> }
+        <app-google-connection-chip
+          [connection]="googleConnection()"
+          [chipState]="chipState()"
+          [busy]="googleBusy()"
+          (connect)="connectGoogle()"
+          (reconnect)="connectGoogle()"
+          (disconnect)="disconnectGoogle()">
+        </app-google-connection-chip>
       </div>
     </div>
 
@@ -163,10 +178,18 @@ type View = 'month' | 'agenda';
       [ctx]="formContext()"
       [event]="editing()"
       [saving]="saving()"
+      [googleConnection]="googleConnection()"
+      [googleProjection]="googleProjection()"
+      [googleBusy]="googleBusy()"
+      [publishIntent]="publishIntent()"
       (close)="closeForm()"
       (save)="save($event)"
       (delete)="deleteCurrent()"
-      (openSession)="openSessionWorkspace($event)">
+      (openSession)="openSessionWorkspace($event)"
+      (confirmPublishAction)="publishCurrent()"
+      (syncRequested)="syncCurrent()"
+      (removeRequested)="removeCurrent()"
+      (reconnectRequested)="connectGoogle()">
     </app-calendar-event-modal>
   }
   `,
@@ -175,6 +198,8 @@ export class CalendarPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(CalendarService);
+  private google = inject(GoogleCalendarService);
+  private toast = inject(ToastService);
   private companyService = inject(CompanyService);
   private ui = inject(ViewStateService);
   private viewStateRestored = false;
@@ -191,6 +216,14 @@ export class CalendarPageComponent implements OnInit {
   saving = signal(false);
   error = signal<string | null>(null);
   events = signal<CalendarEvent[]>([]);
+
+  // ---------- Google ----------
+  /** The acting user's connection (server state; never persisted to localStorage). */
+  googleConnection = signal<GoogleConnection | null>(null);
+  /** The projection of the event currently open in the modal. */
+  googleProjection = signal<GoogleEventSync | null>(null);
+  /** A Google request is in flight. */
+  googleBusy = signal(false);
 
   view = signal<View>('month');
   search = signal('');
@@ -228,6 +261,44 @@ export class CalendarPageComponent implements OnInit {
       const next = this.resolveCompanyId();
       if (next !== this.companyId()) this.applySource(next);
     });
+
+    // Connection is server state: load it once, then reconcile the OAuth result.
+    this.loadGoogleConnection();
+    this.handleOAuthResult();
+  }
+
+  /**
+   * Read `?google=<safe result code>` left by the OAuth callback: show a toast,
+   * refresh the connection, and strip the parameter from the URL. Only the six
+   * safe result codes are recognised; anything else falls back to a generic
+   * failure. No raw Google error or token is ever displayed.
+   */
+  private handleOAuthResult(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const code = params.get('google');
+      if (code === null) return;
+
+      const { message, type } = this.google.oauthResultMessage(code);
+      if (type === 'success') this.toast.success(message); else this.toast.error(message);
+
+      // Always reconcile connection state after a callback attempt.
+      this.loadGoogleConnection();
+
+      // Strip the handled parameter so a refresh does not re-toast. URL replacement
+      // (not a navigation) keeps the current view and viewstate intact.
+      this.stripGoogleParam();
+    });
+  }
+
+  /** Remove only the `google` query parameter from the current URL, preserving the rest. */
+  private stripGoogleParam(): void {
+    const [path, query = ''] = this.router.url.split('?');
+    const remaining = query
+      .split('&')
+      .filter(pair => pair && !pair.startsWith('google='))
+      .join('&');
+    const next = remaining ? `${path}?${remaining}` : path;
+    this.router.navigateByUrl(next, { replaceUrl: true });
   }
 
   private resolveCompanyId(): number {
@@ -335,6 +406,179 @@ export class CalendarPageComponent implements OnInit {
 
   readonly activeFilterCount = computed(() => this.categoryFilter().size);
 
+  // ---------- Google ----------
+
+  /** The chip state: connection status + in-flight. */
+  readonly chipState = computed<GoogleChipState>(() => {
+    const c = this.googleConnection();
+    if (!c) return 'loading';
+    if (c.status === 'connected' && !c.needsReconnect) return 'connected';
+    if (c.status === 'needs_reconnect') return 'reconnect';
+    if (c.status === 'revoked' || c.status === 'account_mismatch') return 'attention';
+    return 'connect';
+  });
+
+  /** What the publish confirmation will say, derived from the projection. */
+  readonly publishIntent = computed<GooglePublishIntent>(() => {
+    const p = this.googleProjection();
+    return {
+      organiserEmail: this.googleConnection()?.googleAccountEmail ?? null,
+      attendeeCount: p?.attendeeCount ?? 0,
+      willSendInvitations: p?.willSendInvitations ?? false,
+      isMeeting: p?.isMeeting ?? this.editing()?.category === 'meeting',
+    };
+  });
+
+  private loadGoogleConnection(): void {
+    this.google.getConnection().subscribe({
+      next: c => this.googleConnection.set(c),
+      // A failed status read leaves the chip on "loading" only briefly; treat it as
+      // disconnected so the surface degrades gracefully.
+      error: () => this.googleConnection.set({
+        status: 'disconnected', googleAccountEmail: null, calendarId: null,
+        connectedAt: null, lastSyncedAt: null, needsReconnect: false, pendingAccountEmail: null,
+      }),
+    });
+  }
+
+  /** Start (or restart) the OAuth flow, returning to the current calendar URL. */
+  connectGoogle(): void {
+    if (this.googleBusy()) return;
+    this.googleBusy.set(true);
+    const returnTo = this.router.url.split('?')[0];
+    this.google.beginConnect(returnTo).subscribe({
+      next: url => {
+        this.googleBusy.set(false);
+        if (url) window.location.assign(url);
+        else this.toast.error('Google Calendar could not be connected. Please try again.');
+      },
+      error: err => {
+        this.googleBusy.set(false);
+        this.toast.error(this.google.errorMessage(err));
+      },
+    });
+  }
+
+  disconnectGoogle(): void {
+    if (this.googleBusy()) return;
+    this.googleBusy.set(true);
+    this.google.disconnect().subscribe({
+      next: () => {
+        this.googleBusy.set(false);
+        this.toast.success('Google Calendar disconnected.');
+        this.loadGoogleConnection();
+        // The event may now be read-only for this viewer; refresh its projection.
+        if (this.editing()) this.loadProjection(this.editing()!.id);
+      },
+      error: err => {
+        this.googleBusy.set(false);
+        this.toast.error(this.google.errorMessage(err));
+      },
+    });
+  }
+
+  /** Load the projection for the open event (called when the modal opens). */
+  private loadProjection(id: string): void {
+    this.googleProjection.set(null);
+    this.google.getEventSync(id).subscribe({
+      next: p => this.googleProjection.set(p),
+      error: () => this.googleProjection.set(null),
+    });
+  }
+
+  /**
+   * Re-read the projection AND the local event after a Google action, so the modal
+   * shows the fresh state without a full page reload.
+   */
+  private refreshAfterGoogle(): void {
+    const ev = this.editing();
+    if (ev) this.loadProjection(ev.id);
+    this.reloadAndKeepView();
+  }
+
+  publishCurrent(): void {
+    const ev = this.editing();
+    if (!ev || this.googleBusy()) return;
+    this.googleBusy.set(true);
+    this.google.publish(ev.id, ev.version).subscribe({
+      next: p => {
+        this.googleBusy.set(false);
+        this.googleProjection.set(p);
+        this.toast.success(this.publishMessage(p));
+        this.refreshAfterGoogle();
+      },
+      error: err => {
+        this.googleBusy.set(false);
+        this.handleGoogleError(err);
+      },
+    });
+  }
+
+  syncCurrent(): void {
+    const ev = this.editing();
+    if (!ev || this.googleBusy()) return;
+    this.googleBusy.set(true);
+    this.google.sync(ev.id, ev.version).subscribe({
+      next: p => {
+        this.googleBusy.set(false);
+        this.googleProjection.set(p);
+        this.toast.success(this.syncMessage(p));
+        this.refreshAfterGoogle();
+      },
+      error: err => {
+        this.googleBusy.set(false);
+        this.handleGoogleError(err);
+      },
+    });
+  }
+
+  removeCurrent(): void {
+    const ev = this.editing();
+    if (!ev || this.googleBusy()) return;
+    if (!confirm('This removes the Google Calendar event and Meet link. The Incubator OS event and Session will remain.')) return;
+    this.googleBusy.set(true);
+    this.google.unpublish(ev.id, ev.version).subscribe({
+      next: p => {
+        this.googleBusy.set(false);
+        this.googleProjection.set(p);
+        this.toast.success('Removed from Google Calendar.');
+        this.refreshAfterGoogle();
+      },
+      error: err => {
+        this.googleBusy.set(false);
+        this.handleGoogleError(err);
+      },
+    });
+  }
+
+  private publishMessage(p: GoogleEventSync): string {
+    if (p.fullySynced) return 'Added to Google Calendar.';
+    if (p.isMeeting && p.conferenceStatus === 'pending') return 'Added to Google Calendar. The Meet link is being created.';
+    return 'Added to Google Calendar.';
+  }
+
+  private syncMessage(p: GoogleEventSync): string {
+    switch (p.syncStatus) {
+      case 'conflict': return 'The Google event was changed externally. Review the conflict.';
+      case 'update_pending': return 'The change will retry when Google is reachable.';
+      case 'detached': return 'The Google event was cancelled.';
+      default:
+        // Never claim invitations were resent on a no-op sync.
+        return p.fullySynced ? 'Google Calendar is up to date.' : 'Synchronised with Google Calendar.';
+    }
+  }
+
+  /** Surface a Google failure: keep the local event, refresh the projection, toast. */
+  private handleGoogleError(err: unknown): void {
+    const e = this.google.toError(err);
+    this.toast.error(e.message);
+    // Refresh connection + projection so the section reflects the recorded state
+    // (conflict, retryable pending, needs_reconnect).
+    this.loadGoogleConnection();
+    const ev = this.editing();
+    if (ev) this.loadProjection(ev.id);
+  }
+
   private matches(ev: CalendarEvent, term: string): boolean {
     return [ev.title, ev.description, ev.location, ev.assignee, ev.company_name, ev.link_label]
       .some(v => (v ?? '').toLowerCase().includes(term));
@@ -376,11 +620,14 @@ export class CalendarPageComponent implements OnInit {
     this.dayModalOpen.set(false);
     this.editing.set(ev);
     this.formOpen.set(true);
+    // Load the Google projection for this event (hidden until it resolves).
+    this.loadProjection(ev.id);
   }
 
   closeForm(): void {
     this.formOpen.set(false);
     this.editing.set(null);
+    this.googleProjection.set(null);
   }
 
   save(payload: CalendarEventInput & { id?: string }): void {

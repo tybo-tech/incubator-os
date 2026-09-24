@@ -297,6 +297,10 @@ check('sync_status is conflict', ($row4['sync_status'] ?? '') === 'conflict', (s
 check('the last known local etag is preserved', ($row4['etag'] ?? '') !== '');
 check('the current remote etag is recorded', ($row4['remote_etag'] ?? '') !== '' && ($row4['remote_etag'] ?? '') !== ($row4['etag'] ?? ''));
 check('conflict_at is recorded', ($row4['conflict_at'] ?? null) !== null);
+// A conflict must KEEP the known Google/Meet links so the UI can offer
+// "Open Google Calendar" without a destructive retry.
+check('a conflict preserves the Google event url', ($row4['google_event_url'] ?? null) !== null);
+check('a conflict preserves the Meet url', ($row4['meet_url'] ?? null) !== null);
 check('the local title was NOT overwritten by Google', (string) eventRow($db, $ev4)['title'] === 'Local wins');
 // No snapshot columns exist to hold attendee/description data.
 $cols = $db->query('SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME="google_event_sync"')->fetchAll(PDO::FETCH_COLUMN);

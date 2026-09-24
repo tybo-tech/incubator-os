@@ -300,4 +300,50 @@ textarea {
   .sess-st-CANCELLED{ background:#f1f5f9; color:#94a3b8; text-decoration:line-through; }
   .cal-ev-session{ display:inline-flex; align-items:center; color:var(--ios-purple); font-size:10px; flex:0 0 auto; margin-left:auto; }
   @media(max-width:820px){ .sess-grid{ grid-template-columns:1fr; } .sess-next{ display:block; } .sess-next .sw-btn{ margin-top:10px; } }
+
+  /* Google Calendar connection chip + per-event section (Sprint 010 Phase 5) */
+  .gchip{ position:relative; display:inline-block; }
+  .gchip-btn{ display:inline-flex; align-items:center; gap:6px; border:1px solid var(--ios-line); background:var(--ios-white); color:var(--ios-copy); border-radius:999px; padding:5px 11px; font-size:11px; font-weight:700; cursor:pointer; }
+  .gchip-btn:hover{ background:#f7f9fc; color:var(--ios-ink); }
+  .gchip-btn:disabled{ opacity:.6; cursor:default; }
+  .gchip-btn.gchip-ok{ border-color:#a6f4c5; background:var(--ios-green-soft); color:var(--ios-green); }
+  .gchip-btn.gchip-warn{ border-color:#fed7aa; background:var(--ios-orange-soft); color:var(--ios-orange); }
+  .gchip-menu{ position:absolute; right:0; top:calc(100% + 6px); z-index:70; width:320px; max-width:88vw; background:var(--ios-white); border:1px solid var(--ios-line); border-radius:11px; box-shadow:0 14px 34px rgba(15,26,49,.18); padding:12px; }
+  .gchip-menu-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+  .gchip-menu-head strong{ font-size:12px; color:var(--ios-ink); }
+  .gchip-account{ display:flex; align-items:flex-start; gap:6px; font-size:11px; color:var(--ios-copy); background:#f8fafc; border:1px solid var(--ios-line); border-radius:8px; padding:8px 10px; margin-bottom:10px; line-height:1.5; }
+  .gchip-account strong{ color:var(--ios-ink); }
+  .gchip-actions{ display:flex; flex-wrap:wrap; gap:6px; }
+  .gchip-confirm p{ font-size:11px; color:var(--ios-copy); line-height:1.55; margin:0 0 10px; }
+  .gchip-confirm-actions{ display:flex; gap:6px; justify-content:flex-end; }
+  .gchip-note{ display:flex; align-items:flex-start; gap:6px; margin-top:9px; color:var(--ios-muted); font-size:11px; line-height:1.5; }
+  .gchip-note.warn{ color:var(--ios-orange); }
+
+  .gsection{ margin-top:16px; border-top:1px dashed var(--ios-line); padding-top:14px; }
+  .gsection .sw-section-title app-icon{ margin-right:5px; }
+  .gstate{ display:flex; align-items:center; gap:10px; border:1px solid var(--ios-line); border-left:3px solid var(--ios-muted); border-radius:9px; background:#f8fafc; padding:10px 12px; }
+  .gstate app-icon{ font-size:17px; flex:0 0 auto; color:var(--ios-muted); }
+  .gstate-body{ flex:1; min-width:0; }
+  .gstate-title{ font-size:12px; font-weight:700; color:var(--ios-ink); }
+  .gstate-detail{ color:var(--ios-muted); font-size:11px; margin-top:2px; line-height:1.45; }
+  .gstate-spinner{ color:var(--ios-muted); font-size:10px; font-weight:700; flex:0 0 auto; }
+  .gstate-synced{ border-left-color:var(--ios-green); background:var(--ios-green-soft); }
+  .gstate-synced app-icon{ color:var(--ios-green); }
+  .gstate-changes_pending, .gstate-publishing, .gstate-conference_pending{ border-left-color:var(--ios-blue); background:var(--ios-blue-soft); }
+  .gstate-changes_pending app-icon, .gstate-publishing app-icon, .gstate-conference_pending app-icon{ color:var(--ios-blue); }
+  .gstate-retry, .gstate-needs_reconnect{ border-left-color:var(--ios-orange); background:var(--ios-orange-soft); }
+  .gstate-retry app-icon, .gstate-needs_reconnect app-icon{ color:var(--ios-orange); }
+  .gstate-conflict{ border-left-color:var(--ios-red); background:var(--ios-red-soft); }
+  .gstate-conflict app-icon{ color:var(--ios-red); }
+  .gstate-unpublished, .gstate-readonly{ border-left-color:#94a3b8; background:#f1f5f9; }
+  .gstate-connect, .gstate-publish{ border-left-color:var(--ios-blue); background:var(--ios-white); }
+  .gstate-connect app-icon, .gstate-publish app-icon{ color:var(--ios-blue); }
+  .gstate-error{ display:flex; align-items:center; gap:6px; margin-top:8px; color:var(--ios-orange); font-size:11px; }
+  .glinks{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .glinks a{ text-decoration:none; }
+  .gactions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .gpc-card{ max-width:520px; }
+  .gpc-lead{ font-size:12px; color:var(--ios-copy); line-height:1.6; margin:0; }
+  .gsection .sw-alert app-icon{ margin-right:4px; }
+  @media(max-width:640px){ .gchip-menu{ right:auto; left:0; } }
 }
