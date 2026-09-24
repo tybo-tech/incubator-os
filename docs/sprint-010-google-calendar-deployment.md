@@ -141,26 +141,42 @@ The build output is uploaded per
 
 ## 3. Read-only production preflight
 
-Run the existing compact verifier and the Google-specific verifier **before any
+Run the existing compact verifier and the Google **structure** verifier **before any
 change**.
 
 | File | When | Expect |
 |---|---|---|
 | [`deployment/preflight-compact.sql`](deployment/preflight-compact.sql) | Before any change | prior-sprint objects present; `any_partial_blocker = NO` |
-| [`deployment/verify-google-compact.sql`](deployment/verify-google-compact.sql) | Before **and** after the Google migrations | the Google section: see below |
+| [`deployment/verify-google-compact.sql`](deployment/verify-google-compact.sql) | Before **and** after the Google migrations | Google **structure** only (`information_schema`); see below |
+| [`deployment/verify-google-integrity-compact.sql`](deployment/verify-google-integrity-compact.sql) | **After** the Google migrations only | data invariants all `0` |
 
-The Google verifier returns **one row**. Expected values:
+> **Why two Google files (learned in the live preflight, 2026-09-24).** MySQL
+> resolves every table named in a query at parse time. The first single-file
+> verifier referenced `google_calendar_connections` directly in its integrity
+> lines, so on the pre-deploy database it raised `#1146 - Table ... doesn't exist`
+> instead of a clean row. The verifier is therefore split:
+> **`verify-google-compact.sql` is `information_schema`-only** (safe before and
+> after — it never names a Google table in a `FROM`), and
+> **`verify-google-integrity-compact.sql`** (which does read the Google tables)
+> runs **only after** they exist. Local proof: the structure file returns all
+> zeros against a pre-010 schema (`incubator_os_prod`) with no `#1146`.
+
+The Google **structure** verifier returns **one row**. Expected values:
 
 | Column | Pre-deploy | Post-deploy |
 |---|---|---|
 | `t_conn` | `0` | `1` |
 | `t_sync` | `0` | `1` |
 | `i_gsync_claim` | `0` | `1` |
-| `sync_status_col` | `1` | `1` |
+| `sync_status_col` | `0` | `1` |
 | `has_generation` / `has_synced_version` / `has_remote_etag` | `0` | `1` |
 | `has_conflict_at` / `has_unpublished_at` / `has_remote_outcome` / `has_last_google_event_id` | `0` | `1` |
 | `has_conference_status` / `has_publish_claim` | `0` | `1` |
-| `inv_plaintext_token` | `0` | `0` (must always be 0) |
+| `has_pending_email` / `has_token_cipher_cols` | `0` | `1` |
+
+The Google **integrity** verifier (post-deploy) returns every `inv_*` as `0`:
+`inv_broken_access_token`, `inv_broken_refresh_token`, `inv_orphan_sync`,
+`inv_orphan_connection`, `inv_cross_tenant`, `inv_connection_not_one_per_user`.
 
 ### 3.1 Classification
 
@@ -262,9 +278,15 @@ at a time.
 
 ### Step 8 — Verify the migrations
 
-Re-run [`deployment/verify-google-compact.sql`](deployment/verify-google-compact.sql):
-`t_conn=1`, `t_sync=1`, `i_gsync_claim=1`, all `has_*=1`, `inv_plaintext_token=0`.
-Do not proceed until it passes.
+Run **[`deployment/verify-google-compact.sql`](deployment/verify-google-compact.sql)**
+(structure): `t_conn=1`, `t_sync=1`, `i_gsync_claim=1`, `sync_status_col=1`, all
+`has_*=1`.
+
+Then run
+**[`deployment/verify-google-integrity-compact.sql`](deployment/verify-google-integrity-compact.sql)**
+(integrity — only valid now that the tables exist): every `inv_*` must be `0`.
+
+Do not proceed until both pass.
 
 ### Step 9 — Place the Google credentials on the server
 

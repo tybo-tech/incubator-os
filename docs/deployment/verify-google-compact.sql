@@ -1,15 +1,20 @@
--- Incubator OS - Sprint 010 Google Calendar verification (compact, single row)
+-- Incubator OS - Sprint 010 Google Calendar STRUCTURE verifier (compact, single row)
 --
--- READ-ONLY. Safe to run before and after the Google migrations (#22-#25).
--- Every read degrades to 0 when the object does not exist yet, so it never errors
--- on a pre-deploy database.
+-- READ-ONLY **and safe to run BEFORE and AFTER** the Google migrations (#22-#25).
 --
--- Expected: before deploy the objects read 0; after deploy every x_/has_ reads 1
--- and inv_plaintext_token stays 0 (a token must never be stored in plaintext).
+-- Every value here comes from information_schema ONLY, so it never references the
+-- Google tables by name and therefore never raises #1146 on a pre-deploy database.
 --
--- phpMyAdmin: paste this whole single statement (ends with one `;`) and Go.
+-- Expected:
+--   * BEFORE deploy: t_conn=0, t_sync=0 and every has_*/i_gsync_claim/sync_status_col = 0
+--   * AFTER deploy:  t_conn=1, t_sync=1 and every has_*/i_gsync_claim/sync_status_col = 1
+--
+-- Data-level invariants (token/cipher integrity) live in
+-- `verify-google-integrity-compact.sql`, which may only run once the tables exist.
+--
+-- phpMyAdmin: paste this whole single statement (ends with one semicolon) and Go.
 
-SELECT 'GOOGLE (010) verification' AS report, DATABASE() AS db, VERSION() AS mysql_version,
+SELECT 'GOOGLE (010) structure' AS report, DATABASE() AS db, VERSION() AS mysql_version,
  (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_calendar_connections') AS t_conn,
  (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_event_sync') AS t_sync,
  (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_event_sync' AND INDEX_NAME='idx_gsync_claim') AS i_gsync_claim,
@@ -24,7 +29,4 @@ SELECT 'GOOGLE (010) verification' AS report, DATABASE() AS db, VERSION() AS mys
  (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_event_sync' AND COLUMN_NAME='conference_status') AS has_conference_status,
  (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_event_sync' AND COLUMN_NAME='publish_claim_token') AS has_publish_claim,
  (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_calendar_connections' AND COLUMN_NAME='pending_account_email') AS has_pending_email,
- -- A token must NEVER be stored without its cipher partner: a connection that has a
- -- cipher but no nonce/tag (or vice versa) is a corruption/invariant violation.
- (SELECT COUNT(*) FROM google_calendar_connections WHERE (access_token_cipher IS NULL) <> (access_token_nonce IS NULL OR access_token_tag IS NULL)) AS inv_broken_access_token,
- (SELECT COUNT(*) FROM google_calendar_connections WHERE refresh_token_cipher IS NOT NULL AND (refresh_token_nonce IS NULL OR refresh_token_tag IS NULL)) AS inv_broken_refresh_token;
+ (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='google_calendar_connections' AND COLUMN_NAME='access_token_cipher') AS has_token_cipher_cols;

@@ -452,7 +452,7 @@ Prove the sprint and make it shippable.
 - [x] **6.3** Write `docs/google-calendar-api.md` — endpoints, the central-account ownership model, scopes, sync states, error codes, the all-day exclusivity rule, and the security contract.
 - [x] **6.4** Update `docs/calendar-api.md` with the new Google section and cross-links.
 - [x] **6.5** Update the sprint + session records (`.ai/sprints/Sprint-010.md`, `.ai/sessions/035-2026-09-24.md`).
-- [x] **6.6** Add migrations #22–#25, the `config/google.local.php` operator step, and the redirect-URI registration to `docs/sprint-010-google-calendar-deployment.md`; extend `docs/deployment/backend-manifest-sha256.md` (section A2, 51 files), `docs/deployment/filezilla-upload-checklist.md`, `docs/deployment/rollback-matrix.md` (§9) and `docs/deployment/smoke-tests.md` (§G). Add `docs/deployment/verify-google-compact.sql`.
+- [x] **6.6** Add migrations #22–#25, the `config/google.local.php` operator step, and the redirect-URI registration to `docs/sprint-010-google-calendar-deployment.md`; extend `docs/deployment/backend-manifest-sha256.md` (section A2, 51 files), `docs/deployment/filezilla-upload-checklist.md`, `docs/deployment/rollback-matrix.md` (§9) and `docs/deployment/smoke-tests.md` (§G). Add the split Google verifiers `docs/deployment/verify-google-compact.sql` (structure, `information_schema`-only, pre/post safe) and `docs/deployment/verify-google-integrity-compact.sql` (data invariants, post-only).
 - [x] **6.7** Write `docs/google-cloud-console-setup.md`: OAuth client type **Web application**, the exact redirect URIs (local + prod), the scope set, **Testing** mode + test users, the **7-day refresh-token expiry** while in Testing, and the **sensitive-scope verification** requirement with app-verification lead time.
 - [x] **6.8** Document rollback: revoke tokens upstream, optionally delete created Google events, and drop only the two new tables (pre-write only / approved restore) — `docs/deployment/rollback-matrix.md` §9.
 - [x] **6.9** Lock the **central-account operating model** into the docs: one designated admin/service user owns the connection; OAuth-only (no password is ever typed into Incubator OS); others may view but not manage; multi-user/organization-wide publishing is a future tenant-owned enhancement. Remove the exposed plaintext credential and document rotate + 2FA.
@@ -475,7 +475,7 @@ Prove the sprint and make it shippable.
 | API reference | `docs/google-calendar-api.md` (new) |
 | Console + verification runbook | `docs/google-cloud-console-setup.md` (new) |
 | Deployment runbook | `docs/sprint-010-google-calendar-deployment.md` (new) |
-| Google verifier SQL | `docs/deployment/verify-google-compact.sql` (new; returns one clean row, invariants 0) |
+| Google verifier SQL | `docs/deployment/verify-google-compact.sql` (structure; pre/post safe) + `docs/deployment/verify-google-integrity-compact.sql` (invariants; post-only) |
 | Deployment docs updated | backend manifest (A2, 51 files + SHA-256), filezilla checklist, rollback matrix §9, smoke tests §G |
 | Calendar docs | `docs/calendar-api.md` Google section + cross-links |
 | Central-account model | Locked in `google-calendar-api.md` + the deployment runbook |
@@ -600,7 +600,8 @@ docs/                                               # Phase 6 deliverables
 ├── sprint-010-google-calendar-deployment.md        # deployment runbook
 ├── calendar-api.md                                 # MODIFIED - Google section + cross-links
 └── deployment/
-    ├── verify-google-compact.sql                   # new verifier (single row)
+    ├── verify-google-compact.sql                   # new verifier: structure (pre/post safe)
+    ├── verify-google-integrity-compact.sql         # new verifier: data invariants (post-only)
     ├── backend-manifest-sha256.md                  # MODIFIED - section A2 (51 files)
     ├── filezilla-upload-checklist.md               # MODIFIED - Sprint 010 layers
     ├── rollback-matrix.md                          # MODIFIED - section 9
