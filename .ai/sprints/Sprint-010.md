@@ -475,7 +475,7 @@ Prove the sprint and make it shippable.
 | API reference | `docs/google-calendar-api.md` (new) |
 | Console + verification runbook | `docs/google-cloud-console-setup.md` (new) |
 | Deployment runbook | `docs/sprint-010-google-calendar-deployment.md` (new) |
-| Google verifier SQL | `docs/deployment/verify-google-compact.sql` (structure; pre/post safe) + `docs/deployment/verify-google-integrity-compact.sql` (invariants; post-only) |
+| Google verifier SQL | `docs/deployment/verify-google-compact.sql` (structure; pre/post safe; `information_schema`-only) + `docs/deployment/verify-google-integrity-compact.sql` (invariants; post-only) |
 | Deployment docs updated | backend manifest (A2, 51 files + SHA-256), filezilla checklist, rollback matrix §9, smoke tests §G |
 | Calendar docs | `docs/calendar-api.md` Google section + cross-links |
 | Central-account model | Locked in `google-calendar-api.md` + the deployment runbook |

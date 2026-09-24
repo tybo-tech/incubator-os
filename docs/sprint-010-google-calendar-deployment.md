@@ -167,12 +167,21 @@ The Google **structure** verifier returns **one row**. Expected values:
 |---|---|---|
 | `t_conn` | `0` | `1` |
 | `t_sync` | `0` | `1` |
+| `t_oauth_states` | `0` | `1` (created by #23) |
 | `i_gsync_claim` | `0` | `1` |
 | `sync_status_col` | `0` | `1` |
 | `has_generation` / `has_synced_version` / `has_remote_etag` | `0` | `1` |
 | `has_conflict_at` / `has_unpublished_at` / `has_remote_outcome` / `has_last_google_event_id` | `0` | `1` |
-| `has_conference_status` / `has_publish_claim` | `0` | `1` |
+| `has_conference_status` / `has_publish_claim` / `has_publish_claimed_at` | `0` | `1` |
 | `has_pending_email` / `has_token_cipher_cols` | `0` | `1` |
+| `enum_sync_status_extended` | `0` | `1` (`update_pending` + `unpublished`) |
+| `enum_conn_status_extended` | `0` | `1` (`disconnected` + `account_mismatch`) |
+| `enum_conference_status` | `0` | `1` |
+
+> Column existence alone does not prove an enum was widened, so the verifier also
+> confirms the three enum values (`enum_*`), and it confirms `google_oauth_states`
+> (`t_oauth_states`, created by #23) — the table the first preflight pass did not
+> check.
 
 The Google **integrity** verifier (post-deploy) returns every `inv_*` as `0`:
 `inv_broken_access_token`, `inv_broken_refresh_token`, `inv_orphan_sync`,
@@ -279,8 +288,8 @@ at a time.
 ### Step 8 — Verify the migrations
 
 Run **[`deployment/verify-google-compact.sql`](deployment/verify-google-compact.sql)**
-(structure): `t_conn=1`, `t_sync=1`, `i_gsync_claim=1`, `sync_status_col=1`, all
-`has_*=1`.
+(structure): `t_conn=1`, `t_sync=1`, `t_oauth_states=1`, `i_gsync_claim=1`,
+`sync_status_col=1`, all `has_*=1`, and all three `enum_*_extended`=1.
 
 Then run
 **[`deployment/verify-google-integrity-compact.sql`](deployment/verify-google-integrity-compact.sql)**
