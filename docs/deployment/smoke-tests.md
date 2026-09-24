@@ -102,10 +102,49 @@ Record the output.
 
 ---
 
+## G. Google Calendar (Sprint 010)
+
+> **Prerequisite:** `config/google.local.php` exists on the server and
+> `google_configured()` is true; the OAuth client + redirect URIs are registered
+> (see [`../google-cloud-console-setup.md`](../google-cloud-console-setup.md)).
+> Use the **central Google account** as the connection owner.
+
+| # | Check | How | Expected |
+|---|---|---|---|
+| G0 | Not configured fails closed | Call `GET <ApiBase>api/google-calendar/queries/connection.php` while logged in, **before** placing credentials | `503` `GOOGLE_NOT_CONFIGURED` |
+| G1 | Connection query is safe | Logged in, call `connection.php` | `200`; body has NO token/ciphertext/`connectionId`; `status` present |
+| G2 | Connect via OAuth | Calendar header → **Your Google Calendar** → **Connect** → consent | Returns to the calendar; chip reads **Google Calendar connected** and shows the account email; `?google=` is removed from the URL |
+| G3 | Publish a meeting | Open a disposable `ZZ-DEPLOY-CHECK-*` **meeting** event → Google section → **Add to Google Calendar** → confirm | Confirm dialog shows organiser + attendee count + invitations + Meet; after success: **In Google Calendar**, **Join Google Meet**, **Open in Google Calendar** |
+| G4 | Publish a non-meeting | Same on a **review/other** event | Publishes with **no** Meet link; confirm dialog states no attendees invited |
+| G5 | Explicit sync | Reschedule the published event, save, reopen | **Changes not yet synced** + one **Sync changes**; after sync, back to up-to-date. A repeat sync resends nothing |
+| G6 | Conflict is non-destructive | Have the owner edit the event in Google, then **Sync changes** | **Changed externally in Google Calendar**; only **Open Google Calendar** offered; local title unchanged |
+| G7 | Unpublish | **Remove from Google Calendar** → confirm | Confirmation names the retained local event/Session; after: **Removed from Google Calendar** + **Add to Google Calendar again**; the local event still exists |
+| G8 | Republish uses a new generation | **Add to Google Calendar again** | Republished; a new Google event id (the old one is not reused) |
+| G9 | Disconnect | Chip → **Disconnect** → confirm the exact warning | Chip returns to **Connect Google Calendar**; existing Google events remain |
+| G10 | Read-only for another organiser | As a **different** user with access to the same event | The projection + Meet link are visible but **no Publish/Sync/Remove**; a direct `sync.php` returns `403` |
+| G11 | No secrets over the wire | Inspect network responses for G2–G8 | No `ya29.`, no `cipher`, no `connectionId`, no `etag`, no claim token |
+| G12 | Zero console errors | Complete G2–G8 with DevTools open | No console errors |
+
+**7-day Testing warning.** While the OAuth app is in **Testing**, a refresh token
+expires after **7 days**; the next sync returns `invalid_grant`, the connection
+becomes `needs_reconnect`, and the operator reconnects. This is expected — do not
+treat it as a defect. Complete app verification before public use.
+
+**Cleanup:** delete the disposable `ZZ-DEPLOY-CHECK-*` Google events (use
+**Remove from Google Calendar**, or delete the local event). Do not delete a
+mapping a real user created. Disconnect the test connection if it was a throwaway.
+
+**Pre-deploy offline proof:** `powershell -ExecutionPolicy Bypass -File
+api-incubator-os/tests/GoogleCalendar.ps1` — **488/488** across the 9 suites, no
+network.
+
+---
+
 ## F. Evidence to capture
 
 - [ ] Preflight grids (all sections)
 - [ ] Post-migration integrity output
 - [ ] Smoke-test results A1-D10
+- [ ] Google smoke-test results G0-G12
 - [ ] The deployed `index.html` and `main-*.js` filenames + SHA-256
 - [ ] Any deviation, and the decision taken

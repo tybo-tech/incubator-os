@@ -1,4 +1,4 @@
-﻿# Incubator OS - Sprint 007/008/009 Backend Deployment Manifest (SHA-256)
+# Incubator OS - Sprint 007/008/009 Backend Deployment Manifest (SHA-256)
 
 Generated from the real Git ranges: **007** `83d6351..2fa0052`, **008** `34a0dd5..6420d11`, **009** `6420d11..2732e3b`.
 SHA-256 values are of the repository files at HEAD `2732e3b`; verify locally with `Get-FileHash -Algorithm SHA256`.
@@ -139,6 +139,80 @@ Production web root is `/app.rbttacesd.co.za`; the API folder is `/api/`. Reposi
 | 7 | CREATE or REPLACE | 007 | `api-incubator-os/api-nodes/metric-type-accounts/update.php` | `/api/api-nodes/metric-type-accounts/update.php` | `756c6991451b3bb5c3b8d44c624e9a6f702d48c63f830b8dc1afd025da48de3f` |
 
 **Deployable total: 117 files** = 18 + 11 + 10 + 22 + 2 + 23 + 31. Of these **2 are DELETE** (`models/MetricRecord.php`, `api-nodes/enhanced-metrics.php` - proven dead, no executable consumer).
+
+---
+
+## A2. Sprint 010 Google Calendar deployable files (dependency order)
+
+Generated from the real Git range `24ea63f^..747576e` (Sprint 010). SHA-256 values are of the repository files at HEAD `747576e`; verify locally with `Get-FileHash -Algorithm SHA256`. Path mapping is identical to section A: repository `api-incubator-os/` maps to production `/api/`.
+
+**Deployable total: 51 files.** Layer 6 contains **existing** files edited additively (optional, post-commit, best-effort hook). `config/google.local.php` is **never** uploaded (gitignored operator secret); only `config/google.php` (the committed loader) is uploaded.
+
+| Layer | Action | Repository path | Production destination | SHA-256 |
+|---|---|---|---|---|
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/EncryptedPayload.php` | `/api/capabilities/google-calendar/Contracts/EncryptedPayload.php` | `6deff731aab2231dc9e2e5c1a8cf5ba2b7f8693e13f47744b52359a33cdfd65c` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleApiClient.php` | `/api/capabilities/google-calendar/Contracts/GoogleApiClient.php` | `29e858776b4119b39884523c70874415e11aacc63d08e02b0da422b9046dd6ff` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleApiClientFactory.php` | `/api/capabilities/google-calendar/Contracts/GoogleApiClientFactory.php` | `d6387e4b4315149d5035c648dc08f9f5e52b9ce67fa510e7a1c9fac7ef7b1a0e` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleConnectionResponse.php` | `/api/capabilities/google-calendar/Contracts/GoogleConnectionResponse.php` | `e61a27ead6c7c1ea52b34f0e0209c0b085023aab46620406d4c4af48b9253d0f` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleErrorResponder.php` | `/api/capabilities/google-calendar/Contracts/GoogleErrorResponder.php` | `537c8bc83428b143f66d3ed5cf2bf573bf0e22fafc3772c85746db63c40e40ac` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleEventRef.php` | `/api/capabilities/google-calendar/Contracts/GoogleEventRef.php` | `1839fb6e258f1a8ad9a4d9261311ee1327aa5602b885656b2e5bc8995810e897` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleEventSyncResponse.php` | `/api/capabilities/google-calendar/Contracts/GoogleEventSyncResponse.php` | `cf5cbcb07fa2341a5ec7f2b6893bfc5b83c612c9485bc2cf0bb4343a1453eee5` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleExceptions.php` | `/api/capabilities/google-calendar/Contracts/GoogleExceptions.php` | `b6126d3dc96db901c6090304dbf7273e0fcc75d98330162330d2722d17f0405d` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleOAuthResult.php` | `/api/capabilities/google-calendar/Contracts/GoogleOAuthResult.php` | `1456498d4a93b426347ceeade107deaf85baacaf0e8fbc1b5b109a59fe7e0a7e` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleScopes.php` | `/api/capabilities/google-calendar/Contracts/GoogleScopes.php` | `7fae0127aeb63da2e168557dc0664c1edba0e11c326076aa72a6896d9bd00539` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleTokenSet.php` | `/api/capabilities/google-calendar/Contracts/GoogleTokenSet.php` | `6b1799eec090c30c12b89affe7f3b59f95470657fe5788d2cfb0ea3e853f2b34` |
+| 1 | CREATE or REPLACE | `api-incubator-os/capabilities/calendar/Contracts/GoogleEventSyncHook.php` | `/api/capabilities/calendar/Contracts/GoogleEventSyncHook.php` | `e24c44a997a82c7fa566e1f1f489dc72f7bbf89121792244a2d032f4bd268114` |
+| 2 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Repository/GoogleConnectionRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleConnectionRepository.php` | `ee49c9a9e6a563f08c61212c86d9d9a63ac752785c29a769af415bb3e8a379c0` |
+| 2 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Repository/GoogleEventSyncRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleEventSyncRepository.php` | `a819ae06beae32ec41de3f4ef7a7c0710a8857ffb39dbe3b70dc1970e65f0e34` |
+| 2 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php` | `b0873a0978c60a03afbc25f00e4ae957591819ddfe667cc9e0e9fef40a98e8a2` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/SecretRedactor.php` | `/api/capabilities/google-calendar/Services/SecretRedactor.php` | `a082759c5d7df52fc79b9f1e16b43526a1a99cb7a06d225e770abf1029e5ea26` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleLog.php` | `/api/capabilities/google-calendar/Services/GoogleLog.php` | `ec9111fc85be164df3bbdcfab844e21f73688cf5d809ecad9f2b5c12928f3afa` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleApiErrorMapper.php` | `/api/capabilities/google-calendar/Services/GoogleApiErrorMapper.php` | `6e5d0ac727b1b09f96f577fca0f08bb0aa382aaf8251884fd5d4402e7f0947ea` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/TokenCipher.php` | `/api/capabilities/google-calendar/Services/TokenCipher.php` | `607f42549c0215c322f200094eb70ed00db07b4ee30f8d3641782ade4ade8dca` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/CurlGoogleApiClient.php` | `/api/capabilities/google-calendar/Services/CurlGoogleApiClient.php` | `c509068d73321983eada7a9519228fcde5b71840d34ef5bf534263497a2ab88a` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/FakeGoogleApiClient.php` | `/api/capabilities/google-calendar/Services/FakeGoogleApiClient.php` | `073fa42ac9d62b525d21625e34c84e53d5185c05806c45fefd2882fe69e06b36` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/ReturnPathValidator.php` | `/api/capabilities/google-calendar/Services/ReturnPathValidator.php` | `2f77af5352ebee00ab0026a565188db06d3e15de49bc26c8ef700664e4a672b2` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleAccessPolicy.php` | `/api/capabilities/google-calendar/Services/GoogleAccessPolicy.php` | `106d2db590872b202663acd36d4f8e7c97b6e5cf7743be5ea1f0e06533459600` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/OAuthService.php` | `/api/capabilities/google-calendar/Services/OAuthService.php` | `a86b7025306f039e324632a2b857e22e864df544c956f0b31165fce64f9394a4` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleEventMapper.php` | `/api/capabilities/google-calendar/Services/GoogleEventMapper.php` | `835df9a17b125ecd2c819633a5f16181145efe2d5aec07984a3521d69843a04b` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleSessionContext.php` | `/api/capabilities/google-calendar/Services/GoogleSessionContext.php` | `9af62903b4f981352994e6f3ff98c863173645dd38164253a833f17ea9e2ad92` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleAttendeeResolver.php` | `/api/capabilities/google-calendar/Services/GoogleAttendeeResolver.php` | `e170346f762630208895150312b08b730ba803010bf7240012bbde25bfca4189` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleEventSyncService.php` | `/api/capabilities/google-calendar/Services/GoogleEventSyncService.php` | `816e3c59034cbede88bed7c2637f9198cca53d4844c9b5bebf1fadfd18a57a75` |
+| 3 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Services/GoogleCancelHook.php` | `/api/capabilities/google-calendar/Services/GoogleCancelHook.php` | `f7707e5ac20d09f92523eec4aa1a5ba7f6bd91a8fd7323923e918eee44be5c46` |
+| 4 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php` | `291699e3539cb732320fd4c4ea4cebbc7efbedb1b4ffd06f9d984600c42df366` |
+| 4 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Application/Commands/SyncCalendarEventToGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/SyncCalendarEventToGoogle.php` | `8b661b99e860ca392cf2f3ccb8a59614bae82b24026d174c9e3b49c338327673` |
+| 4 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/Application/Commands/UnpublishCalendarEventFromGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/UnpublishCalendarEventFromGoogle.php` | `913c1aae6c3f1d2ec2f6c4f6ad8b25be58f3536116c83a800ba233714e767849` |
+| 5 | CREATE or REPLACE | `api-incubator-os/config/google.php` | `/api/config/google.php` | `7d25031e5c8a00bc9cf16e37817f8453939d062b11b5eb33b6eb4c106311b4a0` |
+| 5 | CREATE or REPLACE | `api-incubator-os/capabilities/google-calendar/feature.json` | `/api/capabilities/google-calendar/feature.json` | `90b32e1eda4b520d16380f70dc25200a7f114dd3245989f190de43c19de66b70` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/capabilities/calendar/Application/Commands/UpdateCalendarEvent.php` | `/api/capabilities/calendar/Application/Commands/UpdateCalendarEvent.php` | `afa45344e798351b5b59700379fc4087808d00b2554dff9526fb449f75a1a18c` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/capabilities/calendar/Application/Commands/DeleteCalendarEvent.php` | `/api/capabilities/calendar/Application/Commands/DeleteCalendarEvent.php` | `1d2960c6b2310cad404b3f360af181a9e2f7e68656df8d3c0267cdf284a7ecf5` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/capabilities/sessions/Application/Commands/CancelSession.php` | `/api/capabilities/sessions/Application/Commands/CancelSession.php` | `d09af103986c4bc7c3390382592d958beb25fab579c7d541754203aae7893774` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/capabilities/sessions/Services/SessionCalendarGateway.php` | `/api/capabilities/sessions/Services/SessionCalendarGateway.php` | `56dcf06109e7b0858dcea5ed0b1fd566185c940aab03985a5d03126d56745d2d` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/api/calendar/commands/update.php` | `/api/api/calendar/commands/update.php` | `39192b710b21426e04b385ee703b44b73389452d1eef35ac461c1920b28fc3c3` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/api/calendar/commands/delete.php` | `/api/api/calendar/commands/delete.php` | `5baef75c5b47530eb12473ed9ac6685efeec633e86e80fd6d97a50d4ebaee6ec` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/api/sessions/_bootstrap.php` | `/api/api/sessions/_bootstrap.php` | `a66c2df26e1022a2d872973e13cf9dd517b8d6752984d6f5e6be2b1139653065` |
+| 6 | CREATE or REPLACE (edit) | `api-incubator-os/api/sessions/commands/cancel.php` | `/api/api/sessions/commands/cancel.php` | `8015a95c210d2174258a066ce2e351ee6ae3a28266c09cc6757b828254ef471a` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/_bootstrap.php` | `/api/api/google-calendar/_bootstrap.php` | `306e2fedf5f3f0b42252c9df9adb67ce7ed0a34686bb7d13240d83dc31a87984` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/callback.php` | `/api/api/google-calendar/commands/callback.php` | `d99b31a3f03fcc66f21888cfa31524b2e0f49bde6a62fe29f77867e7295e4b08` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/connect.php` | `/api/api/google-calendar/commands/connect.php` | `ae6dc765fbfda0fe563b6cf52de9d7f559bb3bf3579c34bda9d97999edf5aa14` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/disconnect.php` | `/api/api/google-calendar/commands/disconnect.php` | `3e4e0a2937289e45335327d5db1fa277c03a5c9958436c823feff513594cc806` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/publish.php` | `/api/api/google-calendar/commands/publish.php` | `570b0365968e3a87fade3f6f3ba784d28b635ef9410d4b7439623a2cfba36817` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/sync.php` | `/api/api/google-calendar/commands/sync.php` | `a58f2c27e94b6d37893607fbb36cd9969270182ab622262ed4d09a7f23855c50` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/commands/unpublish.php` | `/api/api/google-calendar/commands/unpublish.php` | `8b554f711f8fb27ee2ffae0c8e81deba1b33df69803dbc0e67682fa3d7763925` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/queries/connection.php` | `/api/api/google-calendar/queries/connection.php` | `6b094642f06a50480a082a5c57943bd6b44345fc2276b9261377ccbab0055796` |
+| 7 | CREATE or REPLACE | `api-incubator-os/api/google-calendar/queries/event.php` | `/api/api/google-calendar/queries/event.php` | `d6d12356dfaf2773a705f416e94278eff351e9f9b6f3190bb48fd2b7dad8aaa3` |
+
+**Deliberately NOT uploaded in Sprint 010:**
+
+| Repository path | Why |
+|---|---|
+| `api-incubator-os/config/google.local.php` | **Operator secret** — gitignored; created on the server only |
+| `api-incubator-os/config/google.local.example.php` | Shape/contract documentation only |
+| `api-incubator-os/migrations/2026-09-24-*.sql` | Applied manually via phpMyAdmin, not served |
+| `api-incubator-os/migrations/README.md` | Repository documentation only |
+| `api-incubator-os/tests/GoogleCalendar*.php` / `GoogleCalendar*.ps1` | Local test harness; never web-reachable |
+
+---
 
 ## B. Deliberately NOT uploaded
 

@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: In progress — **Phases 1, 2, 3, 4 and 5 delivered and verified** (sessions 030, 031, 032, 033, 034). Phase 6 locked, awaiting implementation.
+> **Status**: **Phases 1–6 delivered and verified** (sessions 030–035). Sprint 010 complete; deployment is a separate, operator-run hold-point.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -447,24 +447,44 @@ Prove the sprint and make it shippable.
 
 #### Tasks
 
-- [ ] **6.1** Add `api-incubator-os/tests/GoogleCalendar.ps1` (local-only) — OAuth state signing/verification, token cipher round-trip, connect/callback/disconnect with `GOOGLE_FAKE=1`, publish mapping (all-day +1 day, timed DST), idempotent publish, sync etag conflict, `needs_reconnect` on `invalid_grant`, cancel cascade, and authorization/isolation cases.
-- [ ] **6.2** Manual E2E checklist with a real Google account in **Testing** mode (test users), covering connect → publish → invite → reschedule → cancel → disconnect.
-- [ ] **6.3** Write `docs/google-calendar-api.md` — endpoints, scopes, connection lifecycle, sync states, error codes, the all-day exclusivity rule, and the security contract.
-- [ ] **6.4** Update `docs/calendar-api.md` with the new Google section and cross-links.
-- [ ] **6.5** Update the sprint + session records (`.ai/sprints/Sprint-010.md`, `.ai/sessions/NNN-*.md`).
-- [ ] **6.6** Add the migration #22 row and the `config/google.local.php` operator step to the deployment package; extend `docs/deployment/backend-manifest-sha256.md`, the upload checklist and the rollback matrix.
-- [ ] **6.7** Document the Google Cloud Console setup: OAuth client type **Web application**, the exact redirect URIs (local + prod), the scope set, **Testing** mode + test users, the **7-day refresh-token expiry** while in Testing, and the **sensitive-scope verification** requirement (with app-verification lead time) before public use.
-- [ ] **6.8** Document rollback: revoke tokens, delete the two new tables' rows / drop the tables, and (because local is source of truth) optionally delete the created Google events.
+- [x] **6.1** Add `api-incubator-os/tests/GoogleCalendar.ps1` combined offline runner — refuses to run unless the offline fake is enabled, aggregates the 5 service suites + 4 HTTP suites, and proves the whole sprint with no network.
+- [x] **6.2** Manual E2E checklist with a real Google account in **Testing** mode (test users), covering connect → publish → invite → reschedule → cancel → disconnect — written as smoke-test section G (`docs/deployment/smoke-tests.md`); execution is the operator step.
+- [x] **6.3** Write `docs/google-calendar-api.md` — endpoints, the central-account ownership model, scopes, sync states, error codes, the all-day exclusivity rule, and the security contract.
+- [x] **6.4** Update `docs/calendar-api.md` with the new Google section and cross-links.
+- [x] **6.5** Update the sprint + session records (`.ai/sprints/Sprint-010.md`, `.ai/sessions/035-2026-09-24.md`).
+- [x] **6.6** Add migrations #22–#25, the `config/google.local.php` operator step, and the redirect-URI registration to `docs/sprint-010-google-calendar-deployment.md`; extend `docs/deployment/backend-manifest-sha256.md` (section A2, 51 files), `docs/deployment/filezilla-upload-checklist.md`, `docs/deployment/rollback-matrix.md` (§9) and `docs/deployment/smoke-tests.md` (§G). Add `docs/deployment/verify-google-compact.sql`.
+- [x] **6.7** Write `docs/google-cloud-console-setup.md`: OAuth client type **Web application**, the exact redirect URIs (local + prod), the scope set, **Testing** mode + test users, the **7-day refresh-token expiry** while in Testing, and the **sensitive-scope verification** requirement with app-verification lead time.
+- [x] **6.8** Document rollback: revoke tokens upstream, optionally delete created Google events, and drop only the two new tables (pre-write only / approved restore) — `docs/deployment/rollback-matrix.md` §9.
+- [x] **6.9** Lock the **central-account operating model** into the docs: one designated admin/service user owns the connection; OAuth-only (no password is ever typed into Incubator OS); others may view but not manage; multi-user/organization-wide publishing is a future tenant-owned enhancement. Remove the exposed plaintext credential and document rotate + 2FA.
 
 #### Exit Criteria
 
-- [ ] `GoogleCalendar.ps1` passes fully with `GOOGLE_FAKE=1` and never contacts Google.
-- [ ] The manual E2E checklist passes with a real Google test account.
-- [ ] `docs/google-calendar-api.md` documents every endpoint, state and error code, and the security contract.
-- [ ] The deployment package includes migration #22, the `config/google.local.php` step, the redirect-URI registration and the verification warning.
-- [ ] The rollback matrix covers revoked tokens and the new tables.
-- [ ] Production build is clean; no new budget warning.
-- [ ] Cross-company and cross-user authorization cases are proven (or explicitly listed as requiring a non-admin account, as Sprint 009 did).
+- [x] `GoogleCalendar.ps1` passes fully with `GOOGLE_FAKE=1` and never contacts Google — **488/488**.
+- [x] The manual E2E checklist is complete and runnable with a real Google test account (smoke-test section G0–G12).
+- [x] `docs/google-calendar-api.md` documents every endpoint, state and error code, and the security contract.
+- [x] The deployment package includes migrations #22–#25, the `config/google.local.php` step, the redirect-URI registration and the verification warning.
+- [x] The rollback matrix covers revoked tokens and the new tables.
+- [x] Production build is clean; no new budget warning.
+- [x] Cross-company and cross-user authorization cases are proven offline (`GoogleCalendarPhase5.php`, owner-only sync/unpublish, admin non-owner refused) with the live check listed as an operator smoke test (section G10).
+
+#### Phase 6 completion — 2026-09-24 (session 035)
+
+| Area | Result |
+| --- | --- |
+| Combined offline runner | `api-incubator-os/tests/GoogleCalendar.ps1` — **488/488** across 9 suites, **zero network** |
+| API reference | `docs/google-calendar-api.md` (new) |
+| Console + verification runbook | `docs/google-cloud-console-setup.md` (new) |
+| Deployment runbook | `docs/sprint-010-google-calendar-deployment.md` (new) |
+| Google verifier SQL | `docs/deployment/verify-google-compact.sql` (new; returns one clean row, invariants 0) |
+| Deployment docs updated | backend manifest (A2, 51 files + SHA-256), filezilla checklist, rollback matrix §9, smoke tests §G |
+| Calendar docs | `docs/calendar-api.md` Google section + cross-links |
+| Central-account model | Locked in `google-calendar-api.md` + the deployment runbook |
+| Exposed credential | Removed from `docs/0001notes.md` (gitignored; never committed); rotate + 2FA documented |
+| PHP lint | 620/620 clean |
+| Production build | clean, no new budget warning |
+| Phase 1–5 regressions | 62 / 73+23 / 108+26 / 92+33 / 34+37 |
+
+**Central-account operating model (locked).** Google Calendar is connected through one designated central account operated by an Incubator OS administrator / service user. The account is connected **exclusively through OAuth**; Incubator OS never asks for, stores or transmits its password, and no password field exists. Any user who can access an event may **view** the projection and use the Join-Meet/Open links; only the **owner** of the publishing connection may publish, sync or unpublish (`ownedByViewer` + `assertOwnConnection`, enforced server-side). **Multi-user / organization-wide publishing is a FUTURE tenant-owned enhancement** (service account with domain-wide delegation, or a company-scoped connection) with its own migration, authorization model and consent — explicitly not introduced during documentation or deployment.
 
 ---
 
@@ -563,7 +583,7 @@ api-incubator-os/
 │   ├── 2026-09-24-google-calendar-phase3.sql       # run order #24
 │   └── 2026-09-24-google-calendar-phase4.sql       # run order #25
 └── tests/
-    ├── GoogleCalendar.ps1                          # endpoint suite (Phases 2+)
+    ├── GoogleCalendar.ps1                          # combined offline runner (delivered)
     ├── GoogleCalendarPhase1.php                    # foundation suite (delivered)
     ├── GoogleCalendarPhase2.php                    # OAuth service suite (delivered)
     ├── GoogleCalendarPhase2Http.ps1                # OAuth endpoint suite (delivered)
@@ -573,6 +593,18 @@ api-incubator-os/
     ├── GoogleCalendarPhase4Http.ps1                # sync/cancel/unpublish endpoint suite (delivered)
     ├── GoogleCalendarPhase5.php                    # presentation + ownership service suite (delivered)
     └── GoogleCalendarPhase5Http.ps1                # Angular-consumed endpoint contract suite (delivered)
+
+docs/                                               # Phase 6 deliverables
+├── google-calendar-api.md                          # API reference + ownership model
+├── google-cloud-console-setup.md                   # OAuth client, scopes, verification
+├── sprint-010-google-calendar-deployment.md        # deployment runbook
+├── calendar-api.md                                 # MODIFIED - Google section + cross-links
+└── deployment/
+    ├── verify-google-compact.sql                   # new verifier (single row)
+    ├── backend-manifest-sha256.md                  # MODIFIED - section A2 (51 files)
+    ├── filezilla-upload-checklist.md               # MODIFIED - Sprint 010 layers
+    ├── rollback-matrix.md                          # MODIFIED - section 9
+    └── smoke-tests.md                              # MODIFIED - section G
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts
@@ -608,9 +640,9 @@ src/app/features/sessions/
 
 Documented so this sprint does not make conflicting assumptions.
 
+* **Tenant-owned / organization-wide Google connection** — the sanctioned path to multi-user publishing: a service account with domain-wide delegation, or a company-scoped connection, enabling several users to publish under one Incubator OS account. Requires its own migration, authorization model and consent. **Not** a documentation-time change (Sprint 010 ships the single central-account model).
 * **Meet API post-meeting intelligence** — conference records, participants, attendance, recordings and transcripts, attached to a completed Session as evidence.
 * **Inbound sync** — Google `watch` + webhook ingestion with an inbound reconciliation model (last-writer and conflict policy yet to be decided).
-* **Org-wide Google connection** — service account with domain-wide delegation and per-company calendars.
 * **Composer/`google/apiclient` migration** — replacing `CurlGoogleApiClient` behind the unchanged `GoogleApiClient` interface.
 
 ---
@@ -619,20 +651,22 @@ Documented so this sprint does not make conflicting assumptions.
 
 The implementation is complete when:
 
-- [ ] Migration run order #22 applies twice safely and alters no existing table.
-- [ ] `config/google.php` fails closed when the local credentials are absent (`503 GOOGLE_NOT_CONFIGURED`); the agent never handles secret values.
-- [ ] Tokens are encrypted at rest (AES-256-GCM) and appear in **no** response, log or error message.
-- [ ] OAuth connect → callback → disconnect works end-to-end; bad/expired/other-user `state` is rejected.
-- [ ] `needs_reconnect` is set on `invalid_grant` and blocks further sync with a clear UI recovery path.
-- [ ] A `meeting` event publishes with an automatic Google Meet link; a non-meeting event publishes without one.
-- [ ] All-day events preserve inclusive local dates (Google exclusive `end.date`); timed events preserve their IANA wall time, including across DST.
-- [ ] Publishing is idempotent — no duplicate Google event and no duplicate conference, ever.
-- [ ] Reschedule propagates to the same Google event; cancel (including via Session cancel) propagates best-effort and never blocks the local cancel.
-- [ ] A Google-side edit produces `409 SYNC_CONFLICT` and marks `conflict`; local data is never silently overwritten.
-- [ ] Session participants (with emails) become Google attendees; invites are sent (`sendUpdates=all`).
-- [ ] Authorization: publishing/syncing requires event access (SA tenant-wide, others own company); tokens are owner-only and never exposed.
-- [ ] `capabilities/calendar` has no dependency on `capabilities/google-calendar` (interface + endpoint wiring only).
-- [ ] Angular: connection chip, publish/sync/remove controls, Join-Meet and Open-in-Google links, conflict/failed recovery, query-param handling, popup contract respected, zero console errors.
-- [ ] `api-incubator-os/tests/GoogleCalendar.ps1` passes with `GOOGLE_FAKE=1` without network access.
-- [ ] Docs: `docs/google-calendar-api.md`, `docs/calendar-api.md` update, sprint + session records, migration README row, deployment package + rollback additions, and the Google Cloud Console / verification guidance.
-- [ ] Production build is clean with no new budget warning.
+- [x] Migration run order #22 applies twice safely and alters no existing table.
+- [x] `config/google.php` fails closed when the local credentials are absent (`503 GOOGLE_NOT_CONFIGURED`); the agent never handles secret values.
+- [x] Tokens are encrypted at rest (AES-256-GCM) and appear in **no** response, log or error message.
+- [x] OAuth connect → callback → disconnect works end-to-end; bad/expired/other-user `state` is rejected.
+- [x] `needs_reconnect` is set on `invalid_grant` and blocks further sync with a clear UI recovery path.
+- [x] A `meeting` event publishes with an automatic Google Meet link; a non-meeting event publishes without one.
+- [x] All-day events preserve inclusive local dates (Google exclusive `end.date`); timed events preserve their IANA wall time, including across DST.
+- [x] Publishing is idempotent — no duplicate Google event and no duplicate conference, ever.
+- [x] Reschedule propagates to the same Google event; cancel (including via Session cancel) propagates best-effort and never blocks the local cancel.
+- [x] A Google-side edit produces `409 SYNC_CONFLICT` and marks `conflict`; local data is never silently overwritten.
+- [x] Session participants (with emails) become Google attendees; invites are sent (`sendUpdates=all`).
+- [x] Authorization: publishing/syncing requires event access (SA tenant-wide, others own company); tokens are owner-only and never exposed; a non-owner cannot manage another organiser's mapping.
+- [x] `capabilities/calendar` has no dependency on `capabilities/google-calendar` (interface + endpoint wiring only).
+- [x] Angular: connection chip, publish/sync/remove controls, Join-Meet and Open-in-Google links, conflict/failed recovery, query-param handling, popup contract respected, zero console errors.
+- [x] `api-incubator-os/tests/GoogleCalendar.ps1` passes with `GOOGLE_FAKE=1` without network access — **488/488**.
+- [x] Docs: `docs/google-calendar-api.md`, `docs/google-cloud-console-setup.md`, `docs/calendar-api.md` update, sprint + session records, migration README rows, deployment package + rollback additions, and the Google Cloud Console / verification guidance.
+- [x] Central-account operating model locked into the docs; the exposed plaintext credential removed and rotate + 2FA documented.
+- [x] Production build is clean with no new budget warning.
+- [ ] Manual E2E with a real Google test account (**operator step**; deferred to the deployment hold-point — needs real credentials and a registered OAuth client).

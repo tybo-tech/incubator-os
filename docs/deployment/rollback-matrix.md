@@ -140,3 +140,59 @@ Stop and report immediately on: schema mismatch · authentication failure · com
 failure · missing dependency · unexpected migration row changes · generic 500 responses · SQL/exception
 details exposed to clients · broken Results/Achievement flows · calendar timezone/date shifting ·
 Session/calendar atomicity failure.
+
+---
+
+## 9. Google Calendar failure (Sprint 010)
+
+Google is a **projection**, never the source of truth. Incubator OS commits a local
+Calendar/Session change even when Google is down; a Google failure records a
+visible, retryable state and never rolls back the local change. This shapes the
+rollback:
+
+| Situation | Rollback |
+|---|---|
+| Google migration fails mid-file | Migrations #22–#25 create **new** tables and add **columns to those same new tables** only. If a partial table exists it is empty: drop only the half-created new table, fix, re-run. **Do not** drop any pre-existing table. |
+| A Google backend file errors | Restore the backed-up `capabilities/google-calendar/**`, `api/google-calendar/**` and `config/google.php` files. The endpoints are additive; the previous frontend does not call them, so restoring files fully reverts behaviour. |
+| A token/etag/claim token leaks, or a non-owner can manage a mapping | **HARD STOP.** Restore the affected `Contracts/`/`Services/` files (`GoogleConnectionResponse`, `GoogleEventSyncResponse`, `SecretRedactor`, `GoogleAccessPolicy`). Keep data. |
+| A hook edit breaks Calendar or Sessions | Restore the eight Layer-6 files from the Step 3 backup. The hook is optional and defaults to a no-op, so pre-Google behaviour returns exactly. **Keep Calendar/Session data.** |
+| `503 GOOGLE_NOT_CONFIGURED` after deploy | Expected when `config/google.local.php` is absent/invalid. This is fail-closed, not a rollback trigger — supply valid credentials (or leave Google disabled). |
+| Angular Google UI broken | Restore the previous frontend bundle. The Google endpoints remain but the old bundle does not call them. |
+| `needs_reconnect` / the 7-day Testing token expiry | Routine in Testing mode: the operator reconnects. Not a rollback trigger. |
+
+**Revoke before dropping.** If you must drop the Google tables (pre-write only,
+or an approved restore), first **revoke the stored tokens upstream** (the operator's
+Google Account → Security → Third-party access), then optionally delete the created
+Google events.
+
+### Pre-write drop (only when no publication exists)
+
+```sql
+DROP TABLE IF EXISTS `google_event_sync`;
+DROP TABLE IF EXISTS `google_calendar_connections`;
+```
+
+> Dropping `google_calendar_connections` cascades to `google_event_sync` by FK. No
+> pre-existing table is touched.
+
+### Never
+
+- **Never drop `google_event_sync` / `google_calendar_connections` once a user has
+  published** without an explicit, approved data-restore decision — it destroys the
+  audit mapping.
+- **Never delete a Google event as a "rollback"** unless the operator deliberately
+  wants the projection gone; the local Calendar/Session record is authoritative and
+  must remain.
+- **Never widen the OAuth scope or introduce a shared/multi-user Google connection
+  as a fix.** That is a future tenant-owned feature with its own migration and
+  authorization model (see `docs/google-calendar-api.md`).
+
+### Hard-stop conditions specific to Sprint 010
+
+Add to section 8: a token/ciphertext/client secret exposed in a response or log ·
+`connection_id`/`etag`/claim token exposed to the browser · a non-owner able to
+publish/sync/unpublish another organiser's mapping · Google events or invitations
+created for the wrong company/Session.
+
+Rollback source of truth is the Step 2/3 backups plus the previous commit
+`747576e` (pre-010, post-009) in Git.

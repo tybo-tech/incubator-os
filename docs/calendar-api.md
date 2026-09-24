@@ -182,3 +182,40 @@ touched.
   create/edit/delete through the UI, reload persistence, day modal, agenda,
   structured validation, zero console errors).
 - `ng build --configuration production` — clean, no budget warnings.
+
+---
+
+## Google Calendar projection (Sprint 010)
+
+Calendar events can be projected **outbound** into Google Calendar. Incubator OS
+remains the source of truth; the Google event is a projection kept in step by an
+explicit publish/sync.
+
+- **Full reference:** [`google-calendar-api.md`](google-calendar-api.md) —
+  endpoints, connection ownership model, sync states, error codes, the all-day
+  exclusivity rule and the security contract.
+- **Console + verification:** [`google-cloud-console-setup.md`](google-cloud-console-setup.md).
+- **Deployment:** [`sprint-010-google-calendar-deployment.md`](sprint-010-google-calendar-deployment.md).
+
+Key integration points:
+
+- A **Session-linked** meeting event carries the Session as context: the Session
+  subject becomes the Google event summary, and the Session participants (with
+  emails) become Google attendees (`sendUpdates=all`). Generic events publish with
+  no attendees. Incubator-only Session content is never sent to Google.
+- **Reschedule is explicit.** Editing the local event does **not** auto-sync; the
+  user presses **Sync changes**. Only **cancellation** cascades automatically: when
+  the local event or its Session is cancelled, the Google event is deleted
+  **best-effort, after the local commit**, and a failure never blocks the local
+  cancel. The Calendar capability declares a `GoogleEventSyncHook` interface and
+  never depends on a Google file.
+- The projection lives in `google_event_sync` (one row per `calendar_event_id`);
+  the connection lives in `google_calendar_connections` (one row per user, tokens
+  encrypted). This is an **additive** layer — `calendar_events` and the Session
+  schema are unchanged.
+- Authorization: any user with event access may **view** the projection and use the
+  Meet/Calendar links; only the **owner** of the publishing connection may publish,
+  sync or remove it.
+
+Migrations (locked order **#22–#25**) and rollback are documented in the
+[deployment runbook](sprint-010-google-calendar-deployment.md).

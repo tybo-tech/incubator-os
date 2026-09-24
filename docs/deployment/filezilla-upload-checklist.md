@@ -1,4 +1,4 @@
-﻿# FileZilla Upload Checklist - Sprint 007/008/009 Backend
+# FileZilla Upload Checklist - Sprint 007/008/009 Backend
 
 **Upload root:** the production `/api/` folder. In FileZilla navigate INTO `/api/`, then upload these
 subfolders so they land beside the already-deployed `api-nodes/`, `models/`, `services/`, `helpers/`.
@@ -169,3 +169,111 @@ api/api-nodes/imports/index.php, read-json.php, normalizers.php, imports/*.json
 
 Also never upload: local `.env`, server logs, `*.bak`/`*.tmp`, IDE folders, local uploads,
 the test harness (`api/tests/*.ps1`), or `docker-compose.yml`/`Dockerfile`.
+
+---
+
+# Sprint 010 - Google Calendar backend (51 files)
+
+**Same upload root and path mapping** as above. Navigate INTO the production `/api/`
+folder and upload `capabilities/`, `api/`, `config/google.php`. **Never** upload
+`config/google.local.php` (operator secret; created on the server only). Full
+runbook: [`../sprint-010-google-calendar-deployment.md`](../sprint-010-google-calendar-deployment.md).
+
+> **Layer 6 below edits EXISTING files additively** (an optional, post-commit,
+> best-effort hook). Back them up first (Step 3). The change is a plain file
+> restore to roll back.
+
+## Layer 1 - Contracts / value objects (12 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/EncryptedPayload.php` | `/api/capabilities/google-calendar/Contracts/EncryptedPayload.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleApiClient.php` | `/api/capabilities/google-calendar/Contracts/GoogleApiClient.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleApiClientFactory.php` | `/api/capabilities/google-calendar/Contracts/GoogleApiClientFactory.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleConnectionResponse.php` | `/api/capabilities/google-calendar/Contracts/GoogleConnectionResponse.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleErrorResponder.php` | `/api/capabilities/google-calendar/Contracts/GoogleErrorResponder.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleEventRef.php` | `/api/capabilities/google-calendar/Contracts/GoogleEventRef.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleEventSyncResponse.php` | `/api/capabilities/google-calendar/Contracts/GoogleEventSyncResponse.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleExceptions.php` | `/api/capabilities/google-calendar/Contracts/GoogleExceptions.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleOAuthResult.php` | `/api/capabilities/google-calendar/Contracts/GoogleOAuthResult.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleScopes.php` | `/api/capabilities/google-calendar/Contracts/GoogleScopes.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Contracts/GoogleTokenSet.php` | `/api/capabilities/google-calendar/Contracts/GoogleTokenSet.php` |
+| upload | `api-incubator-os/capabilities/calendar/Contracts/GoogleEventSyncHook.php` | `/api/capabilities/calendar/Contracts/GoogleEventSyncHook.php` |
+
+## Layer 2 - Repositories (3 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/capabilities/google-calendar/Repository/GoogleConnectionRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleConnectionRepository.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Repository/GoogleEventSyncRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleEventSyncRepository.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php` | `/api/capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php` |
+
+## Layer 3 - Services, policies, helpers (14 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/capabilities/google-calendar/Services/SecretRedactor.php` | `/api/capabilities/google-calendar/Services/SecretRedactor.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleLog.php` | `/api/capabilities/google-calendar/Services/GoogleLog.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleApiErrorMapper.php` | `/api/capabilities/google-calendar/Services/GoogleApiErrorMapper.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/TokenCipher.php` | `/api/capabilities/google-calendar/Services/TokenCipher.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/CurlGoogleApiClient.php` | `/api/capabilities/google-calendar/Services/CurlGoogleApiClient.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/FakeGoogleApiClient.php` | `/api/capabilities/google-calendar/Services/FakeGoogleApiClient.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/ReturnPathValidator.php` | `/api/capabilities/google-calendar/Services/ReturnPathValidator.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleAccessPolicy.php` | `/api/capabilities/google-calendar/Services/GoogleAccessPolicy.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/OAuthService.php` | `/api/capabilities/google-calendar/Services/OAuthService.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleEventMapper.php` | `/api/capabilities/google-calendar/Services/GoogleEventMapper.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleSessionContext.php` | `/api/capabilities/google-calendar/Services/GoogleSessionContext.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleAttendeeResolver.php` | `/api/capabilities/google-calendar/Services/GoogleAttendeeResolver.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleEventSyncService.php` | `/api/capabilities/google-calendar/Services/GoogleEventSyncService.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Services/GoogleCancelHook.php` | `/api/capabilities/google-calendar/Services/GoogleCancelHook.php` |
+
+## Layer 4 - Application commands (3 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Application/Commands/SyncCalendarEventToGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/SyncCalendarEventToGoogle.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/Application/Commands/UnpublishCalendarEventFromGoogle.php` | `/api/capabilities/google-calendar/Application/Commands/UnpublishCalendarEventFromGoogle.php` |
+
+## Layer 5 - Config loader + feature manifest (2 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/config/google.php` | `/api/config/google.php` |
+| upload | `api-incubator-os/capabilities/google-calendar/feature.json` | `/api/capabilities/google-calendar/feature.json` |
+
+## Layer 6 - Existing files edited additively (8 files) — back up first
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/capabilities/calendar/Application/Commands/UpdateCalendarEvent.php` | `/api/capabilities/calendar/Application/Commands/UpdateCalendarEvent.php` |
+| upload | `api-incubator-os/capabilities/calendar/Application/Commands/DeleteCalendarEvent.php` | `/api/capabilities/calendar/Application/Commands/DeleteCalendarEvent.php` |
+| upload | `api-incubator-os/capabilities/sessions/Application/Commands/CancelSession.php` | `/api/capabilities/sessions/Application/Commands/CancelSession.php` |
+| upload | `api-incubator-os/capabilities/sessions/Services/SessionCalendarGateway.php` | `/api/capabilities/sessions/Services/SessionCalendarGateway.php` |
+| upload | `api-incubator-os/api/calendar/commands/update.php` | `/api/api/calendar/commands/update.php` |
+| upload | `api-incubator-os/api/calendar/commands/delete.php` | `/api/api/calendar/commands/delete.php` |
+| upload | `api-incubator-os/api/sessions/_bootstrap.php` | `/api/api/sessions/_bootstrap.php` |
+| upload | `api-incubator-os/api/sessions/commands/cancel.php` | `/api/api/sessions/commands/cancel.php` |
+
+## Layer 7 - Public Google endpoints (9 files)
+
+| Action | Repository path | Production destination |
+|---|---|---|
+| upload | `api-incubator-os/api/google-calendar/_bootstrap.php` | `/api/api/google-calendar/_bootstrap.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/callback.php` | `/api/api/google-calendar/commands/callback.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/connect.php` | `/api/api/google-calendar/commands/connect.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/disconnect.php` | `/api/api/google-calendar/commands/disconnect.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/publish.php` | `/api/api/google-calendar/commands/publish.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/sync.php` | `/api/api/google-calendar/commands/sync.php` |
+| upload | `api-incubator-os/api/google-calendar/commands/unpublish.php` | `/api/api/google-calendar/commands/unpublish.php` |
+| upload | `api-incubator-os/api/google-calendar/queries/connection.php` | `/api/api/google-calendar/queries/connection.php` |
+| upload | `api-incubator-os/api/google-calendar/queries/event.php` | `/api/api/google-calendar/queries/event.php` |
+
+## Sprint 010 - must NOT upload
+
+| Repository path | Why |
+|---|---|
+| `api-incubator-os/config/google.local.php` | Operator secret (created on the server only) |
+| `api-incubator-os/config/google.local.example.php` | Shape/contract documentation |
+| `api-incubator-os/migrations/2026-09-24-*.sql` | Applied via phpMyAdmin |
+| `api-incubator-os/tests/GoogleCalendar*` | Local test harness |
