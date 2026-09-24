@@ -20,6 +20,7 @@ include_once '../../../helpers/AuthGuard.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarExceptions.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarErrorResponder.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarSessionGuard.php';
+include_once '../../../capabilities/calendar/Contracts/GoogleEventSyncHook.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarCategory.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarStatus.php';
 include_once '../../../capabilities/calendar/Contracts/CalendarLinkEntityType.php';

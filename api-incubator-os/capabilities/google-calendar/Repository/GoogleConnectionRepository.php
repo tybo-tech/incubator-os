@@ -27,6 +27,21 @@ final class GoogleConnectionRepository
     }
 
     /**
+     * Find a connection by its id. Used by server-side sync/cancel operations that
+     * act against the connection stored on a `google_event_sync` row (which may
+     * belong to a different user than the acting one).
+     *
+     * @return array<string,mixed>|null
+     */
+    public function findById(int $connectionId): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM google_calendar_connections WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $connectionId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    /**
      * Create or replace the connection for a user. Used only after OAuth success.
      *
      * On reconnect:

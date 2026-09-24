@@ -77,19 +77,56 @@ final class GoogleEventMapper
     }
 
     /**
-     * Deterministic Google event id for a (tenant, calendar event) pair.
+     * Deterministic Google event id for a (tenant, calendar event, generation).
      *
      * Google requires a base32hex alphabet (digits 0-9 and letters a-v); plain
-     * lower-case hex is a valid subset. Because the id is recomputed exactly, a
-     * retried publish targets the SAME event: Google answers 409 (duplicate) and
-     * the caller recovers the existing event instead of creating a second one.
+     * lower-case hex plus the letters used here are a valid subset. Because the id
+     * is recomputed exactly, a retried publish targets the SAME event: Google
+     * answers 409 (duplicate) and the caller recovers the existing event instead of
+     * creating a second one.
+     *
+     * The GENERATION is part of the id so that an event unpublished (and possibly
+     * tombstoned by Google) is republished under a NEW id, never reusing one Google
+     * may refuse forever.
      */
-    public static function idFor(int $tenantId, int $calendarEventId): string
+    public static function idFor(int $tenantId, int $calendarEventId, int $generation = 1): string
     {
-        // 'inc' + 8 hex tenant + 8 hex event id. Deterministic and collision-free
-        // for any two distinct (tenant, event) pairs within 32-bit ranges.
+        // 'inc' + 8 hex tenant + 8 hex event id + 'g' + hex generation.
         return 'inc' . str_pad(dechex($tenantId), 8, '0', STR_PAD_LEFT)
-            . str_pad(dechex($calendarEventId), 8, '0', STR_PAD_LEFT);
+            . str_pad(dechex($calendarEventId), 8, '0', STR_PAD_LEFT)
+            . 'g' . dechex(max(1, $generation));
+    }
+
+    /**
+     * Build the Google event resource for a PATCH (reschedule / edit).
+     *
+     * Only INCUBATOR-MANAGED fields are sent: summary, description, location,
+     * start, end and attendees. Crucially there is NO `conferenceData` key, so
+     * Google preserves the existing Meet conference (and any unrelated provider
+     * fields such as reminders or colour) rather than clearing them. `location` is
+     * always sent (an empty string clears a previously set location) because it is
+     * an Incubator-managed field.
+     *
+     * @param array<string,mixed> $event a `calendar_events` row
+     * @param array<int,array{email:string}> $attendees
+     * @param string|null $sessionSubject
+     * @return array<string,mixed>
+     */
+    public function buildPatch(array $event, array $attendees, ?string $sessionSubject = null): array
+    {
+        $payload = [
+            'summary' => (string) ($event['title'] ?? ''),
+            'description' => $this->description($sessionSubject, $event),
+            'location' => trim((string) ($event['location'] ?? '')),
+        ];
+
+        $payload += $this->dateFields($event);
+
+        // Attendees are Incubator-managed: reflect the local list exactly (an empty
+        // list clears attendees, which is the faithful projection of the Session).
+        $payload['attendees'] = $attendees;
+
+        return $payload;
     }
 
     /**

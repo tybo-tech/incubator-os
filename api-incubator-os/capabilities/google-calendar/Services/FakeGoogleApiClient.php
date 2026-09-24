@@ -35,6 +35,8 @@ final class FakeGoogleApiClient implements GoogleApiClient
      * create a duplicate.
      */
     public const CREATE_THEN_TIMEOUT = 'create_then_timeout';
+    /** 410 Gone — the event was permanently removed (treated like 404). */
+    public const GONE = 'gone';
 
     /** @var string[] queued outcomes for the next calls */
     private array $queue = [];
@@ -47,6 +49,15 @@ final class FakeGoogleApiClient implements GoogleApiClient
     private bool $meetPending;
     /** When true, a requested conference reports `failure` (event still created). */
     private bool $meetFailure = false;
+
+    /**
+     * Current etag per event id. Advances on every insert/patch so a real
+     * If-Match comparison can be exercised, and can be moved "externally" with
+     * `simulateExternalEdit()` to provoke a 412.
+     *
+     * @var array<string,string>
+     */
+    private array $etags = [];
 
     /** Override the granted scope string returned by exchangeCode (test knob). */
     private ?string $scopeOverride = null;
@@ -147,6 +158,8 @@ final class FakeGoogleApiClient implements GoogleApiClient
                 throw GoogleApiErrorMapper::fromResponse(400, '{"error":"invalid_grant"}');
             case self::NOT_FOUND:
                 throw GoogleApiErrorMapper::fromResponse(404, '');
+            case self::GONE:
+                throw GoogleApiErrorMapper::fromResponse(410, '');
             case self::DUPLICATE:
                 throw GoogleApiErrorMapper::fromResponse(409, '{"error":{"errors":[{"reason":"duplicate"}]}}');
         }
@@ -226,6 +239,7 @@ final class FakeGoogleApiClient implements GoogleApiClient
         // Record the event BEFORE throwing so a later getEvent/insert can recover it.
         if ($outcome === self::CREATE_THEN_TIMEOUT) {
             $this->eventPayloads[$id] = $event;
+            $this->bumpEtag($id);
             throw GoogleApiErrorMapper::timeout();
         }
 
@@ -236,6 +250,7 @@ final class FakeGoogleApiClient implements GoogleApiClient
         $this->inserted[] = $event;
         $this->insertOptions[] = $options;
         $this->eventPayloads[$id] = $event;
+        $this->bumpEtag($id);
         return $this->makeRef($id, $event);
     }
 
@@ -264,11 +279,13 @@ final class FakeGoogleApiClient implements GoogleApiClient
     private function makeRef(string $eventId, array $event): GoogleEventRef
     {
         $requested = isset($event['conferenceData']['createRequest']);
+        // Read the current stored etag; callers that MUTATE the event bump it first.
+        $etag = $this->etags[$eventId] ?? $this->nextEtag();
 
         if (!$requested) {
             return new GoogleEventRef(
                 eventId: $eventId,
-                etag: $this->nextEtag(),
+                etag: $etag,
                 htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
                 meetUrl: null,
                 conferenceId: null,
@@ -279,7 +296,7 @@ final class FakeGoogleApiClient implements GoogleApiClient
         if ($this->meetFailure) {
             return new GoogleEventRef(
                 eventId: $eventId,
-                etag: $this->nextEtag(),
+                etag: $etag,
                 htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
                 meetUrl: null,
                 conferenceId: null,
@@ -290,7 +307,7 @@ final class FakeGoogleApiClient implements GoogleApiClient
         if ($this->meetPending) {
             return new GoogleEventRef(
                 eventId: $eventId,
-                etag: $this->nextEtag(),
+                etag: $etag,
                 htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
                 meetUrl: null,
                 conferenceId: null,
@@ -300,12 +317,18 @@ final class FakeGoogleApiClient implements GoogleApiClient
 
         return new GoogleEventRef(
             eventId: $eventId,
-            etag: $this->nextEtag(),
+            etag: $etag,
             htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
             meetUrl: 'https://meet.google.com/fake-' . $eventId,
             conferenceId: 'fake-conference-' . $eventId,
             conferenceStatus: 'success',
         );
+    }
+
+    /** Advance the stored etag for an event that was just created or modified. */
+    private function bumpEtag(string $eventId): void
+    {
+        $this->etags[$eventId] = $this->nextEtag();
     }
 
     /** Test knob: stop treating requested conferences as pending (async promotion). */
@@ -321,33 +344,53 @@ final class FakeGoogleApiClient implements GoogleApiClient
         if ($outcome !== self::SUCCESS) {
             $this->throwFor($outcome);
         }
-        $this->patched[] = $event;
 
-        // A conflicting etag is only reported when the caller supplied one.
-        if ($etag !== null && $etag !== '' && $etag === '__stale__') {
+        // Faithful If-Match: a supplied etag that no longer matches a KNOWN current
+        // remote etag is a 412 conflict, and the patch is NOT applied. The
+        // `__stale__` sentinel always conflicts (a deterministic test fixture from
+        // Phase 1). When this fake has no knowledge of the event (a fresh instance,
+        // as in an isolated HTTP request), it does not fabricate a conflict.
+        $known = $this->etags[$eventId] ?? null;
+        if ($etag === '__stale__' || ($etag !== null && $etag !== '' && $known !== null && $etag !== $known)) {
             throw GoogleApiErrorMapper::fromResponse(412, '');
         }
 
+        $this->patched[] = $event;
+
         // Merge the patch so a subsequent getEvent reflects the update.
         $this->eventPayloads[$eventId] = array_merge($this->eventPayloads[$eventId] ?? [], $event);
+        $this->bumpEtag($eventId);
 
-        return new GoogleEventRef(
-            eventId: $eventId,
-            etag: $this->nextEtag(),
-            htmlLink: 'https://calendar.google.com/event?eid=' . $eventId,
-            meetUrl: 'https://meet.google.com/fake-' . $eventId,
-            conferenceId: 'fake-conference-' . $eventId,
-            conferenceStatus: 'success',
-        );
+        return $this->makeRef($eventId, $this->eventPayloads[$eventId]);
     }
 
     public function deleteEvent(string $calendarId, string $eventId, array $options = [], ?string $accessToken = null): void
     {
         $outcome = $this->shift();
+        if ($outcome === self::NOT_FOUND || $outcome === self::GONE) {
+            $this->throwFor($outcome);
+        }
         if ($outcome !== self::SUCCESS) {
             $this->throwFor($outcome);
         }
         $this->deleted[] = $eventId;
+        unset($this->eventPayloads[$eventId], $this->etags[$eventId]);
+    }
+
+    /**
+     * Test knob: advance the remote etag OUTSIDE this client, as a third party
+     * editing the Google event would. The next patch that supplies the old etag
+     * then receives a 412.
+     */
+    public function simulateExternalEdit(string $eventId): void
+    {
+        $this->etags[$eventId] = $this->nextEtag();
+    }
+
+    /** The current remote etag for an event id (test introspection). */
+    public function currentEtag(string $eventId): ?string
+    {
+        return $this->etags[$eventId] ?? null;
     }
 
     private function nextEtag(): string

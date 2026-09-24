@@ -111,17 +111,21 @@ final class SessionCalendarGateway
      * Cancel the linked event when its Session is cancelled. Uses the event's
      * current version so a concurrent change is surfaced rather than clobbered.
      *
+     * Returns the committed event row (or null when there is no event) so the
+     * caller can invoke a projection hook AFTER its transaction commits.
+     *
+     * @return array<string,mixed>|null
      * @throws SessionConflictException
      */
-    public function cancelLinkedEvent(int $calendarEventId, int $tenantId, int $actorId): void
+    public function cancelLinkedEvent(int $calendarEventId, int $tenantId, int $actorId): ?array
     {
         $event = $this->events->findById($calendarEventId, $tenantId);
         if (!$event) {
             // The event was removed out from under us; the Session can still cancel.
-            return;
+            return null;
         }
         if ((string)$event['status'] === CalendarStatus::CANCELLED) {
-            return;
+            return $event;
         }
         $affected = $this->events->setStatus(
             $calendarEventId,
@@ -135,6 +139,8 @@ final class SessionCalendarGateway
                 'The linked calendar event was changed by someone else. Reload and try again.'
             );
         }
+        // Re-read so the returned row reflects the committed status and version.
+        return $this->events->findById($calendarEventId, $tenantId);
     }
 
     /**

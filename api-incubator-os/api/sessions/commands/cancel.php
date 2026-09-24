@@ -8,6 +8,35 @@ declare(strict_types=1);
 
 include_once __DIR__ . '/../_bootstrap.php';
 
+// When the Google Calendar capability is deployed and configured, wire its
+// projection hook so the linked event's Google copy is cancelled best-effort
+// AFTER the atomic local cancellation commits. The hook is optional; the Sessions
+// capability never references a google-calendar file itself.
+if (!function_exists('sessions_projection_hook')) {
+    /**
+     * @param array<string,mixed> $actor
+     */
+    function sessions_projection_hook(?PDO $db, array $actor): ?GoogleEventSyncHook
+    {
+        $googleBootstrap = dirname(__DIR__, 2) . '/google-calendar/_bootstrap.php';
+        if (!is_file($googleBootstrap) || $db === null) {
+            return null;
+        }
+        try {
+            include_once $googleBootstrap;
+            if (!google_configured()) {
+                return null;
+            }
+            return new GoogleCancelHook(
+                GoogleEventSyncService::fromConfig($db, new GoogleAccessPolicy($actor)),
+                $db,
+            );
+        } catch (Throwable) {
+            return null;
+        }
+    }
+}
+
 $id = (int)($_GET['id'] ?? 0);
 $input = sessions_json_body();
 
@@ -37,6 +66,7 @@ try {
         new SessionAccessPolicy($actor),
         $gateway,
         new TransactionManager($db),
+        sessions_projection_hook($db, $actor),
     ))->execute($id, $reason, $version);
 
     echo json_encode($result);

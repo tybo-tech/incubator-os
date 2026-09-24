@@ -28,6 +28,7 @@ final class GoogleApiErrorMapper
             $status === 401 => new GoogleApiException('Google rejected the request (unauthorised).', GoogleApiException::REASON_UNAUTHORIZED, $status),
             $status === 403 => self::forbidden($googleReason, $status),
             $status === 404 => new GoogleApiException('The Google resource was not found.', GoogleApiException::REASON_NOT_FOUND, $status),
+            $status === 410 => new GoogleApiException('The Google resource no longer exists.', GoogleApiException::REASON_NOT_FOUND, $status),
             $status === 409 => self::conflictOrDuplicate($googleReason, $status),
             $status === 412 => new GoogleApiException('The Google event changed since it was last synced.', GoogleApiException::REASON_CONFLICT, $status),
             $status === 429 => new GoogleApiException('Google rate limit reached.', GoogleApiException::REASON_RATE_LIMITED, $status),

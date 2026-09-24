@@ -153,3 +153,65 @@ final class GooglePublishInProgressException extends RuntimeException
         parent::__construct($message);
     }
 }
+
+/**
+ * An operation (publish/sync/cancel/unpublish) was requested for an event that has
+ * no Google projection. The caller must publish before syncing or unpublishing.
+ */
+final class GoogleNotPublishedException extends RuntimeException
+{
+    public function __construct(string $message = 'This event has not been published to Google.')
+    {
+        parent::__construct($message);
+    }
+}
+
+/**
+ * A Google-side edit was detected through an etag mismatch (HTTP 412). The local
+ * and Google copies have diverged; Incubator OS is authoritative, so nothing is
+ * overwritten automatically. The state is recorded as `conflict` for review.
+ */
+final class GoogleSyncConflictException extends RuntimeException
+{
+    public function __construct(
+        private readonly ?string $localEtag = null,
+        private readonly ?string $remoteEtag = null,
+    ) {
+        parent::__construct('The Google event was changed externally. Review the conflict before syncing again.');
+    }
+
+    public function localEtag(): ?string
+    {
+        return $this->localEtag;
+    }
+
+    public function remoteEtag(): ?string
+    {
+        return $this->remoteEtag;
+    }
+}
+
+/**
+ * Another operation holds the event's lease (a concurrent publish/sync/cancel).
+ * The caller should retry shortly; Google was NOT contacted.
+ */
+final class GoogleOperationInProgressException extends RuntimeException
+{
+    public function __construct(string $message = 'This event is already being synchronised with Google. Try again in a moment.')
+    {
+        parent::__construct($message);
+    }
+}
+
+/**
+ * The Google event is already absent (HTTP 404/410). For a cancellation or an
+ * unpublish this is a SUCCESS: the desired end state (no remote event) already
+ * holds.
+ */
+final class GoogleNotFoundException extends RuntimeException
+{
+    public function __construct(string $message = 'The Google event is already absent.')
+    {
+        parent::__construct($message);
+    }
+}

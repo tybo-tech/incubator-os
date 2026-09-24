@@ -29,6 +29,10 @@ include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleApiC
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleApiClientFactory.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Contracts/GoogleErrorResponder.php';
 
+// The Calendar capability declares the hook interface; the Google capability
+// implements it. The interface MUST load before GoogleCancelHook.
+include_once __DIR__ . '/../../capabilities/calendar/Contracts/GoogleEventSyncHook.php';
+
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/SecretRedactor.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleLog.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleApiErrorMapper.php';
@@ -42,12 +46,15 @@ include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleEvent
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleSessionContext.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleAttendeeResolver.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleEventSyncService.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Services/GoogleCancelHook.php';
 
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleOAuthStateRepository.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleConnectionRepository.php';
 include_once __DIR__ . '/../../capabilities/google-calendar/Repository/GoogleEventSyncRepository.php';
 
 include_once __DIR__ . '/../../capabilities/google-calendar/Application/Commands/PublishCalendarEventToGoogle.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Application/Commands/SyncCalendarEventToGoogle.php';
+include_once __DIR__ . '/../../capabilities/google-calendar/Application/Commands/UnpublishCalendarEventFromGoogle.php';
 
 /**
  * Decode a JSON request body into an array (never throws).

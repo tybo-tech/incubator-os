@@ -82,6 +82,36 @@ final class GoogleErrorResponder
             return;
         }
 
+        if ($e instanceof GoogleOperationInProgressException) {
+            // Another operation holds the lease; Google was not contacted.
+            http_response_code(409);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'code' => 'GOOGLE_OPERATION_IN_PROGRESS',
+            ]);
+            return;
+        }
+
+        if ($e instanceof GoogleNotPublishedException) {
+            // Nothing to sync/cancel/unpublish.
+            http_response_code(409);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'code' => 'GOOGLE_NOT_PUBLISHED',
+            ]);
+            return;
+        }
+
+        if ($e instanceof GoogleSyncConflictException) {
+            // A Google-side edit. Local is authoritative; never overwritten.
+            http_response_code(409);
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'code' => 'GOOGLE_SYNC_CONFLICT',
+            ]);
+            return;
+        }
+
         if ($e instanceof GoogleScopeException) {
             http_response_code(422);
             echo json_encode([

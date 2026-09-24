@@ -7,6 +7,12 @@ declare(strict_types=1);
  * Both writes happen in one transaction: if the calendar update fails the
  * cancellation rolls back, so the Session and its event never disagree about
  * whether the meeting is happening.
+ *
+ * PROJECTION HOOK: the Google cancel is invoked AFTER that transaction commits,
+ * so a remote failure can never roll back the atomic local cancellation. The hook
+ * is best-effort and never throws.
+ *
+ * The cancellation REASON is internal and is never sent to the projection.
  */
 final class CancelSession
 {
@@ -15,6 +21,7 @@ final class CancelSession
         private SessionAccessPolicy $policy,
         private SessionCalendarGateway $calendar,
         private TransactionManager $tx,
+        private ?GoogleEventSyncHook $projectionHook = null,
     ) {}
 
     public function execute(int $id, string $reason, ?int $expectedVersion = null): CommandResult
@@ -30,7 +37,8 @@ final class CancelSession
 
         $version = $expectedVersion ?? (int)$existing['version'];
 
-        return $this->tx->execute(function () use ($id, $existing, $version, $reason) {
+        $committedEvent = null;
+        $result = $this->tx->execute(function () use ($id, $existing, $version, $reason, &$committedEvent) {
             $tenantId = $this->policy->tenantId();
 
             $affected = $this->repo->markCancelled($id, $tenantId, $version, $this->policy->actorId(), trim($reason));
@@ -40,7 +48,7 @@ final class CancelSession
 
             // Cancel the linked calendar event (no-op when there is none).
             if ($existing['calendar_event_id'] !== null) {
-                $this->calendar->cancelLinkedEvent((int)$existing['calendar_event_id'], $tenantId, $this->policy->actorId());
+                $committedEvent = $this->calendar->cancelLinkedEvent((int)$existing['calendar_event_id'], $tenantId, $this->policy->actorId());
             }
 
             $this->repo->logActivity(
@@ -69,5 +77,28 @@ final class CancelSession
                 ),
             );
         });
+
+        // AFTER commit: best-effort projection cancel with NO reason content.
+        $this->notifyProjection($committedEvent);
+
+        return $result;
+    }
+
+    /**
+     * Best-effort, post-commit projection cancel. Never throws; the reason text is
+     * deliberately not passed on.
+     *
+     * @param array<string,mixed>|null $eventRow
+     */
+    private function notifyProjection(?array $eventRow): void
+    {
+        if ($this->projectionHook === null || $eventRow === null) {
+            return;
+        }
+        try {
+            $this->projectionHook->onEventCancelled($eventRow);
+        } catch (Throwable) {
+            // A projection failure never fails the local cancellation.
+        }
     }
 }

@@ -1,7 +1,7 @@
 # Sprint 010 — Google Calendar OAuth and outbound synchronization with automatic Google Meet links
 
 > **Program**: Incubator OS — Scheduling layer (Appointment → Reminder → Follow-up)
-> **Status**: In progress — **Phases 1, 2 and 3 delivered and verified** (sessions 030, 031, 032). Phases 4–6 locked, awaiting implementation.
+> **Status**: In progress — **Phases 1, 2, 3 and 4 delivered and verified** (sessions 030, 031, 032, 033). Phases 5–6 locked, awaiting implementation.
 > **Baseline**: `990bbdb` (Sprint 008 calendar + Sprint 009 Sessions delivered, deployed and verified in production `app.rbttacesd.co.za`; both migrations run orders #20 and #21 applied live).
 > **Duration**: Multi-phase (6 phases, sequential execution).
 > **Previous work (locked capabilities)**: Normalized SWOT/GPS hierarchy, financial indicators, Results & Achievements (`achievements`, `achievement_evidence`, `metric_type_accounts`, target measurement), **Calendar** (`calendar_events`, `calendar_event_links`), **Sessions** (`sessions` + 6 child tables, `SessionCalendarGateway`, `SessionCalendarGuard`).
@@ -354,23 +354,42 @@ Build the update/cancel paths and the failure modes.
 
 #### Tasks
 
-- [ ] **4.1** Add `Services/GoogleEventSyncService::sync()` — `PATCH` the Google event with `If-Match: etag`, updating time/title/location/description/attendees with `conferenceDataVersion=1` + `sendUpdates=all`; store the new etag.
-- [ ] **4.2** Map local `status = cancelled` to a Google `DELETE` with `sendUpdates=all`, then set the sync row `detached`.
-- [ ] **4.3** Map a `412` (etag mismatch) to `sync_status='conflict'` and return `409 SYNC_CONFLICT`; never overwrite Google or local data.
-- [ ] **4.4** Map `invalid_grant` / `401` to a connection `needs_reconnect` + sync `failed` with `last_error`; block further sync until reconnected.
-- [ ] **4.5** Add `Contracts/GoogleEventSyncHook.php` to `capabilities/calendar` with a no-op default, and a real implementation in `capabilities/google-calendar` (`Services/GoogleCancelHook.php`).
-- [ ] **4.6** Wire the hook into the calendar cancel/delete endpoint (and therefore the Session cancel cascade) so a cancelled local event with an active sync is cancelled in Google **best-effort** — a Google failure is recorded and never blocks the local cancel.
-- [ ] **4.7** Add `Application/Commands/SyncCalendarEventToGoogle.php`, `UnpublishCalendarEventFromGoogle.php` and endpoints `commands/sync.php?id=`, `commands/unpublish.php?id=`.
+- [x] **4.1** Add `Services/GoogleEventSyncService::sync()` — `PATCH` the Google event with `If-Match: etag`, sending ONLY the Incubator-managed fields (summary/description/location/start/end/attendees; **no `conferenceData` key**, so the Meet conference and unrelated provider fields are preserved). `conferenceDataVersion=1` + `sendUpdates=all` only when attendees exist; store the new etag; idempotent via `synced_event_version` (a repeat sends nothing).
+- [x] **4.2** Map local `status = cancelled` to a Google `DELETE` with `sendUpdates` (all only with attendees), then set the sync row `detached`; 404/410 treated as already-cancelled.
+- [x] **4.3** Map a `412` (etag mismatch) to `sync_status='conflict'` + `remote_etag` + `conflict_at` and return `409 GOOGLE_SYNC_CONFLICT`; never overwrite Google or local data; store no external snapshot.
+- [x] **4.4** Map `invalid_grant` / `401` to a connection `needs_reconnect` + sync `update_pending` with `last_error`; block further sync until reconnected.
+- [x] **4.5** Add `Contracts/GoogleEventSyncHook.php` to `capabilities/calendar` (interface + `NullGoogleEventSyncHook` default), and a real implementation in `capabilities/google-calendar` (`Services/GoogleCancelHook.php`).
+- [x] **4.6** Wire the hook into the calendar update/delete endpoints (and therefore the Session cancel cascade) so a cancelled local event with an active sync is cancelled in Google **best-effort, after commit** — a Google failure is recorded and never blocks the local cancel; the cancellation reason is never sent to Google.
+- [x] **4.7** Add `Application/Commands/SyncCalendarEventToGoogle.php`, `UnpublishCalendarEventFromGoogle.php` and endpoints `commands/sync.php?id=`, `commands/unpublish.php?id=`. Unpublish retains the row as `unpublished` and bumps the publication generation on republish.
 
 #### Exit Criteria
 
-- [ ] Rescheduling the local event updates the same Google event (no duplicate) and the etag advances.
-- [ ] Cancelling the local event deletes/cancels the Google event; cancelling a **Session** produces the same result via the existing calendar cancel path.
-- [ ] A Google-side edit causes the next sync to return `409 SYNC_CONFLICT` and mark `conflict`; local data is unchanged.
-- [ ] A revoked Google token flips the connection to `needs_reconnect` and the sync to `failed` with a recorded error; subsequent syncs return the reconnect error without calling Google.
-- [ ] A Google failure during local cancel does **not** roll back or fail the local cancel.
-- [ ] `unpublish` removes the Google event and sets `detached`; the local event is untouched.
-- [ ] `capabilities/calendar` contains **no** reference to a `google-calendar` file (verified by search).
+- [x] Rescheduling the local event updates the same Google event (no duplicate) and the etag advances.
+- [x] Cancelling the local event deletes/cancels the Google event; cancelling a **Session** produces the same result via the existing calendar cancel path.
+- [x] A Google-side edit causes the next sync to return `409 SYNC_CONFLICT` and mark `conflict`; local data is unchanged.
+- [x] A revoked Google token flips the connection to `needs_reconnect` and the sync to a recorded retryable state; subsequent syncs return the reconnect error without calling Google.
+- [x] A Google failure during local cancel does **not** roll back or fail the local cancel.
+- [x] `unpublish` removes the Google event and sets `unpublished`; the local event and Session are untouched and the sync row is retained.
+- [x] `capabilities/calendar` contains **no** reference to a `google-calendar` file (verified by search).
+
+#### Phase 4 completion — 2026-09-24 (session 033)
+
+| Area | Result |
+| --- | --- |
+| Service suite | `api-incubator-os/tests/GoogleCalendarPhase4.php` — **90/90** |
+| HTTP endpoint suite | `api-incubator-os/tests/GoogleCalendarPhase4Http.ps1` — **33/33** |
+| PHP lint | **116/116** across the touched capabilities/endpoints |
+| Migration #25 | applied **twice** locally; enum + 7 columns; idempotent |
+| Phase 1 / 2 service / 2 HTTP / 3 service / 3 HTTP | **62/62** / **73/73** / **23/23** / **108/108** / **26/26** |
+| Calendar regression | **65/65** |
+| Sessions regression | **106/106** |
+| Network | none — offline fake only |
+
+Race interleavings proven: (1) reschedule while publish is in flight → refused with a retryable/not-published state, no Google call; (2) cancel while publish is in flight → best-effort, retryable, never throws; (3) unpublish while update is pending → takes over the stale lease; (4) two concurrent reschedules → one holds the lease, the other refused; (5) cancellation after an etag conflict → succeeds and clears the conflict; (6) token expiry during patch/delete → exactly one refresh then success; (7) local update after the payload was prepared → the version guard refuses to claim the newer version synced. After every remote response the completion write is re-guarded by the lease token AND the local event version, so a stale worker cannot overwrite newer state.
+
+Conflict protection: both the last known local etag and the current remote etag are stored; NO full external event snapshot (no attendee/description data) is kept; `conflict_at` marks the divergence; the local event is never reverted to Google's version.
+
+Unpublish: the remote copy is removed, the local event/Session/audit are retained, the sync row becomes `unpublished` with `unpublished_at` + `remote_outcome`, and the active Meet/event links are cleared only after deletion succeeds or Google confirms absence. A failed unpublish keeps the mapping active and retryable. Republish uses a NEW generation (new deterministic id + new conference request id), so a tombstoned id is never reused. Disconnect and unpublish remain separate operations.
 
 ---
 
@@ -471,8 +490,7 @@ api-incubator-os/
 │   │   │   └── UnpublishCalendarEventFromGoogle.php
 │   │   └── Queries/
 │   │       ├── GetGoogleConnection.php
-│   │       └── GetGoogleEventSync.php
-│   ├── Contracts/
+│   │       └── GetGoogleEventSync.php│   ├── Contracts/
 │   │   ├── GoogleApiClient.php
 │   │   ├── GoogleApiClientFactory.php
 │   │   ├── GoogleConnectionResponse.php
@@ -521,14 +539,17 @@ api-incubator-os/
 ├── migrations/
 │   ├── 2026-09-24-google-calendar.sql              # run order #22
 │   ├── 2026-09-24-google-calendar-phase2.sql       # run order #23
-│   └── 2026-09-24-google-calendar-phase3.sql       # run order #24
+│   ├── 2026-09-24-google-calendar-phase3.sql       # run order #24
+│   └── 2026-09-24-google-calendar-phase4.sql       # run order #25
 └── tests/
     ├── GoogleCalendar.ps1                          # endpoint suite (Phases 2+)
     ├── GoogleCalendarPhase1.php                    # foundation suite (delivered)
     ├── GoogleCalendarPhase2.php                    # OAuth service suite (delivered)
     ├── GoogleCalendarPhase2Http.ps1                # OAuth endpoint suite (delivered)
     ├── GoogleCalendarPhase3.php                    # publish service suite (delivered)
-    └── GoogleCalendarPhase3Http.ps1                # publish endpoint suite (delivered)
+    ├── GoogleCalendarPhase3Http.ps1                # publish endpoint suite (delivered)
+    ├── GoogleCalendarPhase4.php                    # sync/cancel/unpublish service suite (delivered)
+    └── GoogleCalendarPhase4Http.ps1                # sync/cancel/unpublish endpoint suite (delivered)
 
 src/app/features/calendar/
 ├── models/google-calendar.models.ts

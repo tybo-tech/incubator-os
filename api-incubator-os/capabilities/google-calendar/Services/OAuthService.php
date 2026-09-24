@@ -209,7 +209,34 @@ final class OAuthService
         if ($existing === null) {
             throw new GoogleForbiddenException('No Google connection exists for this user.');
         }
+        return $this->refreshFromRow($existing, $tenantId, $userId, $force);
+    }
 
+    /**
+     * Refresh using a CONNECTION row directly. Used by server-side sync/cancel
+     * operations that act against the connection stored on a `google_event_sync`
+     * row, which may belong to the user who first published rather than the
+     * current actor.
+     *
+     * @param array<string,mixed> $connectionRow
+     * @return string the fresh access token
+     * @throws GoogleApiException when the refresh fails
+     */
+    public function freshAccessTokenForConnection(array $connectionRow, int $tenantId, bool $force = false): string
+    {
+        $userId = (int) $connectionRow['user_id'];
+        return $this->refreshFromRow($connectionRow, $tenantId, $userId, $force);
+    }
+
+    /**
+     * Shared refresh implementation. Owns the "refresh at most once, invalid_grant
+     * -> needs_reconnect" behaviour; callers decide when to invoke it.
+     *
+     * @param array<string,mixed> $existing
+     * @return string
+     */
+    private function refreshFromRow(array $existing, int $tenantId, int $userId, bool $force): string
+    {
         $expiresAt = $existing['token_expires_at'] ?? null;
         $expired = true;
         if (is_string($expiresAt) && $expiresAt !== '') {
