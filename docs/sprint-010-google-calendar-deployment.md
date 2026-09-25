@@ -452,3 +452,31 @@ locally verified; no production action has been taken.
 
 Nothing has been executed by the agent. The remaining hold-point is the operator's
 continuation of section 5.
+
+### 10.1 Operator execution log
+
+**Database stage: COMPLETE (operator, 2026-09-24).** Preflight clean (prior sprints
+all `PRESENT`, Google all `MISSING`); migrations **#22 → #23 → #24 → #25** applied in
+order with no red error; post-migration structure verifier **all 21 columns = 1**;
+integrity verifier **all `inv_* = 0`**. See
+[`sprint-010-deployment-operator-runbook.md`](sprint-010-deployment-operator-runbook.md)
+for the linear credentials → backend → frontend → token → smoke path.
+
+| Step | Status |
+|---|---|
+| Preflight (prior sprints) | ✅ clean — no partial/invalid |
+| Google structure preflight | ✅ all `MISSING` |
+| #22 google-calendar | ✅ applied |
+| #23 google-calendar-phase2 | ✅ applied |
+| #24 google-calendar-phase3 | ✅ applied |
+| #25 google-calendar-phase4 | ✅ applied |
+| Structure verify (post) | ✅ 21/21 = 1 |
+| Integrity verify (post) | ✅ all `inv_* = 0` |
+| Central account rotate + 2FA | ☐ operator |
+| OAuth client + redirect URI | ☐ operator |
+| `config/google.local.php` | ☐ operator |
+| Backend upload (51 files) | ☐ operator |
+| Angular upload (73 files) | ☐ operator |
+| Connect (Google token) | ☐ operator |
+| Smoke tests G0–G12 | ☐ operator |
+| Evidence + cleanup | ☐ operator |

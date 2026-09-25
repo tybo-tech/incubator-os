@@ -476,6 +476,9 @@ Prove the sprint and make it shippable.
 | Console + verification runbook | `docs/google-cloud-console-setup.md` (new) |
 | Deployment runbook | `docs/sprint-010-google-calendar-deployment.md` (new) |
 | Google verifier SQL | `docs/deployment/verify-google-compact.sql` (structure; pre/post safe; `information_schema`-only) + `docs/deployment/verify-google-integrity-compact.sql` (invariants; post-only) |
+| Operator runbook | `docs/sprint-010-deployment-operator-runbook.md` (linear credentials → backend → frontend → token → smoke) |
+| Angular manifest (Sprint-010 build) | `docs/deployment/angular-manifest-sha256.md` — 73 files, regenerated |
+| Database stage | ✅ COMPLETE — #22–#25 applied; structure 21/21; integrity all `inv_*=0` |
 | Deployment docs updated | backend manifest (A2, 51 files + SHA-256), filezilla checklist, rollback matrix §9, smoke tests §G |
 | Calendar docs | `docs/calendar-api.md` Google section + cross-links |
 | Central-account model | Locked in `google-calendar-api.md` + the deployment runbook |
@@ -598,6 +601,7 @@ docs/                                               # Phase 6 deliverables
 ├── google-calendar-api.md                          # API reference + ownership model
 ├── google-cloud-console-setup.md                   # OAuth client, scopes, verification
 ├── sprint-010-google-calendar-deployment.md        # deployment runbook
+├── sprint-010-deployment-operator-runbook.md       # linear operator guide (credentials → token → smoke)
 ├── calendar-api.md                                 # MODIFIED - Google section + cross-links
 └── deployment/
     ├── verify-google-compact.sql                   # new verifier: structure (pre/post safe)
