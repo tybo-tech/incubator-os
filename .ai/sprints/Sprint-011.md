@@ -1,7 +1,7 @@
 # Sprint 011 — Site Visits (structured on-site visit reports)
 
 > **Program**: Incubator OS — ESD / B-BBEE beneficiary support
-> **Status**: **Phase 1 delivered** (session 037). Phases 2–6 pending.
+> **Status**: **Phases 1–2 delivered** (sessions 037, 038). Phases 3–6 pending.
 > **Baseline**: `main` (Sprint 010 delivered; Calendar + Sessions + Google Calendar locked)
 > **Depends on**: `.ai/sprints/Discovery-011-012.md` (decision register §7 amended & approved 2026-09-25)
 > **Duration**: Multi-phase (6 phases, sequential execution)
@@ -309,41 +309,47 @@ Build the report read/write surface on top of the existing Session service stack
 
 #### Tasks
 
-- [ ] **2.1** Add `capabilities/sessions/Repository/VisitReportRepository.php` — `findBySession`,
+- [x] **2.1** Add `capabilities/sessions/Repository/VisitReportRepository.php` — `findBySession`,
   `createDraft`, `updateHeader` (optimistic `version`), `setStatus`, `listByCompany` (filters/pagination),
   item CRUD (`addItem`, `updateItem`, `reorderItems`, `deleteItem`, `listItems`), sign-off `upsert`/`clear`,
   version `insertVersion`/`listVersions`/`findVersion`. No transactions.
-- [ ] **2.2** Add `capabilities/sessions/Services/VisitReportStateMachine.php` — `draft → issued →
+- [x] **2.2** Add `capabilities/sessions/Services/VisitReportStateMachine.php` — `draft → issued →
   acknowledged`; illegal transitions return the `VISIT_*` codes. `issued`/`acknowledged` freeze content.
-- [ ] **2.3** Add `capabilities/sessions/Services/VisitReportValidator.php` —
+- [x] **2.3** Add `capabilities/sessions/Services/VisitReportValidator.php` —
   type/company match, enrolment belongs to company and is `active`, actual date required to issue, section
   item required fields, sign-off role validity.
-- [ ] **2.4** Add `capabilities/sessions/Services/VisitReportService.php` — orchestrates repository +
+- [x] **2.4** Add `capabilities/sessions/Services/VisitReportService.php` — orchestrates repository +
   validator + state machine + the snapshot builder; reuses the existing `CommandResult`/audit conventions and
   writes a `session_activities` entry (`visit.report.saved` / `.issued` / `.acknowledged`) in the same
   transaction.
-- [ ] **2.5** Add `capabilities/sessions/Services/VisitSnapshotBuilder.php` — assembles `snapshot_json` from
+- [x] **2.5** Add `capabilities/sessions/Services/VisitSnapshotBuilder.php` — assembles `snapshot_json` from
   the report, Session, event schedule/location, company profile, linked actions (tasks/targets) and sign-offs.
   **Never** queries `incubator`-visibility notes.
-- [ ] **2.6** Add endpoints `api/sessions/queries/visit-list.php`, `visit-report.php`, `visit-versions.php`;
+- [x] **2.6** Add endpoints `api/sessions/queries/visit-list.php`, `visit-report.php`, `visit-versions.php`;
   `api/sessions/commands/visit-save.php`, `visit-sections.php`, `visit-signoff.php`, `visit-issue.php`,
   `visit-acknowledge.php` + `_bootstrap.php` shared include, following the existing sessions endpoint pattern
   (`include_once` → `auth_require_user` / `auth_require_company_access` → manual DI).
-- [ ] **2.7** Ensure `queries/get.php` and `queries/list.php` expose `visitReportStatus` on a `site_visit`
+- [x] **2.7** Ensure `queries/get.php` and `queries/list.php` expose `visitReportStatus` on a `site_visit`
   Session (a light join), so the Sessions UI can show a report chip without a second call.
+
+> **Phase 2 completed — 2026-09-25.** Evidence: `docs/sprint-011-phase2-proof.md`. `visit-report` returns an
+> empty draft shape or the full report (never incubator notes); header + section saves honour `version`
+> concurrency; issue writes exactly one immutable snapshot and re-issues return `VISIT_ALREADY_ISSUED`;
+> acknowledgement is bound to the exact issued version; cross-company access is 403 and writes nothing.
+> **`tests/SiteVisits.ps1` 98/98**, Sessions **106/106**, Calendar **65/65**, `php -l` clean.
 
 #### Exit Criteria
 
-- [ ] `visit-report.php` returns a full report for a completed site visit and an empty draft shape when no
+- [x] `visit-report.php` returns a full report for a completed site visit and an empty draft shape when no
   report exists; it **never** returns `incubator` notes.
-- [ ] Saving a draft updates the header and each section independently; `version` guards concurrent edits.
-- [ ] `visit-issue.php` rejects a non-`COMPLETED` Session (`VISIT_SESSION_NOT_COMPLETED`), a missing
+- [x] Saving a draft updates the header and each section independently; `version` guards concurrent edits.
+- [x] `visit-issue.php` rejects a non-`COMPLETED` Session (`VISIT_SESSION_NOT_COMPLETED`), a missing
   enrolment (`VISIT_ENROLMENT_REQUIRED`) and a missing actual date (`VISIT_ACTUAL_DATE_REQUIRED`).
-- [ ] Issuing writes exactly one immutable snapshot and increments `current_version`; a second issue returns
+- [x] Issuing writes exactly one immutable snapshot and increments `current_version`; a second issue returns
   `VISIT_ALREADY_ISSUED`.
-- [ ] Any content write after issue returns `VISIT_NOT_DRAFT`; acknowledgement is allowed from `issued` only.
-- [ ] Every mutation writes a `session_activities` row with the actor.
-- [ ] Cross-company access returns `403`; unknown ids return `404`.
+- [x] Any content write after issue returns `VISIT_NOT_DRAFT`; acknowledgement is allowed from `issued` only.
+- [x] Every mutation writes a `session_activities` row with the actor.
+- [x] Cross-company access returns `403`; unknown ids return `404`.
 
 ---
 

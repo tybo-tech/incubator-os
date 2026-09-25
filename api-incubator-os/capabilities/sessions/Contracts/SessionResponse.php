@@ -48,6 +48,7 @@ final class SessionResponse implements JsonSerializable
         public readonly array $activity,
         public readonly string $createdAt,
         public readonly string $updatedAt,
+        public readonly ?string $visitReportStatus = null,
     ) {}
 
     public function jsonSerialize(): mixed
@@ -82,6 +83,7 @@ final class SessionResponse implements JsonSerializable
             'activity' => $this->activity,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
+            'visitReportStatus' => $this->visitReportStatus,
         ];
     }
 }

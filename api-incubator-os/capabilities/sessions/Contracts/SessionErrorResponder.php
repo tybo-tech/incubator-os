@@ -85,11 +85,28 @@ final class SessionErrorResponder
 
     private static function emitValidation(string $message): void
     {
-        $decoded = json_decode($message, true);
+        // A validation message may carry a machine-readable code as
+        // `CODE: {json errors}` (e.g. VISIT_ENROLMENT_REQUIRED) so callers can
+        // branch without string matching, mirroring the conflict handling.
+        $code = self::extractCode($message);
+        $body = $message;
+        if ($code !== null) {
+            $body = (string)preg_replace('/^[A-Z][A-Z0-9_]+:\s*/', '', $message);
+        }
+
+        $decoded = json_decode($body, true);
         if (is_array($decoded)) {
-            echo json_encode(['error' => 'Validation failed', 'errors' => $decoded]);
+            $payload = ['error' => 'Validation failed', 'errors' => $decoded];
+            if ($code !== null) {
+                $payload['code'] = $code;
+            }
+            echo json_encode($payload);
             return;
         }
-        echo json_encode(['error' => $message]);
+        $payload = ['error' => $body];
+        if ($code !== null) {
+            $payload['code'] = $code;
+        }
+        echo json_encode($payload);
     }
 }

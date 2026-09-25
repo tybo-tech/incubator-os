@@ -793,7 +793,8 @@ final class SessionRepository
                        (SELECT COUNT(*) FROM session_participants p WHERE p.session_id = s.id) AS participant_count,
                        (SELECT COUNT(*) FROM session_agenda_items a WHERE a.session_id = s.id) AS agenda_count,
                        (SELECT COUNT(*) FROM session_decisions d WHERE d.session_id = s.id) AS decision_count,
-                       (SELECT COUNT(*) FROM session_entity_links l WHERE l.session_id = s.id) AS link_count
+                       (SELECT COUNT(*) FROM session_entity_links l WHERE l.session_id = s.id) AS link_count,
+                       (SELECT r.status FROM session_visit_reports r WHERE r.session_id = s.id) AS visit_report_status
                 FROM sessions s
                 LEFT JOIN companies c ON c.id = s.company_id
                 LEFT JOIN users creator ON creator.id = s.created_by

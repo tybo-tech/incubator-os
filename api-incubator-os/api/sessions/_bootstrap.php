@@ -39,16 +39,25 @@ include_once '../../../capabilities/calendar/Repository/CalendarLinkResolver.php
 include_once '../../../capabilities/sessions/Contracts/SessionExceptions.php';
 include_once '../../../capabilities/sessions/Contracts/SessionErrorResponder.php';
 include_once '../../../capabilities/sessions/Contracts/SessionVocabulary.php';
+include_once '../../../capabilities/sessions/Contracts/VisitVocabulary.php';
 include_once '../../../capabilities/sessions/Contracts/SessionResponse.php';
 include_once '../../../capabilities/sessions/Contracts/SessionSummary.php';
 include_once '../../../capabilities/sessions/Contracts/SessionRequest.php';
 include_once '../../../capabilities/sessions/Contracts/SessionMapper.php';
+include_once '../../../capabilities/sessions/Contracts/VisitReportResponse.php';
+include_once '../../../capabilities/sessions/Contracts/VisitReportSummaryResponse.php';
+include_once '../../../capabilities/sessions/Contracts/VisitReportMapper.php';
 include_once '../../../capabilities/sessions/Services/SessionAccessPolicy.php';
 include_once '../../../capabilities/sessions/Services/SessionStateMachine.php';
 include_once '../../../capabilities/sessions/Services/SessionValidator.php';
 include_once '../../../capabilities/sessions/Services/SessionCalendarGateway.php';
+include_once '../../../capabilities/sessions/Services/VisitReportStateMachine.php';
+include_once '../../../capabilities/sessions/Services/VisitReportValidator.php';
 include_once '../../../capabilities/sessions/Repository/SessionRepository.php';
 include_once '../../../capabilities/sessions/Repository/SessionBriefReadModel.php';
+include_once '../../../capabilities/sessions/Repository/VisitReportRepository.php';
+include_once '../../../capabilities/sessions/Services/VisitSnapshotBuilder.php';
+include_once '../../../capabilities/sessions/Services/VisitReportService.php';
 
 // --- Application (queries + commands) ---
 include_once '../../../capabilities/sessions/Application/Queries/ListCompanySessions.php';
@@ -57,6 +66,9 @@ include_once '../../../capabilities/sessions/Application/Queries/GetSession.php'
 include_once '../../../capabilities/sessions/Application/Queries/GetSessionBrief.php';
 include_once '../../../capabilities/sessions/Application/Queries/ListSessionBacklinks.php';
 include_once '../../../capabilities/sessions/Application/Queries/ListEligibleEvents.php';
+include_once '../../../capabilities/sessions/Application/Queries/ListCompanySiteVisits.php';
+include_once '../../../capabilities/sessions/Application/Queries/GetVisitReport.php';
+include_once '../../../capabilities/sessions/Application/Queries/ListVisitVersions.php';
 include_once '../../../capabilities/sessions/Application/Commands/CreateSession.php';
 include_once '../../../capabilities/sessions/Application/Commands/ConvertCalendarEventToSession.php';
 include_once '../../../capabilities/sessions/Application/Commands/UpdateSession.php';
@@ -68,6 +80,30 @@ include_once '../../../capabilities/sessions/Application/Commands/ManageSessionP
 include_once '../../../capabilities/sessions/Application/Commands/StartSession.php';
 include_once '../../../capabilities/sessions/Application/Commands/CompleteSession.php';
 include_once '../../../capabilities/sessions/Application/Commands/CancelSession.php';
+include_once '../../../capabilities/sessions/Application/Commands/SaveVisitReport.php';
+include_once '../../../capabilities/sessions/Application/Commands/ManageVisitSection.php';
+include_once '../../../capabilities/sessions/Application/Commands/ManageVisitSignoff.php';
+include_once '../../../capabilities/sessions/Application/Commands/IssueVisitReport.php';
+include_once '../../../capabilities/sessions/Application/Commands/AcknowledgeVisitReport.php';
+
+/**
+ * Builds the shared visit service stack (repository + sessions + validator +
+ * snapshot builder) with the actor policy, so every visit endpoint wires the
+ * same collaborators in one place.
+ *
+ * @param array<string,mixed> $actor
+ */
+function sessions_visit_service(PDO $db, array $actor): VisitReportService
+{
+    $repo = new VisitReportRepository($db);
+    return new VisitReportService(
+        $repo,
+        new SessionRepository($db),
+        new VisitReportValidator(new CalendarValidator()),
+        new VisitSnapshotBuilder($repo),
+        new SessionAccessPolicy($actor),
+    );
+}
 
 /**
  * Reads the JSON request body as an array (empty array when absent/invalid).

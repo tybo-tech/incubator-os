@@ -7,7 +7,10 @@
     { "name": "getSession", "returns": "SessionResponse" },
     { "name": "getSessionBrief", "returns": "PreparationBrief" },
     { "name": "listSessionBacklinks", "returns": "SessionSummary[]" },
-    { "name": "listEligibleEvents", "returns": "CalendarEventProjection[]" }
+    { "name": "listEligibleEvents", "returns": "CalendarEventProjection[]" },
+    { "name": "listCompanySiteVisits", "returns": "VisitReportSummaryResponse[]" },
+    { "name": "getVisitReport", "returns": "VisitReportResponse" },
+    { "name": "listVisitVersions", "returns": "VisitReportVersion[]" }
   ],
   "commands": [
     { "name": "createSession", "input": "SessionRequest", "returns": "CommandResult" },
@@ -20,7 +23,12 @@
     { "name": "manageSessionParticipants", "input": "action + payload", "returns": "CommandResult" },
     { "name": "startSession", "returns": "CommandResult" },
     { "name": "completeSession", "returns": "CommandResult" },
-    { "name": "cancelSession", "returns": "CommandResult" }
+    { "name": "cancelSession", "returns": "CommandResult" },
+    { "name": "saveVisitReport", "input": "visit header payload", "returns": "CommandResult" },
+    { "name": "manageVisitSection", "input": "action + section + payload", "returns": "CommandResult" },
+    { "name": "manageVisitSignoff", "input": "action + payload", "returns": "CommandResult" },
+    { "name": "issueVisitReport", "input": "{ version? }", "returns": "CommandResult" },
+    { "name": "acknowledgeVisitReport", "input": "{ version?, reportVersion? }", "returns": "CommandResult" }
   ],
-  "dependsOn": ["Companies", "Calendar", "GpsTargets", "SwotItems", "Achievements", "Nodes"]
+  "dependsOn": ["Companies", "Calendar", "GpsTargets", "SwotItems", "Achievements", "Nodes", "Categories"]
 }

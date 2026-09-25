@@ -90,6 +90,7 @@ final class SessionMapper
             activity: array_map([self::class, 'activityRow'], $activity),
             createdAt: self::toIsoUtc($row['created_at']) ?? (string)$row['created_at'],
             updatedAt: self::toIsoUtc($row['updated_at']) ?? (string)$row['updated_at'],
+            visitReportStatus: self::nullableString($row['visit_report_status'] ?? null),
         );
     }
 
@@ -118,6 +119,7 @@ final class SessionMapper
             completedAt: self::toIsoUtc($row['completed_at'] ?? null),
             createdAt: self::toIsoUtc($row['created_at']) ?? (string)$row['created_at'],
             updatedAt: self::toIsoUtc($row['updated_at']) ?? (string)$row['updated_at'],
+            visitReportStatus: self::nullableString($row['visit_report_status'] ?? null),
         );
         return $summary->jsonSerialize();
     }
@@ -228,9 +230,17 @@ final class SessionMapper
         ];
     }
 
-    private static function toIsoUtc(?string $value): ?string
+    private static function nullableString(mixed $value): ?string
     {
-        if ($value === null || $value === '') {
+        if ($value === null) {
+            return null;
+        }
+        $s = (string)$value;
+        return $s === '' ? null : $s;
+    }
+
+    private static function toIsoUtc(?string $value): ?string
+    {        if ($value === null || $value === '') {
             return null;
         }
         try {

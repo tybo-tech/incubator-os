@@ -30,6 +30,7 @@ final class SessionSummary implements JsonSerializable
         public readonly ?string $completedAt,
         public readonly string $createdAt,
         public readonly string $updatedAt,
+        public readonly ?string $visitReportStatus = null,
     ) {}
 
     public function jsonSerialize(): mixed
@@ -52,6 +53,7 @@ final class SessionSummary implements JsonSerializable
             'completedAt' => $this->completedAt,
             'createdAt' => $this->createdAt,
             'updatedAt' => $this->updatedAt,
+            'visitReportStatus' => $this->visitReportStatus,
         ];
     }
 }
