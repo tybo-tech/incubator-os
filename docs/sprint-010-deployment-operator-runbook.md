@@ -65,9 +65,21 @@ the test user added.
 
 ## Step 3 — Create `config/google.local.php` on the server `[OPS]`
 
+> **DO NOT UPLOAD `config/google.local.php` from the repo — EVER.** It is the
+> developer's **offline test** config (`use_fake => true`, placeholder
+> `local-fake-client` credentials, a shared test AES key). If it lands on the
+> server the app cannot reach real Google. **Create the file by hand on the server**
+> (FileZilla → right-click → *Create new file*, or a cPanel File Manager), or edit
+> it in place. This is the one file that must never come across from the local
+> working tree.
+>
+> A guard now exists in `config/google.php`: if `use_fake => true` is present on a
+> non-loopback host, the provider **fails closed** (`503
+> GOOGLE_NOT_CONFIGURED`) instead of silently using the fake. That is a safety net,
+> not a substitute for the correct file.
+
 Create the file **on the server** at
 `/api/config/google.local.php` (same folder as the committed `config/google.php`).
-**Never** upload it from the repo; it is gitignored and must exist only on the server.
 
 Copy the shape from `config/google.local.example.php` and fill in:
 
@@ -85,6 +97,8 @@ return [
     //   php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
     'encryption_key' => '<base64 32-byte key>',
 
+    // Do NOT include a `use_fake` key in production. (If present and true, the
+    // provider fails closed on this host.)
     'key_version' => 1,
     'default_calendar_id' => 'primary',
 ];
@@ -93,11 +107,43 @@ return [
 `[CHECK]` Open
 `https://app.rbttacesd.co.za/api/api/google-calendar/queries/connection.php` **logged
 out** → `401` (route deployed). Logged **in** → `200` (not `503`) once this file is
-valid. If it still returns `503 GOOGLE_NOT_CONFIGURED`, the file is missing/invalid
-or the AES key is not a valid 32-byte base64 value.
+valid. If it still returns `503 GOOGLE_NOT_CONFIGURED`, the file is missing/invalid,
+the AES key is not a valid 32-byte base64 value, or `use_fake => true` is present.
 
 > The encryption key **must differ** from the client secret. Never upload this file;
 > never commit it; never paste its contents into a chat.
+
+---
+
+## Step 3b — Remediation: if the LOCAL `google.local.php` was uploaded `[OPS]`
+
+**Symptom:** Connect sends the browser to `accounts.google.com` and Google shows
+**"OAuth client was not found"** (or the connection endpoint returns `503`). The FTP
+log shows `config/google.local.php` (≈427 bytes) uploaded from the repo.
+
+**If this happened, do all of the following:**
+
+1. **Delete** `/api/config/google.local.php` on the server.
+2. **Delete** `/api/config/google.local.example.php` if it was uploaded (docs only;
+   must not sit on the server).
+3. **Create a fresh `/api/config/google.local.php`** by hand (Step 3) with the real
+   OAuth client id/secret and a **newly generated** AES key:
+   ```
+   php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
+   ```
+   Do **not** reuse the shared local test key (`iH3yi0z…`) — it exists in every
+   developer's working tree. No real token had been minted yet, so rotating the key
+   now loses nothing.
+4. **Re-upload `api-incubator-os/config/google.php`** (the committed loader, which
+   now carries the fail-closed fake guard). It is a normal repo file and is safe to
+   upload — unlike `google.local.php`.
+5. **Do not** upload an `/api/config/error_log`. Never delete or edit server logs.
+6. Re-run the check in Step 3.
+
+> **Why a fresh key matters.** If a real refresh token were ever encrypted with the
+> shared test key, anyone with that key and database access could decrypt it. No
+> production token exists yet, so generating a new key now removes that risk
+> entirely.
 
 ---
 
@@ -115,8 +161,16 @@ or the AES key is not a valid 32-byte base64 value.
      `api-incubator-os/api/...` → `/api/api/...`.
    - **Layer 6 files are existing files edited additively** (optional post-commit
      hook). They were backed up in sub-step 1.
-   - Do **not** upload `config/google.local.php` or the `tests/` harness.
+   - **Only select the 51 manifest files.** Do **not** drag the whole
+     `config/` folder — that uploads `config/google.local.php` (the local fake) and
+     `config/google.local.example.php`. Both are forbidden on the server. Only
+     `config/google.php` (the committed loader) is in the manifest.
+   - Do **not** upload the `tests/` harness, `migrations/*.sql`, or `error_log`.
 3. Verify SHA-256 after upload for a sample (or all) files.
+
+> The commit `942e597` adds a fail-closed guard to the uploaded `config/google.php`:
+> a `use_fake => true` on a non-loopback host now returns `503`, so even a mistaken
+> local-config upload cannot silently run the fake. Still upload the correct files.
 
 `[CHECK]`
 - `GET .../api/google-calendar/queries/connection.php` logged out → `401`.
