@@ -43,6 +43,11 @@ if (!function_exists('google_config')) {
             'encryption_key' => '',
             'key_version' => 1,
             'default_calendar_id' => 'primary',
+            // Optional explicit redirect URI. When set, it is used verbatim for the
+            // OAuth flow and the token exchange; leave empty to derive it from the
+            // host this API is served on. Set it explicitly in production so the
+            // value can never depend on a request header.
+            'redirect_uri' => '',
             'use_fake' => false,
         ];
     }
@@ -85,6 +90,7 @@ if (!function_exists('google_config')) {
             'encryption_key' => 'GOOGLE_ENCRYPTION_KEY',
             'key_version' => 'GOOGLE_KEY_VERSION',
             'default_calendar_id' => 'GOOGLE_DEFAULT_CALENDAR_ID',
+            'redirect_uri' => 'GOOGLE_REDIRECT_URI',
         ];
         foreach ($envMap as $key => $envName) {
             $value = getenv($envName);
@@ -250,13 +256,47 @@ if (!function_exists('google_configured')) {
 
 if (!function_exists('google_redirect_uri')) {
     /**
-     * The exact redirect URI to register in the Google Cloud Console. Derived
-     * from APP_URL (config/app.php) so it follows the host the API is reached on.
-     * Requires config/app.php to have been included.
+     * The exact redirect URI to register in the Google Cloud Console.
+     *
+     * SECURITY / CORRECTNESS: this value MUST be stable and MUST NOT depend on a
+     * request header. The OAuth callback is a top-level browser GET from
+     * `accounts.google.com`, which carries NO `Origin` and whose `Referer` is
+     * Google's own page — so deriving this from the request would send
+     * `https://accounts.google.com/...` to Google's token endpoint and fail with
+     * `redirect_uri_mismatch`.
+     *
+     * Resolution order:
+     *   1. An explicit `redirect_uri` in the config (local file or
+     *      `GOOGLE_REDIRECT_URI`) — recommended in production.
+     *   2. Otherwise, the host the API is served on, taken from `HTTP_HOST` (the
+     *      API's own host), NEVER from `Origin`/`Referer`.
+     *
+     * Requires config/app.php to have been included for the scheme fallback.
      */
     function google_redirect_uri(): string
     {
-        $base = defined('APP_URL') ? rtrim((string) APP_URL, '/') : '';
+        $configured = (string) (google_config()['redirect_uri'] ?? '');
+        if ($configured !== '') {
+            return rtrim($configured, '/');
+        }
+
+        // The API's own host. HTTP_HOST is set on every request (including the
+        // callback) and is not attacker-influenced in the same way a Referer is.
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (is_string($host) && $host !== '') {
+            $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+            // Respect a reverse proxy that terminates TLS upstream.
+            $forwarded = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+            if (is_string($forwarded) && strtolower($forwarded) === 'https') {
+                $https = true;
+            }
+            $scheme = $https ? 'https' : 'http';
+            $base = $scheme . '://' . $host;
+        } else {
+            // CLI / no request context: fall back to APP_URL if it is available.
+            $base = defined('APP_URL') ? rtrim((string) APP_URL, '/') : '';
+        }
+
         return $base . '/api/api/google-calendar/commands/callback.php';
     }
 }

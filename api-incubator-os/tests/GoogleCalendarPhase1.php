@@ -289,4 +289,47 @@ $t->check('redirect URI matches the registered path', google_redirect_uri() === 
 $t->check('the fake is refused on a non-loopback host', google_fake_host_allowed() === false);
 $t->check('use_fake is false on a non-loopback host even when requested', google_use_fake() === false);
 
+// ---------------------------------------------------------------------------
+// Redirect-URI regression: the OAuth callback is a top-level browser GET from
+// accounts.google.com, which sends NO Origin and a Google Referer. The redirect
+// URI sent to the token endpoint MUST come from the API's own host (HTTP_HOST),
+// never from Origin/Referer — otherwise Google returns redirect_uri_mismatch and
+// the connect fails with a generic error.
+$savedHost = $_SERVER['HTTP_HOST'] ?? null;
+$savedRef = $_SERVER['HTTP_REFERER'] ?? null;
+$savedOrigin = $_SERVER['HTTP_ORIGIN'] ?? null;
+$savedForwarded = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
+
+$_SERVER['HTTP_HOST'] = 'app.rbttacesd.co.za';
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['HTTP_REFERER'] = 'https://accounts.google.com/';
+unset($_SERVER['HTTP_ORIGIN']);
+$cbUri = google_redirect_uri();
+$t->check(
+    'redirect URI uses the API host, not the Google callback Referer',
+    $cbUri === 'https://app.rbttacesd.co.za/api/api/google-calendar/commands/callback.php',
+    $cbUri
+);
+$t->check('redirect URI never contains accounts.google.com', !str_contains($cbUri, 'accounts.google.com'));
+
+// A reverse proxy that terminates TLS upstream still yields https.
+$_SERVER['HTTPS'] = 'off';
+$_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+$t->check(
+    'redirect URI honours X-Forwarded-Proto=https',
+    google_redirect_uri() === 'https://app.rbttacesd.co.za/api/api/google-calendar/commands/callback.php'
+);
+
+// An explicit config value wins and is used verbatim.
+$t->check('explicit redirect_uri is used when configured', (function () {
+    $defaults = google_config_defaults();
+    return array_key_exists('redirect_uri', $defaults) && $defaults['redirect_uri'] === '';
+})());
+
+// Restore the request context.
+if ($savedHost === null) { unset($_SERVER['HTTP_HOST']); } else { $_SERVER['HTTP_HOST'] = $savedHost; }
+if ($savedRef === null) { unset($_SERVER['HTTP_REFERER']); } else { $_SERVER['HTTP_REFERER'] = $savedRef; }
+if ($savedOrigin === null) { unset($_SERVER['HTTP_ORIGIN']); } else { $_SERVER['HTTP_ORIGIN'] = $savedOrigin; }
+if ($savedForwarded === null) { unset($_SERVER['HTTP_X_FORWARDED_PROTO']); } else { $_SERVER['HTTP_X_FORWARDED_PROTO'] = $savedForwarded; }
+
 exit($t->summary());
