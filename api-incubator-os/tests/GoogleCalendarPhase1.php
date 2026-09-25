@@ -283,4 +283,10 @@ if (!defined('APP_URL')) {
 }
 $t->check('redirect URI matches the registered path', google_redirect_uri() === 'https://app.example.test/api/api/google-calendar/commands/callback.php');
 
+// Fail-closed fake guard: once APP_URL is a real (non-loopback) host, the offline
+// fake must be REFUSED even if `use_fake` is requested. A production deploy that
+// accidentally carries a local `use_fake => true` config must not select the fake.
+$t->check('the fake is refused on a non-loopback host', google_fake_host_allowed() === false);
+$t->check('use_fake is false on a non-loopback host even when requested', google_use_fake() === false);
+
 exit($t->summary());

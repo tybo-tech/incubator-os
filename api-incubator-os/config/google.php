@@ -117,13 +117,39 @@ if (!function_exists('google_config')) {
 
 if (!function_exists('google_use_fake')) {
     /**
-     * Whether the deterministic offline fake client must be used. Kept beside the
-     * provider availability gate so the fake can be exercised with a valid
-     * encryption key but NO real Google credentials.
+     * Whether the deterministic offline fake client must be used.
+     *
+     * Fail-closed guard: the fake is honoured ONLY when it is both requested AND
+     * the app is being reached on a loopback host. A production deployment that
+     * accidentally carries a local `use_fake => true` config must never select the
+     * fake — doing so would make "Connect" point at a fake OAuth client and never
+     * reach real Google, while looking "configured".
      */
     function google_use_fake(): bool
     {
-        return (bool) (google_config()['use_fake'] ?? false);
+        $requested = (bool) (google_config()['use_fake'] ?? false);
+        return $requested && google_fake_host_allowed();
+    }
+}
+
+if (!function_exists('google_fake_host_allowed')) {
+    /**
+     * The offline fake is permitted ONLY on a loopback host (localhost /
+     * 127.0.0.1 / ::1). Any other host — a real domain, a staging domain — is
+     * treated as non-test and refuses the fake. Returns false when APP_URL cannot
+     * be resolved, so an unknown host fails closed.
+     */
+    function google_fake_host_allowed(): bool
+    {
+        $url = defined('APP_URL') ? (string) APP_URL : '';
+        if ($url === '') {
+            return false;
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!is_string($host) || $host === '') {
+            return false;
+        }
+        return in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'], true);
     }
 }
 
@@ -174,6 +200,15 @@ if (!function_exists('google_config_error')) {
     function google_config_error(): ?string
     {
         $config = google_config();
+
+        // Fail-closed guard: if the offline fake is REQUESTED but this host is not
+        // loopback, the configuration is wrong for this environment (a local test
+        // config was deployed). Refuse configuration so every endpoint returns
+        // 503 GOOGLE_NOT_CONFIGURED rather than silently using placeholder
+        // credentials against the real Google API.
+        if ((bool) ($config['use_fake'] ?? false) && !google_fake_host_allowed()) {
+            return 'Google is configured for offline testing, which is not permitted on this host.';
+        }
 
         // In fake mode (local tests only) the provider is considered usable with
         // the encryption key alone: no real Google credentials are required and
