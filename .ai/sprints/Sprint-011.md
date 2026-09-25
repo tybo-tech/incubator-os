@@ -107,8 +107,14 @@ companies ──1:N── sessions (session_type='site_visit') ──1:1── c
 | `session_visit_items` | `capabilities/sessions` | `report_id`, `section` (`discussion`\|`challenge`\|`alternative`\|`recommendation`), `sort_order`, `title`, `detail`, `impact` |
 | `session_visit_signoffs` | `capabilities/sessions` | `report_id`, `report_version_no` (the issued version acknowledged), `role` (`coach`\|`beneficiary`\|`sponsor`), `name`, `designation`, `signed_at`, `signature_ref`; UNIQUE `(report_id, role)` |
 | `session_visit_report_versions` | `capabilities/sessions` | `report_id`, `version_no`, `snapshot_json`, `rendered_doc_ref`, `issued_by`, `issued_at`; UNIQUE `(report_id, version_no)` |
+| `funding_utilisation_observations` | `capabilities/sessions` (funding projection) | `company_id`, `funding_ref` (the purchase/seed/SCM reference this observation is about), `state` (`unknown`\|`not_started`\|`partial`\|`full`), `observed_on`, `explanation`, `evidence_ref`, `recorded_by`; **payment or delivery alone cannot set `state`** |
 
 All new tables carry `tenant_id INT NOT NULL DEFAULT 1` and `created_at`/`updated_at`.
+
+> **Ownership note (Discovery U4):** `utilised` has no home in any existing funding store. Rather than
+> infer it (payment ≠ delivery ≠ utilisation), Sprint 011 introduces an explicit observation record. It is
+> company/funding-scoped, not session-scoped; it is hosted here because this sprint builds the funding
+> projection and no funding capability exists yet. A future funding capability may adopt it.
 
 ### Lookup Collections
 
@@ -119,6 +125,7 @@ All new tables carry `tenant_id INT NOT NULL DEFAULT 1` and `created_at`/`update
 | `follow_up_method` | `call`, `visit`, `check_in`, `email` | enum column |
 | `section` | `discussion`, `challenge`, `alternative`, `recommendation` | enum column |
 | sign-off `role` | `coach`, `beneficiary`, `sponsor` | enum column |
+| utilisation `state` | `unknown`, `not_started`, `partial`, `full` | enum column |
 | `sessions.session_type` (new value) | `site_visit` | enum widened in Phase 1 |
 
 ### Collection Links
@@ -357,9 +364,10 @@ Close the reuse gaps the visit report depends on.
   `process_tracker.completionPercentage`; when the beneficiary has no company/funding rows, return
   **`unknown` per state, never `0`**; do **not** sum `company_purchases` (table) and `company_purchase`
   (node) together — they are semantic twins with no shared row id (double-count hazard).
-- [ ] **3.3b** Add the minimum field needed to record **`utilised`** (Discovery unresolved U4) — the chosen
-  representation (visit operating-status utilisation flag and/or a funding-utilisation marker) must be
-  agreed at Discovery sign-off before this task starts.
+- [ ] **3.3b** Add the utilisation field(s) (Discovery U4, resolved): record utilisation **separately** as
+  `unknown / not_started / partial / full`, with **observation date, explanation and evidence references**.
+  The funding projection derives its utilisation state from these observations only — **payment or delivery
+  alone cannot establish utilisation**. This is a new field (no existing equivalent exists).
 - [ ] **3.4** Add endpoint `api/sessions/queries/visit-context.php` returning the `VisitContextService`
   payload.
 - [ ] **3.5** Add `Application/Commands` support so the UI can create an agreed action through the existing

@@ -264,7 +264,7 @@ Every issued/finalised document stores a `snapshot_json` of exactly what was ren
 | D.6 Scale reconciliation | ✅ resolved | See §3.1 — canonical wording chosen |
 | D.7 Criteria seed set | ✅ drafted | See §3.4 |
 | D.8 Link name/alias mapping | ✅ complete | See §5.2 |
-| D.9 Sign-off | ⬜ pending review | — |
+| D.9 Sign-off | ✅ resolved (§7 decision register); binding on review | U1, U4, U5, U6, U8 now have code-checked resolutions |
 
 ---
 
@@ -346,6 +346,11 @@ vision into visits or assessments.
 ---
 
 ## 2. Funding — the four states
+
+> **Evidence scope:** all row counts and the DS Corp data findings in this section come from the repository
+> `api-incubator-os/db.sql` export and `docs/00track/` markdown, **viewed 2026-09-25 — not a live production
+> read**. Code reconnaissance cannot establish current production data. Every count must be re-verified
+> against production before it is acted on (see §7, Evidence-scope correction).
 
 ### 2.1 Every storage, and its key
 
@@ -430,9 +435,20 @@ D2 PDF both use a 1–5 scale but with different names. Existing repo scales, fo
 | **D2 (template/example)** | `1 Critical Vulnerability; 2 High Risk; 3 Moderate Risk; 4 Functional; 5 Optimized` |
 | **D3 (framework)** | 1–5, labels unspecified in the PDF |
 
-**Resolution:** adopt the D2 wording as the **canonical 1–5 descriptors** because it is the only complete
-five-point maturity scale present in the source material, and store per-framework labels in
-`assessment_scales.descriptors_json`. A framework may override labels without a schema change.
+**Resolution:** adopt the following **canonical 1–5 descriptors** (D2's maturity wording, corrected from the
+earlier draft "Critical Vulnerability / High Risk / Moderate Risk / Functional / Optimized"):
+
+| Score | Label |
+| --- | --- |
+| 1 | **Critical Deficit** |
+| 2 | **Basic / Emergent** |
+| 3 | **Operational** |
+| 4 | **Proficient** |
+| 5 | **Best Practice** |
+
+These labels live in the versioned framework (`assessment_scales.descriptors_json`); a framework may override
+them without a schema change. **Missing and N/A remain separate from any score** and are never mapped onto a
+label (§3.2).
 
 ### 3.2 Missing vs not-applicable (locked)
 
@@ -579,23 +595,67 @@ sent and stored. No backend enum change.
   (`2026-08-31b-patch-*`). Sprint 012's second file is **not** a patch. **Resolution: use the phased
   convention** (`...-assessments-phase2.sql`) as google-calendar did (`README.md:50-53`).
 - **Gate:** #26/#27/#28 verification must first confirm the #25 preflight, per the deployment policy.
+  **#25 production verification is a deployment prerequisite**: #26 → #27 → #28 are ordered **after** #25 is
+  verified in production, never before.
 
 ---
 
-## 7. Unresolved decisions (needed before Sprint 011 Phase 1)
+## 7. Decision register — resolved
 
-| # | Decision | Proposed resolution | Owner |
+> Resolutions below are **proposed** and code-checked where a workflow was claimed; they become binding at
+> D.9 sign-off. "Proposed" is recorded honestly: the reviewer has not independently re-run every count.
+
+| # | Decision | Resolution | Verified against code? |
 | --- | --- | --- | --- |
-| U1 | **DS Corp has no `companies` row / no enrolment.** A site visit cannot be issued without both. | Create/link the DS Corp company row and its `categories_item` enrolment as a **data task before Sprint 011**, or make issue fall back to the grant-application applicant record. Prefer the former. | Product |
+| **U1** | DS Corp company/enrolment | Use the existing application→company promotion workflow: match by **registration number first**, then name; create/update the `companies` row, set `company_id` on the `grant_application` node, then create the enrolment. **Confirm the programme/cohort from authoritative data — do not infer it.** | ✅ Workflow exists: `GrantApplicationService::dryRunImportToCompanies` (`GrantApplicationService.php:115-133`) matches by `registration_no` then `name`; `executeImportToCompanies` (`:166-190`) updates/creates the company and sets `company_id` on the node; `Company::getByRegistrationNo`/`getByName` (`Company.php:149,157`); undo path `undoImportToCompanies` (`:314`). |
+| **U2** | Enrolment selection | Explicit user selection; the visit stores `categories_item_id`; never auto-pick. | ✅ |
+| **U3** | No-funding-row projection | Return **`unknown`** per state, never `0`. | ✅ |
+| **U4** | `utilised` representation | Capture utilisation **separately** as `unknown / not_started / partial / full`, with **observation date, explanation and evidence references**. The funding projection derives its utilisation state from these observations only. **Payment or delivery alone cannot establish utilisation.** | ✅ New field(s) — no existing equivalent (§2.2). |
+| **U5** | Vision reachability | Expose existing `company_vision` through the Company capability; add editing to the current company profile. **Preserve existing records and define multi-record resolution.** | ✅ Node read is unordered `SELECT *` (`Node.php:114-120`) and the UI silently takes `visions[0]` (`strategy-tab.component.ts:254-255`) — so the resolution rule must be explicit. |
+| **U6** | Scale labels | Adopt **Critical Deficit / Basic-Emergent / Operational / Proficient / Best Practice**, stored in the versioned framework; missing and N/A stay separate. | ✅ §3.1 |
+| **U7** | Migration numbering | **#27** = assessments framework; **#28** = GPS assessment provenance; use the `-phase2` naming, not the patch `b` suffix. | ✅ §6 |
+| **U8** | Link actor-reachability | **Harden before extending Session links** — company matching alone does not prove permission to access every linked record. Add a scoped fix + tests. | ✅ Claim exists (`2026-09-23-sessions.sql:230-231`) but is not implemented (`ManageSessionLinks.php:45-49`). |
+
+### U5 — multi-record vision resolution rule (to be locked)
+
+The legacy reader takes the **first unordered row** (`strategy-tab.component.ts:254-255`; `Node.php:117`
+`SELECT *` with no `ORDER BY`). Because ordering is non-deterministic, the rule must not depend on row order.
+
+**Proposed rule:** a company has **at most one** *current* `company_vision` record. On read, the capability
+selects deterministically by `updated_at DESC, id DESC` (the most recently updated record). On write, the
+capability **updates the current record in place**; if none exists it creates one. Existing duplicate records
+are **preserved and not deleted** (they remain reachable via the node archive), and a one-off reconciliation
+report lists companies with more than one `company_vision` record. This mirrors the achievements
+"never destroy" principle.
+
+### Evidence-scope correction (must be stated honestly)
+
+Every row count and the "DS Corp has no company row" statement in §2.4 were established from the
+**repository's `api-incubator-os/db.sql` dump** (and the `docs/00track/` markdown), **not** from a live query.
+Code reconnaissance alone cannot establish current production data. Each such claim must be restated as:
+
+> *Source: repository `db.sql` export, viewed 2026-09-25. Not a live production read.*
+
+This applies to: `company_purchases` 108 rows, `grant_application` 344 rows, `company_vision` sample row,
+and the DS Corp "no `companies` row" finding. **U1 must be executed against production data at deployment
+time**, not assumed from the dump.
+
+---
+
+## 8. Decision outcomes
+
+| # | Decision | Outcome | Owner |
+| --- | --- | --- | --- |
+| U1 | **DS Corp has no `companies` row / no enrolment.** A site visit cannot be issued without both. | ✅ Resolved in §7 — use the application→company promotion workflow (match by reg no, then name); confirm the enrolment from authoritative data | Product |
 | U2 | Enrolment selection rule (D.3) — which `categories_item` for a multi-enrolment company? | Explicit user selection; report stores `categories_item_id`; never auto-pick. Confirmed. | Product |
 | U3 | Funding projection when the beneficiary has no company/funding rows | Return **`unknown`** per state, never `0`. Confirmed as a rule. | Engineering |
-| U4 | `utilised` state — which fields constitute it | New, explicit on the visit (operating status) and/or a funding-utilisation flag; **not** inferred from `completionPercentage`. Needs final field choice. | Product |
-| U5 | Vision/mission **reachability** — editors currently unreachable | Restore a reachable edit surface in the current shell as part of Sprint 011 Phase 3. Confirmed. | Engineering |
-| U6 | `assessment_scales.descriptors_json` exact labels | Adopt the D2 1–5 wording as canonical; allow per-framework override. Confirmed. | Product |
-| U7 | #27 vs #28 and the `b` naming | Renumber to #27 + #28; rename to `-phase2`. Confirmed. | Engineering |
-| U8 | `session_entity_links` actor-reachability claimed but not enforced | Record as known defect; do **not** rely on it in Sprint 012; optionally harden then. | Engineering |
+| U4 | `utilised` state — which fields constitute it | ✅ Resolved in §7 — `unknown / not_started / partial / full` + observation date, explanation, evidence refs; payment/delivery cannot establish it | Product |
+| U5 | Vision/mission **reachability** — editors currently unreachable | ✅ Resolved in §7 — expose via Company capability, add editing to the current profile, deterministic multi-record rule | Engineering |
+| U6 | `assessment_scales.descriptors_json` exact labels | ✅ Resolved in §7 — Critical Deficit / Basic-Emergent / Operational / Proficient / Best Practice | Product |
+| U7 | #27 vs #28 and the `b` naming | ✅ Resolved in §7 — #27 + #28, `-phase2` naming | Engineering |
+| U8 | `session_entity_links` actor-reachability claimed but not enforced | ✅ Resolved in §7 — scoped hardening + tests **before** extending Session links | Engineering |
 
-## 8. Definition of Done — evidence checklist
+## 9. Definition of Done — evidence checklist
 
 - [x] Every D1/D2/D3 field has a source and an action (§1, §2, §3).
 - [x] Every duplication-register item has a decision.
@@ -603,4 +663,6 @@ sent and stored. No backend enum change.
 - [x] The criteria seed **shape** is agreed (§3.4); final weights at sign-off.
 - [x] The enrolment and funding-projection rules are written (§7 U2/U3).
 - [x] Migration numbering resolved (§6, §7 U7).
-- [ ] **U1, U4, U5, U6 signed off** — the only remaining blockers to Sprint 011 Phase 1.
+- [x] U1, U4, U5, U6, U8 have code-checked resolutions (§7).
+- [ ] **Binding sign-off** on the §7 register — the only remaining step before Sprint 011 Phase 1.
+- [ ] Migration **#25 production verification** confirmed as the prerequisite for #26–#28.

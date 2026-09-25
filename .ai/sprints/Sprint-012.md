@@ -95,7 +95,7 @@ companies ──1:N── assessments (framework_id, assessment_type, categories
 | `assessment_frameworks` | `capabilities/assessments` | `framework_key` (UNIQUE, e.g. `ESD-NAT-2026-V1`), `title`, `version` (INT), `status` (`draft`\|`published`\|`archived`), `max_points`, `tier_json`, `source_ref`, `published_at`, `published_by`, `created_by` |
 | `assessment_framework_dimensions` | same | `framework_id`, `code`, `title`, `sort_order`, `weight` |
 | `assessment_criteria` | same | `framework_id`, `dimension_id`, `code`, `title`, `description`, `assessment_domain`, `weight`, `sort_order`, `evidence_expectation`; UNIQUE `(framework_id, code)` |
-| `assessment_scales` | same | `framework_id`, `min_score`, `max_score`, `descriptors_json` (1–5 labels) |
+| `assessment_scales` | same | `framework_id`, `min_score`, `max_score`, `descriptors_json` (1–5 labels: **Critical Deficit / Basic-Emergent / Operational / Proficient / Best Practice**) |
 | `assessments` | same | `company_id`, `categories_item_id`, `framework_id`, `assessment_type` (`baseline`\|`reassessment`), `baseline_assessment_id`, `assessment_date`, `assessor_user_id`, `title`, `status` (`draft`\|`in_progress`\|`finalised`), `current_version`, `finalised_at`, `finalised_by`, `version` |
 | `assessment_findings` | same | `assessment_id`, `criterion_id`, `score` (NULL = unanswered), `is_applicable`, `observation`, `gap`, `evidence_ref`, `version`; UNIQUE `(assessment_id, criterion_id)` |
 | `assessment_needs` | same | `assessment_id`, `dimension_code`, `priority`, `title`, `rationale`, `sort_order` |
@@ -393,6 +393,12 @@ Connect the diagnostic to execution without duplicating it.
   never create/verify achievements here.
 - [ ] **3.6** Ensure `docs/` records the `assessment_id`/`assessment_finding_id` provenance on
   `gps_target_sources` and the `source_type='assessment'` write path.
+- [ ] **3.7** **Harden Session link actor-reachability before extending any Session link use** (Discovery U8).
+  `session_entity_links.entity_id` is polymorphic with no FK, and the migration comment claims linked records
+  must be "reachable by the actor" (`2026-09-23-sessions.sql:230-231`) but `ManageSessionLinks.php:45-49`
+  enforces **company match only**. Add an explicit actor-reachability check for the link types this sprint
+  touches (at minimum `gps_target`, `gps_target_task`) plus tests. If the fix is deferred, record it as a
+  **known defect** and do **not** rely on reachability being enforced.
 
 #### Exit Criteria
 
