@@ -1,9 +1,9 @@
 # Sprint 011 — Site Visits (structured on-site visit reports)
 
 > **Program**: Incubator OS — ESD / B-BBEE beneficiary support
-> **Status**: Draft — ready for implementation **after Discovery-011-012 sign-off**
+> **Status**: **Phase 1 delivered** (session 037). Phases 2–6 pending.
 > **Baseline**: `main` (Sprint 010 delivered; Calendar + Sessions + Google Calendar locked)
-> **Depends on**: `.ai/sprints/Discovery-011-012.md` (ownership rules + contracts)
+> **Depends on**: `.ai/sprints/Discovery-011-012.md` (decision register §7 amended & approved 2026-09-25)
 > **Duration**: Multi-phase (6 phases, sequential execution)
 > **Inputs**: `DS_Corp_Onsite_Visit_Report_1` (D1)
 > **Previous work (locked capabilities)**: Company, Calendar, Sessions (`sessions` + 6 child tables), Google Calendar, normalized SWOT/GPS (`gps_targets`/`gps_target_tasks`), Results/Achievements, Categories/Cohorts.
@@ -269,31 +269,37 @@ Add the `site_visit` session type and the visit report tables in a single idempo
 
 #### Tasks
 
-- [ ] **1.1** Add migration `api-incubator-os/migrations/2026-09-25-site-visits.sql` — run order **#26**.
+- [x] **1.1** Add migration `api-incubator-os/migrations/2026-09-25-site-visits.sql` — run order **#26**.
   Additive `ALTER` of `sessions.session_type` to
   `ENUM('coaching','progress_review','financial_review','assessment','workshop','other','site_visit')`;
   creates `session_visit_reports`, `session_visit_items`, `session_visit_signoffs`,
   `session_visit_report_versions` with the FK/UNIQUE/index set in the Domain Model. Guard the enum widen via
   `information_schema` so a re-run is safe. Header documents rollback (drop the 4 tables; the enum value may
   remain harmlessly — document it).
-- [ ] **1.2** Add the run-order #26 row to `api-incubator-os/migrations/README.md`.
-- [ ] **1.3** Extend `capabilities/sessions/Contracts/SessionVocabulary.php` — add `SITE_VISIT = 'site_visit'`
+- [x] **1.2** Add the run-order #26 row to `api-incubator-os/migrations/README.md`.
+- [x] **1.3** Extend `capabilities/sessions/Contracts/SessionVocabulary.php` — add `SITE_VISIT = 'site_visit'`
   to `SessionType` and its label. No other vocabulary changes.
-- [ ] **1.4** Extend `capabilities/sessions/Services/SessionValidator.php` so `site_visit` is a valid
+- [x] **1.4** Extend `capabilities/sessions/Services/SessionValidator.php` so `site_visit` is a valid
   `session_type`. A `site_visit` Session still obeys every existing rule (company event, `meeting` category).
-- [ ] **1.5** Add `capabilities/sessions/Contracts/VisitVocabulary.php` — `VisitKind`, `VisitReportStatus`,
+  *(No code change required: the validator calls `SessionType::isValid`, which now returns true.)*
+- [x] **1.5** Add `capabilities/sessions/Contracts/VisitVocabulary.php` — `VisitKind`, `VisitReportStatus`,
   `FollowUpMethod`, `VisitSection`, `VisitSignoffRole` constants + labels + `isValid()` helpers.
-- [ ] **1.6** Add `capabilities/sessions/Contracts/VisitReportResponse.php` and
-  `VisitReportSummaryResponse.php` DTOs (report shape + list summary), including a
-  `withFundingPosition()`/context shape used by `visit-context.php`.
+- [x] **1.6** Add `capabilities/sessions/Contracts/VisitReportResponse.php` and
+  `VisitReportSummaryResponse.php` DTOs (report shape + list summary). *(The `visit-context.php` funding
+  context DTO is deferred to Phase 3, where its service is built — not a Phase 1 dependency.)*
+
+> **Phase 1 completed — 2026-09-25.** Evidence: `docs/sprint-011-phase1-proof.md`. Migration #26 applied twice
+> (4 tables / 7 FKs / 5 unique keys / 0 rows); `site_visit` enum widened; Sessions **106/106**, Calendar
+> **65/65**; `php -l` clean. `feature.json` intentionally unchanged this phase (new capabilities are declared
+> when their endpoints exist in Phase 2).
 
 #### Exit Criteria
 
-- [ ] Migration #26 applies **twice** safely; creates 4 tables, the FKs, the UNIQUE keys and the section index;
+- [x] Migration #26 applies **twice** safely; creates 4 tables, the FKs, the UNIQUE keys and the section index;
   the only existing table altered is `sessions` (enum widen only).
-- [ ] `site_visit` is accepted by `create.php`; every other type behaviour is unchanged.
-- [ ] `php -l` passes on every new/changed file.
-- [ ] Sessions regression `105/105` and Calendar regression `65/65` remain green.
+- [x] `site_visit` is accepted; every other type behaviour is unchanged.
+- [x] `php -l` passes on every new/changed file.
+- [x] Sessions regression green (**106/106**) and Calendar regression green (**65/65**).
 
 ---
 
@@ -377,7 +383,21 @@ Close the reuse gaps the visit report depends on.
   vision DTO; do not migrate the write path (the node write stays). **Also restore a reachable vision
   edit/read surface in the current Company Shell** — the Strategy tab button is commented out
   (`tabs-navigation.component.ts:81-91`) and the shell has no strategy tab, so the editor is currently
-  unreachable (Discovery §1.5, unresolved U5).
+  unreachable (Discovery §1.5, U5). The editor must update the **canonical** `company_vision` record chosen
+  by the U5 rule — never create a second record or write whichever row sorts first.
+- [ ] **3.7** Implement the **U5 canonical-vision rule**: deterministic read (`updated_at DESC, id DESC`),
+  duplicate detection, and an **explicit canonical selection where values conflict**; the reader returns the
+  selected record. Existing duplicates are preserved (never deleted); add a reconciliation report listing
+  companies with more than one `company_vision`.
+- [ ] **3.8** **Harden Session link actor-reachability** (Discovery U8) **before the first new Session-link
+  use in this sprint**. `session_entity_links.entity_id` is polymorphic with no FK, and the migration comment
+  claims linked records must be "reachable by the actor" (`2026-09-23-sessions.sql:230-231`) but
+  `ManageSessionLinks.php:45-49` enforces **company match only**. Add an explicit actor-reachability check for
+  at least `gps_target` and `gps_target_task`, plus tests. This must land **before** the visit links any
+  action (Phase 4/5), not in Sprint 012.
+- [ ] **3.9** Apply the **U1 name-match review gate** to the application→company promotion path if it is
+  exercised here: a name-only match is surfaced for explicit review; only a registration-number match may
+  proceed automatically. (Local implementation does not depend on production promotion/enrolment.)
 
 #### Exit Criteria
 
@@ -388,6 +408,8 @@ Close the reuse gaps the visit report depends on.
   `unknown` for every state (**never** `0`); no cross-store amount is summed (no double-counting).
 - [ ] No funding value is written by any visit endpoint.
 - [ ] A task created through the existing task API can be linked to the visit and is returned in the report.
+- [ ] **Actor-reachability is enforced** for every Session link this sprint writes (Discovery U8) — a link to a
+  record the actor cannot reach is refused; tests prove the scoped hardening (see task 3.8).
 - [ ] An acknowledgement records the exact issued `report_version_no`.
 
 ---

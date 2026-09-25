@@ -393,12 +393,12 @@ Connect the diagnostic to execution without duplicating it.
   never create/verify achievements here.
 - [ ] **3.6** Ensure `docs/` records the `assessment_id`/`assessment_finding_id` provenance on
   `gps_target_sources` and the `source_type='assessment'` write path.
-- [ ] **3.7** **Harden Session link actor-reachability before extending any Session link use** (Discovery U8).
-  `session_entity_links.entity_id` is polymorphic with no FK, and the migration comment claims linked records
-  must be "reachable by the actor" (`2026-09-23-sessions.sql:230-231`) but `ManageSessionLinks.php:45-49`
-  enforces **company match only**. Add an explicit actor-reachability check for the link types this sprint
-  touches (at minimum `gps_target`, `gps_target_task`) plus tests. If the fix is deferred, record it as a
-  **known defect** and do **not** rely on reachability being enforced.
+- [ ] **3.7** **Session link actor-reachability (Discovery U8) must already be enforced by Sprint 011 task
+  3.8.** Verify it holds for the link types this sprint writes (at minimum `gps_target`, `gps_target_task`)
+  and add any missing coverage. If Sprint 011 did not deliver it, implement the scoped check + tests **before
+  the first new link is written here** — do not defer. `session_entity_links.entity_id` is polymorphic with
+  no FK; the migration claims reachability (`2026-09-23-sessions.sql:230-231`) but
+  `ManageSessionLinks.php:45-49` enforces **company match only**.
 
 #### Exit Criteria
 

@@ -42,10 +42,12 @@ final class SessionType
     public const ASSESSMENT = 'assessment';
     public const WORKSHOP = 'workshop';
     public const OTHER = 'other';
+    /** A structured on-site visit; carries a one-to-one visit report. */
+    public const SITE_VISIT = 'site_visit';
 
     public const ALL = [
         self::COACHING, self::PROGRESS_REVIEW, self::FINANCIAL_REVIEW,
-        self::ASSESSMENT, self::WORKSHOP, self::OTHER,
+        self::ASSESSMENT, self::WORKSHOP, self::OTHER, self::SITE_VISIT,
     ];
 
     public static function isValid(string $value): bool

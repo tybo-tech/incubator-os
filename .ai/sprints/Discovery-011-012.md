@@ -602,31 +602,42 @@ sent and stored. No backend enum change.
 
 ## 7. Decision register — resolved
 
-> Resolutions below are **proposed** and code-checked where a workflow was claimed; they become binding at
-> D.9 sign-off. "Proposed" is recorded honestly: the reviewer has not independently re-run every count.
+> Resolutions below were code-checked where a workflow was claimed, **amended and approved at planning review
+> on 2026-09-25**, and are now **binding** for Sprint 011 / Sprint 012. Approval is based on the supplied
+> evidence summary; the approver has not independently re-run every row count (see the evidence-scope note).
 
 | # | Decision | Resolution | Verified against code? |
 | --- | --- | --- | --- |
-| **U1** | DS Corp company/enrolment | Use the existing application→company promotion workflow: match by **registration number first**, then name; create/update the `companies` row, set `company_id` on the `grant_application` node, then create the enrolment. **Confirm the programme/cohort from authoritative data — do not infer it.** | ✅ Workflow exists: `GrantApplicationService::dryRunImportToCompanies` (`GrantApplicationService.php:115-133`) matches by `registration_no` then `name`; `executeImportToCompanies` (`:166-190`) updates/creates the company and sets `company_id` on the node; `Company::getByRegistrationNo`/`getByName` (`Company.php:149,157`); undo path `undoImportToCompanies` (`:314`). |
+| **U1** | DS Corp company/enrolment | Use the existing application→company promotion workflow. **Registration number is the primary match.** A **name-only match must be reviewed before linking or updating a company** — never auto-link on name. Create/update the `companies` row, set `company_id` on the `grant_application` node, then create the enrolment. **Confirm the programme/cohort from authoritative data — do not infer it.** **Production promotion/enrolment is a separate operator action and must NOT block starting local implementation.** | ✅ Workflow exists: `GrantApplicationService::dryRunImportToCompanies` (`GrantApplicationService.php:115-133`) matches by `registration_no` then `name`; `executeImportToCompanies` (`:166-190`) updates/creates the company and sets `company_id` on the node; `Company::getByRegistrationNo`/`getByName` (`Company.php:149,157`); undo path `undoImportToCompanies` (`:314`). ⚠️ The existing workflow is **not** review-gated on name-only matches — the amendment is a **new requirement** on top of it. |
 | **U2** | Enrolment selection | Explicit user selection; the visit stores `categories_item_id`; never auto-pick. | ✅ |
 | **U3** | No-funding-row projection | Return **`unknown`** per state, never `0`. | ✅ |
 | **U4** | `utilised` representation | Capture utilisation **separately** as `unknown / not_started / partial / full`, with **observation date, explanation and evidence references**. The funding projection derives its utilisation state from these observations only. **Payment or delivery alone cannot establish utilisation.** | ✅ New field(s) — no existing equivalent (§2.2). |
-| **U5** | Vision reachability | Expose existing `company_vision` through the Company capability; add editing to the current company profile. **Preserve existing records and define multi-record resolution.** | ✅ Node read is unordered `SELECT *` (`Node.php:114-120`) and the UI silently takes `visions[0]` (`strategy-tab.component.ts:254-255`) — so the resolution rule must be explicit. |
+| **U5** | Vision reachability | Expose existing `company_vision` through the Company capability; add editing to the current company profile. **A deterministic read (`updated_at DESC, id DESC`) alone does not resolve conflicting values.** Flag duplicates, **select the canonical record explicitly where values conflict**, and ensure the editor updates **that same** record. | ✅ Node read is unordered `SELECT *` (`Node.php:114-120`) and the UI silently takes `visions[0]` (`strategy-tab.component.ts:254-255`). |
 | **U6** | Scale labels | Adopt **Critical Deficit / Basic-Emergent / Operational / Proficient / Best Practice**, stored in the versioned framework; missing and N/A stay separate. | ✅ §3.1 |
 | **U7** | Migration numbering | **#27** = assessments framework; **#28** = GPS assessment provenance; use the `-phase2` naming, not the patch `b` suffix. | ✅ §6 |
-| **U8** | Link actor-reachability | **Harden before extending Session links** — company matching alone does not prove permission to access every linked record. Add a scoped fix + tests. | ✅ Claim exists (`2026-09-23-sessions.sql:230-231`) but is not implemented (`ManageSessionLinks.php:45-49`). |
+| **U8** | Link actor-reachability | **Harden before the first new Session-link use — including Sprint 011 if applicable.** Company matching alone does not prove permission to access every linked record. Add a scoped fix + tests. **Must not be deferred to Sprint 012 only.** | ✅ Claim exists (`2026-09-23-sessions.sql:230-231`) but is not implemented (`ManageSessionLinks.php:45-49`). |
+
+### U1 — name-match review gate (locked)
+
+`dryRunImportToCompanies` currently falls back to a **name** match (`GrantApplicationService.php:127-133`) and
+`executeImportToCompanies` then **updates that company** — with no review step. Locked rule: a **name-only**
+match is surfaced for **explicit review**; only a **registration-number** match may proceed automatically.
+A name-only match must never silently link or overwrite a company.
 
 ### U5 — multi-record vision resolution rule (to be locked)
 
 The legacy reader takes the **first unordered row** (`strategy-tab.component.ts:254-255`; `Node.php:117`
 `SELECT *` with no `ORDER BY`). Because ordering is non-deterministic, the rule must not depend on row order.
 
-**Proposed rule:** a company has **at most one** *current* `company_vision` record. On read, the capability
-selects deterministically by `updated_at DESC, id DESC` (the most recently updated record). On write, the
-capability **updates the current record in place**; if none exists it creates one. Existing duplicate records
-are **preserved and not deleted** (they remain reachable via the node archive), and a one-off reconciliation
-report lists companies with more than one `company_vision` record. This mirrors the achievements
-"never destroy" principle.
+**Rule (locked):** a company has **at most one** *current* `company_vision` record.
+- **Read:** select deterministically by `updated_at DESC, id DESC`. Determinism alone is **not** conflict
+  resolution — it only makes the reader stable.
+- **Duplicates:** flag companies with more than one `company_vision` record. Where duplicates hold
+  **conflicting values**, an **explicit canonical selection** is recorded (which node id is authoritative);
+  the reader returns that record; the others are preserved, not deleted.
+- **Write:** the editor updates **the same canonical record**. It must not create a second record or write to
+  whichever row sorts first.
+- Existing duplicates remain reachable via the node archive; a one-off reconciliation report lists them.
 
 ### Evidence-scope correction (must be stated honestly)
 
