@@ -309,6 +309,7 @@ Create the framework, dimension, criterion and scale tables and seed `ESD-NAT-20
 #### Tasks
 
 - [ ] **1.1** Add migration `api-incubator-os/migrations/2026-09-26-assessments-framework.sql` — run order **#27**.
+  (Numbering corrected by Discovery: the GPS-provenance file becomes **#28**, one file per run order.)
   Creates `assessment_frameworks`, `assessment_framework_dimensions`, `assessment_criteria`,
   `assessment_scales` with the FKs/UNIQUE/indexes from the Domain Model. Idempotent (`IF NOT EXISTS` +
   guarded checks). Header documents rollback (drop the 4 tables).
@@ -382,10 +383,11 @@ Connect the diagnostic to execution without duplicating it.
 - [ ] **3.2** Add `Services/InterventionLinkService.php` — link an existing `gps_target_id`, or create a target
   through the GPS repository and link it; in **one transaction** write `assessment_interventions.gps_target_id`
   and the `gps_target_sources` row (`source_type='assessment'`, `assessment_id`, `assessment_finding_id`).
-- [ ] **3.3** Add migration `api-incubator-os/migrations/2026-09-26b-assessment-gps-provenance.sql` — additive,
+- [ ] **3.3** Add migration `api-incubator-os/migrations/2026-09-26b-assessments-phase2-gps-provenance.sql` — additive,
   `information_schema`-guarded `ALTER TABLE gps_target_sources` adding `assessment_id BIGINT NULL` and
-  `assessment_finding_id BIGINT NULL` with FKs (`ON DELETE SET NULL`) + indexes. Same run order **#27** (same
-  capability migration family). Rollback documented.
+  `assessment_finding_id BIGINT NULL` with FKs (`ON DELETE SET NULL`) + indexes. Run order **#28** (separate
+  file; the `b` patch suffix is reserved for patches and the phased `-phase2` convention is used instead —
+  Discovery §6). Rollback documented.
 - [ ] **3.4** Add `Application/Commands/LinkAssessmentTarget.php` + endpoint `commands/link-target.php`.
 - [ ] **3.5** Add `Services/ResultLinkService.php` — link an existing `achievement_id` to an outcome result;
   never create/verify achievements here.
@@ -482,7 +484,7 @@ Prove the sprint and make it shippable.
   NA, unanswered, tiers, denominators, month-boundary-style edge cases) plus capability/endpoint assertions.
 - [ ] **6.2** Add `api-incubator-os/tests/Assessments.ps1` combined runner aggregating the assessment suite +
   GPS/Results/Sessions/Calendar regressions.
-- [ ] **6.3** Add the migration #27 rows, deployment steps and rollback to
+- [ ] **6.3** Add the migration #27 + #28 rows, deployment steps and rollback to
   `docs/sprint-012-assessments-deployment.md`.
 - [ ] **6.4** Cross-link `docs/assessment-api.md` from `docs/session-api.md`/relevant docs; update the sprint
   and session records.
@@ -495,7 +497,7 @@ Prove the sprint and make it shippable.
 #### Exit Criteria
 
 - [ ] `api-incubator-os/tests/Assessments.ps1` passes fully; GPS/Results/Sessions/Calendar regressions unchanged.
-- [ ] Migration #27 applies twice safely; both verifiers return clean.
+- [ ] Migration #27 and #28 apply twice safely; both verifiers return clean.
 - [ ] PHP lint clean across all touched files.
 - [ ] Production build clean; no new budget warning.
 - [ ] `docs/assessment-api.md` and the deployment runbook are complete.
@@ -535,7 +537,7 @@ the endpoints from Phases 2–4.
 api-incubator-os/
 ├── migrations/
 │   ├── 2026-09-26-assessments-framework.sql            # run order #27
-│   └── 2026-09-26b-assessment-gps-provenance.sql       # run order #27 (same family)
+│   └── 2026-09-26b-assessments-phase2-gps-provenance.sql # run order #28
 ├── capabilities/assessments/
 │   ├── feature.json
 │   ├── Contracts/
@@ -625,6 +627,6 @@ The implementation is complete when:
 - [ ] `gps_target_sources` carries a real `assessment_id` + `assessment_finding_id` for
   `source_type='assessment'`.
 - [ ] Legacy assessment/questionnaire code is untouched; no regression in GPS, Results, Sessions or Calendar.
-- [ ] Migration #27 (both files) is idempotent and verifier-clean.
+- [ ] Migration #27 + #28 are idempotent and verifier-clean.
 - [ ] PHP lint clean; production build clean with no new budget warning.
 - [ ] `docs/assessment-api.md`, the deployment runbook and the sprint/session records are updated.

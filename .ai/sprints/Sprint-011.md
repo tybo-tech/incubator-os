@@ -105,7 +105,7 @@ companies ──1:N── sessions (session_type='site_visit') ──1:1── c
 | --- | --- | --- |
 | `session_visit_reports` | `capabilities/sessions` | `session_id` (UNIQUE), `company_id`, `categories_item_id`, `visit_kind`, `actual_visit_date`, `actual_location`, `operating_status`, `status` (`draft`\|`issued`\|`acknowledged`), `current_version`, `next_visit_target_date`, `follow_up_method`, `follow_up_session_id`, `issued_by`, `issued_at`, `acknowledged_by`, `acknowledged_at`, `version` |
 | `session_visit_items` | `capabilities/sessions` | `report_id`, `section` (`discussion`\|`challenge`\|`alternative`\|`recommendation`), `sort_order`, `title`, `detail`, `impact` |
-| `session_visit_signoffs` | `capabilities/sessions` | `report_id`, `role` (`coach`\|`beneficiary`\|`sponsor`), `name`, `designation`, `signed_at`, `signature_ref`; UNIQUE `(report_id, role)` |
+| `session_visit_signoffs` | `capabilities/sessions` | `report_id`, `report_version_no` (the issued version acknowledged), `role` (`coach`\|`beneficiary`\|`sponsor`), `name`, `designation`, `signed_at`, `signature_ref`; UNIQUE `(report_id, role)` |
 | `session_visit_report_versions` | `capabilities/sessions` | `report_id`, `version_no`, `snapshot_json`, `rendered_doc_ref`, `issued_by`, `issued_at`; UNIQUE `(report_id, version_no)` |
 
 All new tables carry `tenant_id INT NOT NULL DEFAULT 1` and `created_at`/`updated_at`.
@@ -141,7 +141,9 @@ All new tables carry `tenant_id INT NOT NULL DEFAULT 1` and `created_at`/`update
 4. Report content is editable **only** while `status = 'draft'`.
 5. **Issue requires:** the Session is `COMPLETED`, `categories_item_id` is set, and `actual_visit_date` is set.
 6. Issuing writes a **snapshot** and `current_version` increments; **versions are immutable**.
-7. `acknowledged` is reachable only from `issued`; acknowledgement never reopens content.
+7. `acknowledged` is reachable only from `issued`; acknowledgement never reopens content, and the
+   acknowledgement records the **exact issued `report_version_no`** so it cannot silently apply to a later
+   re-issue (Discovery §4.2).
 8. A snapshot is built from the report, the Session, the linked event, the company profile and the linked
    actions **at issue time**; it never contains `incubator`-visibility notes.
 9. `follow_up_session_id` must reference a Session of the **same company**.
@@ -350,22 +352,35 @@ Close the reuse gaps the visit report depends on.
   enrolment options. Funding position derives `committed`, `disbursed`, `paid`, `delivered`, `utilised`,
   `outstanding` and a `supplierPaid` flag from `seed_funding`, `company_purchase` / `company_purchases` and
   `grant_scm_verification` reads, keeping the four states **separate** (Discovery rule 8).
+  **Evidence-driven constraints (Discovery §2):** `utilised` has **no existing field** — introduce an
+  explicit utilisation observation on the visit/funding projection rather than inferring it from
+  `process_tracker.completionPercentage`; when the beneficiary has no company/funding rows, return
+  **`unknown` per state, never `0`**; do **not** sum `company_purchases` (table) and `company_purchase`
+  (node) together — they are semantic twins with no shared row id (double-count hazard).
+- [ ] **3.3b** Add the minimum field needed to record **`utilised`** (Discovery unresolved U4) — the chosen
+  representation (visit operating-status utilisation flag and/or a funding-utilisation marker) must be
+  agreed at Discovery sign-off before this task starts.
 - [ ] **3.4** Add endpoint `api/sessions/queries/visit-context.php` returning the `VisitContextService`
   payload.
 - [ ] **3.5** Add `Application/Commands` support so the UI can create an agreed action through the existing
   GPS task API and then link it: no new action tables — reuse `session_entity_links`
   (`gps_target_task`, relationship `CREATED`). Confirm the existing link endpoint accepts the task link.
 - [ ] **3.6** Extend `src/app/components/companies/company-detail/strategy-tab` only if needed to read the new
-  vision DTO; do not migrate the write path (the node write stays).
+  vision DTO; do not migrate the write path (the node write stays). **Also restore a reachable vision
+  edit/read surface in the current Company Shell** — the Strategy tab button is commented out
+  (`tabs-navigation.component.ts:81-91`) and the shell has no strategy tab, so the editor is currently
+  unreachable (Discovery §1.5, unresolved U5).
 
 #### Exit Criteria
 
 - [ ] `update-profile.php` persists `description`; a round-trip read returns the saved value.
 - [ ] `get-vision.php` returns the company's `company_vision` values or a safe null shape.
 - [ ] `visit-context.php` returns funding states that are individually distinguishable — a paid-but-not-delivered
-  case reads `paid = true`, `delivered = false`, `utilised = false`.
+  case reads `paid = true`, `delivered = false`, `utilised = false`; a beneficiary with no funding rows reads
+  `unknown` for every state (**never** `0`); no cross-store amount is summed (no double-counting).
 - [ ] No funding value is written by any visit endpoint.
 - [ ] A task created through the existing task API can be linked to the visit and is returned in the report.
+- [ ] An acknowledgement records the exact issued `report_version_no`.
 
 ---
 
