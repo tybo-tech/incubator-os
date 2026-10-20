@@ -10,6 +10,21 @@
 
 ---
 
+## Session Hotfix (2026-10-02, session 039)
+
+- [x] **Auth session lifetime raised 24 minutes → 24 hours.** Root cause: no `session.gc_maxlifetime`
+  override, so PHP GC'd the session after its default 1440s while the browser cookie and Angular
+  localStorage user still looked logged-in → `401 Unauthorised — no active session` on the SWOT
+  workspace, then redirect to `/login` on refresh.
+- Centralised session config in `helpers/Session.php` (`APP_SESSION_LIFETIME = 86400`,
+  `app_session_start()`), replacing the duplicated inline cookie blocks in `helpers/AuthGuard.php`,
+  `api-nodes/user/login.php`, `validate-session.php`, `logout.php`, `invite-user.php`.
+- Added `api-incubator-os/.user.ini` (`session.gc_maxlifetime` / `session.cookie_lifetime = 86400`) for
+  shared-host session-cleanup cron. PHP lint clean.
+- **Deploy** the touched PHP files + `.user.ini`; confirm a session survives > 24 minutes.
+
+---
+
 ## Objective
 
 Turn an on-site entrepreneur visit into a **first-class, structured, auditable record** inside the existing

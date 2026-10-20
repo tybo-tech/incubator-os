@@ -14,34 +14,18 @@ declare(strict_types=1);
  * - auth_enforce_request(PDO $db, array $user, array $input): generic check for company_id / gps_target_id / swot ids
  */
 
+include_once __DIR__ . '/Session.php';
+
 // Auto-start session before any headers are sent (when included before headers.php)
 if (php_sapi_name() !== 'cli' && session_status() !== PHP_SESSION_ACTIVE) {
     // Only start if headers not already sent; otherwise auth_require_user will handle it
     if (!headers_sent()) {
-        session_set_cookie_params([
-            'lifetime' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'None',
-        ]);
-        @session_start();
+        @app_session_start();
     }
 }
 function auth_require_user(PDO $db): array
 {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_set_cookie_params([
-            'lifetime' => 0,
-            'path' => '/',
-            'domain' => '',
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => 'None',
-        ]);
-        session_start();
-    }
+    app_session_start();
 
     $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
     if ($userId <= 0) {

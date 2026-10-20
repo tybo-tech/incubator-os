@@ -1,18 +1,9 @@
 <?php
 include_once '../../config/Database.php';
 include_once '../../models/User.php';
+include_once '../../helpers/Session.php';
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'None',
-    ]);
-    session_start();
-}
+app_session_start();
 
 try {
     $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;

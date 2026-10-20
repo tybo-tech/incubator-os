@@ -10,19 +10,10 @@ include_once '../../config/Database.php';
 include_once '../../config/app.php';
 include_once '../../models/User.php';
 include_once '../../helpers/Mailer.php';
+include_once '../../helpers/Session.php';
 
 // Require authenticated session
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'domain' => '',
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => 'None',
-    ]);
-    session_start();
-}
+app_session_start();
 
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
