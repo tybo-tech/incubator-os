@@ -278,7 +278,7 @@ export class SessionsPageComponent implements OnInit {
     });
   });
 
-  readonly nextSession = computed(() => this.upcomingSessions()[0] ?? null);
+  readonly nextSession = computed<SessionSummary | null>(() => this.upcomingSessions()[0] ?? null);
   readonly preparingCount = computed(() => this.sessions().filter(s => s.status === 'PREPARING').length);
   readonly inProgressCount = computed(() => this.sessions().filter(s => s.status === 'IN_PROGRESS').length);
   readonly completedCount = computed(() => this.sessions().filter(s => s.status === 'COMPLETED').length);

@@ -2,7 +2,6 @@ import { Component, Input, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NodeService } from '../../../../services/node.service';
-import { SignaturePadLibComponent } from '../../../shared/components/signature-pad-lib.component';
 import { UploadService } from '../../../../services/UploadService';
 import {
   ScmQuotation,
@@ -29,7 +28,6 @@ import { ScmVerificationModalComponent } from './scm-verification-modal.componen
   imports: [
     CommonModule,
     FormsModule,
-    SignaturePadLibComponent,
     ScmVerificationHeaderComponent,
     ScmVerificationStatusTableComponent,
     ScmVerificationModalComponent

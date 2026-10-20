@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CompanyService } from '../../../services/company.service';
 import { ContextService } from '../../../services/context.service';
 import { ICompany } from '../../../models/simple.schema';
@@ -10,7 +10,7 @@ import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
 @Component({
   selector: 'app-company-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, TabBarComponent],
+  imports: [CommonModule, RouterOutlet, TabBarComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Company Shell Header -->

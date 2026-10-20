@@ -438,7 +438,7 @@ type PopupMode = 'view' | 'edit';
             </div>
 
             <div class="sw-section">
-              <div class="sw-section-title"><span>Tasks ({{ tasks()[t.id]?.length || 0 }})</span></div>
+              <div class="sw-section-title"><span>Tasks ({{ taskCount(t.id) }})</span></div>
               @if (tasks()[t.id] === undefined) { <div class="sw-footnote" style="margin:0;">Loading tasks…</div> }
               @else {
                 @if (tasks()[t.id].length) {
@@ -476,7 +476,7 @@ type PopupMode = 'view' | 'edit';
             </div>
 
             <div class="sw-section">
-              <div class="sw-section-title"><span>Progress updates ({{ updates()[t.id]?.length || 0 }})</span></div>
+              <div class="sw-section-title"><span>Progress updates ({{ updateCount(t.id) }})</span></div>
               @if (updates()[t.id] === undefined) { <div class="sw-footnote" style="margin:0;">Loading updates…</div> }
               @else {
                 @for (u of updates()[t.id]; track u.id) {
@@ -1383,6 +1383,7 @@ export class GpsHierarchyPage {
   measureUnit(): string { return this.measures().find(m => m.id === this.bindMetricTypeId)?.unit || 'value'; }
 
   taskCount(targetId: number): number { return (this.tasks()[targetId] || []).length; }
+  updateCount(targetId: number): number { return (this.updates()[targetId] || []).length; }
   groupTasks(rows: GpsTarget[]): number { return rows.reduce((s, r) => s + this.taskCount(r.id), 0); }
   groupProgress(rows: GpsTarget[]): number {
     if (!rows.length) return 0;

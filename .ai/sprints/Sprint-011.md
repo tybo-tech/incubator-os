@@ -25,6 +25,24 @@
 
 ---
 
+## Maintenance (2026-10-20, session 040)
+
+- [x] **Angular compiler warnings cleared (9 → 0).** The dev-server watch build reported 3 ×
+  `TS-998113` (unused standalone imports) and 6 × `NG8107` (optional chaining on
+  compiler-proven non-nullable expressions). Build is now warning-free.
+- Removed the unused `SignaturePadLibComponent` import from `ScmVerificationProcessComponent`
+  (the pad is used by the modal and step-collection children, which keep their own imports) and
+  the unused `RouterLink` import from `CompanyShellComponent` / `ComplianceShellComponent` (both
+  shells navigate via `app-tab-bar`, which imports `RouterLink` itself).
+- Resolved the `NG8107` cases by correcting the underlying types, not by stripping the `?.`
+  guards: `gps-hierarchy.page.ts` now reads the counts through the null-safe `taskCount()` /
+  new `updateCount()` helpers; `AchievementCounts.by_status` is declared optional, matching how
+  the counts are consumed; and the `nextSession` computed in `sessions-page.component.ts` is
+  explicitly typed `SessionSummary | null` so array-index narrowing no longer erases the `?? null`.
+- Verified with `ng build --configuration development` — zero warnings, zero errors.
+
+---
+
 ## Objective
 
 Turn an on-site entrepreneur visit into a **first-class, structured, auditable record** inside the existing

@@ -54,7 +54,7 @@ export interface AwaitingReview {
 
 export interface AchievementCounts {
   total: number;
-  by_status: Record<string, number>;
+  by_status?: Record<string, number>;
   decisions: number;
 }
 

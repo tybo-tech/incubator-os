@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterOutlet, RouterLink, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute, RouterOutlet, NavigationEnd } from '@angular/router';
 import { ContextService } from '../../../services/context.service';
 import { filter } from 'rxjs/operators';
 import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
@@ -8,7 +8,7 @@ import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
 @Component({
   selector: 'app-compliance-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, TabBarComponent],
+  imports: [CommonModule, RouterOutlet, TabBarComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Compliance Header -->
