@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanyCapabilityService, UpdateProfileRequest } from '../../../../services/company-capability.service';
+import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
 
 @Component({
   selector: 'app-company-profile-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppIconComponent],
   template: `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -15,9 +16,7 @@ import { CompanyCapabilityService, UpdateProfileRequest } from '../../../../serv
           *ngIf="!editing()"
           (click)="startEdit()"
           class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 transition-colors">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-          </svg>
+          <app-icon name="pencil-square" class="mr-1.5 text-[16px]"></app-icon>
           Edit
         </button>
       </div>

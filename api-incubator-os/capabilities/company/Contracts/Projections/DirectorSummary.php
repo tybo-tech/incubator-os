@@ -14,6 +14,10 @@ final class DirectorSummary
         public readonly ?string $idNumber,
         public readonly ?string $dateOfBirth,
         public readonly ?int $age,
+        public readonly bool $idValid,
+        public readonly bool $isBlack,
+        public readonly bool $isBlackWoman,
+        public readonly bool $isYouth,
     ) {}
 
     public static function fromUser(array $user): self
@@ -22,8 +26,11 @@ final class DirectorSummary
         $dob = self::parseDateOfBirth($idNumber);
         $age = $dob ? self::calculateAge($dob) : null;
 
+        $isBlack = self::isBlackRace($user['race'] ?? null);
+        $isBlackWoman = $isBlack && self::isFemale($user['gender'] ?? null);
+
         return new self(
-            directorId: (int)$user['id'],
+            directorId: (int)($user['id'] ?? 0),
             fullName: $user['full_name'] ?? '',
             email: $user['email'] ?? null,
             phone: $user['phone'] ?? null,
@@ -33,7 +40,26 @@ final class DirectorSummary
             idNumber: $idNumber,
             dateOfBirth: $dob,
             age: $age,
+            idValid: $dob !== null,
+            isBlack: $isBlack,
+            isBlackWoman: $isBlackWoman,
+            isYouth: $age !== null && $age < 40,
         );
+    }
+
+    /**
+     * Broad-Based Black Economic Empowerment race grouping.
+     * Coloured and Indian directors count towards black ownership.
+     */
+    public static function isBlackRace(?string $race): bool
+    {
+        $race = strtolower(trim((string)$race));
+        return in_array($race, ['black', 'african', 'coloured', 'indian'], true);
+    }
+
+    public static function isFemale(?string $gender): bool
+    {
+        return strtolower(trim((string)$gender)) === 'female';
     }
 
     /**
@@ -42,7 +68,8 @@ final class DirectorSummary
      */
     public static function parseDateOfBirth(?string $idNumber): ?string
     {
-        if (!$idNumber || !preg_match('/^\d{13}$/', $idNumber)) {
+        $idNumber = trim((string)$idNumber);
+        if (!self::isValidIdNumber($idNumber)) {
             return null;
         }
 
@@ -65,6 +92,30 @@ final class DirectorSummary
         }
 
         return sprintf('%04d-%02d-%02d', $year, $mm, $dd);
+    }
+
+    /**
+     * 13-digit SA ID with a valid Luhn checksum (the last digit).
+     */
+    public static function isValidIdNumber(string $idNumber): bool
+    {
+        if (!preg_match('/^\d{13}$/', $idNumber)) {
+            return false;
+        }
+
+        $sum = 0;
+        $double = false;
+        for ($i = 12; $i >= 0; $i--) {
+            $digit = (int)$idNumber[$i];
+            if ($double) {
+                $digit *= 2;
+                if ($digit > 9) $digit -= 9;
+            }
+            $sum += $digit;
+            $double = !$double;
+        }
+
+        return $sum % 10 === 0;
     }
 
     public static function calculateAge(string $dateOfBirth): int

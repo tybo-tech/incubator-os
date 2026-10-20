@@ -7,6 +7,7 @@ export interface CompanyOverviewResponse {
   company: any;
   directors: DirectorSummary[];
   financialSummary?: FinancialSummary;
+  ownership?: OwnershipSummary;
 }
 
 export interface DirectorSummary {
@@ -20,6 +21,29 @@ export interface DirectorSummary {
   idNumber: string | null;
   dateOfBirth: string | null;
   age: number | null;
+  /** True when idNumber parses as a valid 13-digit SA ID. */
+  idValid: boolean;
+  isBlack: boolean;
+  isBlackWoman: boolean;
+  isYouth: boolean;
+}
+
+export interface OwnershipSummary {
+  blackOwnership: boolean;
+  blackWomenOwnership: boolean;
+  youthOwned: boolean;
+  blackReason: string;
+  blackWomenReason: string;
+  youthReason: string;
+  blackDirectorIds: number[];
+  blackWomenDirectorIds: number[];
+  youthDirectorIds: number[];
+  unknownYouthDirectorIds: number[];
+}
+
+export interface DirectorsResponse {
+  directors: DirectorSummary[];
+  ownership: OwnershipSummary;
 }
 
 export interface FinancialSummary {
@@ -47,6 +71,15 @@ export interface RegisterDirectorRequest {
   id_number?: string;
 }
 
+export interface UpdateDirectorRequest {
+  full_name: string;
+  email?: string | null;
+  phone?: string | null;
+  gender?: string | null;
+  race?: string | null;
+  id_number?: string;
+}
+
 export interface UpdateProfileRequest {
   name?: string;
   registration_no?: string;
@@ -61,6 +94,11 @@ export interface UpdateProfileRequest {
   service_offering?: string;
   bbbee_level?: string;
   industry_id?: number;
+  has_valid_bbbbee?: boolean;
+  has_tax_clearance?: boolean;
+  is_sars_registered?: boolean;
+  has_cipc_registration?: boolean;
+  cipc_status?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -78,6 +116,19 @@ export class CompanyCapabilityService {
   updateProfile(companyId: number, data: UpdateProfileRequest): Observable<CommandResult> {
     return this.http.post<CommandResult>(
       `${this.baseUrl}/commands/update-profile.php?id=${companyId}`, data
+    );
+  }
+
+  getDirectors(companyId: number): Observable<DirectorsResponse> {
+    return this.http.get<DirectorsResponse>(
+      `${this.baseUrl}/queries/get-directors.php?id=${companyId}`
+    );
+  }
+
+  updateDirector(companyId: number, directorId: number, data: UpdateDirectorRequest): Observable<CommandResult> {
+    return this.http.post<CommandResult>(
+      `${this.baseUrl}/commands/update-director.php?id=${companyId}`,
+      { directorId, ...data }
     );
   }
 

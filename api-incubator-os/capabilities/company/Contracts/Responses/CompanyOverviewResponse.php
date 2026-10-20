@@ -7,5 +7,6 @@ final class CompanyOverviewResponse
         public readonly array $company,
         public readonly array $directors,
         public readonly ?FinancialSummary $financialSummary = null,
+        public readonly ?OwnershipSummary $ownership = null,
     ) {}
 }

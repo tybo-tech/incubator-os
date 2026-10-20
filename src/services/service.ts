@@ -1,8 +1,11 @@
-const isLocalApi = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+const isLocalApi = hostname === 'localhost' || hostname === '127.0.0.1';
+
 export const Constants = {
   Currency: 'ZAR', // Fixed: Use proper ISO currency code for South African Rand
   LocalUser: 'currentUser',
-  // ApiBase: 'https://incubatoros.tybo.co.za/api/',
+  // Production API: https://app.rbttacesd.co.za/api/
+  // Alternate production API: https://incubatoros.tybo.co.za/api/
   ApiBase: isLocalApi
     ? 'http://localhost:8080/'
     : 'https://app.rbttacesd.co.za/api/',

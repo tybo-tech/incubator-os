@@ -17,7 +17,7 @@ final class UpdateProfile
             }
 
             $patch = [];
-            if ($input->name !== null) $patch['name'] = $input->name;
+            if ($input->name !== null && $input->name !== '') $patch['name'] = $input->name;
             if ($input->registrationNo !== null) $patch['registration_no'] = $input->registrationNo;
             if ($input->tradingName !== null) $patch['trading_name'] = $input->tradingName;
             if ($input->contactPerson !== null) $patch['contact_person'] = $input->contactPerson;
@@ -30,6 +30,13 @@ final class UpdateProfile
             if ($input->serviceOffering !== null) $patch['service_offering'] = $input->serviceOffering;
             if ($input->bbbeeLevel !== null) $patch['bbbee_level'] = $input->bbbeeLevel;
             if ($input->industryId !== null) $patch['industry_id'] = (int)$input->industryId;
+
+            // Compliance flags — drive the Overview compliance score
+            if ($input->hasValidBbbee !== null) $patch['has_valid_bbbbee'] = $input->hasValidBbbee;
+            if ($input->hasTaxClearance !== null) $patch['has_tax_clearance'] = $input->hasTaxClearance;
+            if ($input->isSarsRegistered !== null) $patch['is_sars_registered'] = $input->isSarsRegistered;
+            if ($input->hasCipcRegistration !== null) $patch['has_cipc_registration'] = $input->hasCipcRegistration;
+            if ($input->cipcStatus !== null) $patch['cipc_status'] = $input->cipcStatus;
 
             $updated = $this->companyRepo->update($companyId, $patch);
 

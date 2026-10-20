@@ -4,7 +4,7 @@ declare(strict_types=1);
 final class UpdateProfileRequest
 {
     public function __construct(
-        public readonly string $name,
+        public readonly ?string $name,
         public readonly ?string $registrationNo,
         public readonly ?string $tradingName,
         public readonly ?string $contactPerson,
@@ -17,5 +17,10 @@ final class UpdateProfileRequest
         public readonly ?string $serviceOffering,
         public readonly ?string $bbbeeLevel,
         public readonly ?string $industryId,
+        public readonly ?bool $hasValidBbbee = null,
+        public readonly ?bool $hasTaxClearance = null,
+        public readonly ?bool $isSarsRegistered = null,
+        public readonly ?bool $hasCipcRegistration = null,
+        public readonly ?string $cipcStatus = null,
     ) {}
 }

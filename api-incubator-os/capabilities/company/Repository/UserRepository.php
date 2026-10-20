@@ -24,6 +24,46 @@ final class UserRepository
         return $rows;
     }
 
+    /**
+     * Active directors only — the same roster CompanyRepository::recalculateOwnership()
+     * uses, so the screen and the stored ownership flags always agree.
+     */
+    public function listDirectorsByCompany(int $companyId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM users
+             WHERE company_id = ? AND role = 'Director' AND status = 'active'
+             ORDER BY full_name ASC"
+        );
+        $stmt->execute([$companyId]);
+        $rows = [];
+        while ($r = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $rows[] = $r;
+        }
+        return $rows;
+    }
+
+    public function update(int $id, array $data): ?array
+    {
+        $fields = $this->filterWritable($data);
+        unset($fields['company_id']);
+        if (!$fields) return $this->getById($id);
+
+        $sets = [];
+        $params = [];
+        foreach ($fields as $k => $v) {
+            $sets[] = "{$k} = ?";
+            $params[] = $v;
+        }
+        $params[] = $id;
+
+        $sql = "UPDATE users SET " . implode(', ', $sets) . ", updated_at = NOW() WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+
+        return $this->getById($id);
+    }
+
     public function create(array $data): array
     {
         $fields = $this->filterWritable($data);

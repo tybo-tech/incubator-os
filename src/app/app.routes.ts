@@ -128,6 +128,10 @@ export const routes: Routes = [
             component: AssessmentTabComponent,
           },
           {
+            path: 'directors',
+            loadComponent: () => import('./components/company-shell/pages/directors/directors-page.component').then(m => m.DirectorsPageComponent),
+          },
+          {
             path: 'funding-tracker',
             component: FundingTrackerShellComponent,
             children: [

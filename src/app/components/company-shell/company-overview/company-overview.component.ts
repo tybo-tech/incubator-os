@@ -1,16 +1,23 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MetricsOverviewComponent, MetricCard } from '../../shared/metrics-overview/metrics-overview.component';
-import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary } from '../../../../services/company-capability.service';
+import { CompanyCapabilityService, CompanyOverviewResponse, DirectorSummary, OwnershipSummary } from '../../../../services/company-capability.service';
 import { CompanyProfileEditorComponent } from './company-profile-editor.component';
-import { CompanyDirectorListComponent } from './company-director-list.component';
+import { CompanyComplianceCardComponent } from './company-compliance-card.component';
 import { DashboardNormalizedCardsComponent } from '../../../features/normalized/dashboard-cards/dashboard-cards.component';
+import { AppIconComponent } from '../../../shared/components/app-icon/app-icon';
+
+interface OwnershipCheck {
+  label: string;
+  pass: boolean;
+  reason: string;
+}
 
 @Component({
   selector: 'app-company-overview',
   standalone: true,
-  imports: [CommonModule, MetricsOverviewComponent, CompanyProfileEditorComponent, CompanyDirectorListComponent, DashboardNormalizedCardsComponent],
+  imports: [CommonModule, RouterLink, AppIconComponent, MetricsOverviewComponent, CompanyProfileEditorComponent, CompanyComplianceCardComponent, DashboardNormalizedCardsComponent],
   template: `
     <div class="p-4 lg:p-8">
       <div class="max-w-7xl mx-auto">
@@ -51,84 +58,53 @@ import { DashboardNormalizedCardsComponent } from '../../../features/normalized/
             <app-company-profile-editor
               [companyId]="companyIdNumber()"
               [data]="company()"
-              (saved)="loadOverview()">
+              (saved)="refresh()">
             </app-company-profile-editor>
           </div>
 
           <!-- Right Column -->
           <div class="space-y-6">
-            <!-- Compliance & Ownership Information -->
+            <!-- Compliance & Ownership (editable — drives the Compliance Score metric) -->
+            <app-company-compliance-card
+              [companyId]="companyIdNumber()"
+              [data]="company()"
+              (saved)="refresh()">
+            </app-company-compliance-card>
+
+            <!-- Directors summary (full roster lives in its own tab) -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Compliance & Ownership</h3>
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Directors</h3>
+                <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                  {{ directors().length }}
+                </span>
+              </div>
 
-              <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">B-BBEE Certificate</span>
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': company()?.has_valid_bbbbee,
-                    'bg-red-100 text-red-800': !company()?.has_valid_bbbbee
-                  }" class="px-2 py-1 rounded text-xs font-medium">
-                    {{ company()?.has_valid_bbbbee ? 'Valid' : 'Invalid' }}
+              <p *ngIf="directors().length === 0" class="text-sm text-gray-500 mt-1">
+                No directors registered yet.
+              </p>
+
+              <div *ngIf="directors().length > 0" class="mt-3 space-y-2">
+                <div *ngFor="let check of ownershipChecks()" class="flex items-start gap-2">
+                  <span
+                    class="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                    [ngClass]="check.pass ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'">
+                    <app-icon [name]="check.pass ? 'check' : 'x-mark'" class="text-[10px]"></app-icon>
                   </span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Tax Clearance</span>
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': company()?.has_tax_clearance,
-                    'bg-red-100 text-red-800': !company()?.has_tax_clearance
-                  }" class="px-2 py-1 rounded text-xs font-medium">
-                    {{ company()?.has_tax_clearance ? 'Valid' : 'Invalid' }}
-                  </span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">CIPC Registration</span>
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': company()?.has_cipc_registration,
-                    'bg-red-100 text-red-800': !company()?.has_cipc_registration
-                  }" class="px-2 py-1 rounded text-xs font-medium">
-                    {{ company()?.has_cipc_registration ? 'Valid' : 'Invalid' }}
-                  </span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">SARS Registered</span>
-                  <span [ngClass]="{
-                    'bg-green-100 text-green-800': company()?.is_sars_registered,
-                    'bg-red-100 text-red-800': !company()?.is_sars_registered
-                  }" class="px-2 py-1 rounded text-xs font-medium">
-                    {{ company()?.is_sars_registered ? 'Yes' : 'No' }}
-                  </span>
-                </div>
-
-                <hr class="my-4">
-
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">Youth Owned</span>
-                    <span class="text-sm font-medium">{{ company()?.youth_owned_text || (company()?.youth_owned ? 'Yes' : 'No') }}</span>
-                  </div>
-
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">Black Ownership</span>
-                    <span class="text-sm font-medium">{{ company()?.black_ownership_text || (company()?.black_ownership ? 'Yes' : 'No') }}</span>
-                  </div>
-
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">Black Women Ownership</span>
-                    <span class="text-sm font-medium">{{ company()?.black_women_ownership_text || (company()?.black_women_ownership ? 'Yes' : 'No') }}</span>
+                  <div class="min-w-0">
+                    <div class="text-sm text-gray-900">{{ check.label }}</div>
+                    <div class="text-xs text-gray-500">{{ check.reason }}</div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Directors (add, list, remove) -->
-            <app-company-director-list
-              [companyId]="companyIdNumber()"
-              [directors]="directors()"
-              (directorsChanged)="loadOverview()">
-            </app-company-director-list>
+              <a
+                [routerLink]="['/company', companyId, 'directors']"
+                class="mt-3 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                Manage directors
+                <app-icon name="arrow-right" class="ml-1 text-[14px]"></app-icon>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -159,12 +135,33 @@ export class CompanyOverviewComponent implements OnInit {
 
   company = computed(() => this.overview()?.company || null);
   directors = computed<DirectorSummary[]>(() => this.overview()?.directors || []);
+  ownership = computed<OwnershipSummary | null>(() => this.overview()?.ownership ?? null);
   companyIdNumber = computed(() => this.companyId ? parseInt(this.companyId, 10) : 0);
 
+  ownershipChecks = computed<OwnershipCheck[]>(() => {
+    const ownership = this.ownership();
+    if (!ownership) return [];
+
+    return [
+      { label: 'Black ownership', pass: ownership.blackOwnership, reason: ownership.blackReason },
+      { label: 'Black women ownership', pass: ownership.blackWomenOwnership, reason: ownership.blackWomenReason },
+      { label: 'Youth owned', pass: ownership.youthOwned, reason: ownership.youthReason },
+    ];
+  });
+
   loadOverview(): void {
+    this.fetchOverview(false);
+  }
+
+  /** Re-fetch after a save without unmounting the cards (keeps success messages visible). */
+  refresh(): void {
+    this.fetchOverview(true);
+  }
+
+  private fetchOverview(silent: boolean): void {
     if (!this.companyId) return;
 
-    this.loading.set(true);
+    if (!silent) this.loading.set(true);
     this.error.set(null);
 
     const companyIdNumber = parseInt(this.companyId, 10);
@@ -195,7 +192,7 @@ export class CompanyOverviewComponent implements OnInit {
       c.has_valid_bbbbee,
       c.has_tax_clearance,
       c.has_cipc_registration,
-      c.cipc_status === 'IN BUSINESS'
+      this.isCipcInBusiness(c.cipc_status)
     ];
     const complianceScore = Math.round((complianceFactors.filter(Boolean).length / complianceFactors.length) * 100);
 
@@ -209,7 +206,7 @@ export class CompanyOverviewComponent implements OnInit {
           ? `Actual: R ${fs.totalRevenue.toLocaleString()}`
           : 'Estimated value',
         changeType: 'neutral',
-        icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1',
+        icon: 'currency-dollar',
         bgColor: 'bg-blue-100',
         textColor: 'text-blue-600'
       },
@@ -218,7 +215,7 @@ export class CompanyOverviewComponent implements OnInit {
         value: `${complianceScore}%`,
         change: this.getComplianceStatus(c),
         changeType: complianceScore >= 75 ? 'positive' : complianceScore >= 50 ? 'neutral' : 'negative',
-        icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+        icon: 'shield-check',
         bgColor: 'bg-green-100',
         textColor: 'text-green-600'
       },
@@ -227,7 +224,7 @@ export class CompanyOverviewComponent implements OnInit {
         value: `${(c.permanent_employees || 0) + (c.temporary_employees || 0)}`,
         change: `${c.permanent_employees || 0} permanent, ${c.temporary_employees || 0} temporary`,
         changeType: 'neutral',
-        icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+        icon: 'user-group',
         bgColor: 'bg-purple-100',
         textColor: 'text-purple-600'
       },
@@ -236,7 +233,7 @@ export class CompanyOverviewComponent implements OnInit {
         value: c.bbbee_level || 'N/A',
         change: c.bbbee_valid_status || 'Status unknown',
         changeType: c.has_valid_bbbbee ? 'positive' : 'negative',
-        icon: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+        icon: 'document-text',
         bgColor: 'bg-yellow-100',
         textColor: 'text-yellow-600'
       }
@@ -250,9 +247,14 @@ export class CompanyOverviewComponent implements OnInit {
     if (!c.has_valid_bbbbee) issues.push('B-BBEE');
     if (!c.has_tax_clearance) issues.push('Tax Clearance');
     if (!c.has_cipc_registration) issues.push('CIPC Registration');
-    if (c.cipc_status !== 'IN BUSINESS') issues.push('Business Status');
+    if (!this.isCipcInBusiness(c.cipc_status)) issues.push('Business Status');
     return issues.length === 0
       ? 'All compliant'
       : `${issues.length} issue${issues.length > 1 ? 's' : ''}`;
+  }
+
+  /** Stored CIPC values are inconsistent in casing/whitespace (e.g. "AR DEREGISTRATION "). */
+  private isCipcInBusiness(status: string | null | undefined): boolean {
+    return (status || '').trim().toUpperCase() === 'IN BUSINESS';
   }
 }

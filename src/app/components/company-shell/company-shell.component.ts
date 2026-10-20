@@ -6,11 +6,12 @@ import { ContextService } from '../../../services/context.service';
 import { ICompany } from '../../../models/simple.schema';
 import { filter } from 'rxjs/operators';
 import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
+import { AppIconComponent } from '../../shared/components/app-icon/app-icon';
 
 @Component({
   selector: 'app-company-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, TabBarComponent],
+  imports: [CommonModule, RouterOutlet, TabBarComponent, AppIconComponent],
   template: `
     <div class="min-h-screen bg-gray-50">
       <!-- Company Shell Header -->
@@ -24,9 +25,7 @@ import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
                 (click)="navigateBack()"
                 class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                 title="Back to Companies List">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
+                <app-icon name="chevron-left" class="text-[20px]"></app-icon>
               </button>
 
               <!-- Company Info -->
@@ -48,18 +47,14 @@ import { TabBarComponent, TabItem } from '../../shared/tab-bar.component';
               <button
                 class="hidden lg:inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 title="Export Data">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
+                <app-icon name="arrow-down-tray" class="mr-2 text-[16px]"></app-icon>
                 Export
               </button>
 
               <button
                 class="inline-flex items-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                 title="Quick Actions">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
+                <app-icon name="plus" class="mr-2 text-[16px]"></app-icon>
                 <span class="hidden sm:inline">Actions</span>
               </button>
             </div>
@@ -101,78 +96,83 @@ export class CompanyShellComponent implements OnInit {
     {
       label: 'Overview',
       route: 'overview',
-      icon: 'fas fa-home'
-    },
-    {
-      label: 'SWOT Workspace',
-      route: 'swot-v2',
-      icon: 'fas fa-layer-group'
-    },
-    {
-      label: 'Targets',
-      route: 'gps-targets-v2',
-      icon: 'fas fa-bullseye'
-    },
-    {
-      label: 'Results',
-      route: 'results',
-      icon: 'fas fa-award'
-    },
-    {
-      label: 'Calendar',
-      route: 'calendar',
-      icon: 'fas fa-calendar-days'
-    },
-    {
-      label: 'Sessions',
-      route: 'sessions',
-      icon: 'fas fa-people-group'
+      icon: 'home'
     },
     {
       label: 'Assessment',
       route: 'assessment',
-      icon: 'fas fa-check-circle'
+      icon: 'check-circle'
+    },
+    {
+      label: 'Directors',
+      route: 'directors',
+      icon: 'user-group'
+    },
+    {
+      label: 'SWOT Workspace',
+      route: 'swot-v2',
+      icon: 'rectangle-group'
+    },
+    {
+      label: 'Targets',
+      route: 'gps-targets-v2',
+      icon: 'flag'
+    },
+    {
+      label: 'Results',
+      route: 'results',
+      icon: 'trophy'
+    },
+    {
+      label: 'Calendar',
+      route: 'calendar',
+      icon: 'calendar-days'
+    },
+    {
+      label: 'Sessions',
+      route: 'sessions',
+      icon: 'chat-bubble-left-right'
     },
     {
       label: 'BEE Compliance',
       route: 'compliance',
-      icon: 'fas fa-shield-alt'
+      icon: 'shield-check'
     },
     {
       label: 'Financial Indicators',
       route: 'financial-indicators',
-      icon: 'fas fa-chart-bar'
+      icon: 'chart-bar'
     },
     //coaching/guide
     {
       label: 'Coaching / Guide',
       route: 'coaching',
-      icon: 'fas fa-chalkboard-teacher'
+      icon: 'academic-cap'
     },
     {
       label: 'Purchases',
       route: 'purchases',
-      icon: 'fas fa-shopping-cart'
+      icon: 'shopping-cart'
     },
     {
       label: 'Seed Funding',
       route: 'seed-funding',
-      icon: 'fas fa-hand-holding-usd'
+      icon: 'banknotes'
     },
     {
       label: 'Financial (Legacy)',
       route: 'financials',
-      icon: 'fas fa-dollar-sign'
+      icon: 'currency-dollar'
     },
     {
       label: 'SWOT (Legacy)',
       route: 'swot',
-      icon: 'fas fa-chart-line'
+      icon: 'arrow-trending-up'
     },
     {
       label: 'GPS (Legacy)',
       route: 'gps-targets',
-      icon: 'fas fa-crosshairs'
+      icon: 'map-pin'
     }
   ];
 

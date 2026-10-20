@@ -1,0 +1,15 @@
+<?php
+declare(strict_types=1);
+
+final class UpdateDirectorRequest
+{
+    public function __construct(
+        public readonly int $directorId,
+        public readonly string $fullName,
+        public readonly ?string $email,
+        public readonly ?string $phone,
+        public readonly ?string $gender,
+        public readonly ?string $race,
+        public readonly ?string $idNumber,
+    ) {}
+}

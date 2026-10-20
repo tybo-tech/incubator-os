@@ -80,32 +80,32 @@ export class ComplianceShellComponent implements OnInit {
     {
       label: 'Annual Returns',
       route: 'annual-returns',
-      icon: 'fas fa-calendar-check'
+      icon: 'calendar-days'
     },
     {
       label: 'Beneficial Ownership',
       route: 'beneficial-ownership',
-      icon: 'fas fa-users'
+      icon: 'user-group'
     },
     {
       label: 'Tax Registrations',
       route: 'tax-registrations',
-      icon: 'fas fa-file-invoice-dollar'
+      icon: 'receipt-percent'
     },
     {
       label: 'B-BBEE Compliance',
       route: 'bbbee-compliance',
-      icon: 'fas fa-chart-line'
+      icon: 'chart-bar'
     },
     {
       label: 'Other Statutory Tasks',
       route: 'other-statutory-tasks',
-      icon: 'fas fa-balance-scale'
+      icon: 'scale'
     },
     {
       label: 'Log Book',
       route: 'log-book',
-      icon: 'fas fa-book'
+      icon: 'book-open'
     }
   ];
 

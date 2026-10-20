@@ -17,7 +17,7 @@ final class GetOverview
 
         $directors = array_map(
             fn(array $u) => DirectorSummary::fromUser($u),
-            $this->userRepo->listByCompany($companyId)
+            $this->userRepo->listDirectorsByCompany($companyId)
         );
 
         $financialSummary = $this->companyRepo->getFinancialSummary($companyId);
@@ -26,6 +26,7 @@ final class GetOverview
             company: $company,
             directors: $directors,
             financialSummary: $financialSummary,
+            ownership: OwnershipSummary::fromDirectors($directors),
         );
     }
 }
