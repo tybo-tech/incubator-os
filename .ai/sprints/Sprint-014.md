@@ -4,6 +4,8 @@
 > **Status**: Draft — ready for implementation after Sprint 013 and Discovery decision D3
 > **Baseline**: `main` @ `4163b03`
 > **Depends on**: **Sprint 013** (profile fields, offerings, revisions, completeness)
+> **Blocked by**: [`Incident-001-mail-relay.md`](Incident-001-mail-relay.md) — the mail relay and
+> committed SMTP/DB credentials must be rotated and closed before this sprint touches email.
 > **Duration**: Multi-phase (6 phases, sequential execution)
 > **Previous work (locked capabilities)**: financial indicator request links (`nodes` type
 > `financial_indicator_request`), `/financial/:token` public submission, `mail/send.php`,
@@ -34,7 +36,9 @@ This sprint delivers:
 ## Existing Foundation (Locked)
 
 - **`capabilities/financial-indicators`** — stays the owner of financial indicator capture. This
-  sprint reuses its *link pattern*, not its repository. Existing `nodes` request rows stay readable.
+  sprint reuses its *link pattern*, not its repository. Note that the legacy link stores the **raw
+  token** in `nodes.token` (`FinancialIndicatorLinkRepository.php:22`); the new capability hashes
+  tokens and the legacy path is deliberately left working.
 - **`/financial/:token`** — must keep working for links already sent. Do not break or redirect it.
 - **`helpers/AuthGuard.php`** — for authenticated endpoints. Public endpoints must **not** call
   `auth_require_user`; they validate a token instead.
@@ -42,8 +46,11 @@ This sprint delivers:
 - **`core/Infrastructure/TransactionManager.php`** — every command is transactional.
 - **Company capability** — `UpdateProfile`, `CompanyProductRepository`, `ProfileRevisionRepository`,
   `ProfileCompleteness` from Sprint 013. Submissions propose; these commands apply.
-- **`mail/send.php` + `EmailService`** — existing delivery path. Harden it; do not build a second
-  mailer.
+- **`mail/send.php` + `EmailService`** — **not** part of the main API. `api-incubator-os/mail/` is a
+  self-contained app root (own `config/` and `vendor/` with PHPMailer) deployed to a **different
+  host**, and `src/services/email/email.service.ts` calls `https://mail.rbttacesd.co.za/send.php`
+  **directly from the browser**. It has no authentication, no rate limit and a hardcoded BCC. See
+  `Incident-001`; this sprint replaces the browser → mail-host path with API → mail-host.
 - **Angular public routes** — `src/app/public/*` pattern (`public-form`, `public-financial-submission`),
   no `AppShell`, no auth guard.
 - **Design system** — `.sw-*` cards, `app-icon`, ZAR formatting.
@@ -159,11 +166,15 @@ it stays with `/financial/:token`.
 - **Applying is a second, deliberate step.** No auto-apply, no "trusted link" shortcut.
 - **Legacy financial links are left alone.** `/financial/:token` and `nodes` request rows continue to
   work. New profile requests use `submission_links`.
-- **Email moves server-side.** `CreateSubmissionLink` optionally sends the email itself so the raw
-  token does not have to travel through a second browser call.
-- **Secrets leave the source tree.** `mail/send.php` currently hardcodes SMTP credentials; this sprint
-  moves them to `config/mail.php`, which follows the same never-upload discipline as
-  `config/Database.php`.
+- **Email moves behind the API, not just behind a session check.** A session cookie cannot
+  authenticate a cross-origin browser call to `mail.rbttacesd.co.za` (its CORS is `*` and the mail
+  app has no session stack). The browser therefore stops calling the mail host altogether: the
+  Angular `EmailService` calls one authenticated API endpoint, and the API calls the mail host
+  server-to-server with a shared secret and an allow-list. This is the only shape that actually
+  closes the open relay.
+- **Secrets leave the source tree and the working tree.** The SMTP password and the production DB
+  password are already committed; rotation happens in `Incident-001`, then the working copies read
+  from config/env. `api-incubator-os/mail/config/mail.php` follows the never-upload discipline.
 
 ---
 
@@ -185,6 +196,7 @@ it stays with `/financial/:token`.
 | `POST /api/submissions/commands/revoke-link.php` | session | Revoke |
 | `POST /api/submissions/commands/apply-change.php` | session | Apply selected fields |
 | `POST /api/submissions/commands/reject-change.php` | session | Reject with a reason |
+| `POST /api/notifications/commands/send-email.php` | session (staff) / narrow public reset | API → mail-host proxy; the browser no longer calls `mail.rbttacesd.co.za` |
 
 ---
 
@@ -196,11 +208,11 @@ Build the secure link capability and remove hardcoded mail credentials.
 
 #### Tasks
 
-- [ ] **1.1** Create `migrations/2026-10-21-submissions.sql` (idempotent, guarded): the three tables,
-  FKs, `UNIQUE (token_hash)`, `UNIQUE (link_id)` on drafts, indexes
+- [ ] **1.1** Create `migrations/2026-10-21-submissions.sql` — **run order #30** — idempotent, guarded:
+  the three tables, FKs, `UNIQUE (token_hash)`, `UNIQUE (link_id)` on drafts, indexes
   `idx_sl_company_status`, `idx_sl_expires`, `idx_sc_company_status`, `idx_sc_submitted`.
-- [ ] **1.2** Add `migrations/deployment/verify-014-submissions.sql` (tables, indexes, FK presence,
-  no plaintext token column).
+- [ ] **1.2** Add `docs/deployment/verify-014-submissions.sql` (tables, indexes, FK presence, no
+  plaintext token column) and the **run order #30** row in `api-incubator-os/migrations/README.md`.
 - [ ] **1.3** Create `capabilities/submissions/Repository/SubmissionLinkRepository.php`:
   `create`, `findByTokenHash`, `findById`, `listByCompany`, `markOpened`, `markSubmitted`,
   `revoke`, `incrementUsesAtomic` (`UPDATE … WHERE uses < max_uses`), `countActiveForCompany`.
@@ -220,13 +232,27 @@ Build the secure link capability and remove hardcoded mail credentials.
   IP, a truncated user agent and the link id. Never store the token.
 - [ ] **1.9** Add rate limiting: max 30 requests/minute per token and 60/minute per hashed IP,
   evaluated from the access log; return `429` with `Retry-After` when exceeded.
-- [ ] **1.10** Move SMTP settings out of `api-incubator-os/mail/send.php` into
-  `api-incubator-os/config/mail.php` (host, port, secure, username, password, from, bcc). Read it via
-  a small `MailConfig` contract. Add `config/mail.php` to the deployment never-upload list and update
-  `docs/sprint-007-009-production-deployment.md` accordingly.
-- [ ] **1.11** Require an authenticated session on the generic `mail/send.php` (the request dialog is
-  already authenticated) and rate-limit it. Do not break `EmailService` callers.
-- [ ] **1.12** Create the staff endpoints `create-link.php`, `resend-link.php`, `revoke-link.php`,
+- [ ] **1.10** **Stop the browser → mail-host path** (Incident-001 remediation). Inventory every
+  `EmailService` call site (including password reset and any unauthenticated flow), then replace them
+  with one API endpoint `api/notifications/commands/send-email.php`:
+  - staff sends require `auth_require_user` + company/scope authorisation;
+  - password-reset sends use a narrowly scoped, rate-limited public endpoint that accepts only the
+    reset template and a known user email.
+  The Angular `EmailService` stops referencing `https://mail.rbttacesd.co.za` directly.
+- [ ] **1.11** Harden the mail host: move SMTP settings to `api-incubator-os/mail/config/mail.php`
+  (never upload; the mail app reads its own `config/`), require a shared-secret header on `send.php`,
+  add a recipient allow-list and a per-sender rate limit. The endpoint must be callable only by the
+  API server, never by a browser.
+- [ ] **1.12** Fix the mail app's dead escaping: `format_email()` escapes `$message` and then
+  overwrites it with the raw value. Escape once, keep the intended HTML, and make the BCC list
+  configuration rather than hardcoded. Add a test proving a `<script>` payload is inert.
+- [ ] **1.13** Complete the credential rotation described in `Incident-001`: SMTP password and the
+  production DB password are rotated by the operator, the old values are confirmed dead, and the
+  working tree reads from config/env. Do not proceed to Phase 3 until this is done.
+- [ ] **1.14** Add `api-incubator-os/mail/` (and its `config/`) to the never-upload list in
+  `docs/sprint-007-009-production-deployment.md` — it currently covers `api/config/Database.php` but
+  nothing under `api/mail/`.
+- [ ] **1.15** Create the staff endpoints `create-link.php`, `resend-link.php`, `revoke-link.php`,
   `list-links.php` with `auth_require_user` + `auth_require_company_access`.
 
 #### Exit Criteria
@@ -237,7 +263,12 @@ Build the secure link capability and remove hardcoded mail credentials.
 - [ ] Creating a link for a company the user cannot access returns `403`.
 - [ ] A revoked link immediately fails validation; a resend keeps the same token and updates `sent_at`.
 - [ ] `submission_access_log` records open/save/submit actions without the token or raw IP.
-- [ ] `mail/send.php` contains no credentials; `config/mail.php` is documented as never-upload.
+- [ ] No browser request can reach `mail.rbttacesd.co.za`; `EmailService` calls only the API endpoint.
+- [ ] The mail endpoint rejects a request without the shared secret and refuses recipients outside the
+  allow-list.
+- [ ] SMTP and production DB credentials are absent from the working tree and the old values are
+  verified dead (`Incident-001`).
+- [ ] An HTML/script payload in the message body is escaped and inert.
 - [ ] `php -l` passes on every touched PHP file.
 
 ---
@@ -469,9 +500,12 @@ announced to users until Phase 4 makes submissions actionable.
 ```
 api-incubator-os/
 ├── migrations/
-│   ├── 2026-10-21-submissions.sql                     (new)
-│   └── deployment/verify-014-submissions.sql           (new)
-├── config/mail.php                                     (new — never upload)
+│   ├── 2026-10-21-submissions.sql                     (new — run order #30)
+│   └── README.md                                       (run order #30 row)
+├── docs/deployment/verify-014-submissions.sql          (new)
+├── mail/config/mail.php                                (new — never upload)
+├── mail/send.php                                       (shared secret, allow-list, escaping)
+├── api/notifications/commands/send-email.php            (new — API proxy)
 ├── capabilities/submissions/
 │   ├── AI.md / feature.json                            (new)
 │   ├── Application/
@@ -500,7 +534,6 @@ api-incubator-os/
 │   ├── public/{validate,draft,submit}.php              (new)
 │   ├── queries/{list-links,get-change}.php             (new)
 │   └── commands/{create-link,resend-link,revoke-link,apply-change,reject-change}.php (new)
-├── mail/send.php                                       (harden)
 └── scripts/submissions-expire.php                      (new)
 
 src/app/
@@ -528,6 +561,8 @@ src/app/
 - **SMS/WhatsApp delivery** — email + copy link only.
 - **Public report links** — Sprint 016.
 - **Changes to the ownership, compliance or financial calculation rules.**
+- **Re-hashing or migrating legacy `nodes.token` financial links** — they must keep working; the
+  migration is reserved (see Future Modules).
 
 ---
 
@@ -537,7 +572,9 @@ src/app/
 - Multi-step annual review that bundles profile + financials + evidence.
 - Digital signature/attestation on submission.
 - Reminder schedules (e.g. 3 days before expiry) driven by the same access log.
-- Migrating legacy `nodes` financial links into `submission_links` once no live links remain.
+- Migrating legacy `nodes` financial links into `submission_links` once no live links remain, including
+  replacing the plaintext `nodes.token` with a hashed value (requires invalidating outstanding links
+  or a dual-read window).
 
 ---
 

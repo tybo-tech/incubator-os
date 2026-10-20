@@ -32,7 +32,9 @@ period, for whom, when it was sent, and whether delivery succeeded.
 ## Existing Foundation (Locked)
 
 - **PDF rendering already exists as a service** — `src/services/pdf/PDF-API-Documentation.md`:
-  `POST https://docs.tybo.co.za/pdf.php` with HTML → PDF. The backend will reuse the same service.
+  `POST https://docs.tybo.co.za/pdf.php` with HTML → PDF. The backend will reuse the same service,
+  but **the service is not in this repository** and is owned outside it: Phase 1 must confirm it is
+  reachable server-to-server from the API host before Phase 2 depends on it.
 - **Existing export services** — `assessment-export.service.ts`, `financial-export.service.ts`,
   `swot-action-plan-export.service.ts`, `gps-targets-export.service.ts`,
   `document-generator.service.ts`, `pdf-template.service.ts`. These stay for on-screen "export now";
@@ -179,6 +181,18 @@ companies / categories(program, cohort) ──> resolved scope for a run
 
 ---
 
+## Risks
+
+| Risk | Mitigation |
+| --- | --- |
+| `docs.tybo.co.za/pdf.php` is external and not in this repo | Confirm server-to-server reachability in Phase 1; bounded timeout + retries + `%PDF-` validation; HTML fallback when it fails |
+| Shared hosting cannot write outside the web root | Confirm the writable path in Phase 1; fall back to a deny-all `.htaccess` + random filenames + token-only download |
+| A worker overlaps with another cron run | Atomic claim (`FOR UPDATE SKIP LOCKED` or an update guard) + a single-artefact assertion |
+| A report leaks cross-scope data through aggregates | Scope is resolved once in `ReportScope` and reused for both rows and totals; consistency harness in Phase 6 |
+| A schedule emails the wrong recipients | Recipients are explicit, validated (max 20), stored on the schedule, and every send is logged |
+
+---
+
 ## Routes
 
 | Route | Component / Endpoint | Access |
@@ -210,10 +224,11 @@ Build the foundation before any template.
 
 #### Tasks
 
-- [ ] **1.1** Create `migrations/2026-10-23-reports.sql` (idempotent): the four tables, FKs, unique
-  `report_key`, indexes, and the seed catalogue from the table above (`ON DUPLICATE KEY UPDATE` on
-  title/audience/scope/template so re-running is safe).
-- [ ] **1.2** Create `deployment/verify-016-reports.sql` (tables, seed count, unique keys).
+- [ ] **1.1** Create `migrations/2026-10-23-reports.sql` — **run order #32** — idempotent: the four
+  tables, FKs, unique `report_key`, indexes, and the seed catalogue from the table above
+  (`ON DUPLICATE KEY UPDATE` on title/audience/scope/template so re-running is safe).
+- [ ] **1.2** Add `docs/deployment/verify-016-reports.sql` (tables, seed count, unique keys) and the
+  **run order #32** row in `api-incubator-os/migrations/README.md`.
 - [ ] **1.3** Create `capabilities/reports/Repository/ReportDefinitionRepository.php`,
   `ReportRunRepository.php`, `ReportDeliveryRepository.php`, `ReportScheduleRepository.php`.
 - [ ] **1.4** Create `Contracts/ReportScope.php` — resolves and validates the scope target against
@@ -221,14 +236,19 @@ Build the foundation before any template.
 - [ ] **1.5** Create `Contracts/ReportArtifactStore.php` — `put(string $bytes, string $ext): string`,
   `path(string $relative)`, `delete(string $relative)`, `exists()`. Root comes from config
   (`REPORTS_STORAGE_PATH`), defaults to `storage/reports` outside the doc root. Random filenames.
-- [ ] **1.6** Create the storage directory with a deny-all `.htaccess` and an `index.html` placeholder;
-  document that it must never be web-served directly.
-- [ ] **1.7** Create `Application/Commands/EnqueueReport.php` — validates the definition, scope,
+- [ ] **1.6** **Confirm the storage location before building on it.** On this shared host a path
+  outside the web root may not be writable from PHP. Record the confirmed writable path in
+  `config/reports.php`; if it must live under the doc root, create the deny-all `.htaccess`, a
+  placeholder `index.html`, and keep random filenames. Verify over HTTP that a stored file cannot be
+  fetched directly.
+- [ ] **1.7** Create the storage directory with the protections from 1.6; document that it must never
+  be web-served directly.
+- [ ] **1.8** Create `Application/Commands/EnqueueReport.php` — validates the definition, scope,
   access and period; inserts a `queued` run; returns `{ runId }`. No rendering in the request.
-- [ ] **1.8** Create `Application/Queries/ListDefinitions.php`, `ListRuns.php`, `GetRun.php` with
+- [ ] **1.9** Create `Application/Queries/ListDefinitions.php`, `ListRuns.php`, `GetRun.php` with
   scope-aware filtering.
-- [ ] **1.9** Create the endpoints for definitions, runs and enqueue; all session-protected and scoped.
-- [ ] **1.10** Add `config/reports.php` (render URL, storage path, token TTL, retention days) with the
+- [ ] **1.10** Create the endpoints for definitions, runs and enqueue; all session-protected and scoped.
+- [ ] **1.11** Add `config/reports.php` (render URL, storage path, token TTL, retention days) with the
   never-upload discipline for any environment-specific values.
 
 #### Exit Criteria
@@ -461,8 +481,9 @@ gives the report a delivery path.
 ```
 api-incubator-os/
 ├── migrations/
-│   ├── 2026-10-23-reports.sql                          (new)
-│   └── deployment/verify-016-reports.sql                (new)
+│   ├── 2026-10-23-reports.sql                          (new — run order #32)
+│   └── README.md                                        (run order #32 row)
+├── docs/deployment/verify-016-reports.sql               (new)
 ├── config/reports.php                                  (new — never upload)
 ├── storage/reports/                                    (new, deny-all .htaccess)
 ├── capabilities/reports/
@@ -563,3 +584,4 @@ The sprint is complete when:
 - [ ] Worker, scheduler and expiry CLIs are documented and safe to run repeatedly.
 - [ ] `ng build --configuration development` is clean; `npm run prod` succeeds; `php -l` passes.
 - [ ] Harnesses pass; session file and sprint checkboxes are updated.
+- [ ] Migration run order **#32** is recorded and the verify script is under `docs/deployment/`.

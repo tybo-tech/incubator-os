@@ -1,7 +1,7 @@
 # Discovery 013–016 — The Company Profile, Entrepreneur Loop, Coach Workspace and Reports
 
 > **Program**: Incubator OS — ESD / B-BBEE beneficiary support
-> **Status**: Draft — decisions D1–D6 need sign-off before Sprint 013 starts
+> **Status**: Draft — decisions D1–D7 need sign-off before Sprint 013 starts
 > **Baseline**: `main` @ `4163b03` (directors, derived ownership, profile UI, production deploy)
 > **Inputs**: product conversation of 2026-10-20 — "proper company profile fields", "links for
 > entrepreneurs to fill in information", "reports we send out", "reports for coaches", "dashboard
@@ -19,10 +19,15 @@ owners**, and it does not yet answer the first question a coach or a funder asks
 
 Today:
 
-- The company record holds identity, contact, compliance and a 255-character `description`
-  (`companies` in `api-incubator-os/db.sql:311-348`). **Sector** (`industry_id`) exists but the
-  profile editor never shows it. **Buyer type**, **target market**, **products** and **pricing** do
-  not exist as persisted company facts at all.
+- The company record holds identity, contact, compliance and a `description` column
+  (`companies` in `api-incubator-os/db.sql:311-348`). The column **is** in
+  `CompanyRepository::WRITABLE` (`:150`) but it is absent from `UpdateProfileRequest` and never
+  mapped in `UpdateProfile`, so it is unreachable through the capability path. Sprint 011 already
+  specified exactly this fix (`Sprint-011.md:395-396`) and it is still unchecked; **Sprint 013
+  supersedes that task and the editor task at `Sprint-011.md:510`.** **Sector** (`industry_id`) exists
+  (FK `fk_companies_industry`, `db.sql:4452`) but the profile editor never shows it. **Buyer type**,
+  **products** and **pricing** do not exist as persisted company facts at all. A `target_market`
+  value exists only inside legacy `company_vision` nodes (`db.sql:2576`) — see D7.
 - Products, pricing and target customers are asked in the built-in form template
   (`src/app/admin/form-templates/built-in-templates.ts:101`, `:588`) and in the coaching guide
   (`src/app/components/coaching-guide/products-services.component.ts`), but those answers live in
@@ -96,10 +101,15 @@ everything. Do not start 015's health scoring before 013's completeness projecti
 | **D4** | Health score | **Derived and explainable**, 0–100, five weighted components, each returning a reason + evidence. | A number without reasons is not actionable and cannot be defended to a funder. |
 | **D5** | Server-side reports | Reuse the existing HTML→PDF service (`docs.tybo.co.za/pdf.php`) from the **backend**, store generated files outside the web root, serve via an authenticated/signed download. Fall back to a secure HTML report link. | No composer dependencies in `api-incubator-os/`; the client already depends on this service. |
 | **D6** | Sector taxonomy | Reuse `industries` (`parent_id` hierarchy). Store the most specific active industry in `companies.industry_id`; display the full path. | The taxonomy already exists, is maintained in Admin → Industries, and is used for reporting. |
+| **D7** | `target_market` source of truth | Make `companies.target_market` **canonical**. Migrate a `company_vision` node's `target_market` into the column **only where the column is empty**, record the migration, and change the vision UI to read the profile from then on. The node stays readable for history but is no longer authoritative. | A node already stores `target_market` (`db.sql:2576`, read at `strategy-tab.component.ts:250` and `vision-mission-section.component.ts:93`). Adding a second field with no reconciliation rule would violate the plan's own "one truth per fact" principle. |
 
 If D1 is rejected and a real `Coach` role is added, Sprint 015 Phase 1 changes: the role replaces
 `assignment_role` for scoping, but `company_assignments` still carries the portfolio. Do not add a
 role *and* leave access unscoped.
+
+If D7 is rejected in favour of keeping the node authoritative, Sprint 013 must **drop**
+`companies.target_market` from its schema and read the vision node instead — but then completeness,
+profile revisions and submissions all need a node-read path, so the column is the cheaper truth.
 
 ---
 
@@ -107,8 +117,8 @@ role *and* leave access unscoped.
 
 | Area | Exists today | Gap this arc closes |
 | --- | --- | --- |
-| Company identity | `companies.name`, `trading_name`, `registration_no`, contact block, address, `industry_id` | Sector not surfaced; description 255 chars and not writable; no website/founded year |
-| Positioning | `service_offering` (one line) | No long description, buyer type or target market |
+| Company identity | `companies.name`, `trading_name`, `registration_no`, contact block, address, `industry_id` | Sector not surfaced; `description` 255 chars, in `WRITABLE` but missing from the DTO/mapping; no website/founded year |
+| Positioning | `service_offering` (one line); `target_market` only inside `company_vision` nodes | No long description; buyer type has no home; target market has two potential homes (D7) |
 | Offerings | Coaching-guide demo (in memory); form-template questions; `service_offering` text | No persisted products/services, no price, no active/inactive state |
 | Profile quality | Financial summary has `capturedMonths`/`activeMonths` | No profile completeness, no gap list |
 | Entrepreneur input | Financial indicator request link (`nodes` type `financial_indicator_request`, 7-day, single-use), `/financial/:token`, email dialog | Not generic; no profile scope; no drafts; no review/apply; no request inbox |
@@ -121,11 +131,53 @@ role *and* leave access unscoped.
 
 - **Financial completeness cannot be inferred from zero-filled months.** `m1…m12` default to `0.00`
   and `total_amount` is a generated `COALESCE`, so an all-zero row looks identical to a real zero
-  (`api-incubator-os/migrations/README.md:98-113`). Use **row presence + explicit captured months**
-  (`FinancialSummary.activeMonths` / `capturedMonths`), never `total_amount`.
+  (`api-incubator-os/migrations/README.md:98-113`). `FinancialSummary.capturedMonths` does **not**
+  solve this: it counts months where the value is `> 0`
+  (`CompanyRepository.php:66-84`), so a genuine zero-revenue month still looks uncaptured, and
+  `activeMonths` is just `row_count × 12`. **Do not use either as a completeness or recency signal.**
+  Monthly recency must come from the per-month `nodes` financial-indicator records
+  (`data.meta.financialYear` + `data.meta.month`), which is what the Financial Indicators screen
+  actually stores.
+- **`meta.month` is a calendar month, 1 = January.** The picker is `{ value: 1, label: 'January' } …
+  { value: 12, label: 'December' }` (`financial-form.component.ts:115-120`), and
+  `AnnualReportResponse::monthNameToNumber` maps `'January' => 1`
+  (`AnnualReportResponse.php:33-36`). `MONTH_ORDER = ['March' … 'February']` is a **display ordering**
+  for the annual table, not a storage encoding. Any FY conversion must not assume `1 = March`.
 - **Sessions store no schedule.** Upcoming sessions resolve through
   `sessions.calendar_event_id → calendar_events` (`migrations/2026-09-23-sessions.sql:87-125`).
   A dashboard must not read a `sessions.start_at` that does not exist.
+
+### Security incident found during the audit
+
+The plan's original "harden `mail/send.php`" note was **wrong about the architecture** and
+**understated the exposure**. `api-incubator-os/mail/` is a **self-contained app root** (its own
+`config/` and `vendor/` with PHPMailer), deployed to a **different host**
+(`https://mail.rbttacesd.co.za/send.php`, called directly from the browser in
+`src/services/email/email.service.ts:22`). It has:
+
+- **no authentication** — anyone on the internet can send arbitrary mail through the organisation's
+  SMTP account, with a forced BCC to `accounts@tybo.co.za` (an open relay + spam/phishing vector);
+- **SMTP credentials committed in plaintext** (`mail/send.php`), which means the secret is in git
+  history and must be **rotated**, not merely moved;
+- **dead escaping** — `$message = htmlspecialchars(...)` is immediately overwritten with the raw
+  value (`send.php`), so HTML injection into the mail body is remotely triggerable;
+- no rate limit and no recipient allow-list.
+
+`mail/config/headers.php` returns `Access-Control-Allow-Origin: *`, so a session-cookie fix cannot
+work cross-origin. The correct fix is to stop the browser calling the mail host at all and proxy
+through the authenticated API with a shared secret. This is tracked as
+[`Incident-001-mail-relay.md`](Incident-001-mail-relay.md) and must be handled **before** Sprint 014,
+not inside it.
+
+The same audit found that `api-incubator-os/config/Database.php` also carries a committed production
+password. Rotation is an operator action and is listed in the incident file.
+
+### Legacy link storage
+
+The existing financial-indicator request link is 256-bit and 7-day, but the **raw token is stored in
+plaintext** in `nodes.token` (`FinancialIndicatorLinkRepository.php:22`). Sprint 014 hashes tokens in
+the new capability and deliberately leaves the legacy path working; a follow-up must migrate or
+invalidate remaining legacy rows once no live links remain.
 
 ---
 
@@ -144,6 +196,24 @@ role *and* leave access unscoped.
 **Never duplicated:** director ownership (already derived), compliance score, financial indicators,
 GPS/Results. Reports and dashboards *read* these; they do not re-store them.
 
+**Reconciliation (D7):** a `company_vision` node's `target_market` is migrated once into
+`companies.target_market` where the column is empty, the migration is recorded, and the vision UI
+(`strategy-tab`, `vision-mission-section`) reads the company profile afterwards. The node is kept for
+history but is no longer authoritative.
+
+**Migration run orders.** The highest applied order is **#26** (`migrations/README.md:54`) and
+Sprint 012 has reserved **#27–#28** (`Sprint-012.md:311-312`). This arc therefore reserves:
+
+| Sprint | File | Run order |
+| --- | --- | ---: |
+| 013 | `2026-10-20-company-profile-360.sql` | **#29** |
+| 014 | `2026-10-21-submissions.sql` | **#30** |
+| 015 | `2026-10-22-company-assignments.sql` | **#31** |
+| 016 | `2026-10-23-reports.sql` | **#32** |
+
+Verification scripts live in **`docs/deployment/`** (the existing convention:
+`verify-007-008-compact.sql`, `verify-all-compact.sql`), not under `migrations/`.
+
 ---
 
 ## 7. Locked architecture (do not redesign)
@@ -158,7 +228,12 @@ GPS/Results. Reports and dashboards *read* these; they do not re-store them.
 - `app-icon` semantic names only (Font Awesome is forbidden in new work).
 - Migrations: new dated, idempotent SQL files; never edit an applied migration; add rollback notes.
 - `config/Database.php` and `mail/` credentials are production-specific and are **never uploaded**.
-  New config must follow the same never-upload discipline.
+  New config must follow the same never-upload discipline. Note that `api-incubator-os/mail/` is a
+  separate mini-app with its own `config/` and `vendor/`; configuration for it belongs at
+  `api-incubator-os/mail/config/mail.php`, not in the API's `config/`.
+- **Legacy reuse is explicit.** `api-nodes/industry/*` is node-era code, but it is the only source for
+  the industries taxonomy (`list-industry-tree.php`). Sprint 013 may consume it read-only; it must not
+  add business logic there.
 
 ---
 
@@ -173,6 +248,10 @@ GPS/Results. Reports and dashboards *read* these; they do not re-store them.
 | Report generation blocks shared hosting | Queue/CLI worker, bounded batch size, timeout, retry, failure surfaced in the UI |
 | A stale link overwrites coach-verified facts | Review/apply with diff + conflict detection; never auto-apply |
 | Scope creep into "AI enrichment" or document vaults | Explicit Out of Scope in every sprint |
+| `target_market` exists in both a node and a column | D7: column canonical, one recorded migration, vision UI switches to the profile |
+| External PDF renderer (`docs.tybo.co.za`) is not in this repo and may be unavailable | Timeout + bounded retries + `%PDF-` validation + HTML fallback; confirm server-to-server reachability before Phase 2 ships |
+| Report storage path may not be writable outside the web root on shared hosting | Confirm the writable path in Phase 1; fall back to a deny-all `.htaccess` plus random filenames and signed downloads |
+| Committed SMTP/DB secrets | `Incident-001` — rotate first, then remove from the working tree; history remains and is accepted only after rotation |
 
 ---
 

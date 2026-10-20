@@ -49,13 +49,15 @@ attribution per product, or AI recommendations.
 - **Company capability** — `GetOverview`, `ProfileCompleteness`, `FinancialSummary`, `OwnershipSummary`.
 - **Financial indicators** — `nodes` type `financial_indicators`, JSON `data.meta.financialYear` /
   `data.meta.month` (`capabilities/financial-indicators/Repository/FinancialIndicatorRepository.php:88-109`).
-  This is the monthly capture truth.
+  `month` is a **calendar month (1 = January)**. This is the monthly capture truth.
 - **`company_financial_yearly_stats`** — annual account rows. **Not** a monthly recency signal
-  (`migrations/README.md:98-113`).
+  (`migrations/README.md:98-113`), and `FinancialSummary.capturedMonths` counts non-zero months rather
+  than captured months (`CompanyRepository.php:66-84`). Do not use either for health.
 - **Sessions** — `sessions.status`, `sessions.completed_at`, `sessions.calendar_event_id`;
   upcoming dates resolve via `calendar_events.start_at` / `start_date`.
-- **GPS/Results** — `gps_targets` (`status`, `due_date`, `priority`), `gps_target_tasks`,
-  `achievements`, `action_items`.
+- **GPS/Results** — `gps_targets` (`status`, `due_date`, `priority`), `gps_target_tasks`
+  (`status`, `due_date`, `completed_at`), `achievements`. **Legacy `action_items` is excluded** from
+  health scoring (free-text status, not part of the normalized model).
 - **Compliance** — `companies.cipc_status`, `has_valid_bbbbee`, `has_tax_clearance`,
   `is_sars_registered`, `has_cipc_registration`, `bbbee_expiry_date`, `tax_pin_expiry_date`.
 - **Submissions** — `submission_changes.company_id/status` from Sprint 014.
@@ -146,17 +148,21 @@ Weights sum to **100**. Bands: **On track** `>= 75`, **Watch** `50–74`, **At r
 | Component | Weight | Signal | Reason codes |
 | --- | ---: | --- | --- |
 | **Profile** | 20 | Sprint 013 `ProfileCompleteness.score × 0.2` | `profile_incomplete`, `profile_no_offerings` |
-| **Financial capture** | 25 | Latest `nodes` financial-indicator month vs the current financial month (FY starts March) | `financial_current`, `financial_1_month_late` (15), `financial_2_months_late` (8), `financial_3_plus_late`/`financial_none` (0) |
-| **Compliance** | 20 | `cipc_status = 'IN BUSINESS'` (6), valid B-BBEE (6), valid tax clearance (4), SARS registered (2), CIPC registration (2); expiry within 30 days flags but does not zero the component | `compliance_cipc_not_in_business`, `compliance_bbbee_expired`, `compliance_bbbee_expiring`, `compliance_tax_expired`, `compliance_tax_expiring`, `compliance_sars_missing` |
-| **Execution** | 20 | Open GPS targets weighted by status (`at_risk` 2×), overdue `gps_target_tasks`, overdue `action_items`; full marks when there is active work and none is overdue | `execution_no_targets`, `execution_targets_at_risk`, `execution_overdue_tasks`, `execution_overdue_actions` |
+| **Financial capture** | 25 | Latest `nodes` financial-indicator record vs today. `data.meta.month` is a **calendar month (1 = January, 12 = December)**; `data.meta.financialYear` is the calendar year it belongs to. Fiscal-year ordering is display-only. | `financial_current`, `financial_1_month_late` (15), `financial_2_months_late` (8), `financial_3_plus_late`/`financial_none` (0) |
+| **Compliance** | 20 | **Effective validity** per item: `has_valid_bbbbee` **AND** (`bbbee_valid_status` is null/`Valid`) **AND** (`bbbee_expiry_date` is null or `>= today`); same rule for tax with `has_tax_clearance`/`tax_valid_status`/`tax_pin_expiry_date`. Weights: CIPC status 6 (`cipc_status = 'IN BUSINESS'`), B-BBEE 6, tax 4, SARS 2, CIPC registration 2 (`has_cipc_registration = 1`). Expiry within 30 days flags but does not zero the component. | `compliance_cipc_not_in_business`, `compliance_cipc_registration_missing`, `compliance_bbbee_expired`, `compliance_bbbee_expiring`, `compliance_bbbee_status_invalid`, `compliance_tax_expired`, `compliance_tax_expiring`, `compliance_tax_status_invalid`, `compliance_sars_missing` |
+| **Execution** | 20 | Open `gps_targets` weighted by status (`at_risk` 2×) and overdue `gps_target_tasks` (`due_date < today`, `status != 'completed'`); full marks when there is active work and none is overdue. **Legacy `action_items` is excluded** (free-text status, `context_type swot|gps`, not part of the normalized model). | `execution_no_targets`, `execution_targets_at_risk`, `execution_overdue_tasks` |
 | **Engagement** | 15 | Last completed Session: `<= 30 d` 15, `31–60 d` 10, `61–90 d` 5, `> 90 d`/`none` 0; an upcoming Session within 14 days adds a reason (not points) | `engagement_recent_session`, `engagement_no_session_60d`, `engagement_no_session_90d`, `engagement_next_session` |
 
 Each component returns its evidence (IDs, dates, counts). The total is rounded to an integer.
 Thresholds live in one class (`CompanyHealthWeights`) — not scattered.
 
-**Financial month rule.** `data.meta.financialYear` + `data.meta.month` (1 = March … 12 = February)
-maps to a calendar date via `FinancialMonth::toDate()`; recency is the month difference from today.
-Never use `company_financial_yearly_stats.total_amount` for recency.
+**Financial month rule.** `data.meta.financialYear` + `data.meta.month` are **calendar** values
+(`month` 1 = January; see `financial-form.component.ts:115-120` and
+`AnnualReportResponse::monthNameToNumber`). Convert with `FinancialMonth::toDate($year, $month)` and
+compare that date to today. Fiscal-year ordering (`March … February`) is used **only** when displaying
+an annual report, never to interpret stored values. Never use `company_financial_yearly_stats` or
+`FinancialSummary.capturedMonths` for recency: `capturedMonths` counts months where the value is `> 0`
+(`CompanyRepository.php:66-84`), so it cannot distinguish a real zero from a missing capture.
 
 ---
 
@@ -210,12 +216,12 @@ Make "my companies" a real, enforceable fact.
 
 #### Tasks
 
-- [ ] **1.1** Create `migrations/2026-10-22-company-assignments.sql` (idempotent): the assignment and
-  health-snapshot tables, FKs, unique key and indexes; plus a guarded index
+- [ ] **1.1** Create `migrations/2026-10-22-company-assignments.sql` — **run order #31** — idempotent:
+  the assignment and health-snapshot tables, FKs, unique key and indexes; plus a guarded index
   `idx_nodes_type_company (type, company_id)` if missing, and `idx_sessions_company_completed
   (company_id, status, completed_at)`.
-- [ ] **1.2** Create `deployment/verify-015-portfolio.sql` (tables, indexes, FK presence, duplicate
-  assignment check).
+- [ ] **1.2** Add `docs/deployment/verify-015-portfolio.sql` (tables, indexes, FK presence, duplicate
+  assignment check) and the **run order #31** row in `api-incubator-os/migrations/README.md`.
 - [ ] **1.3** Create `capabilities/portfolio/Repository/AssignmentRepository.php`:
   `listByUser`, `listByCompany`, `assign`, `reactivate`, `unassign`, `bulkAssign`, `activeUserIds`.
   All writes are transactional.
@@ -223,7 +229,7 @@ Make "my companies" a real, enforceable fact.
   - `scopeFor(array $user): array` → `['type' => 'all'|'assigned'|'company'|'none', 'companyId' => ?int]`;
   - `canAccessCompany(array $user, int $companyId, PDO $db): bool`;
   - rules: System Administrator / Coordinator → `all`; Advisor / Staff / Judge → `assigned`;
-    Director → `company` (own); anyone else → `none`.
+    Director → `company` (own); `External Judge` and any unknown role → `none`.
 - [ ] **1.5** Add `auth_require_company_access_for_user(PDO $db, array $user, int $companyId)` to
   `helpers/AuthGuard.php`; it delegates to `PortfolioAccessPolicy` and returns `403` JSON on denial.
   Use it in all new endpoints from this sprint. Do **not** change the legacy function's behaviour.
@@ -261,14 +267,19 @@ Build the explainable score and the one endpoint the dashboard needs.
 
 #### Tasks
 
-- [ ] **2.1** Create `capabilities/portfolio/Contracts/FinancialMonth.php` — FY mapping (March = 1 …
-  February = 12), `toDate(int $fy, int $month)`, `currentFyMonth()`, `monthsLate(?array $latest)`.
-  Unit-test the boundary cases (February → next calendar year; March → FY start).
+- [ ] **2.1** Create `capabilities/portfolio/Contracts/FinancialMonth.php` — `toDate(int $year,
+  int $month)` where `month` is a **calendar month (1 = January)** and `year` is the calendar year;
+  `monthsLate(?array $latest)` returns the whole-month difference from today; `currentPeriod()` returns
+  the current calendar year/month. A separate `fiscalOrder()` helper may order March–February for
+  display only. Unit-test January, February, March, December and a 13-month gap.
 - [ ] **2.2** Create `Repository/HealthSignalRepository.php` with **batched** queries:
   - profile completeness (reuse `ProfileCompleteness` per company, fed by batched company/offering rows);
-  - latest financial indicator per company (`nodes` JSON `data.meta`, one query grouped by company);
-  - compliance fields (already on `companies`);
-  - GPS targets by status/due, overdue tasks, overdue `action_items` (grouped counts);
+  - latest financial indicator per company: `JSON_EXTRACT(data,'$.meta.financialYear')` +
+    `JSON_EXTRACT(data,'$.meta.month')`, filtered by `type = 'financial_indicators'`, one grouped
+    query (month is a calendar month);
+  - compliance fields (already on `companies`), using the effective-validity rule;
+  - GPS targets by status/due and overdue `gps_target_tasks` (`due_date`, `status`), grouped counts —
+    **not** legacy `action_items`;
   - last completed Session and next calendar event (grouped by company);
   - pending submissions count (`submission_changes`, grouped).
 - [ ] **2.3** Create `Contracts/CompanyHealth.php` — `for(array $signals): array` returning
@@ -304,7 +315,8 @@ Build the explainable score and the one endpoint the dashboard needs.
   when the score is below 100.
 - [ ] A company with no financial indicators scores `0` on that component and reports
   `financial_none` — it is never shown as "up to date".
-- [ ] February/March boundary tests pass (FY mapping).
+- [ ] Calendar-month tests pass for January, February, March and December, including a 13-month gap.
+- [ ] The execution component ignores `action_items` and reads `gps_target_tasks` only.
 - [ ] The endpoint executes a constant number of queries for 1, 10 and 100 companies (assert in the
   harness via a query counter).
 - [ ] Snapshot CLI writes one row per company per day and a second run the same day changes nothing.
@@ -471,8 +483,9 @@ matrix tests.
 ```
 api-incubator-os/
 ├── migrations/
-│   ├── 2026-10-22-company-assignments.sql             (new)
-│   └── deployment/verify-015-portfolio.sql             (new)
+│   ├── 2026-10-22-company-assignments.sql             (new — run order #31)
+│   └── README.md                                       (run order #31 row)
+├── docs/deployment/verify-015-portfolio.sql            (new)
 ├── helpers/AuthGuard.php                               (extend — new function)
 ├── capabilities/portfolio/
 │   ├── AI.md / feature.json                            (new)
@@ -559,4 +572,5 @@ The sprint is complete when:
 - [ ] Navigation and landing routes match the user's role and scope.
 - [ ] `ng build --configuration development` is clean; `npm run prod` succeeds; `php -l` passes.
 - [ ] The access matrix and query-count assertions pass.
+- [ ] Migration run order **#31** is recorded and the verify script is under `docs/deployment/`.
 - [ ] Session file and sprint checkboxes are updated.

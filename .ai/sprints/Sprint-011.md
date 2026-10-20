@@ -392,7 +392,8 @@ Close the reuse gaps the visit report depends on.
 
 #### Tasks
 
-- [ ] **3.1** Extend `capabilities/company/Contracts/Requests/UpdateProfileRequest.php` with `?string
+- [ ] **3.1** **→ Moved to Sprint 013 Phase 2 (do not implement here).** Extend
+  `capabilities/company/Contracts/Requests/UpdateProfileRequest.php` with `?string
   $description` and map it in `Application/Commands/UpdateProfile.php` to the `description` column
   (already in the repository `WRITABLE` list).
 - [ ] **3.2** Add `capabilities/company/queries/get-vision.php` + `Application/Queries/GetVision.php` +
@@ -507,7 +508,8 @@ Build the frontend.
   to its report workspace.
 - [ ] **5.9** Create agreed actions through the existing task flow and link them; render task status live
   (the report shows current status; the snapshot keeps the issued status).
-- [ ] **5.10** Show `description` in the company profile editor if absent (Phase 3 made it writable) and add the
+- [ ] **5.10** **→ Moved to Sprint 013 Phase 3/4 (do not implement here).** Show `description` in the
+  company profile editor if absent (Phase 3 made it writable) and add the
   vision read where the workspace needs it.
 
 #### Exit Criteria

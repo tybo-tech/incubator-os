@@ -3,7 +3,9 @@
 > **Program**: Incubator OS — ESD / B-BBEE beneficiary support
 > **Status**: Draft — ready for implementation after Discovery-013-016 decisions D1–D6
 > **Baseline**: `main` @ `4163b03`
-> **Depends on**: Discovery-013-016 (D2, D6), Sprint 011 profile work, Sprint 012 (optional, does not block)
+> **Depends on**: Discovery-013-016 (D2, D6, D7), Sprint 011 profile work, Sprint 012 (optional, does not block)
+> **Supersedes**: Sprint 011 tasks **3.1** (`description` writable) and **5.10** (show `description`
+> in the profile editor). Do not implement those in Sprint 011; they are delivered here.
 > **Duration**: Multi-phase (4 phases, sequential execution)
 > **Previous work (locked capabilities)**: Company capability (`api/company/*`), directors + derived
 > ownership, compliance card, financial indicators, `industries` taxonomy, `app-icon`, `ViewStateService`,
@@ -37,9 +39,18 @@ Must **NOT** be redesigned. Reuse or expose only.
   No business logic in `api-nodes/`.
 - **`helpers/AuthGuard.php`** — `auth_require_user`, `auth_require_company_access`; tenant `1`, server-derived.
 - **`core/Infrastructure/TransactionManager.php`** — command handlers own the transaction.
-- **`companies`** — identity, contact, compliance flags, `industry_id`. Extend; do not duplicate.
+- **`companies`** — identity, contact, compliance flags, `industry_id` (FK `fk_companies_industry`
+  **confirmed present**, `db.sql:4452`; do not re-add). Extend; do not duplicate. `description` is
+  already in `CompanyRepository::WRITABLE` (`:150`); it is missing only from the request DTO and the
+  command mapping.
 - **`industries`** — hierarchical sector taxonomy with `parent_id`, `is_active`, `display_order`.
-  Admin → Industries is the maintenance surface.
+  Admin → Industries is the maintenance surface. The only read API today is legacy
+  `api-nodes/industry/` (`list-industries.php`, `list-industry-tree.php`); consuming it read-only is
+  accepted, adding logic there is not.
+- **`company_vision` node** — legacy per-company vision record that already contains `target_market`
+  (`db.sql:2576`), read by `strategy-tab.component.ts:250` and
+  `vision-mission-section.component.ts:93`. D7 makes `companies.target_market` canonical; this
+  sprint migrates the node value once and switches the read.
 - **Directors + ownership** — derived from `users` (role `Director`, `status='active'`) by
   `OwnershipSummary` / `DirectorSummary`. Do not touch.
 - **Compliance score** — edited on the Overview card, stored on `companies` flags. Do not move.
@@ -119,6 +130,8 @@ All new tables carry `tenant_id INT NOT NULL DEFAULT 1` where they are company-s
 3. Offerings are **deactivated, never hard-deleted** (`is_active = 0`), so revisions, reports and
    future submissions never point at a vanished row.
 4. `buyer_type` and `target_market` are **typed facts**, never inferred from products, forms or AI.
+   `companies.target_market` is the **single** target-market truth (D7); `company_vision.target_market`
+   is read only for the one-time migration and is not written again.
 5. Sector is the **most specific active** `industries` row; display resolves the full ancestor path.
    An inactive or missing industry is shown as "Sector not set" and scores as a gap.
 6. `description` is plain text, max 5,000 characters. `service_offering` stays a one-line headline.
@@ -174,7 +187,15 @@ Gap codes (stable, used by the UI and Sprint 015 health reasons):
 - **The Profile tab is the editor; Overview is the summary.** Overview keeps a compact card and links
   to the tab. No duplicate edit forms.
 - **Description storage widens to TEXT.** The existing `varchar(255)` truncates real business
-  descriptions and is the single most limiting column on the profile.
+  descriptions and is the single most limiting column on the profile. The column is already in
+  `CompanyRepository::WRITABLE`; only the DTO, command mapping and UI are missing.
+- **`target_market` is reconciled once (D7).** The migration copies a `company_vision` node's
+  `target_market` into `companies.target_market` **only where the column is empty**, records the
+  source in the migration notes, and the vision UI reads the company profile afterwards. No ongoing
+  dual-write.
+- **The industry picker reads the existing tree endpoint.** Use
+  `api-nodes/industry/list-industry-tree.php` (legacy read) rather than re-implementing the taxonomy
+  in the Company capability. Renaming the service is out of scope.
 
 ---
 
@@ -188,9 +209,12 @@ Gap codes (stable, used by the UI and Sprint 015 health reasons):
 | `/industries` | existing admin | "Sector not listed?" escape hatch |
 
 Tab order after this sprint:
-`Overview → Profile → Directors → Assessment → SWOT Workspace → Targets → Results → Calendar →
+`Overview → Profile → Assessment → Directors → SWOT Workspace → Targets → Results → Calendar →
 Sessions → BEE Compliance → Financial Indicators → Coaching / Guide → Purchases → Seed Funding →
 legacy tabs`.
+
+Insert **Profile at index 1** in the `companyTabs` array (`company-shell.component.ts:95-177`), i.e.
+immediately after `Overview`; the rest of the array keeps its current relative order.
 
 ---
 
@@ -202,22 +226,29 @@ Build the storage the profile needs, without changing any existing behaviour.
 
 #### Tasks
 
-- [ ] **1.1** Create `migrations/2026-10-20-company-profile-360.sql`, idempotent and guarded:
+- [ ] **1.1** Create `migrations/2026-10-20-company-profile-360.sql` — **run order #29** — idempotent and
+  guarded:
   - widen `companies.description` from `varchar(255)` to `TEXT` (guard with `information_schema`);
   - add `buyer_type`, `target_market`, `website`, `founded_year` with safe defaults;
   - create `company_products_services` with FKs, `idx_cps_company_active`
     (`company_id`, `is_active`, `sort_order`) and a `CHECK (unit_price IS NULL OR unit_price >= 0)`;
   - create `company_profile_revisions` with `UNIQUE (company_id, revision_no)` and
     `idx_cpr_company_created`;
-  - verify `companies.industry_id` has an FK to `industries`; add it only if missing.
+  - **assert** the existing `fk_companies_industry` FK (`db.sql:4452`) — do not re-add it; a guarded
+    re-add would fail on a re-run.
 - [ ] **1.2** Backfill **without inventing facts**: `buyer_type = 'unknown'` for all rows; do **not**
-  copy `service_offering` into `description`; do **not** create offerings. A backfill that guesses
-  would poison completeness.
-- [ ] **1.3** Add `migrations/deployment/verify-013-profile-360.sql` — table existence, column types,
-  FK presence, row counts, and a query proving no company lost `name`/`registration_no`.
-- [ ] **1.4** Write rollback notes in the migration header (drop the two tables, drop the four
+  copy `service_offering` into `description`; do **not** create offerings. For D7, copy
+  `company_vision.data.target_market` into `companies.target_market` **only where the column is empty
+  and the node value is a non-empty string**, and record the count in the migration output. A backfill
+  that guesses would poison completeness.
+- [ ] **1.3** Add `docs/deployment/verify-013-profile-360.sql` — table existence, column types,
+  FK presence, row counts, the D7 migration count, and a query proving no company lost
+  `name`/`registration_no`.
+- [ ] **1.4** Add the **run order #29** row to `api-incubator-os/migrations/README.md`, with run
+  status (local / production) and rollback notes.
+- [ ] **1.5** Write rollback notes in the migration header (drop the two tables, drop the four
   columns, narrow `description` back to `varchar(255)` only after a length check).
-- [ ] **1.5** Run the migration twice locally to prove idempotency; capture before/after
+- [ ] **1.6** Run the migration twice locally to prove idempotency; capture before/after
   `SELECT COUNT(*) FROM companies` and `SELECT COUNT(*) FROM nodes`.
 
 #### Exit Criteria
@@ -225,6 +256,11 @@ Build the storage the profile needs, without changing any existing behaviour.
 - [ ] Migration applies cleanly on the local Docker database **twice**, with no error on the second run.
 - [ ] `DESCRIBE companies` shows `description` as `text`, plus the four new columns.
 - [ ] `SHOW TABLES LIKE 'company_products_services'` and `... 'company_profile_revisions'` both return a row.
+- [ ] The migration does **not** attempt to re-add `fk_companies_industry`; the verify script confirms
+  exactly one industry FK exists.
+- [ ] The D7 backfill reports how many `target_market` values were copied and **never overwrites** a
+  non-empty column.
+- [ ] Run order **#29** is recorded in `api-incubator-os/migrations/README.md`.
 - [ ] Company count is unchanged and every existing `industry_id` still resolves.
 - [ ] The verification SQL returns `PRESENT` for every object and `0` orphaned offerings.
 
@@ -238,7 +274,9 @@ Extend the Company capability with the new fields, the offerings collection, com
 
 - [ ] **2.1** Extend `capabilities/company/Contracts/Requests/UpdateProfileRequest.php` with
   `?string $description`, `?string $buyerType`, `?string $targetMarket`, `?string $website`,
-  `?int $foundedYear`. Keep `industryId` (already present).
+  `?int $foundedYear`. Keep `industryId` (already present). `description` is **already** in
+  `CompanyRepository::WRITABLE`; only the DTO, command mapping and UI are missing (this completes
+  Sprint 011 tasks 3.1/5.10).
 - [ ] **2.2** Validate in `UpdateProfile`: description `<= 5000`, buyer type in the enum, website
   `http(s)`, founded year `1900..currentYear`, target market `<= 1000`. Invalid input throws
   `InvalidArgumentException`; the endpoint returns `400` with a field-keyed error (same shape as today).
@@ -309,9 +347,9 @@ Build the Profile tab and its sections in the Financial Indicators visual langua
 - [ ] **3.3** Create `profile-identity-card.component.ts` — name, trading name, registration number,
   contact person/number/email, address, city, suburb, business location, website, founded year.
   Reuses the existing `update-profile` command; no new endpoint.
-- [ ] **3.4** Create `industry-picker.component.ts` — searchable hierarchical picker over
-  `GET /api-nodes/industries` (or the existing industries service); displays the full path; shows
-  "Sector not listed? Manage industries" linking to `/industries`.
+- [ ] **3.4** Create `industry-picker.component.ts` — searchable hierarchical picker over the existing
+  `api-nodes/industry/list-industry-tree.php` (legacy read; do not add logic there); displays the full
+  path; shows "Sector not listed? Manage industries" linking to `/industries`.
 - [ ] **3.5** Create `profile-positioning-card.component.ts` — long description (textarea with
   `5000` counter and guidance placeholder), buyer type segmented control (`B2B`, `B2C`, `Both`,
   `Not set`), target market textarea, `service_offering` one-liner.
@@ -334,9 +372,9 @@ Build the Profile tab and its sections in the Financial Indicators visual langua
 - [ ] **3.11** Persist view state with `ViewStateService` under `company-profile-view:${companyId}`
   (active section, offerings sort, collapsed cards, show-inactive toggle). Use the established
   constructor `effect()` pattern guarded until the company resolves.
-- [ ] **3.12** Icons via `app-icon` only; add any missing semantic names to `ICON_PATHS`
-  (`building-office`, `identification`, `tag`, `currency-dollar` already exists, `queue-list`,
-  `arrow-up`, `arrow-down`). No Font Awesome, no raw inline SVG.
+- [ ] **3.12** Icons via `app-icon` only. `building-office` and `currency-dollar` already exist;
+  `identification`, `tag`, `queue-list`, `arrow-up` and `arrow-down` do **not** — add them to
+  `ICON_PATHS` if used. No Font Awesome, no raw inline SVG.
 - [ ] **3.13** Responsive pass at 375 / 768 / 1280 px; ensure the offerings table becomes cards on
   mobile and the completeness panel stacks above the sections.
 
@@ -374,7 +412,12 @@ Make the rest of the application read the profile instead of re-asking for it.
   truth for products/pricing/target market (copy only — do not delete the questions).
 - [ ] **4.5** Update `capabilities/company/AI.md`, `feature.json` and `docs/company-capability-plan.md`
   with the final profile contract.
-- [ ] **4.6** Record the finish in the next `.ai/sessions/` file (next sequence number, today's date)
+- [ ] **4.6** Switch the vision UI (`strategy-tab.component.ts:250`,
+  `vision-mission-section.component.ts:93`) to read `target_market` from the company profile, and stop
+  writing it to the `company_vision` node (D7). Keep the node read for `vision_statement`,
+  `mission_statement`, `core_values` and `value_proposition` until Sprint 012's assessment work
+  touches strategy.
+- [ ] **4.7** Record the finish in the next `.ai/sessions/` file (next sequence number, today's date)
   and tick this sprint's tasks.
 
 #### Exit Criteria
@@ -384,6 +427,8 @@ Make the rest of the application read the profile instead of re-asking for it.
 - [ ] The company list shows a completeness indicator that matches `get-profile` for the same company.
 - [ ] No screen asks the user to re-enter a profile fact that already exists in `companies` or
   `company_products_services`.
+- [ ] The vision section displays the same `target_market` as the Profile tab, and there is exactly one
+  stored value (D7).
 - [ ] Production build (`npm run prod`) succeeds; only pre-existing warnings remain.
 - [ ] Session file and sprint checkboxes are updated.
 
@@ -415,8 +460,9 @@ deployable; Phase 3 must not ship without Phase 2.
 ```
 api-incubator-os/
 ├── migrations/
-│   ├── 2026-10-20-company-profile-360.sql            (new)
-│   └── deployment/verify-013-profile-360.sql          (new)
+│   ├── 2026-10-20-company-profile-360.sql            (new — run order #29)
+│   └── README.md                                      (run order #29 row)
+├── docs/deployment/verify-013-profile-360.sql         (new)
 ├── capabilities/company/
 │   ├── Application/
 │   │   ├── Commands/
@@ -516,5 +562,6 @@ The sprint is complete when:
 - [ ] No legacy financial screen was modified.
 - [ ] `ng build --configuration development` is clean; `npm run prod` succeeds.
 - [ ] `php -l` passes on all touched PHP; the harness in `tests/CompanyProfile360.php` passes.
-- [ ] Migration is idempotent and verified locally; deployment notes list every file and the order.
+- [ ] Migration is idempotent, verified locally, assigned run order **#29**, and deployment notes list
+  every file and the order.
 - [ ] Session file and sprint checkboxes are updated.
